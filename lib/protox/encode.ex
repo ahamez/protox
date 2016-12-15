@@ -157,11 +157,17 @@ defmodule Protox.Encode do
   defp encode_value(value, %Field{type: :float}) do
     <<value::float-little-32>>
   end
-  defp encode_value(value, %Field{type: ty}) when ty == :sfixed64 or ty == :fixed64 do
+  defp encode_value(value, %Field{type: :fixed64}) do
     <<value::little-64>>
   end
-  defp encode_value(value, %Field{type: ty}) when ty == :sfixed32 or ty == :fixed32 do
+  defp encode_value(value, %Field{type: :sfixed64}) do
+    <<value::signed-little-64>>
+  end
+  defp encode_value(value, %Field{type: :fixed32}) do
     <<value::little-32>>
+  end
+  defp encode_value(value, %Field{type: :sfixed32}) do
+    <<value::signed-little-32>>
   end
   defp encode_value(value, %Field{type: ty}) when ty == :string or ty == :bytes do
     len = Varint.LEB128.encode(byte_size(value))

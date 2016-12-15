@@ -57,7 +57,10 @@ defmodule Protox.Decode do
   defp parse_value(<<value::float-little-64, rest::binary>>, 1, :double) do
     {value, rest}
   end
-  defp parse_value(<<value::little-64, rest::binary>>, 1, _) do
+  defp parse_value(<<value::little-64, rest::binary>>, 1, :fixed64) do
+    {value, rest}
+  end
+  defp parse_value(<<value::signed-little-64, rest::binary>>, 1, :sfixed64) do
     {value, rest}
   end
 
@@ -74,7 +77,10 @@ defmodule Protox.Decode do
   defp parse_value(<<value::float-little-32, rest::binary>>, 5, :float) do
     {value, rest}
   end
-  defp parse_value(<<value::little-32, rest::binary>>, 5, _) do
+  defp parse_value(<<value::little-32, rest::binary>>, 5, :fixed32) do
+    {value, rest}
+  end
+  defp parse_value(<<value::signed-little-32, rest::binary>>, 5, :sfixed32) do
     {value, rest}
   end
 
