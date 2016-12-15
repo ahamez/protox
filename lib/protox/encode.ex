@@ -80,7 +80,7 @@ defmodule Protox.Encode do
       # The parent oneof field is set to the current field.
       {^name, field_value} ->
         key = make_key_bytes(tag, field.type)
-        value = encode_value(field_value, field)
+        value = encode_value(field_value, field.type)
         <<acc::binary, key::binary, value::binary>>
 
       _ ->
@@ -95,7 +95,7 @@ defmodule Protox.Encode do
       acc
     else
       key = make_key_bytes(tag, field.type)
-      value = encode_value(field_value, field)
+      value = encode_value(field_value, field.type)
       <<acc::binary, key::binary, value::binary>>
     end
   end
@@ -119,7 +119,7 @@ defmodule Protox.Encode do
       values,
       <<>>,
       fn (value, acc) ->
-        <<acc::binary, encode_value(value, field)::binary>>
+        <<acc::binary, encode_value(value, field.type)::binary>>
       end)
 
     <<Varint.LEB128.encode(byte_size(bytes))::binary, bytes::binary>>
@@ -131,7 +131,7 @@ defmodule Protox.Encode do
       values,
       <<>>,
       fn (value, acc) ->
-        <<acc::binary, make_key_bytes(tag, ty)::binary, encode_value(value, field)::binary>>
+        <<acc::binary, make_key_bytes(tag, ty)::binary, encode_value(value, field.type)::binary>>
       end)
   end
 
@@ -139,46 +139,46 @@ defmodule Protox.Encode do
   defp encode_value(true, _) do
     <<1>>
   end
-  defp encode_value(value, %Field{type: ty}) when ty == :sint32 or ty == :sint64 do
+  defp encode_value(value, ty) when ty == :sint32 or ty == :sint64 do
     value
     |> Varint.Zigzag.encode()
     |> Varint.LEB128.encode()
   end
-  defp encode_value(value, %Field{type: ty}) when ty == :int32 or ty == :int64 do
+  defp encode_value(value, ty) when ty == :int32 or ty == :int64 do
     <<res::unsigned-native-64>> = <<value::signed-native-64>>
     Varint.LEB128.encode(res)
   end
-  defp encode_value(value, %Field{type: ty}) when is_primitive_varint(ty) do
+  defp encode_value(value, ty) when is_primitive_varint(ty) do
     Varint.LEB128.encode(value)
   end
-  defp encode_value(value, %Field{type: :double}) do
+  defp encode_value(value, :double) do
     <<value::float-little-64>>
   end
-  defp encode_value(value, %Field{type: :float}) do
+  defp encode_value(value, :float) do
     <<value::float-little-32>>
   end
-  defp encode_value(value, %Field{type: :fixed64}) do
+  defp encode_value(value, :fixed64) do
     <<value::little-64>>
   end
-  defp encode_value(value, %Field{type: :sfixed64}) do
+  defp encode_value(value, :sfixed64) do
     <<value::signed-little-64>>
   end
-  defp encode_value(value, %Field{type: :fixed32}) do
+  defp encode_value(value, :fixed32) do
     <<value::little-32>>
   end
-  defp encode_value(value, %Field{type: :sfixed32}) do
+  defp encode_value(value, :sfixed32) do
     <<value::signed-little-32>>
   end
-  defp encode_value(value, %Field{type: ty}) when ty == :string or ty == :bytes do
+  defp encode_value(value, ty) when ty == :string or ty == :bytes do
     len = Varint.LEB128.encode(byte_size(value))
     <<len::binary, value::binary>>
   end
-  defp encode_value(value, %Field{type: %Message{}}) do
+  defp encode_value(value, %Message{}) do
     encoded = encode(value)
     len = byte_size(encoded) |> Varint.LEB128.encode()
     <<len::binary, encoded::binary>>
   end
-  defp encode_value(value, %Field{type: e = %Enumeration{}}) do
+  defp encode_value(value, e = %Enumeration{}) do
     Varint.LEB128.encode(Map.get(e.values, value, value))
   end
 
