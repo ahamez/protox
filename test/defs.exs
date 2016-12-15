@@ -69,75 +69,6 @@ defmodule Sub do
 
 end
 
-#------------------------------------------------------------------------------------------------#
-
-defmodule Msg.MapFieldEntry_k do
-
-  defstruct key: 0,
-            value: ""
-
-
-  @spec encode(struct) :: binary
-  def encode(msg = %__MODULE__{}) do
-    Protox.Encode.encode(msg)
-  end
-
-
-  @spec decode(binary) :: struct
-  def decode(bytes) do
-    Protox.Decode.decode(bytes, __MODULE__.defs())
-  end
-
-
-  def defs() do
-    %Protox.Message{
-      name: __MODULE__,
-      fields: %{
-        1 => %Protox.Field{name: :key, kind: :normal, type: :int32},
-        2 => %Protox.Field{name: :value, kind: :normal, type: :string},
-      },
-      tags: [
-        1,
-        2,
-      ]
-    }
-  end
-end
-
-#------------------------------------------------------------------------------------------------#
-
-defmodule Msg.MapFieldEntry_l do
-
-  defstruct key: "",
-            value: 0.0
-
-
-  @spec encode(struct) :: binary
-  def encode(msg = %__MODULE__{}) do
-    Protox.Encode.encode(msg)
-  end
-
-
-  @spec decode(binary) :: struct
-  def decode(bytes) do
-    Protox.Decode.decode(bytes, __MODULE__.defs())
-  end
-
-
-  def defs() do
-    %Protox.Message{
-      name: __MODULE__,
-      fields: %{
-        1 => %Protox.Field{name: :key, kind: :normal, type: :string},
-        2 => %Protox.Field{name: :value, kind: :normal, type: :double},
-      },
-      tags: [
-        1,
-        2,
-      ]
-    }
-  end
-end
 
 #------------------------------------------------------------------------------------------------#
 
@@ -182,8 +113,8 @@ defmodule Msg do
         5 => %Protox.Field{name: :h, kind: :normal, type: :double},
         6 => %Protox.Field{name: :i, kind: {:repeated, :packed}, type: :float},
         7 => %Protox.Field{name: :j, kind: {:repeated, :unpacked}, type: Sub.defs()},
-        8 => %Protox.Field{name: :k, kind: :map, type: Msg.MapFieldEntry_k.defs()},
-        9 => %Protox.Field{name: :l, kind: :map, type: Msg.MapFieldEntry_l.defs()},
+        8 => %Protox.Field{name: :k, kind: :map, type: {:int32, :string}},
+        9 => %Protox.Field{name: :l, kind: :map, type: {:string, :double}},
         10 => %Protox.Field{name: :n, kind: {:oneof, :m}, type: :string},
         11 => %Protox.Field{name: :o, kind: {:oneof, :m}, type: Sub.defs()},
       },
@@ -203,42 +134,6 @@ defmodule Msg do
       ],
     }
   end
-end
-
-#-------------------------------------------------------------------------------------------------#
-
-defmodule MapFieldEntry_msg_map do
-
-  defstruct key: "",
-            value: nil
-
-
-  @spec encode(struct) :: binary
-  def encode(msg = %__MODULE__{}) do
-    Protox.Encode.encode(msg)
-  end
-
-
-  @spec decode(binary) :: struct
-  def decode(bytes) do
-    Protox.Decode.decode(bytes, __MODULE__.defs())
-  end
-
-
-  def defs() do
-    %Protox.Message{
-      name: __MODULE__,
-      fields: %{
-        1 => %Protox.Field{name: :key, kind: :normal, type: :string},
-        2 => %Protox.Field{name: :value, kind: :normal, type: Msg.defs()},
-      },
-      tags: [
-        1,
-        2,
-      ]
-    }
-  end
-
 end
 
 #-------------------------------------------------------------------------------------------------#
@@ -266,7 +161,7 @@ defmodule Upper do
       name: __MODULE__,
       fields: %{
         1 => %Protox.Field{name: :msg, kind: :normal, type: Msg.defs()},
-        2 => %Protox.Field{name: :msg_map, kind: :map, type: MapFieldEntry_msg_map.defs()},
+        2 => %Protox.Field{name: :msg_map, kind: :map, type: {:string, Msg.defs()}},
       },
       # Ordered by tag value.
       tags: [

@@ -9,6 +9,7 @@ defmodule Protox.Decode do
     Util,
   }
   import Util
+  use Bitwise
 
 
   def decode(bytes, defs) do
@@ -40,7 +41,6 @@ defmodule Protox.Decode do
 
   # Get the key's tag and wire type.
   defp parse_key(bytes) do
-    use Bitwise
     {key, rest} = Varint.LEB128.decode(bytes)
     {key >>> 3, key &&& 0b111, rest}
   end
@@ -96,6 +96,17 @@ defmodule Protox.Decode do
   end
   defp parse_delimited(bytes, type = %Message{}) do
     decode(bytes, type)
+  end
+  defp parse_delimited(bytes, {map_key_type, map_value_type}) do
+    {key, rest} = Varint.LEB128.decode(bytes)
+    wire_type = key &&& 0b111 # we don't care about the tag for the key entry, it's always 1
+    {map_key, rest} = parse_value(rest, wire_type, map_key_type)
+
+    {key, rest} = Varint.LEB128.decode(rest)
+    wire_type = key &&& 0b111 # we don't care about the tag for the value entry, it's always 2
+    {map_value, <<>>} = parse_value(rest, wire_type, map_value_type)
+
+    {map_key, map_value}
   end
 
 
@@ -162,7 +173,7 @@ defmodule Protox.Decode do
     {f, v} = case field.kind do
       :map ->
         previous = Map.fetch!(msg, field.name)
-        {field.name, Map.put(previous, value.key, value.value)}
+        {field.name, Map.put(previous, elem(value, 0), elem(value, 1))}
 
       {:oneof, parent_field} ->
         {parent_field, {field.name, value}}

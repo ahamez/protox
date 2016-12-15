@@ -35,12 +35,17 @@ defmodule Protox.Encode do
         map,
         acc,
         fn ({k, v}, acc) ->
-          # Creates a temporary message which acts as map entry.
-          # (https://developers.google.com/protocol-buffers/docs/proto3#backwards-compatibility)
-          msg = struct!(field.type.name, [{:key, k}, {:value, v}])
-          value = encode(msg)
+          # Each key/value entry of a map has the same layout as a message.
+          # https://developers.google.com/protocol-buffers/docs/proto3#backwards-compatibility
+
+          {map_key_type, map_value_type} = field.type
+          value = <<
+            make_key_bytes(1, map_key_type)::binary, encode_value(k, map_key_type)::binary,
+            make_key_bytes(2, map_value_type)::binary, encode_value(v, map_value_type)::binary,
+          >>
           len = Varint.LEB128.encode(byte_size(value))
-          key = make_key_bytes(tag, field.type)
+          key = Varint.LEB128.encode(tag <<< 3 ||| 2) # 2: wire type of a message
+
           <<acc::binary, key::binary, len::binary, value::binary>>
         end)
     end
