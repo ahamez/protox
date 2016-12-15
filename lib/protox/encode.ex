@@ -47,7 +47,7 @@ defmodule Protox.Encode do
   end
 
 
-  defp encode(:repeated, acc, msg, field = %Field{type: ty}, tag) when is_primitive(ty) do
+  defp encode({:repeated, :packed}, acc, msg, field = %Field{type: ty}, tag) when is_primitive(ty) do
     case Map.fetch!(msg, field.name) do
       [] ->
         acc
@@ -58,7 +58,7 @@ defmodule Protox.Encode do
         <<acc::binary, key::binary, value::binary>>
     end
   end
-  defp encode(:repeated, acc, msg, field, tag) do
+  defp encode({:repeated, :unpacked}, acc, msg, field, tag) do
     case Map.fetch!(msg, field.name) do
       [] ->
         acc

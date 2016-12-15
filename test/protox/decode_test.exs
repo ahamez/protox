@@ -142,6 +142,13 @@ defmodule Protox.DecodeTest do
   end
 
 
+  test "Sub.j, unpacked in definition" do
+    bytes = <<128, 1, 1, 128, 1, 2, 128, 1, 3>>
+    assert Sub.decode(bytes) ==\
+           %Sub{j: [1, 2, 3]}
+  end
+
+
   test "Msg.Sub.a" do
     bytes = <<26, 3, 8, 150, 1>>
     assert Msg.decode(bytes) ==\

@@ -18,6 +18,12 @@ defmodule Protox.EncodeTest do
   end
 
 
+  test "Sub.j, unpacked in definition" do
+    assert Sub.encode(%Sub{j: [1, 2, 3]})
+           == <<128, 1, 1, 128, 1, 2, 128, 1, 3>>
+  end
+
+
   test "Sub.z" do
     assert Protox.Encode.encode(%Sub{z: -20})
            == <<136, 241, 4, 39>>

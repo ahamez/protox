@@ -161,7 +161,7 @@ defmodule Protox.Decode do
       {:oneof, parent_field} ->
         {parent_field, {field.name, value}}
 
-      :repeated ->
+      {:repeated, _} ->
         previous = Map.fetch!(msg, field.name)
         {field.name, previous ++ List.wrap(value)}
 

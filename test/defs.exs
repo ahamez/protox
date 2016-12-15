@@ -9,6 +9,7 @@ defmodule Sub do
             g: [],
             h: [],
             i: [],
+            j: [],
             z: 0
 
 
@@ -34,9 +35,10 @@ defmodule Sub do
         7 => %Protox.Field{name: :d, kind: :normal, type: :uint32},
         8 => %Protox.Field{name: :e, kind: :normal, type: :uint64},
         9 => %Protox.Field{name: :f, kind: :normal, type: :sint64},
-        13 => %Protox.Field{name: :g, kind: :repeated, type: :fixed64},
-        14 => %Protox.Field{name: :h, kind: :repeated, type: :sfixed32},
-        15 => %Protox.Field{name: :i, kind: :repeated, type: :double},
+        13 => %Protox.Field{name: :g, kind: {:repeated, :packed}, type: :fixed64},
+        14 => %Protox.Field{name: :h, kind: {:repeated, :packed}, type: :sfixed32},
+        15 => %Protox.Field{name: :i, kind: {:repeated, :packed}, type: :double},
+        16 => %Protox.Field{name: :j, kind: {:repeated, :unpacked}, type: :int32},
         10001 => %Protox.Field{name: :z, kind: :normal, type: :sint32},
       },
       # Ordered by tag value.
@@ -50,6 +52,7 @@ defmodule Sub do
         13,
         14,
         15,
+        16,
         10001,
       ]
     }
@@ -166,10 +169,10 @@ defmodule Msg do
             },
         2 => %Protox.Field{name: :e, kind: :normal, type: :bool},
         3 => %Protox.Field{name: :f, kind: :normal, type: Sub.defs()},
-        4 => %Protox.Field{name: :g, kind: :repeated, type: :int32},
+        4 => %Protox.Field{name: :g, kind: {:repeated, :packed}, type: :int32},
         5 => %Protox.Field{name: :h, kind: :normal, type: :double},
-        6 => %Protox.Field{name: :i, kind: :repeated, type: :float},
-        7 => %Protox.Field{name: :j, kind: :repeated, type: Sub.defs()},
+        6 => %Protox.Field{name: :i, kind: {:repeated, :packed}, type: :float},
+        7 => %Protox.Field{name: :j, kind: {:repeated, :unpacked}, type: Sub.defs()},
         8 => %Protox.Field{name: :k, kind: :map, type: Msg.MapFieldEntry_k.defs()},
         9 => %Protox.Field{name: :l, kind: :map, type: Msg.MapFieldEntry_l.defs()},
         10 => %Protox.Field{name: :n, kind: {:oneof, :m}, type: :string},
