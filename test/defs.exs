@@ -10,6 +10,9 @@ defmodule Sub do
             h: [],
             i: [],
             j: [],
+            k: 0,
+            l: 0,
+            m: <<>>,
             z: 0
 
 
@@ -39,6 +42,9 @@ defmodule Sub do
         14 => %Protox.Field{name: :h, kind: {:repeated, :packed}, type: :sfixed32},
         15 => %Protox.Field{name: :i, kind: {:repeated, :packed}, type: :double},
         16 => %Protox.Field{name: :j, kind: {:repeated, :unpacked}, type: :int32},
+        17 => %Protox.Field{name: :k, kind: :normal, type: :fixed32},
+        18 => %Protox.Field{name: :l, kind: :normal, type: :sfixed64},
+        19 => %Protox.Field{name: :m, kind: :normal, type: :bytes},
         10001 => %Protox.Field{name: :z, kind: :normal, type: :sint32},
       },
       # Ordered by tag value.
@@ -53,6 +59,9 @@ defmodule Sub do
         14,
         15,
         16,
+        17,
+        18,
+        19,
         10001,
       ]
     }

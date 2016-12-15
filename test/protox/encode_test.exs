@@ -66,6 +66,24 @@ defmodule Protox.EncodeTest do
   end
 
 
+  test "Sub.k; Sub.l" do
+    assert Sub.encode(%Sub{k: 23, l: -99})
+           == <<141, 1, 23, 0, 0, 0, 145, 1, 157, 255, 255, 255, 255, 255, 255, 255>>
+  end
+
+
+  test "Sub.m, empty" do
+    assert Sub.encode(%Sub{m: <<>>})
+           == <<>>
+  end
+
+
+  test "Sub.m" do
+    assert Sub.encode(%Sub{m: <<1,2,3>>})
+           == <<154, 1, 3, 1, 2, 3>>
+  end
+
+
   test "Sub.z" do
     assert Protox.Encode.encode(%Sub{z: -20})
            == <<136, 241, 4, 39>>
