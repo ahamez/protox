@@ -17,6 +17,48 @@ defmodule Protox.EncodeTest do
            == <<18, 7, 116, 101, 115, 116, 105, 110, 103>>
   end
 
+  test "Sub.c" do
+    assert Sub.encode(%Sub{c: -300}) ==\
+           <<48, 212, 253, 255, 255, 255, 255, 255, 255, 255, 1>>
+  end
+
+
+  test "Sub.d; Sub.e" do
+    assert Sub.encode(%Sub{d: 901, e: 433}) ==\
+           <<56, 133, 7, 64, 177, 3>>
+  end
+
+
+  test "Sub.f" do
+    assert Sub.encode( %Sub{f: -1323}) ==\
+           <<72, 213, 20>>
+  end
+
+
+  test "Sub.g" do
+    assert Sub.encode(%Sub{g: [1,2]}) ==\
+           <<106, 16, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0>>
+  end
+
+
+  test "Sub.g, negative" do
+    assert Sub.encode(%Sub{g: [1,-2]}) ==\
+           <<106, 16, 1, 0, 0, 0, 0, 0, 0, 0, 254, 255, 255, 255, 255, 255, 255, 255>>
+  end
+
+
+  test "Sub.g; Sub.h; Sub.i" do
+    assert Sub.encode(%Sub{g: [0], h: [-1], i: [33.2, -44.0]}) ==\
+           <<106, 8, 0, 0, 0, 0, 0, 0, 0, 0, 114, 4, 255, 255, 255, 255, 122, 16, 154, 153,
+             153, 153, 153, 153, 64, 64, 0, 0, 0, 0, 0, 0, 70, 192>>
+  end
+
+
+  test "Sub.h" do
+    assert Sub.encode(%Sub{h: [-1,-2]}) ==\
+            <<114, 8, 255, 255, 255, 255, 254, 255, 255, 255>>
+  end
+
 
   test "Sub.j, unpacked in definition" do
     assert Sub.encode(%Sub{j: [1, 2, 3]})
