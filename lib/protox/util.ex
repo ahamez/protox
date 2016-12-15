@@ -8,7 +8,7 @@ defmodule Protox.Util do
       unquote(type) == :bool or unquote(type) == :float or\
       unquote(type) == :fixed32 or unquote(type) == :sfixed32 or\
       unquote(type) == :double or unquote(type) == :fixed64 or\
-      unquote(type) == :sfixed32
+      unquote(type) == :sfixed64
 
     end
   end
