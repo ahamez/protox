@@ -3,9 +3,6 @@ defmodule Protox.Field do
   defstruct name: nil,
             kind: nil,
             type: nil
-            # repeated: false,
-            # map: false,
-            # oneof: nil
 end
 
 defmodule Protox.Message do
