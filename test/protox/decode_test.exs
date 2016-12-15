@@ -118,7 +118,7 @@ defmodule Protox.DecodeTest do
 
 
   test "Sub.g" do
-    bytes = <<18, 0, 48, 0, 56, 0, 64, 0, 72, 0, 106, 16, 1, 0, 0, 0, 0, 0, 0, 0, 254, 255,
+    bytes = <<106, 16, 1, 0, 0, 0, 0, 0, 0, 0, 254, 255,
               255, 255, 255, 255, 255, 255, 136, 241, 4, 0>>
     assert Sub.decode(bytes) ==\
            %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [1,-2], h: [], i: [], z: 0}
@@ -134,11 +134,6 @@ defmodule Protox.DecodeTest do
 
 
   test "Sub.h" do
-    bytes = <<18, 0, 48, 0, 56, 0, 64, 0, 72, 0, 114, 8, 255, 255, 255, 255, 254, 255, 255,
-              255, 136, 241, 4, 0>>
-    assert Sub.decode(bytes) ==\
-           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [-1,-2], i: [], z: 0}
-
     bytes = <<114, 8, 255, 255, 255, 255, 254, 255, 255, 255>>
     assert Sub.decode(bytes) ==\
            %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [-1,-2], i: [], z: 0}
