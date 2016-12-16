@@ -29,7 +29,7 @@ defmodule Sub do
 
 
   def defs() do
-    %Protox.Message{
+    %Protox.MessageDefinitions{
       name: __MODULE__,
       fields: %{
         1 => %Protox.Field{name: :a, kind: :normal, type: :int32},
@@ -99,7 +99,7 @@ defmodule Msg do
 
 
   def defs() do
-    %Protox.Message{
+    %Protox.MessageDefinitions{
       name: __MODULE__,
       fields: %{
         1 => %Protox.Field{name: :d, kind: :normal, type: %Protox.Enumeration{
@@ -108,15 +108,15 @@ defmodule Msg do
               }
             },
         2 => %Protox.Field{name: :e, kind: :normal, type: :bool},
-        3 => %Protox.Field{name: :f, kind: :normal, type: Sub.defs()},
+        3 => %Protox.Field{name: :f, kind: :normal, type: %Protox.Message{name: Sub}},
         4 => %Protox.Field{name: :g, kind: {:repeated, :packed}, type: :int32},
         5 => %Protox.Field{name: :h, kind: :normal, type: :double},
         6 => %Protox.Field{name: :i, kind: {:repeated, :packed}, type: :float},
-        7 => %Protox.Field{name: :j, kind: {:repeated, :unpacked}, type: Sub.defs()},
+        7 => %Protox.Field{name: :j, kind: {:repeated, :unpacked}, type: %Protox.Message{name: Sub}},
         8 => %Protox.Field{name: :k, kind: :map, type: {:int32, :string}},
         9 => %Protox.Field{name: :l, kind: :map, type: {:string, :double}},
         10 => %Protox.Field{name: :n, kind: {:oneof, :m}, type: :string},
-        11 => %Protox.Field{name: :o, kind: {:oneof, :m}, type: Sub.defs()},
+        11 => %Protox.Field{name: :o, kind: {:oneof, :m}, type: %Protox.Message{name: Sub}},
       },
       # Ordered by tag value.
       tags: [
@@ -157,11 +157,11 @@ defmodule Upper do
 
 
   def defs() do
-    %Protox.Message{
+    %Protox.MessageDefinitions{
       name: __MODULE__,
       fields: %{
-        1 => %Protox.Field{name: :msg, kind: :normal, type: Msg.defs()},
-        2 => %Protox.Field{name: :msg_map, kind: :map, type: {:string, Msg.defs()}},
+        1 => %Protox.Field{name: :msg, kind: :normal, type: %Protox.Message{name: Msg}},
+        2 => %Protox.Field{name: :msg_map, kind: :map, type: {:string, %Protox.Message{name: Msg}}},
       },
       # Ordered by tag value.
       tags: [

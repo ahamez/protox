@@ -95,7 +95,7 @@ defmodule Protox.Decode do
     bytes
   end
   defp parse_delimited(bytes, type = %Message{}) do
-    decode(bytes, type)
+    decode(bytes, type.name.defs())
   end
   defp parse_delimited(bytes, {map_key_type, map_value_type}) do
     {key, rest} = Varint.LEB128.decode(bytes)
