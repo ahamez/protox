@@ -24,13 +24,12 @@ defmodule Sub do
 
   @spec decode(binary) :: struct
   def decode(bytes) do
-    Protox.Decode.decode(bytes, __MODULE__.defs())
+    Protox.Decode.decode(bytes, __MODULE__)
   end
 
 
   def defs() do
     %Protox.MessageDefinitions{
-      name: __MODULE__,
       fields: %{
         1 => %Protox.Field{name: :a, kind: :normal, type: :int32},
         2 => %Protox.Field{name: :b, kind: :normal, type: :string},
@@ -94,13 +93,12 @@ defmodule Msg do
 
   @spec decode(binary) :: struct
   def decode(bytes) do
-    Protox.Decode.decode(bytes, __MODULE__.defs())
+    Protox.Decode.decode(bytes, __MODULE__)
   end
 
 
   def defs() do
     %Protox.MessageDefinitions{
-      name: __MODULE__,
       fields: %{
         1 => %Protox.Field{name: :d, kind: :normal, type: %Protox.Enumeration{
                 members: %{0 => :FOO, 1 => :BAR},
@@ -150,15 +148,14 @@ defmodule Upper do
   end
 
 
-  @spec encode(binary) :: struct
+  @spec decode(binary) :: struct
   def decode(bytes) do
-    Protox.Decode.decode(bytes, __MODULE__.defs())
+    Protox.Decode.decode(bytes, __MODULE__)
   end
 
 
   def defs() do
     %Protox.MessageDefinitions{
-      name: __MODULE__,
       fields: %{
         1 => %Protox.Field{name: :msg, kind: :normal, type: %Protox.Message{name: Msg}},
         2 => %Protox.Field{name: :msg_map, kind: :map, type: {:string, %Protox.Message{name: Msg}}},

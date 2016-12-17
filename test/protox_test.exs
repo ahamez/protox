@@ -3,11 +3,10 @@ defmodule RandomInit do
   import Protox.Util
 
   def gen(mod) do
-    defs = mod.defs()
 
     Enum.reduce(
-      defs.fields,
-      struct(defs.name),
+      mod.defs().fields,
+      struct(mod.__struct__),
       fn ({_, field}, msg) ->
         case field.kind do
           {:oneof, _} -> msg # TODO.

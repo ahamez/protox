@@ -7,9 +7,8 @@ end
 
 
 defmodule Protox.MessageDefinitions do
-  @enforce_keys [:name, :fields, :tags]
-  defstruct name: nil,
-            fields: %{},
+  @enforce_keys [:fields, :tags]
+  defstruct fields: %{},
             tags: %{}
 end
 

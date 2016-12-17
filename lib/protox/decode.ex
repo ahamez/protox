@@ -12,8 +12,8 @@ defmodule Protox.Decode do
   use Bitwise
 
 
-  def decode(bytes, defs) do
-    parse_key_value(bytes, defs, struct(defs.name))
+  def decode(bytes, mod) do
+    parse_key_value(bytes, mod.defs(), struct(mod.__struct__))
   end
 
 
@@ -95,7 +95,7 @@ defmodule Protox.Decode do
     bytes
   end
   defp parse_delimited(bytes, type = %Message{}) do
-    decode(bytes, type.name.defs())
+    decode(bytes, type.name)
   end
   defp parse_delimited(bytes, {map_key_type, map_value_type}) do
     {key, rest} = Varint.LEB128.decode(bytes)
