@@ -15,11 +15,12 @@ defmodule Protox.Encode do
     defs = msg.__struct__.defs()
     Enum.reduce(
       defs.tags,
-      <<>>,
+      [],
       fn (tag, acc) ->
         field = Map.fetch!(defs.fields, tag)
         encode(field.kind, acc, msg, field, tag)
       end)
+    |> :binary.list_to_bin()
   end
 
 
@@ -39,14 +40,28 @@ defmodule Protox.Encode do
           # https://developers.google.com/protocol-buffers/docs/proto3#backwards-compatibility
 
           {map_key_type, map_value_type} = field.type
-          value = <<
-            make_key_bytes(1, map_key_type)::binary, encode_value(k, map_key_type)::binary,
-            make_key_bytes(2, map_value_type)::binary, encode_value(v, map_value_type)::binary,
-          >>
-          len = Varint.LEB128.encode(byte_size(value))
+
+          map_key_key_bytes = make_key_bytes(1, map_key_type)
+          map_key_key_len = byte_size(map_key_key_bytes)
+          map_key_value_bytes = encode_value(k, map_key_type)
+          map_key_value_len = byte_size(map_key_value_bytes)
+
+          map_value_key_bytes = make_key_bytes(2, map_value_type)
+          map_value_key_len = byte_size(map_value_key_bytes)
+          map_value_value_bytes = encode_value(v, map_value_type)
+          map_value_value_len = byte_size(map_value_value_bytes)
+
+          len = Varint.LEB128.encode(
+            map_key_key_len +
+            map_key_value_len + map_value_key_len +
+            map_value_value_len
+          )
           key = Varint.LEB128.encode(tag <<< 3 ||| 2) # 2: wire type of a message
 
-          <<acc::binary, key::binary, len::binary, value::binary>>
+          [
+            acc, key, len,
+            map_key_key_bytes, map_key_value_bytes, map_value_key_bytes, map_value_value_bytes
+          ]
         end)
     end
   end
@@ -60,7 +75,7 @@ defmodule Protox.Encode do
       values ->
         key = Varint.LEB128.encode(tag <<< 3 ||| 2)
         value = encode_packed(values, field)
-        <<acc::binary, key::binary, value::binary>>
+        [acc, key, value]
     end
   end
   defp encode({:repeated, :unpacked}, acc, msg, field, tag) do
@@ -70,7 +85,7 @@ defmodule Protox.Encode do
 
       values ->
         value = encode_repeated(values, field, tag, field.type)
-        <<acc::binary, value::binary>>
+        [acc, value]
     end
   end
 
@@ -86,7 +101,7 @@ defmodule Protox.Encode do
       {^name, field_value} ->
         key = make_key_bytes(tag, field.type)
         value = encode_value(field_value, field.type)
-        <<acc::binary, key::binary, value::binary>>
+        [acc, key, value]
 
       _ ->
        acc
@@ -101,7 +116,7 @@ defmodule Protox.Encode do
     else
       key = make_key_bytes(tag, field.type)
       value = encode_value(field_value, field.type)
-      <<acc::binary, key::binary, value::binary>>
+      [acc, key, value]
     end
   end
 
@@ -120,23 +135,24 @@ defmodule Protox.Encode do
 
 
   defp encode_packed(values, field) do
-    bytes = Enum.reduce(
+    {bytes, len} = Enum.reduce(
       values,
-      <<>>,
-      fn (value, acc) ->
-        <<acc::binary, encode_value(value, field.type)::binary>>
+      {[], 0},
+      fn (value, {acc, len}) ->
+        value_bytes = encode_value(value, field.type)
+        {[acc, value_bytes], len + byte_size(value_bytes)}
       end)
 
-    <<Varint.LEB128.encode(byte_size(bytes))::binary, bytes::binary>>
+    [Varint.LEB128.encode(len), bytes]
   end
 
 
   defp encode_repeated(values, field, tag, ty) do
     Enum.reduce(
       values,
-      <<>>,
+      [],
       fn (value, acc) ->
-        <<acc::binary, make_key_bytes(tag, ty)::binary, encode_value(value, field.type)::binary>>
+        [acc, make_key_bytes(tag, ty), encode_value(value, field.type)]
       end)
   end
 
@@ -145,9 +161,7 @@ defmodule Protox.Encode do
     <<1>>
   end
   defp encode_value(value, ty) when ty == :sint32 or ty == :sint64 do
-    value
-    |> Varint.Zigzag.encode()
-    |> Varint.LEB128.encode()
+    value |> Varint.Zigzag.encode() |> Varint.LEB128.encode()
   end
   defp encode_value(value, ty) when ty == :int32 or ty == :int64 do
     <<res::unsigned-native-64>> = <<value::signed-native-64>>
