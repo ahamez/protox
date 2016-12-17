@@ -92,7 +92,7 @@ defmodule ProtoxTest do
 
   test "symmetric" do
     msg = RandomInit.gen(Upper)
-    assert (msg |> Upper.encode() |> Upper.decode()) == msg
+    assert (msg |> Upper.encode_binary() |> Upper.decode()) == msg
   end
 
 end

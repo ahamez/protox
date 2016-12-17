@@ -20,7 +20,11 @@ defmodule Protox.Encode do
         field = Map.fetch!(defs.fields, tag)
         encode(field.kind, acc, msg, field, tag)
       end)
-    |> :binary.list_to_bin()
+  end
+
+
+  def encode_binary(msg) do
+    msg |> encode() |> :binary.list_to_bin()
   end
 
 
@@ -193,7 +197,7 @@ defmodule Protox.Encode do
     <<len::binary, value::binary>>
   end
   defp encode_value(value, %Message{}) do
-    encoded = encode(value)
+    encoded = encode_binary(value)
     len = byte_size(encoded) |> Varint.LEB128.encode()
     <<len::binary, encoded::binary>>
   end

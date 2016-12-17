@@ -16,9 +16,15 @@ defmodule Sub do
             z: 0
 
 
-  @spec encode(struct) :: binary
+  @spec encode(struct) :: iolist
   def encode(msg = %__MODULE__{}) do
     Protox.Encode.encode(msg)
+  end
+
+
+  @spec encode_binary(struct) :: binary
+  def encode_binary(msg = %__MODULE__{}) do
+    Protox.Encode.encode_binary(msg)
   end
 
 
@@ -68,6 +74,13 @@ defmodule Sub do
 
 end
 
+defimpl Protox.Serializable, for: Sub do
+
+  def serialize(msg) do
+    Protox.Encode.encode(msg)
+  end
+
+end
 
 #------------------------------------------------------------------------------------------------#
 
@@ -85,9 +98,15 @@ defmodule Msg do
             m: nil
 
 
-  @spec encode(struct) :: binary
+  @spec encode(struct) :: iolist
   def encode(msg = %__MODULE__{}) do
     Protox.Encode.encode(msg)
+  end
+
+
+  @spec encode_binary(struct) :: binary
+  def encode_binary(msg = %__MODULE__{}) do
+    Protox.Encode.encode_binary(msg)
   end
 
 
@@ -142,9 +161,15 @@ defmodule Upper do
             msg_map: %{}
 
 
-  @spec encode(struct) :: binary
+  @spec encode(struct) :: iolist
   def encode(msg = %__MODULE__{}) do
     Protox.Encode.encode(msg)
+  end
+
+
+  @spec encode_binary(struct) :: binary
+  def encode_binary(msg = %__MODULE__{}) do
+    Protox.Encode.encode_binary(msg)
   end
 
 
