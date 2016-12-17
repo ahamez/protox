@@ -12,6 +12,9 @@ defmodule Protox.BuildMessage do
 
       quote do
         defmodule unquote(msg_name) do
+
+          @moduledoc false
+
           defstruct unquote(struct_fields)
 
           @spec encode(struct) :: iolist

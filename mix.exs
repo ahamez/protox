@@ -22,8 +22,9 @@ defmodule Protox.Mixfile do
 
   defp deps do
     [
-      {:credo, "~> 0.5.3"},
+      {:credo, "~> 0.5"},
       {:dialyxir, "~> 0.4", only: [:dev], runtime: false},
+      {:ex_doc, "~> 0.14"},
       {:excoveralls, "~> 0.5", only: :test},
       {:varint, "~> 1.0"},
     ]
