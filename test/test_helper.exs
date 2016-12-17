@@ -1,2 +1,2 @@
 ExUnit.start()
-Code.load_file("test/defs.exs")
+Code.load_file("test/messages.exs")
