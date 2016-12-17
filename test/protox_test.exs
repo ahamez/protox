@@ -19,7 +19,7 @@ defmodule RandomInit do
 
 
   defp value(:normal, e = %Protox.Enumeration{}) do
-    Enum.random(e.members |> Map.values())
+    e.members |> Map.values() |> Enum.random()
   end
   defp value(:normal, :bool) do
     :rand.uniform(2) == 1
@@ -28,23 +28,19 @@ defmodule RandomInit do
   when ty == :int32 or ty == :int64 or ty == :sint32 or ty == :sint64 or ty == :sfixed32\
        or ty == :sfixed64
   do
-    :rand.uniform(100) * (if :rand.uniform(2) == 1, do: -1, else: 1)
+    :rand.uniform(100) * sign()
   end
   defp value(:normal, ty) when ty == :double or ty == :float do
-    :rand.uniform(100) * :rand.uniform()
+    :rand.uniform(1000000) * :rand.uniform() * sign()
   end
   defp value(:normal, ty) when is_primitive(ty) do
-    :rand.uniform(100)
+    :rand.uniform(1000000)
   end
   defp value(:normal, :bytes) do
     Enum.reduce(1..:rand.uniform(10), <<>>, fn (b, acc) -> <<b, acc::binary>> end)
   end
   defp value(:normal, :string) do
-    if :rand.uniform(2) == 1 do
-      "#{inspect make_ref()}"
-    else
-      ""
-    end
+    if :rand.uniform(2) == 1, do: "#{inspect make_ref()}", else: ""
   end
   defp value(:normal, m = %Protox.Message{}) do
     if :rand.uniform(2) == 1 do
@@ -54,8 +50,7 @@ defmodule RandomInit do
     end
   end
   defp value({:repeated, _}, ty) when is_primitive(ty) do
-    len = :rand.uniform(10)
-    for _ <- 1..len, do: :rand.uniform(100)
+    for _ <- 1..:rand.uniform(10), do: :rand.uniform(100)
   end
   defp value({:repeated, _}, m = %Protox.Message{}) do
     Enum.reduce(
@@ -85,6 +80,10 @@ defmodule RandomInit do
         end
       end
     )
+  end
+
+  defp sign() do
+    if :rand.uniform(2) == 1, do: -1, else: 1
   end
 
 end
