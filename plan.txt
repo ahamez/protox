@@ -21,6 +21,6 @@ Optimize
 Conformance
 - Parsing unknown values
   On the wire, a .proto map is equivalent to a map entry message for each key/value pair, while the map itself is a repeated field of map entries. Like ordinary message types, it's possible for a parsed map entry message to have unknown fields: for example a field of type int64 in a map defined as map<int32, string>.
-  If there are unknown fields in the wire format of a map entry message, they will be discarded.
+  -If there are unknown fields in the wire format of a map entry message, they will be discarded.- Done
   If there is an unknown enum value in the wire format of a map entry message, it's handled differently in proto2 and proto3. In proto2, the whole map entry message is put into the unknown field set of the containing message. In proto3, it is put into a map field as if it is a known enum value.
 - https://github.com/google/protobuf/tree/master/conformance
