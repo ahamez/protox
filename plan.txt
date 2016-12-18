@@ -1,0 +1,19 @@
+TODO.
+- Use the tuple {tag , name, kind, type} in Decode (thus remove %Field, %Message, %Enumeration)
+- Cleanup BuildMessage (the generation of encoding logic should be in Encode)
+- configurable default values (for protobuf 2)
+- Should decode returns {:ok, msg}|{:error, reason}? (and a function decode!())
+- .proto (v3 only) parser
+- https://ebertapp.io
+- travis-ci
+- https://github.com/google/protobuf/tree/master/conformance
+
+
+Optimize
+- metaprog decoder for each message?
+- choose a data structure to store key/values pairs, where the key is the field tag in a message.
+  however, tags may not be continuous (e.g. 1,2,3, 100, 1001). thus a sparse data structure is needed.
+  * Tuple?
+  * erlang's array?
+  * Map?
+  * still needed with metaprog?
