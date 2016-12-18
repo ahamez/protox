@@ -71,7 +71,7 @@ defmodule Protox.Encode do
   end
 
 
-  defp encode({:repeated, :packed}, acc, msg, field = %Field{type: ty}, tag) when is_primitive(ty) do
+  defp encode({:repeated, :packed}, acc, msg, field = %Field{type: ty}, tag) do
     case Map.fetch!(msg, field.name) do
       [] ->
         acc

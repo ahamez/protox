@@ -163,6 +163,22 @@ defmodule Protox.DecodeTest do
   end
 
 
+  test "Sub.o " do
+    bytes = <<170, 1, 3, 0, 1, 0>>
+    assert Sub.decode(bytes) ==\
+           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
+                n: [], o: [:FOO, :BAR, :FOO], z: 0}
+  end
+
+
+  test "Sub.o (unknown entry) " do
+    bytes = <<170, 1, 4, 0, 1, 0, 2>>
+    assert Sub.decode(bytes) ==\
+           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
+                n: [], o: [:FOO, :BAR, :FOO, 2], z: 0}
+  end
+
+
   test "Msg.Sub.a" do
     bytes = <<26, 3, 8, 150, 1>>
     assert Msg.decode(bytes) ==\

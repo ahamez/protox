@@ -94,6 +94,9 @@ defmodule Protox.Decode do
   defp parse_delimited(bytes, type) when type == :string or type == :bytes do
     bytes
   end
+  defp parse_delimited(bytes, type = %Enumeration{}) do
+    parse_repeated_varint([], bytes, type)
+  end
   defp parse_delimited(bytes, type = %Message{}) do
     decode(bytes, type.name)
   end

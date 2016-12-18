@@ -102,6 +102,18 @@ defmodule Protox.EncodeTest do
   end
 
 
+  test "Sub.o " do
+    assert Sub.encode_binary(%Sub{o: [:FOO, :BAR, :FOO], z: 0}) ==\
+           <<170, 1, 3, 0, 1, 0>>
+  end
+
+
+  test "Sub.o (unknown entry) " do
+    assert Sub.encode_binary(%Sub{o: [:FOO, :BAR, :FOO, 2], z: 0}) ==\
+           <<170, 1, 4, 0, 1, 0, 2>>
+  end
+
+
   test "Sub.z" do
     assert Protox.Encode.encode_binary(%Sub{z: -20})
            == <<136, 241, 4, 39>>

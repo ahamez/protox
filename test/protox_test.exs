@@ -54,6 +54,9 @@ defmodule RandomInit do
   defp value({:repeated, _}, ty) when is_primitive(ty) do
     for _ <- 1..:rand.uniform(10), do: :rand.uniform(100)
   end
+  defp value({:repeated, _}, e = %Protox.Enumeration{}) do
+    for _ <- 1..:rand.uniform(10), do: value(:normal, e)
+  end
   defp value({:repeated, _}, m = %Protox.Message{}) do
     Enum.reduce(
       1..:rand.uniform(10),
