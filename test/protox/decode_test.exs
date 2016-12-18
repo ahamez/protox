@@ -179,6 +179,30 @@ defmodule Protox.DecodeTest do
   end
 
 
+  test "Sub.p (unpacked in definition) " do
+    bytes = <<176, 1, 1, 176, 1, 0, 176, 1, 1, 176, 1, 0>>
+    assert Sub.decode(bytes) ==\
+           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
+                n: [], o: [], p: [true, false, true, false],z: 0}
+  end
+
+
+  test "Sub.q (unpacked in definition) " do
+    bytes = <<184, 1, 0, 184, 1, 1, 184, 1, 1, 184, 1, 0>>
+    assert Sub.decode(bytes) ==\
+           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
+                n: [], o: [], p: [], q: [:FOO, :BAR, :BAR, :FOO],z: 0}
+  end
+
+
+  test "Sub.q (unpacked in definition, with unknown values) " do
+    bytes = <<184, 1, 0, 184, 1, 1, 184, 1, 2, 184, 1, 0>>
+    assert Sub.decode(bytes) ==\
+           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
+                n: [], o: [], p: [], q: [:FOO, :BAR, 2, :FOO],z: 0}
+  end
+
+
   test "Msg.Sub.a" do
     bytes = <<26, 3, 8, 150, 1>>
     assert Msg.decode(bytes) ==\

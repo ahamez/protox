@@ -19,6 +19,8 @@ defmodule Defs do
         {19, :m, :normal, :bytes},
         {20, :n, {:repeated, :packed}, :bool},
         {21, :o, {:repeated, :packed}, {:enum, [{0, :FOO}, {1, :BAR}]}},
+        {22, :p, {:repeated, :unpacked}, :bool},
+        {23, :q, {:repeated, :unpacked}, {:enum, [{0, :FOO}, {1, :BAR}]}},
         {10001, :z, :normal, :sint32},
       ]
     },

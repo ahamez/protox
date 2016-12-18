@@ -114,6 +114,24 @@ defmodule Protox.EncodeTest do
   end
 
 
+  test "Sub.p (unpacked in definition) " do
+    assert Sub.encode_binary(%Sub{p: [true, false, true, false]}) ==\
+           <<176, 1, 1, 176, 1, 0, 176, 1, 1, 176, 1, 0>>
+  end
+
+
+  test "Sub.q (unpacked in definition) " do
+    assert Sub.encode_binary(%Sub{q: [:FOO, :BAR, :BAR, :FOO]}) ==\
+           <<184, 1, 0, 184, 1, 1, 184, 1, 1, 184, 1, 0>>
+  end
+
+
+  test "Sub.q (unpacked in definition, with unknown values) " do
+    assert Sub.encode_binary(%Sub{q: [:FOO, :BAR, 2, :FOO]}) ==\
+           <<184, 1, 0, 184, 1, 1, 184, 1, 2, 184, 1, 0>>
+  end
+
+
   test "Sub.z" do
     assert Protox.Encode.encode_binary(%Sub{z: -20})
            == <<136, 241, 4, 39>>
