@@ -1,7 +1,8 @@
 defmodule Defs do
 
-  use Protox.BuildMessage, messages: [
+  use Protox.BuildMessage, definitions: [
     {
+      :message,
       Sub,
       [
         {1 , :a, :normal, :int32},
@@ -21,10 +22,12 @@ defmodule Defs do
         {21, :o, {:repeated, :packed}, {:enum, [{0, :FOO}, {1, :BAR}]}},
         {22, :p, {:repeated, :unpacked}, :bool},
         {23, :q, {:repeated, :unpacked}, {:enum, [{0, :FOO}, {1, :BAR}]}},
+        {24 , :r, :normal, {:enum, [{0, :FOO}, {1, :BAR}]}},
         {10001, :z, :normal, :sint32},
       ]
     },
     {
+      :message,
       Msg,
       [
         {1 , :d, :normal, {:enum, [{0, :FOO}, {1, :BAR}]}},
@@ -38,9 +41,11 @@ defmodule Defs do
         {9 , :l, :map, {:string, :double}},
         {10, :n, {:oneof, :m}, :string},
         {11, :o, {:oneof, :m}, {:message, Sub}},
+        # {12, :p, :map, {:int32, {:enum, [{0, :FOO}, {1, :BAR}]}},
       ]
     },
     {
+      :message,
       Upper,
       [
         {1, :msg, :normal, {:message, Msg}},
