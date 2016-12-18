@@ -1,9 +1,19 @@
 defmodule Protox.BuildMessage do
 
   defmacro __using__(messages: messages) do
+    messages
+    |> Enum.map(
+      fn {{_, _, name}, fs} ->
+        fields = for {_, _, f} <- fs, do: List.to_tuple(f)
+        {name, fields}
+      end)
+    |> Protox.BuildMessage.build()
+  end
 
-    for {{_, _, name}, fields} <- messages
-    do
+
+  def build(messages) do
+
+    for {name, fields} <- messages do
 
       msg_name      = Module.concat(name)
       struct_fields = make_struct_fields(fields)
@@ -12,8 +22,9 @@ defmodule Protox.BuildMessage do
 
       quote do
         defmodule unquote(msg_name) do
-
           @moduledoc false
+
+          IO.puts "New module #{inspect __MODULE__}"
 
           defstruct unquote(struct_fields)
 
@@ -43,10 +54,8 @@ defmodule Protox.BuildMessage do
             }
           end
 
-        end
-
-      end # quote
-
+        end # module
+      end
     end # for
 
   end
@@ -56,8 +65,7 @@ defmodule Protox.BuildMessage do
 
 
   defp make_struct_fields(fields) do
-    for {_, _, [_tag, name, kind, type]} <- fields
-    do
+    for {_tag, name, kind, type} <- fields do
       case kind do
         :map             -> {name, Macro.escape(%{})}
         {:oneof, parent} -> {parent, nil}
@@ -74,9 +82,7 @@ defmodule Protox.BuildMessage do
 
 
   defp make_fields_map(fields) do
-    for {_, _, [tag, name, kind, type]} <- fields,
-    into: %{}
-    do
+    for {tag, name, kind, type} <- fields, into: %{} do
       ty = case {kind, type} do
         {:map, {key_type, {:message, msg}}} ->
           {
@@ -96,6 +102,7 @@ defmodule Protox.BuildMessage do
         {_, ty} ->
           ty
       end
+
       {tag, %Protox.Field{name: name, kind: kind, type: ty}}
     end
     |> Macro.escape()
@@ -103,7 +110,7 @@ defmodule Protox.BuildMessage do
 
 
   defp make_tags(fields) do
-    Enum.sort(for {_, _, [tag, _name, _kind, _type]} <- fields, do: tag)
+    Enum.sort(for {tag, _, _, _} <- fields, do: tag)
   end
 
 end
