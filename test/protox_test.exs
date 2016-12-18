@@ -20,6 +20,9 @@ defmodule RandomInit do
   defp value(:normal, e = %Protox.Enumeration{}) do
     e.members |> Map.values() |> Enum.random()
   end
+  defp value(:normal, {:enum, members}) do
+    members |> Map.new() |> Map.values() |> Enum.random()
+  end
   defp value(:normal, :bool) do
     :rand.uniform(2) == 1
   end

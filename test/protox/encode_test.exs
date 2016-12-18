@@ -247,4 +247,10 @@ defmodule Protox.EncodeTest do
            == <<90, 2, 8, 42>>
   end
 
+
+  test "Msg.p" do
+    assert %Msg{p: %{1 => :BAR}} |> Protox.Encode.encode_binary()
+           == <<98, 4, 8, 1, 16, 1>>
+  end
+
 end

@@ -41,7 +41,7 @@ defmodule Defs do
         {9 , :l, :map, {:string, :double}},
         {10, :n, {:oneof, :m}, :string},
         {11, :o, {:oneof, :m}, {:message, Sub}},
-        # {12, :p, :map, {:int32, {:enum, [{0, :FOO}, {1, :BAR}]}},
+        {12, :p, :map, {:int32, {:enum, [{0, :FOO}, {1, :BAR}]}}},
       ]
     },
     {
