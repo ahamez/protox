@@ -48,6 +48,9 @@ defmodule RandomInit do
       nil
     end
   end
+  defp value({:repeated, _}, :bool) do
+    for _ <- 1..:rand.uniform(10), do: value(:normal, :bool)
+  end
   defp value({:repeated, _}, ty) when is_primitive(ty) do
     for _ <- 1..:rand.uniform(10), do: :rand.uniform(100)
   end
@@ -90,7 +93,19 @@ end
 defmodule ProtoxTest do
   use ExUnit.Case
 
-  test "symmetric" do
+  test "symmetric (Sub)" do
+    msg = RandomInit.gen(Sub)
+    assert (msg |> Sub.encode_binary() |> Sub.decode()) == msg
+  end
+
+
+  test "symmetric (Msg)" do
+    msg = RandomInit.gen(Msg)
+    assert (msg |> Msg.encode_binary() |> Msg.decode()) == msg
+  end
+
+
+  test "symmetric (Upper)" do
     msg = RandomInit.gen(Upper)
     assert (msg |> Upper.encode_binary() |> Upper.decode()) == msg
   end

@@ -84,6 +84,24 @@ defmodule Protox.EncodeTest do
   end
 
 
+  test "Sub.n" do
+    assert Sub.encode_binary(%Sub{n: [true, false, false, true]}) ==\
+           <<162, 1, 4, 1, 0, 0, 1>>
+  end
+
+
+  test "Sub.n (all true)" do
+    assert Sub.encode_binary(%Sub{n: [true, true, true, true]}) ==\
+           <<162, 1, 4, 1, 1, 1, 1>>
+  end
+
+
+  test "Sub.n (all false)" do
+    assert Sub.encode_binary(%Sub{n: [false, false, false, false]}) ==\
+           <<162, 1, 4, 0, 0, 0, 0>>
+  end
+
+
   test "Sub.z" do
     assert Protox.Encode.encode_binary(%Sub{z: -20})
            == <<136, 241, 4, 39>>

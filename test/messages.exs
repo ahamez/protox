@@ -17,6 +17,7 @@ defmodule Defs do
         {17, :k, :normal, :fixed32},
         {18, :l, :normal, :sfixed64},
         {19, :m, :normal, :bytes},
+        {20, :n, {:repeated, :packed}, :bool},
         {10001, :z, :normal, :sint32},
       ]
     },

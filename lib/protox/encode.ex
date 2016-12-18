@@ -161,6 +161,9 @@ defmodule Protox.Encode do
   end
 
 
+  defp encode_value(false, _) do
+    <<0>>
+  end
   defp encode_value(true, _) do
     <<1>>
   end
