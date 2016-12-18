@@ -147,6 +147,7 @@ defmodule Protox.Decode do
   defp varint_value(value, :uint32)           , do: value
   defp varint_value(value, :uint64)           , do: value
   defp varint_value(value, e = %Enumeration{}), do: Map.get(e.members, value, value)
+  defp varint_value(value, {:enum, members})  , do: members |> Map.new() |> Map.get(value, value)
   defp varint_value(value, :int32) do
     <<res::signed-32>> = <<value::32>>
     res
