@@ -1,22 +1,21 @@
 defmodule Protox.BuildMessage do
 
-  defmacro __using__(definitions: defs) do
-    defs
-    |> Enum.map(
-       fn {:{}, _, [def_type, {_, _, name}, fs ]} ->
-          fields = for {_, _, f} <- fs do
-            List.to_tuple(f)
-          end
-          {def_type, name, fields}
+  defmacro __using__(enumerations: _, messages: messages) do
+
+    build(
+      [],
+      Enum.map(messages,
+       fn {{_, _, name}, fs} ->
+          fields = for {_, _, f} <- fs, do: List.to_tuple(f)
+          {name, fields}
        end)
-    |> build()
+    )
   end
 
 
-  def build(defs) do
+  def build(_enums, messages) do
 
-    for {:message, name, fields} <- defs do
-    # for {name, fields} <- defs do
+    for {name, fields} <- messages do
 
       msg_name       = Module.concat(name)
       struct_fields  = make_struct_fields(fields)

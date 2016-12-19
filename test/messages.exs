@@ -1,8 +1,8 @@
 defmodule Defs do
 
-  use Protox.BuildMessage, definitions: [
+  use Protox.BuildMessage,
+    messages: [
     {
-      :message,
       Sub,
       [
         {1 , :a, :normal, :int32},
@@ -27,7 +27,6 @@ defmodule Defs do
       ]
     },
     {
-      :message,
       Msg,
       [
         {1 , :d, :normal, {:enum, [{0, :FOO}, {1, :BAR}]}},
@@ -45,7 +44,6 @@ defmodule Defs do
       ]
     },
     {
-      :message,
       Upper,
       [
         {1, :msg, :normal, {:message, Msg}},
