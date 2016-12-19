@@ -47,6 +47,21 @@ defmodule Protox.BuildMessage do
 
     for {name, fields} <- messages do
 
+      # Replace enumeration symbols with actual members
+      enums = Map.new(enums)
+      fields = for f = {x, y, z, ty} <- fields do
+        case ty do
+          {:enum, {_, _, enum}}
+            -> {x, y, z, {:enum, {enum, Map.fetch!(enums, enum)}}}
+
+          {a, {:enum, {_, _, enum}}} # enum as a map value
+            -> {x, y, z, {a, {:enum, {enum, Map.fetch!(enums, enum)}}}}
+
+          _
+            -> f
+        end
+      end
+
       msg_name       = Module.concat(name)
       struct_fields  = make_struct_fields(fields)
       fields_map     = make_fields_map(fields)
@@ -59,18 +74,11 @@ defmodule Protox.BuildMessage do
 
           import Protox.Encode
 
+
           defstruct unquote(struct_fields)
 
 
           unquote(encode_meta)
-          # unquote(encode_members)
-          # defp encode_member(x), do: Varint.LEB128.encode(x)
-
-
-          @spec encode(struct) :: iolist
-          def encode_dyn(msg = %unquote(msg_name){}) do
-            Protox.EncodeDyn.encode(msg)
-          end
 
 
           @spec encode_binary(struct) :: binary
@@ -316,8 +324,9 @@ defmodule Protox.BuildMessage do
     end
   end
 
-  defp get_default({:enum, {_, _, enum_name}}) do
-    Module.concat(enum_name).default()
+
+  defp get_default({:enum, {_, members}}) do
+    get_enum_default(members)
   end
   defp get_default({:message, _}) do
     nil
@@ -332,8 +341,8 @@ defmodule Protox.BuildMessage do
       encode_message(unquote(var))
     end
   end
-  defp get_encode_value_ast({:enum, {_, _, enum_name}}, var) do
-    mod = Module.concat(enum_name)
+  defp get_encode_value_ast({:enum, {enum, _}}, var) do
+    mod = Module.concat(enum)
     quote do
       unquote(mod).encode(unquote(var)) |> encode_enum()
     end
@@ -375,9 +384,9 @@ defmodule Protox.BuildMessage do
         {:repeated, _}   -> {name, []}
         :normal          ->
           case type do
-            {:enum, {_ ,_, ename}}    -> {name, Module.concat(ename).default()}
-            {:message, _}             -> {name, nil}
-            _                         -> {name, Protox.Default.default(type)}
+            {:enum, {_, members}} -> {name, get_enum_default(members)}
+            {:message, _}         -> {name, nil}
+            _                     -> {name, Protox.Default.default(type)}
           end
       end
     end
@@ -394,14 +403,16 @@ defmodule Protox.BuildMessage do
           }
 
 
-        {:map, {key_type, {:enum, enum}}} ->
+        {:map, {key_type, {:enum, {enum, members}}}} ->
           {
             key_type,
-            {:enum, enum |> elem(2) |> Module.concat()}
+            # {:enum, enum |> elem(2) |> Module.concat()}
+            {:enum, {Module.concat(enum), members}}
           }
 
-        {_, {:enum, enum}} ->
-          {:enum, enum |> elem(2) |> Module.concat()}
+        {_, {:enum, {enum, members}}} ->
+          # {:enum, enum |> elem(2) |> Module.concat()}
+          {:enum, {Module.concat(enum), members}}
 
         {_, {:message, msg}} ->
           %Protox.Message{name: msg |> elem(2) |> Module.concat()}
@@ -418,6 +429,12 @@ defmodule Protox.BuildMessage do
 
   defp make_tags(fields) do
     Enum.sort(for {tag, _, _, _} <- fields, do: tag)
+  end
+
+
+  defp get_enum_default(members) do
+    [{_, first} | _] = members
+    first
   end
 
 end

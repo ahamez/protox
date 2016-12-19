@@ -15,8 +15,8 @@ defmodule RandomInit do
   end
 
 
-  defp value(:normal, {:enum, mod}) do
-    mod.members |> Map.new() |> Map.values() |> Enum.random()
+  defp value(:normal, {:enum, {_, members}}) do
+    members |> Map.new() |> Map.values() |> Enum.random()
   end
   defp value(:normal, :bool) do
     :rand.uniform(2) == 1
