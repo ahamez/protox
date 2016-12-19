@@ -406,12 +406,10 @@ defmodule Protox.BuildMessage do
         {:map, {key_type, {:enum, {enum, members}}}} ->
           {
             key_type,
-            # {:enum, enum |> elem(2) |> Module.concat()}
             {:enum, {Module.concat(enum), members}}
           }
 
         {_, {:enum, {enum, members}}} ->
-          # {:enum, enum |> elem(2) |> Module.concat()}
           {:enum, {Module.concat(enum), members}}
 
         {_, {:message, msg}} ->
