@@ -18,7 +18,7 @@ defmodule Protox.Decode do
   defp parse_key_value(bytes, defs, msg) do
     {tag, wire_type, rest} = parse_key(bytes)
 
-    field = defs.fields[tag]
+    field = defs[tag]
     {new_msg, new_rest} = if field do
       {name, kind, type} = field
       {value, new_rest} = parse_value(rest, wire_type, type)

@@ -78,7 +78,7 @@ defmodule Protox.BuildMessage do
 
 
           @spec defs() :: struct
-          def defs(), do: %Protox.MessageDefinitions{fields: unquote(fields_map)}
+          def defs(), do: unquote(fields_map)
 
 
         end # module

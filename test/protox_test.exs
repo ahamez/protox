@@ -4,7 +4,7 @@ defmodule RandomInit do
 
   def gen(mod) do
     Enum.reduce(
-      mod.defs().fields,
+      mod.defs(),
       struct(mod.__struct__),
       fn ({_, {name, kind, type}}, msg) ->
         case kind do
