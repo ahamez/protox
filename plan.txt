@@ -6,7 +6,6 @@ TODO.
 - .proto (v3 only) parser or protoc plugin (http://www.expobrain.net/2015/09/13/create-a-plugin-for-google-protocol-buffer/)?
 - https://ebertapp.io
 - https://github.com/google/protobuf/tree/master/conformance
-- When a map entry (key or value) is set to its default value, it shouldn't be on the wire
 
 
 Optimize
