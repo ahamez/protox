@@ -6,10 +6,10 @@ defmodule RandomInit do
     Enum.reduce(
       mod.defs().fields,
       struct(mod.__struct__),
-      fn ({_, field}, msg) ->
-        case field.kind do
+      fn ({_, {name, kind, type}}, msg) ->
+        case kind do
           {:oneof, _} -> msg # TODO.
-          _           -> struct!(msg, [{field.name, value(field.kind, field.type)}])
+          _           -> struct!(msg, [{name, value(kind, type)}])
         end
       end)
   end

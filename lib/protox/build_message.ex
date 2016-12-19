@@ -387,7 +387,7 @@ defmodule Protox.BuildMessage do
           ty
       end
 
-      {tag, %Protox.Field{name: name, kind: kind, type: ty}}
+      {tag, {name, kind, ty}}
     end
     |> Macro.escape()
   end

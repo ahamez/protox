@@ -20,8 +20,9 @@ defmodule Protox.Decode do
 
     field = defs.fields[tag]
     {new_msg, new_rest} = if field do
-      {value, new_rest} = parse_value(rest, wire_type, field.type)
-      {set_field(msg, field, value), new_rest}
+      {name, kind, type} = field
+      {value, new_rest} = parse_value(rest, wire_type, type)
+      {set_field(msg, name, kind, value), new_rest}
     else
       # TODO. Keep unknown bytes?
       {msg, parse_unknown(wire_type, rest)}
@@ -164,21 +165,21 @@ defmodule Protox.Decode do
 
 
   # Set the field correponding to `tag` in `msg` with `value`.
-  defp set_field(msg, field, value) do
-    {f, v} = case field.kind do
+  defp set_field(msg, name, kind, value) do
+    {f, v} = case kind do
       :map ->
-        previous = Map.fetch!(msg, field.name)
-        {field.name, Map.put(previous, elem(value, 0), elem(value, 1))}
+        previous = Map.fetch!(msg, name)
+        {name, Map.put(previous, elem(value, 0), elem(value, 1))}
 
       {:oneof, parent_field} ->
-        {parent_field, {field.name, value}}
+        {parent_field, {name, value}}
 
       {:repeated, _} ->
-        previous = Map.fetch!(msg, field.name)
-        {field.name, previous ++ List.wrap(value)}
+        previous = Map.fetch!(msg, name)
+        {name, previous ++ List.wrap(value)}
 
       {:normal, _} ->
-        {field.name, value}
+        {name, value}
     end
 
     struct!(msg, [{f, v}])
