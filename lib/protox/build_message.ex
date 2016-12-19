@@ -50,7 +50,6 @@ defmodule Protox.BuildMessage do
       msg_name       = Module.concat(name)
       struct_fields  = make_struct_fields(fields)
       fields_map     = make_fields_map(fields)
-      tags           = make_tags(fields)
       encode_meta    = make_encode(fields)
 
       quote do
@@ -79,12 +78,7 @@ defmodule Protox.BuildMessage do
 
 
           @spec defs() :: struct
-          def defs() do
-            %Protox.MessageDefinitions{
-              fields: unquote(fields_map),
-              tags: unquote(tags)
-            }
-          end
+          def defs(), do: %Protox.MessageDefinitions{fields: unquote(fields_map)}
 
 
         end # module
@@ -390,11 +384,6 @@ defmodule Protox.BuildMessage do
       {tag, {name, kind, ty}}
     end
     |> Macro.escape()
-  end
-
-
-  defp make_tags(fields) do
-    Enum.sort(for {tag, _, _, _} <- fields, do: tag)
   end
 
 end

@@ -1,5 +1,4 @@
 defmodule Protox.MessageDefinitions do
-  @enforce_keys [:fields, :tags]
-  defstruct fields: %{},
-            tags: %{}
+  @enforce_keys [:fields]
+  defstruct fields: %{}
 end
