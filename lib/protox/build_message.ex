@@ -28,6 +28,8 @@ defmodule Protox.BuildMessage do
         defmodule unquote(msg_name) do
           @moduledoc false
 
+          import Protox.Encode
+
           defstruct unquote(struct_fields)
 
 
@@ -291,7 +293,7 @@ defmodule Protox.BuildMessage do
 
   defp get_encode_value_ast({:message, _}, var) do
     quote do
-      apply(Protox.Encode, :encode_message, [unquote(var)])
+      encode_message(unquote(var))
     end
   end
   defp get_encode_value_ast({:enum, _}, var) do
@@ -302,7 +304,7 @@ defmodule Protox.BuildMessage do
   defp get_encode_value_ast(type, var) do
     fun_name = String.to_atom("encode_#{type}")
     quote do
-      apply(Protox.Encode, unquote(fun_name), [unquote(var)])
+      unquote(fun_name)(unquote(var))
     end
   end
 
