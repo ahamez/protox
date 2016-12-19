@@ -1,9 +1,8 @@
 defmodule Protox.Default do
 
-  alias Protox.{
-    Enumeration,
-    Message,
-  }
+  # alias Protox.{
+  #   Message,
+  # }
 
   def default(:bool)             , do: false
   def default(:int32)            , do: 0
@@ -20,5 +19,6 @@ defmodule Protox.Default do
   def default(:float)            , do: 0
   def default(:string)           , do: ""
   def default(:bytes)            , do: <<>>
+  # def default(%Message{})        , do: nil
 
 end
