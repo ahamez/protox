@@ -1,13 +1,6 @@
 defmodule Protox.Decode do
 
-  require Protox.Util
-
-
-  alias Protox.{
-    Message,
-    Util,
-  }
-  import Util
+  import Protox.Util
   use Bitwise
 
 
@@ -96,8 +89,8 @@ defmodule Protox.Decode do
   defp parse_delimited(bytes, type = {:enum, _}) do
     parse_repeated_varint([], bytes, type)
   end
-  defp parse_delimited(bytes, type = %Message{}) do
-    decode(bytes, type.name)
+  defp parse_delimited(bytes, {:message, name}) do
+    decode(bytes, name)
   end
   defp parse_delimited(bytes, {map_key_type, map_value_type}) do
     {key, rest} = Varint.LEB128.decode(bytes)

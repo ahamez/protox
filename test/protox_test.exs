@@ -39,9 +39,9 @@ defmodule RandomInit do
   defp value({:normal, _}, :string) do
     if :rand.uniform(2) == 1, do: "#{inspect make_ref()}", else: ""
   end
-  defp value({:normal, _}, m = %Protox.Message{}) do
+  defp value({:normal, _}, {:message, name}) do
     if :rand.uniform(2) == 1 do
-      RandomInit.gen(m.name)
+      RandomInit.gen(name)
     else
       nil
     end
@@ -55,7 +55,7 @@ defmodule RandomInit do
   defp value({:repeated, _}, e = {:enum, _}) do
     for _ <- 1..:rand.uniform(10), do: value({:normal, nil}, e)
   end
-  defp value({:repeated, _}, m = %Protox.Message{}) do
+  defp value({:repeated, _}, m = {:message, _}) do
     Enum.reduce(
       1..:rand.uniform(10),
       [],

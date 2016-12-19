@@ -11,9 +11,3 @@ defmodule Protox.MessageDefinitions do
   defstruct fields: %{},
             tags: %{}
 end
-
-
-defmodule Protox.Message do
-  @enforce_keys [:name]
-  defstruct name: nil
-end

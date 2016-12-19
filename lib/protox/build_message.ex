@@ -367,7 +367,7 @@ defmodule Protox.BuildMessage do
         {:map, {key_type, {:message, msg}}} ->
           {
             key_type,
-            %Protox.Message{name: msg |> elem(2) |> Module.concat()}
+            {:message, msg |> elem(2) |> Module.concat()}
           }
 
 
@@ -381,7 +381,7 @@ defmodule Protox.BuildMessage do
           {:enum, Module.concat(enum)}
 
         {_, {:message, msg}} ->
-          %Protox.Message{name: msg |> elem(2) |> Module.concat()}
+          {:message, msg |> elem(2) |> Module.concat()}
 
         {_, ty} ->
           ty
