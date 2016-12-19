@@ -3,7 +3,6 @@ defmodule RandomInit do
   import Protox.Util
 
   def gen(mod) do
-
     Enum.reduce(
       mod.defs().fields,
       struct(mod.__struct__),
@@ -12,16 +11,12 @@ defmodule RandomInit do
           {:oneof, _} -> msg # TODO.
           _           -> struct!(msg, [{field.name, value(field.kind, field.type)}])
         end
-      end
-    )
+      end)
   end
 
 
-  defp value(:normal, e = %Protox.Enumeration{}) do
-    e.members |> Map.values() |> Enum.random()
-  end
-  defp value(:normal, {:enum, members}) do
-    members |> Map.new() |> Map.values() |> Enum.random()
+  defp value(:normal, {:enum, mod}) do
+    mod.members |> Map.new() |> Map.values() |> Enum.random()
   end
   defp value(:normal, :bool) do
     :rand.uniform(2) == 1
@@ -57,7 +52,7 @@ defmodule RandomInit do
   defp value({:repeated, _}, ty) when is_primitive(ty) do
     for _ <- 1..:rand.uniform(10), do: :rand.uniform(100)
   end
-  defp value({:repeated, _}, e = %Protox.Enumeration{}) do
+  defp value({:repeated, _}, e = {:enum, _}) do
     for _ <- 1..:rand.uniform(10), do: value(:normal, e)
   end
   defp value({:repeated, _}, m = %Protox.Message{}) do

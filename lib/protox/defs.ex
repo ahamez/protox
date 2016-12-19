@@ -17,10 +17,3 @@ defmodule Protox.Message do
   @enforce_keys [:name]
   defstruct name: nil
 end
-
-
-defmodule Protox.Enumeration do
-  @enforce_keys [:members, :values]
-  defstruct members: %{},
-            values: %{}
-end

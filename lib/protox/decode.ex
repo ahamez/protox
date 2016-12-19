@@ -4,7 +4,6 @@ defmodule Protox.Decode do
 
 
   alias Protox.{
-    Enumeration,
     Message,
     Util,
   }
@@ -94,7 +93,7 @@ defmodule Protox.Decode do
   defp parse_delimited(bytes, type) when type == :string or type == :bytes do
     bytes
   end
-  defp parse_delimited(bytes, type = %Enumeration{}) do
+  defp parse_delimited(bytes, type = {:enum, _}) do
     parse_repeated_varint([], bytes, type)
   end
   defp parse_delimited(bytes, type = %Message{}) do
@@ -146,8 +145,7 @@ defmodule Protox.Decode do
   defp varint_value(value, :sint64)           , do: Varint.Zigzag.decode(value)
   defp varint_value(value, :uint32)           , do: value
   defp varint_value(value, :uint64)           , do: value
-  defp varint_value(value, e = %Enumeration{}), do: Map.get(e.members, value, value)
-  defp varint_value(value, {:enum, members})  , do: members |> Map.new() |> Map.get(value, value)
+  defp varint_value(value, {:enum, mod})      , do: mod.decode(value)
   defp varint_value(value, :int32) do
     <<res::signed-32>> = <<value::32>>
     res

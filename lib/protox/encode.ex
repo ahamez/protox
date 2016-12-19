@@ -53,6 +53,7 @@ defmodule Protox.Encode do
   def encode_sfixed32(value), do: <<value::signed-little-32>>
   def encode_double(value)  , do: <<value::float-little-64>>
   def encode_float(value)   , do: <<value::float-little-32>>
+  def encode_enum(value)    , do: encode_varint_unsigned(value)
   def encode_string(value) do
     len = Varint.LEB128.encode(byte_size(value))
     <<len::binary, value::binary>>

@@ -20,7 +20,5 @@ defmodule Protox.Default do
   def default(:float)            , do: 0
   def default(:string)           , do: ""
   def default(:bytes)            , do: <<>>
-  def default(e = %Enumeration{}), do: Map.fetch!(e.members, 0)
-  def default(%Message{})        , do: nil
 
 end

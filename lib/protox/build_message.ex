@@ -1,9 +1,12 @@
 defmodule Protox.BuildMessage do
 
-  defmacro __using__(enumerations: _, messages: messages) do
+  defmacro __using__(enums: enums, messages: messages) do
 
     build(
-      [],
+      Enum.map(enums,
+        fn {{_, _, name}, members} ->
+          {name, members}
+        end),
       Enum.map(messages,
        fn {{_, _, name}, fs} ->
           fields = for {_, _, f} <- fs, do: List.to_tuple(f)
@@ -13,7 +16,34 @@ defmodule Protox.BuildMessage do
   end
 
 
-  def build(_enums, messages) do
+  def build(enums, messages) do
+
+    for {name, members} <- enums do
+
+      enum_name      = Module.concat(name)
+      default        = make_enum_default(members)
+      encode_members = make_encode_members(members)
+      decode_members = make_decode_members(members)
+
+      quote do
+        defmodule unquote(enum_name) do
+          @moduledoc false
+
+          unquote(default)
+
+          unquote(encode_members)
+          def encode(x), do: x
+
+          unquote(decode_members)
+          def decode(x), do: x
+
+          def members(), do: unquote(members)
+        end
+      end
+
+    end
+
+    ++ # concat enumerations and messages definitions
 
     for {name, fields} <- messages do
 
@@ -22,7 +52,6 @@ defmodule Protox.BuildMessage do
       fields_map     = make_fields_map(fields)
       tags           = make_tags(fields)
       encode_meta    = make_encode(fields)
-      encode_members = make_encode_members(fields)
 
       quote do
         defmodule unquote(msg_name) do
@@ -34,8 +63,8 @@ defmodule Protox.BuildMessage do
 
 
           unquote(encode_meta)
-          unquote(encode_members)
-          defp encode_member(x), do: Varint.LEB128.encode(x)
+          # unquote(encode_members)
+          # defp encode_member(x), do: Varint.LEB128.encode(x)
 
 
           @spec encode(struct) :: iolist
@@ -273,15 +302,22 @@ defmodule Protox.BuildMessage do
       values,
       [],
       fn (unquote(var), acc) ->
+        bytes =
         [acc, unquote(key), unquote(encode_value_ast)]
       end)
     end
   end
 
 
-  defp get_default({:enum, members}) do
-    {_, res} = Enum.find(members, fn {x, _} -> x == 0 end)
-    res
+  defp make_enum_default(members) do
+    {_, default} = Enum.find(members, fn {x, _} -> x == 0 end)
+    quote do
+      def default(), do: unquote(default)
+    end
+  end
+
+  defp get_default({:enum, {_, _, enum_name}}) do
+    Module.concat(enum_name).default()
   end
   defp get_default({:message, _}) do
     nil
@@ -296,9 +332,10 @@ defmodule Protox.BuildMessage do
       encode_message(unquote(var))
     end
   end
-  defp get_encode_value_ast({:enum, _}, var) do
+  defp get_encode_value_ast({:enum, {_, _, enum_name}}, var) do
+    mod = Module.concat(enum_name)
     quote do
-      encode_member(unquote(var))
+      unquote(mod).encode(unquote(var)) |> encode_enum()
     end
   end
   defp get_encode_value_ast(type, var) do
@@ -309,24 +346,21 @@ defmodule Protox.BuildMessage do
   end
 
 
-  # TODO. Enums can be values of maps.
-  defp make_encode_members(fields) do
-    fields
-    |> Enum.reduce(
-       %{},
-       fn
-         ({_, _, _, {:enum, members}}, acc) ->
-           Map.merge(acc, (for {value, member} <- members, into: %{}, do: {member, value}))
-         (_, acc) ->
-           acc
-       end)
-    |> Enum.map(fn {member, value} ->
-          quote do
-            defp encode_member(unquote(member)) do
-              Varint.LEB128.encode(unquote(value))
-            end
-          end
-       end)
+  defp make_encode_members(members) do
+    for {value, member} <- members do
+      quote do
+        def encode(unquote(member)), do: unquote(value)
+      end
+    end
+  end
+
+
+  defp make_decode_members(members) do
+    for {value, member} <- members do
+      quote do
+        def decode(unquote(value)), do: unquote(member)
+      end
+    end
   end
 
 
@@ -341,7 +375,7 @@ defmodule Protox.BuildMessage do
         {:repeated, _}   -> {name, []}
         :normal          ->
           case type do
-            {:enum, [{_, first} | _]} -> {name, first}
+            {:enum, {_ ,_, ename}}    -> {name, Module.concat(ename).default()}
             {:message, _}             -> {name, nil}
             _                         -> {name, Protox.Default.default(type)}
           end
@@ -359,11 +393,15 @@ defmodule Protox.BuildMessage do
             %Protox.Message{name: msg |> elem(2) |> Module.concat()}
           }
 
-        {_, {:enum, members}} ->
-          %Protox.Enumeration{
-            members: Map.new(members),
-            values: (for {rank, atom} <- members, into: %{}, do: {atom, rank})
+
+        {:map, {key_type, {:enum, enum}}} ->
+          {
+            key_type,
+            {:enum, enum |> elem(2) |> Module.concat()}
           }
+
+        {_, {:enum, enum}} ->
+          {:enum, enum |> elem(2) |> Module.concat()}
 
         {_, {:message, msg}} ->
           %Protox.Message{name: msg |> elem(2) |> Module.concat()}

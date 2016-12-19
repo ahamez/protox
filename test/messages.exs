@@ -1,6 +1,12 @@
 defmodule Defs do
 
   use Protox.BuildMessage,
+    enums: [
+      {
+        E,
+        [{0, :FOO}, {1, :BAR}]
+      }
+    ],
     messages: [
     {
       Sub,
@@ -19,17 +25,17 @@ defmodule Defs do
         {18, :l, :normal, :sfixed64},
         {19, :m, :normal, :bytes},
         {20, :n, {:repeated, :packed}, :bool},
-        {21, :o, {:repeated, :packed}, {:enum, [{0, :FOO}, {1, :BAR}]}},
+        {21, :o, {:repeated, :packed}, {:enum, E}},
         {22, :p, {:repeated, :unpacked}, :bool},
-        {23, :q, {:repeated, :unpacked}, {:enum, [{0, :FOO}, {1, :BAR}]}},
-        {24 , :r, :normal, {:enum, [{0, :FOO}, {1, :BAR}]}},
+        {23, :q, {:repeated, :unpacked}, {:enum, E}},
+        {24 , :r, :normal, {:enum, E}},
         {10001, :z, :normal, :sint32},
       ]
     },
     {
       Msg,
       [
-        {1 , :d, :normal, {:enum, [{0, :FOO}, {1, :BAR}]}},
+        {1 , :d, :normal, {:enum, E}},
         {2 , :e, :normal, :bool},
         {3 , :f, :normal, {:message, Sub}},
         {4 , :g, {:repeated, :packed}, :int32},
@@ -40,7 +46,7 @@ defmodule Defs do
         {9 , :l, :map, {:string, :double}},
         {10, :n, {:oneof, :m}, :string},
         {11, :o, {:oneof, :m}, {:message, Sub}},
-        {12, :p, :map, {:int32, {:enum, [{0, :FOO}, {1, :BAR}]}}},
+        {12, :p, :map, {:int32, {:enum, E}}},
       ]
     },
     {
