@@ -184,7 +184,7 @@ defmodule Protox.Decode do
         previous = Map.fetch!(msg, field.name)
         {field.name, previous ++ List.wrap(value)}
 
-      :normal ->
+      {:normal, _} ->
         {field.name, value}
     end
 

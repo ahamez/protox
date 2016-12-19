@@ -163,8 +163,7 @@ defmodule Protox.BuildMessage do
   end
 
 
-  defp make_encode_field_fun(:normal, tag, name, type) do
-    default          = get_default(type)
+  defp make_encode_field_fun({:normal, default}, tag, name, type) do
     key              = Protox.Encode.make_key_bytes(tag, type)
     var              = quote do: field_value
     encode_value_ast = get_encode_value_ast(type, var)
@@ -379,15 +378,10 @@ defmodule Protox.BuildMessage do
   defp make_struct_fields(fields) do
     for {_tag, name, kind, type} <- fields do
       case kind do
-        :map             -> {name, Macro.escape(%{})}
-        {:oneof, parent} -> {parent, nil}
-        {:repeated, _}   -> {name, []}
-        :normal          ->
-          case type do
-            {:enum, {_, members}} -> {name, get_enum_default(members)}
-            {:message, _}         -> {name, nil}
-            _                     -> {name, Protox.Default.default(type)}
-          end
+        :map               -> {name, Macro.escape(%{})}
+        {:oneof, parent}   -> {parent, nil}
+        {:repeated, _}     -> {name, []}
+        {:normal, default} -> {name, default}
       end
     end
   end
