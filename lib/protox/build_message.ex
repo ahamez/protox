@@ -89,18 +89,16 @@ defmodule Protox.BuildMessage do
 
 
   defp make_encode(fields) do
-
-    encode_fun_body    = make_encode_fun(fields)
-    encode_field_funs  = make_encode_field_funs(fields)
+    sorted_fields = Enum.sort(fields, fn {lhs, _, _, _}, {rhs, _, _, _} -> lhs < rhs end)
+    encode_fun_body = make_encode_fun(sorted_fields)
+    encode_field_funs = make_encode_field_funs(fields)
 
     quote do
-
       @spec encode(struct) :: iolist
       def encode(msg), do: unquote(encode_fun_body)
 
       unquote(encode_field_funs)
     end
-
   end
 
 
