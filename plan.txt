@@ -1,5 +1,5 @@
 TODO.
-- protobuf 2: {required|optional}
+- protobuf 2: {required|optional}, generate @enforce_keys for required fields
 - Use the tuple {tag , name, kind, type} in Decode (thus remove %Field, %Message, %Enumeration)
 - Cleanup BuildMessage (the generation of encoding logic should be in Encode)
 - Should decode returns {:ok, msg}|{:error, reason}? (and a function decode!())

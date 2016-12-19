@@ -140,12 +140,12 @@ defmodule Protox.Decode do
   end
 
 
-  defp varint_value(value, :bool)             , do: value == 1
-  defp varint_value(value, :sint32)           , do: Varint.Zigzag.decode(value)
-  defp varint_value(value, :sint64)           , do: Varint.Zigzag.decode(value)
-  defp varint_value(value, :uint32)           , do: value
-  defp varint_value(value, :uint64)           , do: value
-  defp varint_value(value, {:enum, {mod, _}}) , do: mod.decode(value)
+  defp varint_value(value, :bool)       , do: value == 1
+  defp varint_value(value, :sint32)     , do: Varint.Zigzag.decode(value)
+  defp varint_value(value, :sint64)     , do: Varint.Zigzag.decode(value)
+  defp varint_value(value, :uint32)     , do: value
+  defp varint_value(value, :uint64)     , do: value
+  defp varint_value(value, {:enum, mod}), do: mod.decode(value)
   defp varint_value(value, :int32) do
     <<res::signed-32>> = <<value::32>>
     res
