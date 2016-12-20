@@ -8,7 +8,7 @@ defmodule Protox.Define do
 
   defmacro __using__(enums: enums, messages: messages) do
 
-    build(
+    define(
       Enum.map(enums,
         fn {{_, _, name}, members} ->
           {name, members}
@@ -22,7 +22,7 @@ defmodule Protox.Define do
   end
 
 
-  def build(enums, messages) do
+  def define(enums, messages) do
 
     for {name, members} <- enums do
 
