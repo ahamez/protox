@@ -1,4 +1,10 @@
-defmodule Protox.BuildMessage do
+defmodule Protox.Define do
+
+  @moduledoc """
+  This module generates struct from message and enumeration definitions.
+  Tne encoding function is also generated for each message.
+  """
+
 
   defmacro __using__(enums: enums, messages: messages) do
 
@@ -114,10 +120,10 @@ defmodule Protox.BuildMessage do
     {_, _, name, _, _} = field
     fun_name = String.to_atom("encode_#{name}")
 
-    quote do
+    ast = quote do
       [] |> unquote(fun_name)(msg)
     end
-    |> make_encode_fun(fields)
+    make_encode_fun(ast, fields)
   end
 
 
@@ -128,10 +134,10 @@ defmodule Protox.BuildMessage do
     {_, _, name, _, _} = field
     fun_name = String.to_atom("encode_#{name}")
 
-    quote do
+    ast = quote do
       unquote(ast) |> unquote(fun_name)(msg)
     end
-    |> make_encode_fun(fields)
+    make_encode_fun(ast, fields)
   end
 
 
@@ -317,7 +323,7 @@ defmodule Protox.BuildMessage do
   defp get_encode_value_ast({:enum, {_, _, enum}}, var) do
     mod = Module.concat(enum)
     quote do
-      unquote(mod).encode(unquote(var)) |> encode_enum()
+      unquote(var) |> unquote(mod).encode() |> encode_enum()
     end
   end
   defp get_encode_value_ast(type, var) do
@@ -364,33 +370,34 @@ defmodule Protox.BuildMessage do
 
 
   defp make_fields_map(fields) do
-    for {tag, _, name, kind, type} <- fields, into: %{} do
-      ty = case {kind, type} do
-        {:map, {key_type, {:message, msg}}} ->
-          {
-            key_type,
-            {:message, msg |> elem(2) |> Module.concat()}
-          }
+    fields
+    |> Enum.reduce(%{},
+      fn ({tag, _, name, kind, type}, acc) ->
+        ty = case {kind, type} do
+          {:map, {key_type, {:message, msg}}} ->
+            {
+              key_type,
+              {:message, msg |> elem(2) |> Module.concat()}
+            }
 
 
-        {:map, {key_type, {:enum, {_, _, enum}}}} ->
-          {
-            key_type,
+          {:map, {key_type, {:enum, {_, _, enum}}}} ->
+            {
+              key_type,
+              {:enum, Module.concat(enum)}
+            }
+
+          {_, {:enum, {_, _, enum}}} ->
             {:enum, Module.concat(enum)}
-          }
 
-        {_, {:enum, {_, _, enum}}} ->
-          {:enum, Module.concat(enum)}
+          {_, {:message, msg}} ->
+            {:message, msg |> elem(2) |> Module.concat()}
 
-        {_, {:message, msg}} ->
-          {:message, msg |> elem(2) |> Module.concat()}
-
-        {_, ty} ->
-          ty
-      end
-
-      {tag, {name, kind, ty}}
-    end
+          {_, ty} ->
+            ty
+        end
+        Map.put(acc, tag, {name, kind, ty})
+      end)
     |> Macro.escape()
   end
 

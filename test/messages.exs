@@ -1,6 +1,6 @@
 defmodule Defs do
 
-  use Protox.BuildMessage,
+  use Protox.Define,
     enums: [
       {
         E,

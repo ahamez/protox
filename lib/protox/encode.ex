@@ -64,7 +64,7 @@ defmodule Protox.Encode do
   end
   def encode_message(value) do
     encoded = encode_binary(value)
-    len = byte_size(encoded) |> Varint.LEB128.encode()
+    len = encoded |> byte_size() |> Varint.LEB128.encode()
     <<len::binary, encoded::binary>>
   end
 
