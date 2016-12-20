@@ -1,5 +1,4 @@
 TODO.
-- protobuf 2: {required|optional}, generate @enforce_keys for required fields
 - Cleanup BuildMessage (the generation of encoding logic should be in Encode)
 - Should decode returns {:ok, msg}|{:error, reason}? (and a function decode!())
 - .proto (v3 only) parser or protoc plugin (http://www.expobrain.net/2015/09/13/create-a-plugin-for-google-protocol-buffer/)?

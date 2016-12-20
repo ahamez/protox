@@ -143,7 +143,7 @@ defmodule Protox.DecodeTest do
   test "Sub.j, unpacked in definition" do
     bytes = <<128, 1, 1, 128, 1, 2, 128, 1, 3>>
     assert Sub.decode(bytes) ==\
-           %Sub{j: [1, 2, 3]}
+           %Sub{j: [1, 2, 3], z: 0}
   end
 
 
@@ -280,8 +280,8 @@ defmodule Protox.DecodeTest do
   test "Msg.j" do
     bytes = <<58, 3, 8, 146, 6, 58, 5, 18, 3, 102, 111, 111>>
     assert Msg.decode(bytes) ==\
-           %Msg{d: :FOO, e: false, f: nil, g: [], h: 0.0, i: [], j: [%Sub{a: 786}, %Sub{b: "foo"}],
-                k: %{}}
+           %Msg{d: :FOO, e: false, f: nil, g: [], h: 0.0, i: [],
+                j: [%Sub{a: 786, z: 0}, %Sub{b: "foo", z: 0}], k: %{}}
   end
 
 
@@ -321,14 +321,14 @@ defmodule Protox.DecodeTest do
     bytes = <<90, 2, 8, 42>>
     assert Msg.decode(bytes) ==\
            %Msg{d: :FOO, e: false, f: nil, g: [], h: 0.0, i: [], j: [],
-                k: %{}, l: %{}, m: {:o, %Sub{a: 42}}}
+                k: %{}, l: %{}, m: {:o, %Sub{a: 42, z: 0}}}
   end
 
 
   test "Upper.msg.f" do
     bytes = <<10, 4, 26, 2, 8, 42>>
     assert Upper.decode(bytes) ==\
-           %Upper{msg: %Msg{d: :FOO, e: false, f: %Sub{a: 42}, g: [], h: 0.0, i: [], j: []}}
+           %Upper{msg: %Msg{d: :FOO, e: false, f: %Sub{a: 42, z: 0}, g: [], h: 0.0, i: [], j: []}}
   end
 
 

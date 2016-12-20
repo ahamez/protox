@@ -49,6 +49,7 @@ defmodule Protox.BuildMessage do
 
       msg_name       = Module.concat(name)
       struct_fields  = make_struct_fields(fields)
+      required       = get_required_fields(fields)
       fields_map     = make_fields_map(fields)
       encode_meta    = make_encode(fields)
 
@@ -57,6 +58,9 @@ defmodule Protox.BuildMessage do
           @moduledoc false
 
           import Protox.Encode
+
+
+          @enforce_keys unquote(required)
 
 
           defstruct unquote(struct_fields)
@@ -91,7 +95,9 @@ defmodule Protox.BuildMessage do
   defp make_encode(fields) do
     # It is recommended to encode fields sequentially by field number.
     # See https://developers.google.com/protocol-buffers/docs/encoding#order.
-    sorted_fields = Enum.sort(fields, fn {lhs, _, _, _}, {rhs, _, _, _} -> lhs < rhs end)
+    sorted_fields = Enum.sort(fields,
+      fn {lhs, _, _, _, _}, {rhs, _, _, _, _} -> lhs < rhs
+    end)
     encode_fun_body = make_encode_fun(sorted_fields)
     encode_field_funs = make_encode_field_funs(fields)
 
@@ -105,7 +111,7 @@ defmodule Protox.BuildMessage do
 
 
   defp make_encode_fun([field | fields]) do
-    {_, name, _, _} = field
+    {_, _, name, _, _} = field
     fun_name = String.to_atom("encode_#{name}")
 
     quote do
@@ -119,7 +125,7 @@ defmodule Protox.BuildMessage do
     ast
   end
   defp make_encode_fun(ast, [field | fields]) do
-    {_, name, _, _} = field
+    {_, _, name, _, _} = field
     fun_name = String.to_atom("encode_#{name}")
 
     quote do
@@ -130,7 +136,7 @@ defmodule Protox.BuildMessage do
 
 
   defp make_encode_field_funs(fields) do
-    for {tag, name, kind, type} <- fields do
+    for {tag, _, name, kind, type} <- fields do
       fun_name = String.to_atom("encode_#{name}")
       fun_ast  = make_encode_field_fun(kind, tag, name, type)
 
@@ -340,11 +346,8 @@ defmodule Protox.BuildMessage do
   end
 
 
-  # -- Private
-
-
   defp make_struct_fields(fields) do
-    for {_, name, kind, _} <- fields do
+    for {_, _, name, kind, _} <- fields do
       case kind do
         :map               -> {name, Macro.escape(%{})}
         {:oneof, parent}   -> {parent, nil}
@@ -355,8 +358,13 @@ defmodule Protox.BuildMessage do
   end
 
 
+  defp get_required_fields(fields) do
+    for {_, :required, name, _, _} <- fields, do: name
+  end
+
+
   defp make_fields_map(fields) do
-    for {tag, name, kind, type} <- fields, into: %{} do
+    for {tag, _, name, kind, type} <- fields, into: %{} do
       ty = case {kind, type} do
         {:map, {key_type, {:message, msg}}} ->
           {
