@@ -89,6 +89,8 @@ defmodule Protox.BuildMessage do
 
 
   defp make_encode(fields) do
+    # It is recommended to encode fields sequentially by field number.
+    # See https://developers.google.com/protocol-buffers/docs/encoding#order.
     sorted_fields = Enum.sort(fields, fn {lhs, _, _, _}, {rhs, _, _, _} -> lhs < rhs end)
     encode_fun_body = make_encode_fun(sorted_fields)
     encode_field_funs = make_encode_field_funs(fields)
