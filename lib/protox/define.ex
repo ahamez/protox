@@ -98,6 +98,12 @@ defmodule Protox.Define do
   end
 
 
+  defp make_encode([]) do
+    quote do
+      @spec encode(struct) :: iolist
+      def encode(msg), do: []
+    end
+  end
   defp make_encode(fields) do
     # It is recommended to encode fields sequentially by field number.
     # See https://developers.google.com/protocol-buffers/docs/encoding#order.

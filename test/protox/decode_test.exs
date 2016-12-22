@@ -378,4 +378,10 @@ defmodule Protox.DecodeTest do
             }
   end
 
+
+  test "Empty" do
+    bytes = <<>>
+    assert Empty.decode(bytes) ==\
+           %Empty{}
+  end
 end

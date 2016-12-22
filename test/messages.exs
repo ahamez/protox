@@ -55,6 +55,10 @@ defmodule Defs do
         {1, :optional, :msg, {:normal, nil}, {:message, Msg}},
         {2, :optional, :msg_map, :map, {:string, {:message, Msg}}},
       ]
+    },
+    {
+      Empty,
+      []
     }
   ]
 

@@ -253,4 +253,10 @@ defmodule Protox.EncodeTest do
            == <<98, 4, 8, 1, 16, 1>>
   end
 
+
+  test "Empty" do
+    assert %Empty{} |> Protox.Encode.encode_binary()
+           == <<>>
+  end
+
 end
