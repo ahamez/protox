@@ -259,4 +259,10 @@ defmodule Protox.EncodeTest do
            == <<>>
   end
 
+
+  test "Upper.empty" do
+    assert %Upper{empty: %Empty{}} |> Protox.Encode.encode_binary()
+           == <<26, 0>>
+  end
+
 end

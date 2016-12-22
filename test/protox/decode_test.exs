@@ -379,6 +379,13 @@ defmodule Protox.DecodeTest do
   end
 
 
+  test "Upper.empty" do
+    bytes = <<26, 0>>
+    assert Upper.decode(bytes) ==\
+           %Upper{empty: %Empty{}}
+  end
+
+
   test "Empty" do
     bytes = <<>>
     assert Empty.decode(bytes) ==\
