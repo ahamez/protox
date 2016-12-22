@@ -32,6 +32,13 @@ defmodule Protox.DecodeTest do
   end
 
 
+  test "Sub.b, empty" do
+    bytes = <<18, 0>>
+    assert Sub.decode(bytes) ==\
+           %Sub{a: 0, b: "", z: 0}
+  end
+
+
   test "Sub.a; Sub.b" do
     bytes = <<8, 150, 1, 18, 7, 116, 101, 115, 116, 105, 110, 103>>
     assert Sub.decode(bytes) ==\
