@@ -293,6 +293,31 @@ defmodule Protox.DecodeTest do
   end
 
 
+  test "Msg.k, with unknown data in map entry" do
+    bytes = <<66, 7, 8, 2, 18, 3, 98, 97, 114, 66, 10, 8, 1, 18, 3, 102, 111, 111, 26, 1, 102>>
+    assert Msg.decode(bytes) ==\
+           %Msg{d: :FOO, e: false, f: nil, g: [], h: 0.0, i: [], j: [],
+                k: %{1 => "foo", 2 => "bar"}}
+  end
+
+
+  test "Msg.k (reversed)" do
+    bytes = <<66, 7, 8, 1, 18, 3, 102, 111, 111, 66, 7, 8, 2, 18, 3, 98, 97, 114>>
+    assert Msg.decode(bytes) ==\
+           %Msg{d: :FOO, e: false, f: nil, g: [], h: 0.0, i: [], j: [],
+                k: %{1 => "foo", 2 => "bar"}}
+  end
+
+
+  test "Msg.k (reversed inside map entry)" do
+    # TODO
+    bytes = <<66, 7, 18, 3, 98, 97, 114, 8, 2, 66, 7, 8, 1, 18, 3, 102, 111, 111>>
+    assert Msg.decode(bytes) ==\
+           %Msg{d: :FOO, e: false, f: nil, g: [], h: 0.0, i: [], j: [],
+                k: %{1 => "foo", 2 => "bar"}}
+  end
+
+
   test "Msg.l" do
     bytes = <<74, 14, 10, 3, 98, 97, 114, 17, 0, 0, 0, 0, 0, 0, 240, 63, 74, 14, 10, 3, 102,
               111, 111, 17, 154, 153, 153, 153, 153, 153, 69, 64>>

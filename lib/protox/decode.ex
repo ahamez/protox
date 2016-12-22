@@ -12,6 +12,12 @@ defmodule Protox.Decode do
   # -- Private
 
 
+  defmodule MapEntry do
+    defstruct key: nil,
+              value: nil
+  end
+
+
   defp parse_key_value(<<>>, _, msg) do
     msg
   end
@@ -94,14 +100,12 @@ defmodule Protox.Decode do
     decode(bytes, name)
   end
   defp parse_delimited(bytes, {map_key_type, map_value_type}) do
-    {key, rest} = Varint.LEB128.decode(bytes)
-    wire_type = key &&& 0b111 # we don't care about the tag for the key entry, it's always 1
-    {map_key, rest} = parse_value(rest, wire_type, map_key_type)
+    defs = %{
+      1 => {:key, {:normal, :dummy}, map_key_type},
+      2 => {:value, {:normal, :dummy}, map_value_type},
+    }
 
-    {key, rest} = Varint.LEB128.decode(rest)
-    wire_type = key &&& 0b111 # we don't care about the tag for the value entry, it's always 2
-    {map_value, <<>>} = parse_value(rest, wire_type, map_value_type)
-
+    %MapEntry{key: map_key, value: map_value} = parse_key_value(bytes, defs, %MapEntry{})
     {map_key, map_value}
   end
 
