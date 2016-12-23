@@ -1,7 +1,6 @@
 * TODO.
 - Size in the output of encode {len, iolist}?
 - Make random generator in test a compiled module, useful for tests and benchmarks
-- Cleanup BuildMessage (the generation of encoding logic should be in Encode)
 - .proto (v3 only) parser OR protoc plugin (http://www.expobrain.net/2015/09/13/create-a-plugin-for-google-protocol-buffer/)?
 - https://ebertapp.io
 - Check for duplicate entries (names or tags) in definitions
