@@ -47,6 +47,7 @@ defmodule Defs do
         {10, :optional, :n, {:oneof, :m}, :string},
         {11, :optional, :o, {:oneof, :m}, {:message, Sub}},
         {12, :optional, :p, :map, {:int32, {:enum, E}}},
+        {118, :optional, :oneof_double, {:oneof, :oneof_field}, :double},
       ]
     },
     {
