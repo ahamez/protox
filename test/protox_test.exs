@@ -96,19 +96,19 @@ defmodule ProtoxTest do
 
   test "symmetric (Sub)" do
     msg = RandomInit.gen(Sub)
-    assert (msg |> Sub.encode_binary() |> Sub.decode()) == msg
+    assert (msg |> Sub.encode_binary() |> Sub.decode!()) == msg
   end
 
 
   test "symmetric (Msg)" do
     msg = RandomInit.gen(Msg)
-    assert (msg |> Msg.encode_binary() |> Msg.decode()) == msg
+    assert (msg |> Msg.encode_binary() |> Msg.decode!()) == msg
   end
 
 
   test "symmetric (Upper)" do
     msg = RandomInit.gen(Upper)
-    assert (msg |> Upper.encode_binary() |> Upper.decode()) == msg
+    assert (msg |> Upper.encode_binary() |> Upper.decode!()) == msg
   end
 
 end

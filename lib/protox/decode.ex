@@ -4,8 +4,17 @@ defmodule Protox.Decode do
   use Bitwise
 
 
-  def decode(bytes, mod) do
+  def decode!(bytes, mod) do
     parse_key_value(bytes, mod.defs(), struct(mod.__struct__))
+  end
+
+
+  def decode(bytes, mod) do
+    try do
+      {:ok, decode!(bytes, mod)}
+    rescue
+      e -> {:error, e}
+    end
   end
 
 
@@ -97,7 +106,7 @@ defmodule Protox.Decode do
     parse_repeated_varint([], bytes, type)
   end
   defp parse_delimited(bytes, {:message, name}) do
-    decode(bytes, name)
+    decode!(bytes, name)
   end
   defp parse_delimited(bytes, {map_key_type, map_value_type}) do
     defs = %{

@@ -81,7 +81,13 @@ defmodule Protox.Define do
           end
 
 
-          @spec decode(binary) :: struct
+          @spec decode!(binary) :: struct | no_return
+          def decode!(bytes) do
+            Protox.Decode.decode!(bytes, unquote(msg_name))
+          end
+
+
+          @spec decode(binary) :: {:ok, struct} | {:error, any}
           def decode(bytes) do
             Protox.Decode.decode(bytes, unquote(msg_name))
           end
