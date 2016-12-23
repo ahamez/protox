@@ -4,6 +4,11 @@
 
 **TODO: Add description**
 
+# Conformance
+
+This library has been tested using the conformance checker provided by Google. More details
+at https://github.com/ahamez/protox_conformance.
+
 
 # Credits
 
