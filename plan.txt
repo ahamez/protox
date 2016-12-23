@@ -1,8 +1,10 @@
 * TODO.
-- Should decode returns {:ok, msg}|{:error, reason}? (and a function decode!())
+- Size in the output of encode {len, iolist}?
+- Make random generator in test a compiled module, useful for tests and benchmarks
 - Cleanup BuildMessage (the generation of encoding logic should be in Encode)
 - .proto (v3 only) parser OR protoc plugin (http://www.expobrain.net/2015/09/13/create-a-plugin-for-google-protocol-buffer/)?
 - https://ebertapp.io
+- Check for duplicate entries (names or tags) in definitions
 
 
 * Optimize
@@ -11,4 +13,5 @@
 
 * Conformance
 -  "If there is an unknown enum value in the wire format of a map entry message, it's handled differently in proto2 and proto3. In proto2, the whole map entry message is put into the unknown field set of the containing message. In proto3, it is put into a map field as if it is a known enum value."
+- "Note that although there's usually no reason to encode more than one key-value pair for a packed repeated field, encoders must be prepared to accept multiple key-value pairs. In this case, the payloads should be concatenated. Each pair must contain a whole number of elements."
 - https://github.com/google/protobuf/tree/master/conformance
