@@ -4,6 +4,7 @@ defmodule Protox.Encode do
   use Bitwise
 
 
+  @spec encode(struct) :: iolist
   def encode(msg) do
     msg.__struct__.encode(msg)
   end
