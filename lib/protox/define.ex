@@ -10,8 +10,8 @@ defmodule Protox.Define do
 
     define(
       Enum.map(enums,
-        fn {{_, _, name}, members} ->
-          {name, members}
+        fn {{_, _, name}, member_values} ->
+          {name, member_values}
         end),
       Enum.map(messages,
        fn {{_, _, name}, fs} ->
@@ -33,21 +33,21 @@ defmodule Protox.Define do
   defp define_enums(enums) do
     for {name, members} <- enums do
 
-      enum_name      = Module.concat(name)
-      default        = make_enum_default(members)
-      encode_members = make_encode_enum_members(members)
-      decode_members = make_decode_enum_members(members)
+      enum_name           = Module.concat(name)
+      default_fun         = make_enum_default(members)
+      encode_members_funs = make_encode_enum_members(members)
+      decode_members_funs = make_decode_enum_members(members)
 
       quote do
         defmodule unquote(enum_name) do
           @moduledoc false
 
-          unquote(default)
+          unquote(default_fun)
 
-          unquote(encode_members)
+          unquote(encode_members_funs)
           def encode(x), do: x
 
-          unquote(decode_members)
+          unquote(decode_members_funs)
           def decode(x), do: x
 
           def members(), do: unquote(members)
@@ -113,16 +113,16 @@ defmodule Protox.Define do
   # -- Enum
 
 
-  defp make_enum_default(members) do
-    {_, default} = Enum.find(members, fn {x, _} -> x == 0 end)
+  defp make_enum_default(member_values) do
+    {_, default_value} = Enum.find(member_values, fn {x, _} -> x == 0 end)
     quote do
-      def default(), do: unquote(default)
+      def default(), do: unquote(default_value)
     end
   end
 
 
-  defp make_encode_enum_members(members) do
-    for {value, member} <- members do
+  defp make_encode_enum_members(member_values) do
+    for {value, member} <- member_values do
       quote do
         def encode(unquote(member)), do: unquote(value)
       end
@@ -130,8 +130,8 @@ defmodule Protox.Define do
   end
 
 
-  defp make_decode_enum_members(members) do
-    for {value, member} <- members do
+  defp make_decode_enum_members(member_values) do
+    for {value, member} <- member_values do
       quote do
         def decode(unquote(value)), do: unquote(member)
       end
@@ -143,10 +143,10 @@ defmodule Protox.Define do
   defp make_struct_fields(fields) do
     for {_, _, name, kind, _} <- fields do
       case kind do
-        :map               -> {name, Macro.escape(%{})}
-        {:oneof, parent}   -> {parent, nil}
-        {:repeated, _}     -> {name, []}
-        {:normal, default} -> {name, default}
+        :map                     -> {name, Macro.escape(%{})}
+        {:oneof, parent}         -> {parent, nil}
+        {:repeated, _}           -> {name, []}
+        {:normal, default_value} -> {name, default_value}
       end
     end
   end
