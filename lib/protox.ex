@@ -1,2 +1,0 @@
-defmodule Protox do
-end
