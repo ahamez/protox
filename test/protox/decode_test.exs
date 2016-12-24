@@ -132,6 +132,14 @@ defmodule Protox.DecodeTest do
   end
 
 
+  test "Sub.g, not contiguous, should be concatenated" do
+    bytes = <<106, 8, 1, 0, 0, 0, 0, 0, 0, 0, 8, 150, 1, 106, 8, 254, 255,
+              255, 255, 255, 255, 255, 255>>
+    assert Sub.decode!(bytes) ==\
+           %Sub{a: 150, c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [1,-2], h: [], i: [], z: 0}
+  end
+
+
   test "Sub.g; Sub.h; Sub.i" do
     bytes = <<106, 8, 0, 0, 0, 0, 0, 0, 0, 0, 114, 4, 255, 255, 255, 255, 122, 16, 154, 153,
               153, 153, 153, 153, 64, 64, 0, 0, 0, 0, 0, 0, 70, 192>>
@@ -186,10 +194,18 @@ defmodule Protox.DecodeTest do
   end
 
 
-  test "Sub.p (unpacked in definition) " do
+  test "Sub.p" do
     bytes = <<176, 1, 1, 176, 1, 0, 176, 1, 1, 176, 1, 0>>
     assert Sub.decode!(bytes) ==\
            %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
+                n: [], o: [], p: [true, false, true, false],z: 0}
+  end
+
+
+  test "Sub.p, not contiguous, should be concatenated" do
+    bytes = <<176, 1, 1, 176, 1, 0, 8, 150, 1, 176, 1, 1, 176, 1, 0>>
+    assert Sub.decode!(bytes) ==\
+           %Sub{a: 150, c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
                 n: [], o: [], p: [true, false, true, false],z: 0}
   end
 
