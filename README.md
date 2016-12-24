@@ -5,6 +5,20 @@
 
 **TODO: Add description**
 
+# Implementation choices
+
+* When decoding enum aliases, the last encountered constant will be used.
+  For instance, in the following example, will always be used.
+  ```
+  enum EnumAllowingAlias {
+    option allow_alias = true;
+    FOO = 0;
+    BAZ = 1;
+    BAR = 1;
+  }
+  ```
+
+
 # Conformance
 
 This library has been tested using the conformance checker provided by Google. More details

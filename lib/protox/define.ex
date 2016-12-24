@@ -7,7 +7,6 @@ defmodule Protox.Define do
 
 
   defmacro __using__(enums: enums, messages: messages) do
-
     define(
       Enum.map(enums,
         fn {{_, _, name}, member_values} ->
@@ -131,7 +130,8 @@ defmodule Protox.Define do
 
 
   defp make_decode_enum_members(member_values) do
-    for {value, member} <- member_values do
+    # Map.new -> unify enum aliases
+    for {value, member} <- (Map.new(member_values)) do
       quote do
         def decode(unquote(value)), do: unquote(member)
       end

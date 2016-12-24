@@ -4,7 +4,7 @@ defmodule Defs do
     enums: [
       {
         E,
-        [{0, :FOO}, {1, :BAR}]
+        [{0, :FOO}, {1, :BAZ}, {1, :BAR}]
       }
     ],
     messages: [

@@ -150,6 +150,12 @@ defmodule Protox.EncodeTest do
   end
 
 
+  test "Msg.d, :BAZ" do
+    assert Protox.Encode.encode_binary(%Msg{d: :BAZ})
+           == <<8, 1>>
+  end
+
+
   test "Msg.d, unknown value" do
     assert Protox.Encode.encode_binary(%Msg{d: 99})
            == "\bc"
