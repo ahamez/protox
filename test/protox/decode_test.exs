@@ -126,7 +126,7 @@ defmodule Protox.DecodeTest do
 
   test "Sub.g" do
     bytes = <<106, 16, 1, 0, 0, 0, 0, 0, 0, 0, 254, 255,
-              255, 255, 255, 255, 255, 255, 136, 241, 4, 0>>
+              255, 255, 255, 255, 255, 255>>
     assert Sub.decode!(bytes) ==\
            %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [1,-2], h: [], i: [], z: 0}
   end
