@@ -34,10 +34,10 @@ defmodule Protox.RandomInit do
     :rand.uniform(100) * sign()
   end
   defp value({:normal, _}, ty) when ty == :double or ty == :float do
-    :rand.uniform(1000000) * :rand.uniform() * sign()
+    :rand.uniform(1_000_000) * :rand.uniform() * sign()
   end
   defp value({:normal, _}, ty) when is_primitive(ty) do
-    :rand.uniform(1000000)
+    :rand.uniform(1_000_000)
   end
   defp value({:normal, _}, :bytes) do
     Enum.reduce(1..:rand.uniform(10), <<>>, fn (b, acc) -> <<b, acc::binary>> end)

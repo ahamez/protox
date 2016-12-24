@@ -22,11 +22,15 @@ defmodule Protox.Define do
   end
 
 
+  def define(enums, messages) do
+    define_enums(enums) ++ define_messages(messages)
+  end
+
+
   # -- Private
 
 
-  def define(enums, messages) do
-
+  defp define_enums(enums) do
     for {name, members} <- enums do
 
       enum_name      = Module.concat(name)
@@ -51,9 +55,10 @@ defmodule Protox.Define do
       end
 
     end
+  end
 
-    ++ # concat enumerations and messages definitions
 
+  defp define_messages(messages) do
     for {name, fields} <- messages do
 
       msg_name       = Module.concat(name)
@@ -102,7 +107,6 @@ defmodule Protox.Define do
         end # module
       end
     end # for
-
   end
 
 
