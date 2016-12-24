@@ -158,7 +158,7 @@ defmodule Protox.EncodeTest do
 
   test "Msg.d, unknown value" do
     assert Protox.Encode.encode_binary(%Msg{d: 99})
-           == "\bc"
+           == <<8, 99>>
   end
 
 
