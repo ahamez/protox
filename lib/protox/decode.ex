@@ -1,5 +1,10 @@
 defmodule Protox.Decode do
 
+  @moduledoc """
+  Decodes a binary into a message.
+  """
+
+
   import Protox.Guards
   use Bitwise
 
@@ -22,6 +27,8 @@ defmodule Protox.Decode do
 
 
   defmodule MapEntry do
+    @moduledoc false
+
     defstruct key: nil,
               value: nil
   end

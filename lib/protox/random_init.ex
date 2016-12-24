@@ -1,7 +1,7 @@
 defmodule Protox.RandomInit do
 
-  @moduledoc"""
-  This module provides a way to randomly init a message. Useful for tests or benchmarks.
+  @moduledoc """
+  Provides a way to randomly init a message. Useful for tests or benchmarks.
   """
 
   import Protox.Guards

@@ -1,5 +1,8 @@
 defmodule Protox.Encode do
 
+  @moduledoc false
+  # Internal. Functions to encode types.
+
   import Protox.Guards
   use Bitwise
 

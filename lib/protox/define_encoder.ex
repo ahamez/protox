@@ -1,8 +1,7 @@
 defmodule Protox.DefineEncoder do
 
-  @moduledoc """
-  This module generates the encoder of a message.
-  """
+  @moduledoc false
+  # Internal. Generates the encoder of a message.
 
 
   def define(fields) do

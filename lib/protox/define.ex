@@ -1,8 +1,8 @@
 defmodule Protox.Define do
 
   @moduledoc """
-  This module generates struct from message and enumeration definitions.
-  Tne encoding function is also generated for each message.
+  Generates struct from message and enumeration definitions.
+  The encoding function is also generated for each message.
   """
 
 
