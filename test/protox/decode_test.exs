@@ -317,7 +317,6 @@ defmodule Protox.DecodeTest do
 
 
   test "Msg.k (reversed inside map entry)" do
-    # TODO
     bytes = <<66, 7, 18, 3, 98, 97, 114, 8, 2, 66, 7, 8, 1, 18, 3, 102, 111, 111>>
     assert Msg.decode!(bytes) ==\
            %Msg{d: :FOO, e: false, f: nil, g: [], h: 0.0, i: [], j: [],
