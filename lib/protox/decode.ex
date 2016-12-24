@@ -117,8 +117,8 @@ defmodule Protox.Decode do
   end
   defp parse_delimited(bytes, {map_key_type, map_value_type}) do
     defs = %{
-      1 => {:key, {:normal, :dummy}, map_key_type},
-      2 => {:value, {:normal, :dummy}, map_value_type},
+      1 => {:key, {:default, :dummy}, map_key_type},
+      2 => {:value, {:default, :dummy}, map_value_type},
     }
 
     %MapEntry{key: map_key, value: map_value} = parse_key_value(bytes, defs, %MapEntry{})
@@ -194,12 +194,12 @@ defmodule Protox.Decode do
       {:oneof, parent_field} ->
         {parent_field, {name, value}}
 
-      {:repeated, _} ->
+      {:default, _} ->
+        {name, value}
+
+      _ -> # repeated
         previous = Map.fetch!(msg, name)
         {name, previous ++ List.wrap(value)}
-
-      {:normal, _} ->
-        {name, value}
     end
 
     struct!(msg, [{f, v}])

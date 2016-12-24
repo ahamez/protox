@@ -21,52 +21,52 @@ defmodule Protox.RandomInit do
 
 
   # Recursively descend a message definition to randomly init fields.
-  defp value({:normal, _}, {:enum, enum}) do
+  defp value({:default, _}, {:enum, enum}) do
     enum.constants() |> Map.new() |> Map.values() |> Enum.random()
   end
-  defp value({:normal, _}, :bool) do
+  defp value({:default, _}, :bool) do
     :rand.uniform(2) == 1
   end
-  defp value({:normal, _}, ty)
+  defp value({:default, _}, ty)
   when ty == :int32 or ty == :int64 or ty == :sint32 or ty == :sint64 or ty == :sfixed32
        or ty == :sfixed64
   do
     :rand.uniform(100) * sign()
   end
-  defp value({:normal, _}, ty) when ty == :double or ty == :float do
+  defp value({:default, _}, ty) when ty == :double or ty == :float do
     :rand.uniform(1_000_000) * :rand.uniform() * sign()
   end
-  defp value({:normal, _}, ty) when is_primitive(ty) do
+  defp value({:default, _}, ty) when is_primitive(ty) do
     :rand.uniform(1_000_000)
   end
-  defp value({:normal, _}, :bytes) do
+  defp value({:default, _}, :bytes) do
     Enum.reduce(1..:rand.uniform(10), <<>>, fn (b, acc) -> <<b, acc::binary>> end)
   end
-  defp value({:normal, _}, :string) do
+  defp value({:default, _}, :string) do
     if sign() == 1, do: "#{inspect make_ref()}", else: ""
   end
-  defp value({:normal, _}, {:message, name}) do
+  defp value({:default, _}, {:message, name}) do
     if :rand.uniform(2) == 1 do
       Protox.RandomInit.gen(name)
     else
       nil
     end
   end
-  defp value({:repeated, _}, :bool) do
-    for _ <- 1..:rand.uniform(10), do: value({:normal, nil}, :bool)
+  defp value(kind, :bool) when kind == :packed or kind == :unpacked do
+    for _ <- 1..:rand.uniform(10), do: value({:default, nil}, :bool)
   end
-  defp value({:repeated, _}, ty) when is_primitive(ty) do
+  defp value(kind, ty) when is_primitive(ty) and (kind == :packed or kind == :unpacked) do
     for _ <- 1..:rand.uniform(10), do: :rand.uniform(100)
   end
-  defp value({:repeated, _}, e = {:enum, _}) do
-    for _ <- 1..:rand.uniform(10), do: value({:normal, nil}, e)
+  defp value(kind, e = {:enum, _}) when kind == :packed or kind == :unpacked do
+    for _ <- 1..:rand.uniform(10), do: value({:default, nil}, e)
   end
-  defp value({:repeated, _}, m = {:message, _}) do
+  defp value(:unpacked, m = {:message, _}) do
     Enum.reduce(
       1..:rand.uniform(10),
       [],
       fn (_ , acc) ->
-        sub = value({:normal, nil}, m)
+        sub = value({:default, nil}, m)
         if sub do
           [sub | acc]
         else
@@ -80,8 +80,8 @@ defmodule Protox.RandomInit do
       1..:rand.uniform(10),
       %{},
       fn (_ , acc) ->
-        key = value({:normal, nil}, key_type)
-        value = value({:normal, nil}, value_type)
+        key = value({:default, nil}, key_type)
+        value = value({:default, nil}, value_type)
         if key && value do
           Map.put(acc, key, value)
         else

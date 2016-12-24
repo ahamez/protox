@@ -143,10 +143,11 @@ defmodule Protox.Define do
   defp make_struct_fields(fields) do
     for {_, _, name, kind, _} <- fields do
       case kind do
-        :map                     -> {name, Macro.escape(%{})}
-        {:oneof, parent}         -> {parent, nil}
-        {:repeated, _}           -> {name, []}
-        {:normal, default_value} -> {name, default_value}
+        :map                      -> {name, Macro.escape(%{})}
+        {:oneof, parent}          -> {parent, nil}
+        :packed                   -> {name, []}
+        :unpacked                 -> {name, []}
+        {:default, default_value} -> {name, default_value}
       end
     end
   end

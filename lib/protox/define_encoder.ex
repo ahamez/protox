@@ -74,7 +74,7 @@ defmodule Protox.DefineEncoder do
   end
 
 
-  defp make_encode_field_fun({:normal, default}, tag, name, type) do
+  defp make_encode_field_fun({:default, default}, tag, name, type) do
     key              = Protox.Encode.make_key_bytes(tag, type)
     var              = quote do: field_value
     encode_value_ast = get_encode_value_ast(type, var)
@@ -113,7 +113,7 @@ defmodule Protox.DefineEncoder do
       end
     end
   end
-  defp make_encode_field_fun({:repeated, :packed}, tag, name, type) do
+  defp make_encode_field_fun(:packed, tag, name, type) do
     key = Protox.Encode.make_key_bytes(tag, :packed)
     encode_packed_ast = make_encode_packed_ast(type)
 
@@ -124,7 +124,7 @@ defmodule Protox.DefineEncoder do
       end
     end
   end
-  defp make_encode_field_fun({:repeated, :unpacked}, tag, name, type) do
+  defp make_encode_field_fun(:unpacked, tag, name, type) do
     encode_repeated_ast = make_encode_repeated_ast(tag, type)
 
     quote do
