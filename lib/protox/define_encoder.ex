@@ -24,7 +24,7 @@ defmodule Protox.DefineEncoder do
     sorted_fields = Enum.sort(fields,
       fn {lhs, _, _, _, _}, {rhs, _, _, _, _} -> lhs < rhs
     end)
-    encode_fun_body = make_encode_fun(sorted_fields)
+    encode_fun_body   = make_encode_fun(sorted_fields)
     encode_field_funs = make_encode_field_funs(fields)
 
     quote do

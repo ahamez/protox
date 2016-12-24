@@ -22,7 +22,7 @@ defmodule Protox.RandomInit do
 
   # Recursively descend a message definition to randomly init fields.
   defp value({:normal, _}, {:enum, enum}) do
-    enum.members() |> Map.new() |> Map.values() |> Enum.random()
+    enum.constants() |> Map.new() |> Map.values() |> Enum.random()
   end
   defp value({:normal, _}, :bool) do
     :rand.uniform(2) == 1

@@ -9,8 +9,8 @@ defmodule Protox.Define do
   defmacro __using__(enums: enums, messages: messages) do
     define(
       Enum.map(enums,
-        fn {{_, _, name}, member_values} ->
-          {name, member_values}
+        fn {{_, _, name}, constant_values} ->
+          {name, constant_values}
         end),
       Enum.map(messages,
        fn {{_, _, name}, fs} ->
@@ -30,12 +30,12 @@ defmodule Protox.Define do
 
 
   defp define_enums(enums) do
-    for {name, members} <- enums do
+    for {name, constants} <- enums do
 
-      enum_name           = Module.concat(name)
-      default_fun         = make_enum_default(members)
-      encode_members_funs = make_encode_enum_members(members)
-      decode_members_funs = make_decode_enum_members(members)
+      enum_name             = Module.concat(name)
+      default_fun           = make_enum_default(constants)
+      encode_constants_funs = make_encode_enum_constants(constants)
+      decode_constants_funs = make_decode_enum_constants(constants)
 
       quote do
         defmodule unquote(enum_name) do
@@ -43,13 +43,13 @@ defmodule Protox.Define do
 
           unquote(default_fun)
 
-          unquote(encode_members_funs)
+          unquote(encode_constants_funs)
           def encode(x), do: x
 
-          unquote(decode_members_funs)
+          unquote(decode_constants_funs)
           def decode(x), do: x
 
-          def members(), do: unquote(members)
+          def constants(), do: unquote(constants)
         end
       end
 
@@ -112,28 +112,28 @@ defmodule Protox.Define do
   # -- Enum
 
 
-  defp make_enum_default(member_values) do
-    {_, default_value} = Enum.find(member_values, fn {x, _} -> x == 0 end)
+  defp make_enum_default(constant_values) do
+    {_, default_value} = Enum.find(constant_values, fn {x, _} -> x == 0 end)
     quote do
       def default(), do: unquote(default_value)
     end
   end
 
 
-  defp make_encode_enum_members(member_values) do
-    for {value, member} <- member_values do
+  defp make_encode_enum_constants(constant_values) do
+    for {value, constant} <- constant_values do
       quote do
-        def encode(unquote(member)), do: unquote(value)
+        def encode(unquote(constant)), do: unquote(value)
       end
     end
   end
 
 
-  defp make_decode_enum_members(member_values) do
+  defp make_decode_enum_constants(constant_values) do
     # Map.new -> unify enum aliases
-    for {value, member} <- (Map.new(member_values)) do
+    for {value, constant} <- (Map.new(constant_values)) do
       quote do
-        def decode(unquote(value)), do: unquote(member)
+        def decode(unquote(value)), do: unquote(constant)
       end
     end
   end
