@@ -114,9 +114,7 @@ defmodule Protox.DefineEncoder do
     end
   end
   defp make_encode_field_fun({:repeated, :packed}, tag, name, type) do
-    use Bitwise
-    key = Varint.LEB128.encode(tag <<< 3 ||| 2) # TODO. Should be in Encode.
-
+    key = Protox.Encode.make_key_bytes(tag, :packed)
     encode_packed_ast = make_encode_packed_ast(type)
 
     quote do
@@ -140,8 +138,7 @@ defmodule Protox.DefineEncoder do
     # Each key/value entry of a map has the same layout as a message.
     # https://developers.google.com/protocol-buffers/docs/proto3#backwards-compatibility
 
-    use Bitwise
-    key = Varint.LEB128.encode(tag <<< 3 ||| 2) # TODO. Should be in Encode.
+    key = Protox.Encode.make_key_bytes(tag, :map_entry)
 
     {map_key_type, map_value_type} = type
 
@@ -160,6 +157,7 @@ defmodule Protox.DefineEncoder do
       map = Map.fetch!(msg, unquote(name))
       if map_size(map) == 0 do
         acc
+
       else
         Enum.reduce(map, acc,
           fn ({unquote(k_var), unquote(v_var)}, acc) ->

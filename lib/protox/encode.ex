@@ -28,6 +28,8 @@ defmodule Protox.Encode do
   def make_key(tag, ty) when is_primitive_fixed64(ty), do: tag <<< 3 ||| 1
   def make_key(tag, ty) when is_delimited(ty)        , do: tag <<< 3 ||| 2
   def make_key(tag, {:message, _})                   , do: tag <<< 3 ||| 2
+  def make_key(tag, :packed)                         , do: tag <<< 3 ||| 2
+  def make_key(tag, :map_entry)                      , do: tag <<< 3 ||| 2
   def make_key(tag, ty) when is_primitive_fixed32(ty), do: tag <<< 3 ||| 5
 
 
