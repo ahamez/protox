@@ -357,6 +357,14 @@ defmodule Protox.DecodeTest do
   end
 
 
+  test "Msg.m, several fields on the wire, keep the last one" do
+    bytes = <<90, 2, 8, 42, 82, 3, 98, 97, 114, 82, 3, 98, 97, 114>>
+    assert Msg.decode!(bytes) ==\
+           %Msg{d: :FOO, e: false, f: nil, g: [], h: 0.0, i: [], j: [],
+                k: %{}, l: %{}, m: {:n, "bar"}}
+  end
+
+
   test "Upper.msg.f" do
     bytes = <<10, 4, 26, 2, 8, 42>>
     assert Upper.decode!(bytes) ==\
