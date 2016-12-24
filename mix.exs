@@ -26,7 +26,7 @@ defmodule Protox.Mixfile do
       {:dialyxir, "~> 0.4", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.14"},
       {:excoveralls, "~> 0.5", only: :test},
-      {:varint, "~> 1.0"},
+      {:varint, "~> 1.1.0"},
     ]
   end
 
