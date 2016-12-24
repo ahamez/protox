@@ -399,4 +399,10 @@ defmodule Protox.DecodeTest do
     assert Empty.decode!(bytes) ==\
            %Empty{}
   end
+
+
+  test "Dummy data" do
+    assert {:error, _} = Empty.decode(<<1,2,3>>)
+  end
+
 end
