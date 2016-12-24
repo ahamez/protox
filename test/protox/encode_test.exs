@@ -260,6 +260,12 @@ defmodule Protox.EncodeTest do
   end
 
 
+  test "Msg.q" do
+    assert %Msg{q: :BAZ} |> Protox.Encode.encode_binary()
+           == <<>>
+  end
+
+
   test "Msg.oneof_double" do
     assert Protox.Encode.encode_binary(%Msg{oneof_field: {:oneof_double, 0}})
            == <<177,7,0,0,0,0,0,0,0,0,>>
