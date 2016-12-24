@@ -4,7 +4,7 @@ defmodule Protox.RandomInit do
   This module provides a way to randomly init a message. Useful for tests or benchmarks.
   """
 
-  import Protox.Util
+  import Protox.Guards
 
   def gen(mod) do
     Enum.reduce(mod.defs(), struct(mod.__struct__),

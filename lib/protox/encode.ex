@@ -1,6 +1,6 @@
 defmodule Protox.Encode do
 
-  import Protox.Util
+  import Protox.Guards
   use Bitwise
 
 

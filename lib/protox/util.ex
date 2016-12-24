@@ -1,4 +1,4 @@
-defmodule Protox.Util do
+defmodule Protox.Guards do
 
 
   @primitive_fixed32 [
