@@ -9,7 +9,6 @@ defmodule Protox.Descriptor do
       {
         Google.Protobuf.FieldDescriptorProto.Type,
         [
-          {0 , :ERROR},
           {1 , :double},       # TYPE_DOUBLE
           {2 , :float},        # TYPE_FLOAT
           {3 , :int64},        # TYPE_INT64
@@ -33,7 +32,6 @@ defmodule Protox.Descriptor do
       {
         Google.Protobuf.FieldDescriptorProto.Label,
         [
-          {0, :ERROR},
           {1, :optional},      # LABEL_OPTIONAL
           {2, :required},      # LABEL_REQUIRED
           {3, :repeated},      # LABEL_REPEATED
