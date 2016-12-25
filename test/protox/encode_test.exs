@@ -132,6 +132,24 @@ defmodule Protox.EncodeTest do
   end
 
 
+  test "Sub.s, default" do
+    assert Protox.Encode.encode_binary(%Sub{s: :ONE, z: 0}) ==\
+           <<>>
+  end
+
+
+  test "Sub.s" do
+    assert Protox.Encode.encode_binary(%Sub{s: :TWO, z: 0}) ==\
+           <<200, 1, 2>>
+  end
+
+
+  test "Sub.t, default is nil" do
+    assert Protox.Encode.encode_binary(%Sub{t: nil, z: 0}) ==\
+           <<>>
+  end
+
+
   test "Sub.z" do
     assert Protox.Encode.encode_binary(%Sub{z: -20})
            == <<136, 241, 4, 39>>

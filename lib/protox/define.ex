@@ -113,7 +113,7 @@ defmodule Protox.Define do
 
 
   defp make_enum_default(constant_values) do
-    {_, default_value} = Enum.find(constant_values, fn {x, _} -> x == 0 end)
+    [{_, default_value} | _] = constant_values
     quote do
       def default(), do: unquote(default_value)
     end

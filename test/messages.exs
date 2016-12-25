@@ -9,6 +9,13 @@ defmodule Defs do
           {1, :BAZ},
           {1, :BAR}
         ]
+      },
+      {
+        F,
+        [
+          {1, :ONE},
+          {2, :TWO},
+        ]
       }
     ],
     messages: [
@@ -34,6 +41,8 @@ defmodule Defs do
         {22   , :repeated, :p, :unpacked       , :bool},
         {23   , :repeated, :q, :unpacked       , {:enum, E}},
         {24   , :optional, :r, {:default, :FOO}, {:enum, E}},
+        {25   , :optional, :s, {:default, :ONE}, {:enum, F}},
+        {26   , :optional, :t, {:default, nil} , {:enum, F}},
         {10001, :required, :z, {:default, 0}   , :sint32},
       ]
     },

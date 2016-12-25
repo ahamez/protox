@@ -226,6 +226,27 @@ defmodule Protox.DecodeTest do
   end
 
 
+  test "Sub.s, default" do
+    bytes = <<>>
+    assert Sub.decode!(bytes) ==\
+           %Sub{s: :ONE, z: 0}
+  end
+
+
+  test "Sub.s" do
+    bytes = <<200, 1, 2>>
+    assert Sub.decode!(bytes) ==\
+           %Sub{s: :TWO, z: 0}
+  end
+
+
+  test "Sub.t, default is nil" do
+    bytes = <<>>
+    assert Sub.decode!(bytes) ==\
+           %Sub{t: nil, z: 0}
+  end
+
+
   test "Msg.Sub.a" do
     bytes = <<26, 3, 8, 150, 1>>
     assert Msg.decode!(bytes) ==\
