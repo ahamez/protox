@@ -5,12 +5,29 @@
 
 **TODO: Add description**
 
+
+# Prerequisites
+
+Protox uses Google's `protoc` to pase `.proto` files. It must be available in `$PATH`.
+You can get it [here](https://github.com/google/protobuf).
+
+
+# Unsupported features
+
+* groups
+* protobuf 3 JSON mapping
+* rpc
+
+Furthermore, all options other than `packed` and `default` are ignored.
+
+
 # Implementation choices
 
 * When decoding enum aliases, the last encountered constant will be used.
-  For instance, in the following example, will always be used.
+  For instance, in the following example, `:BAR` will always be used if the value `1` is read
+  on the wire.
   ```
-  enum EnumAllowingAlias {
+  enum E {
     option allow_alias = true;
     FOO = 0;
     BAZ = 1;
@@ -22,11 +39,11 @@
 # Conformance
 
 This library has been tested using the conformance checker provided by Google. More details
-at https://github.com/ahamez/protox_conformance.
+at [protox_conformance](https://github.com/ahamez/protox_conformance).
 
 
 # Credits
 
-https://github.com/tomas-abrahamsson/gpb
+[gpb](https://github.com/tomas-abrahamsson/gpb)
 
-https://github.com/bitwalker/exprotobuf
+[exprotobuf](https://github.com/bitwalker/exprotobuf)
