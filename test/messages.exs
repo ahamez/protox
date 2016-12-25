@@ -47,20 +47,20 @@ defmodule Defs do
         {5  , :optional, :h           , {:default, 0}         , :double},
         {6  , :repeated, :i           , :packed               , :float},
         {7  , :repeated, :j           , :unpacked             , {:message, Sub}},
-        {8  , :none    , :k           , :map                  , {:int32, :string}},
-        {9  , :none    , :l           , :map                  , {:string, :double}},
-        {10 , :none    , :n           , {:oneof, :m}          , :string},
-        {11 , :none    , :o           , {:oneof, :m}          , {:message, Sub}},
-        {12 , :none    , :p           , :map                  , {:int32, {:enum, E}}},
+        {8  , nil      , :k           , :map                  , {:int32, :string}},
+        {9  , nil      , :l           , :map                  , {:string, :double}},
+        {10 , nil      , :n           , {:oneof, :m}          , :string},
+        {11 , nil      , :o           , {:oneof, :m}          , {:message, Sub}},
+        {12 , nil      , :p           , :map                  , {:int32, {:enum, E}}},
         {13 , :optional, :q           , {:default, :BAZ}      , {:enum, E}},
-        {118, :none    , :oneof_double, {:oneof, :oneof_field}, :double},
+        {118, nil      , :oneof_double, {:oneof, :oneof_field}, :double},
       ]
     },
     {
       Upper,
       [
         {1, :optional, :msg    , {:default, nil}, {:message, Msg}},
-        {2, :none    , :msg_map, :map           , {:string, {:message, Msg}}},
+        {2, nil      , :msg_map, :map           , {:string, {:message, Msg}}},
         {3, :optional, :empty  , {:default, nil}, {:message, Empty}}
       ]
     },
