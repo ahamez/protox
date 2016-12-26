@@ -1,5 +1,10 @@
 defmodule Protox.Parse do
 
+  @moduledoc """
+  Parse a protobuf encoded description of a set of .proto files. This description is produced
+  by `protoc`.
+  """
+
   def parse(file_descriptor_set) do
     with {:ok, descriptor} <- Google.Protobuf.FileDescriptorSet.decode(file_descriptor_set) do
       {%{}, %{}} # enums, messages
