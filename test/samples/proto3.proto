@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "proto2.proto";
+
+package abc.def;
+
+enum ForeignEnum {
+  option allow_alias = true;
+  FOREIGN_ZERO    = 0;
+  FOREIGN_ONE     = 1;
+  FOREIGN_ONE_BIS = 1;
+}
+
+message Proto3 {
+
+  enum NestedEnum {
+    FOO = 0;
+    BAR = 2;
+  }
+
+  repeated int32 repeated_int32 = 1;
+  double double = 2;
+  map<sfixed32, fixed64> map_sfixed32_fixed64 = 3;
+
+  oneof oneof_1 {
+    int32 oneof_1_int32 = 4;
+    double oneof_1_double = 5;
+    ForeignEnum oneof_1_foreign_enum = 6;
+    Proto2A oneof_1_proto2a = 7;
+  }
+
+  map<string, google.protobuf.Timestamp> map_string_timestamp = 8;
+
+  oneof oneof_2 {
+    int32 oneof_2_int32 = 134;
+    NestedEnum oneof_2_nested_enum = 135;
+  }
+
+
+  NestedEnum nested_enum = 9999;
+}

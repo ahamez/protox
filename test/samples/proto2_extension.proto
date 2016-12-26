@@ -1,0 +1,7 @@
+syntax = "proto2";
+
+import "proto2.proto";
+
+extend Proto2A {
+  optional double extension_double = 199;
+}

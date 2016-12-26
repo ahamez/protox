@@ -1,0 +1,37 @@
+syntax = "proto2";
+
+// no package intentionally
+
+enum E {
+  E_ONE = 1;
+  E_TWO = 2;
+}
+
+message Proto2A {
+
+  enum NestedEnum {
+    N_ZERO  = 0;
+    N_THREE = 3;
+  }
+
+  message NestedMessage {
+    required string required_string = 1;
+  }
+
+  repeated int32 repeated_int32_packed = 1 [packed = true];
+  repeated int32 repeated_int32_unpacked = 2;
+
+  optional NestedMessage optional_nested_message = 3;
+
+  extensions 100 to 199;
+}
+
+message Proto2B {
+  optional Proto2A.NestedEnum optional_proto2a_nested_enum = 1;
+  required Proto2A.NestedEnum required_proto2a_nested_enum = 2 [default = N_THREE];
+}
+
+extend Proto2A {
+  optional int32 extension_int32 = 126;
+}
+
