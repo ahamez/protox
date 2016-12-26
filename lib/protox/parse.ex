@@ -169,19 +169,19 @@ defmodule Protox.Parse do
 
 
   defp add_field({enums, msgs}, syntax, upper, msg_name, descriptor) do
-    {type, kind} = case map_entry(upper, msg_name, descriptor) do
+    {label, kind, type} = case map_entry(upper, msg_name, descriptor) do
       nil ->
         type = get_type(msg_name, descriptor)
         kind = get_kind(syntax, upper, descriptor, type)
-        {type, kind}
+        {descriptor.label, kind, type}
 
       map_type ->
-        {map_type, :map}
+        {nil, :map, map_type}
     end
 
     field =  {
       descriptor.number,
-      descriptor.label,
+      label,
       String.to_atom(descriptor.name),
       kind,
       type,
@@ -217,7 +217,8 @@ defmodule Protox.Parse do
 
         m ->
           key_type   = Enum.find(m.field, &(&1.name == "key")).type
-          value_type = Enum.find(m.field, &(&1.name == "value")).type
+          value_type_field = Enum.find(m.field, &(&1.name == "value"))
+          value_type = get_type(prefix, value_type_field)
 
           {key_type, value_type}
       end
