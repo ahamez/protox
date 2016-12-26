@@ -285,7 +285,6 @@ defmodule Protox.Parse do
   defp get_default_value(:proto3, %FieldDescriptorProto{type: :enum}) do
     # Real default value will be resolved in a post-process pass as the corresponding enum might
     # not exist yet.
-    # TODO.
     :default_value_to_resolve
   end
   defp get_default_value(:proto3, %FieldDescriptorProto{type: :message}) do
