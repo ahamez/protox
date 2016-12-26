@@ -156,7 +156,7 @@ defmodule Protox.Parse do
   defp add_field({enums, msgs}, syntax, upper, msg_name, descriptor) do
     {type, kind} = case map_entry(upper, msg_name, descriptor) do
       nil ->
-        type = get_type(syntax, upper, msg_name, descriptor)
+        type = get_type(msg_name, descriptor)
         kind = get_kind(syntax, upper, descriptor, type)
         {type, kind}
 
@@ -249,19 +249,19 @@ defmodule Protox.Parse do
   end
 
 
-  defp get_type(_, _, prefix, %FieldDescriptorProto{type_name: tyname, type: type})
+  defp get_type(prefix, %FieldDescriptorProto{type_name: tyname, type: type})
   when tyname != nil and type != nil
   do
     {type, fq_name(prefix, tyname)}
   end
-  defp get_type(_, _, prefix, %FieldDescriptorProto{type_name: tyname})
+  defp get_type(prefix, %FieldDescriptorProto{type_name: tyname})
   when tyname != nil do
     # Documentation in descriptor.proto says that it's possible that `type_name` is set, but not
     # `type`. In this case, we'll have to resolve the type in a post-process pass.
     # TODO.
     {:type_to_resolve, fq_name(prefix, tyname)}
   end
-  defp get_type(_, _, _, descriptor) do
+  defp get_type(_, descriptor) do
     descriptor.type
   end
 
