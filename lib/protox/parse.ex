@@ -6,11 +6,11 @@ defmodule Protox.Parse do
   """
 
   def parse(file_descriptor_set) do
-    with {:ok, descriptor} <- Google.Protobuf.FileDescriptorSet.decode(file_descriptor_set) do
-      {%{}, %{}} # enums, messages
-      |> parse_files(descriptor.file)
-      |> post_process()
-    end
+    {:ok, descriptor} = Google.Protobuf.FileDescriptorSet.decode(file_descriptor_set)
+
+    {%{}, %{}} # enums, messages
+    |> parse_files(descriptor.file)
+    |> post_process()
   end
 
 
