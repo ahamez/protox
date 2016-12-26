@@ -58,11 +58,11 @@ defmodule Defs do
         {7  , :repeated, :j           , :unpacked             , {:message, Sub}},
         {8  , nil      , :k           , :map                  , {:int32, :string}},
         {9  , nil      , :l           , :map                  , {:string, :double}},
-        {10 , nil      , :n           , {:oneof, :m}          , :string},
-        {11 , nil      , :o           , {:oneof, :m}          , {:message, Sub}},
+        {10 , :optional, :n           , {:oneof, :m}          , :string},
+        {11 , :optional, :o           , {:oneof, :m}          , {:message, Sub}},
         {12 , nil      , :p           , :map                  , {:int32, {:enum, E}}},
         {13 , :optional, :q           , {:default, :BAZ}      , {:enum, E}},
-        {118, nil      , :oneof_double, {:oneof, :oneof_field}, :double},
+        {118, :optional, :oneof_double, {:oneof, :oneof_field}, :double},
       ]
     },
     {
