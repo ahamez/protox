@@ -49,6 +49,16 @@ defmodule Protox.Parse do
         end
         {tag, label, name, {:default, default_p}, {:enum, Module.concat(ename)}}
 
+      {tag, label, name, :map, {key_type, {enum_or_msg, emname}}} ->
+        {tag, label, name, :map, {key_type, {enum_or_msg, Module.concat(emname)}}}
+
+      {tag, label, name, kind, {:enum, ename}} ->
+        {tag, label, name, kind, {:enum, Module.concat(ename)}}
+
+      {tag, label, name, kind, {:message, mname}} ->
+        {tag, label, name, kind, {:message, Module.concat(mname)}}
+
+
       _ ->
         field
     end
