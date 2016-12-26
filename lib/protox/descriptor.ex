@@ -48,13 +48,12 @@ defmodule Protox.Descriptor do
       {
         Google.Protobuf.FileDescriptorProto,
         [
-          # Ignored: 3, 10, 11, 6, 9
+          # Ignored: 3, 6, 8, 9, 10, 11
           {1, :none, :name, {:default, ""}, :string},
           {2, :none, :package, {:default, ""}, :string},
           {4, :repeated, :message_type, :unpacked, {:message, Google.Protobuf.DescriptorProto}},
           {5, :repeated, :enum_type, :unpacked, {:message, Google.Protobuf.EnumDescriptorProto}},
           {7, :repeated, :extension, :unpacked, {:message, Google.Protobuf.FieldDescriptorProto}},
-          {8, :none, :options, {:default, nil}, {:message, Google.Protobuf.FileOptions}},
           {12, :none, :syntax, {:default, ""}, :string},
         ]
       },
@@ -98,8 +97,8 @@ defmodule Protox.Descriptor do
       {
         Google.Protobuf.OneofDescriptorProto,
         [
+          # Ignored: 2
           {1, :none, :name, {:default, nil}, :string},
-          {2, :none, :options, {:default, nil}, {:message, Google.Protobuf.OneofOptions}},
         ]
       },
       {
@@ -113,20 +112,14 @@ defmodule Protox.Descriptor do
       {
         Google.Protobuf.EnumValueDescriptorProto,
         [
+          # Ignored: 3
           {1, :none, :name, {:default, nil}, :string},
           {2, :none, :number, {:default, nil}, :int32},
-          {3, :none, :options, {:default, nil}, {:message, Google.Protobuf.EnumValueOptions}},
         ]
       },
-      # Google.Protobuf.ServiceDescriptorProto ignored
-      # Google.Protobuf.MethodDescriptorProto ignored
-      {
-        Google.Protobuf.FileOptions,
-        [
-          # 1, 8, 10, 20, 27, 9, 11, 16, 17, 18, 31, 36, 37, 39, 999
-          {23, :none, :deprecated, {:default, false}, :bool},
-        ]
-      },
+      # ServiceDescriptorProto ignored
+      # MethodDescriptorProto ignored
+      # FileOptions ignored
       {
         Google.Protobuf.MessageOptions,
         [
@@ -143,21 +136,9 @@ defmodule Protox.Descriptor do
           {3, :none, :deprecated, {:default, false}, :bool},
         ]
       },
-      {
-        Google.Protobuf.OneofOptions,
-        [
-          # 999 ignored
-        ]
-      },
+      # OneofOptions ignored
       # EnumOptions ignored
-      {
-        Google.Protobuf.EnumValueOptions,
-        [
-          # 999 ignored
-          {1, :none, :deprecated, {:default, false}, :bool},
-
-        ]
-      },
+      # EnumValueOptions ignored
       # ServiceOptions ignored
       # MethodOptions ignored
       # UninterpretedOption ignored
