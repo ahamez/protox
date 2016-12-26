@@ -1,10 +1,8 @@
 * TODO.
 - Size in the output of encode {len, iolist}?
 - parse .proto
-  * custom parser (v3 only?)
-  * protoc plugin (http://www.expobrain.net/2015/09/13/create-a-plugin-for-google-protocol-buffer/)?
   * call `protoc foo.proto -o foo.bin` from Elixir
-- https://ebertapp.io
+- Take a look at https://github.com/rrrene/inch_ex and https://ebertapp.io
 - Check for duplicate entries (names or tags) in definitions
 
 
