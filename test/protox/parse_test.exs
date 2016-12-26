@@ -57,6 +57,8 @@ defmodule Protox.ParseTest do
   do
     {_, fs} = Enum.find(messages, fn {name, _} -> name == Proto2A.NestedMessage end)
     assert field(fs, 1) == {:required, :required_string, {:default, "foo"}, :string}
+    assert field(fs, 2) == {:optional, :optional_float, {:default, -1.1}, :float}
+    assert field(fs, 3) == {:optional, :optional_fixed64, {:default, 32108}, :fixed64}
 
     {_, fs} = Enum.find(messages, fn {name, _} -> name == Proto2A end)
     assert field(fs, 1) == {:repeated, :repeated_int32_packed, :packed, :int32}

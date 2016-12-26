@@ -16,6 +16,8 @@ message Proto2A {
 
   message NestedMessage {
     required string required_string = 1 [default = "foo"];
+    optional float optional_float = 2 [default = -1.1];
+    optional fixed64 optional_fixed64 = 3 [default = 32108];
   }
 
   repeated int32 repeated_int32_packed = 1 [packed = true];
