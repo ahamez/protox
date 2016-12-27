@@ -265,9 +265,6 @@ defmodule Protox.Parse do
 
       %FieldDescriptorProto{label: label} when label == :optional or label == :required ->
         {:default, get_default_value(syntax, descriptor)}
-
-      _ -> :todo
-
     end
   end
 
