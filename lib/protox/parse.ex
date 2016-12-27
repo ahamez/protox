@@ -310,7 +310,6 @@ defmodule Protox.Parse do
     f.default_value
   end
   defp get_default_value(:proto2, f = %FieldDescriptorProto{type: :bytes}) do
-    # TODO. Transform C escaped value (all bytes >= 128 are escaped) into a binary
     f.default_value
   end
   defp get_default_value(:proto2, f = %FieldDescriptorProto{type: :double}) do
