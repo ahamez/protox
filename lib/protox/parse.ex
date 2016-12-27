@@ -230,6 +230,7 @@ defmodule Protox.Parse do
 
   defp fully_qualified_name(name) do
     # TODO. Might not start with a '.', in which case it's not fully-qualified.
+    true = String.starts_with?(name, ".")
     name
     |> String.split(".")
     |> tl # first element is "."
