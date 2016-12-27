@@ -221,7 +221,6 @@ defmodule Protox.Parse do
 
   defp fully_qualified_name(name) do
     # TODO. Might not start with a '.', in which case it's not fully-qualified.
-    #       Can this really happen?
     name
     |> String.split(".")
     |> tl # first element is "."
@@ -255,7 +254,7 @@ defmodule Protox.Parse do
   defp get_type(%FieldDescriptorProto{type_name: tyname})
   when tyname != nil do
     # Documentation in descriptor.proto says that it's possible that `type_name` is set, but not
-    # `type`. In this case, we'll have to resolve the type in a post-process pass.
+    # `type`. The type will be resolved in a post-process pass.
     {:to_resolve, fully_qualified_name(tyname)}
   end
   defp get_type(descriptor) do
@@ -264,8 +263,7 @@ defmodule Protox.Parse do
 
 
   defp get_default_value(:proto3, %FieldDescriptorProto{type: :enum}) do
-    # Real default value will be resolved in a post-process pass as the corresponding enum might
-    # not exist yet.
+    # Real default value will be resolved later as the corresponding enum might not exist yet.
     :default_value_to_resolve
   end
   defp get_default_value(:proto3, %FieldDescriptorProto{type: :message}) do
@@ -296,16 +294,13 @@ defmodule Protox.Parse do
     f.default_value
   end
   defp get_default_value(:proto2, f = %FieldDescriptorProto{type: :double}) do
-    {value, _} = Float.parse(f.default_value)
-    value
+    Float.parse(f.default_value) |> elem(0)
   end
   defp get_default_value(:proto2, f = %FieldDescriptorProto{type: :float}) do
-    {value, _} = Float.parse(f.default_value)
-    value
+    Float.parse(f.default_value) |> elem(0)
   end
   defp get_default_value(:proto2, f) do
-    {value, _} = Integer.parse(f.default_value)
-    value
+    Integer.parse(f.default_value) |> elem(0)
   end
 
 end
