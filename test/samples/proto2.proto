@@ -27,6 +27,7 @@ message Proto2A {
 
   repeated NestedEnum repeated_nested_enum = 4;
   repeated NestedMessage repeated_nested_message = 5;
+  optional bytes bytes = 6 [default = "\x60\x76"];
 
   extensions 100 to 199;
 }
