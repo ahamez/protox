@@ -202,7 +202,7 @@ defmodule Protox.Parse do
   defp map_entry(nil, _, _), do: nil
   defp map_entry(upper, prefix, descriptor) do
     if descriptor.label == :repeated and descriptor.type == :message do
-      # Might be a map. Now find an nested type of upper that is the corresponding entry.
+      # Might be a map. Now find a nested type of upper that is the corresponding entry.
 
       res = Enum.find(upper.nested_type,
         fn m ->
