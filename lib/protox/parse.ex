@@ -37,13 +37,13 @@ defmodule Protox.Parse do
   end
 
 
-  defp  resolve_types({tag, label, name, kind, {:to_resolve, tname}}, enums, msgs) do
+  defp resolve_types({tag, label, name, kind, {:to_resolve, tname}}, enums, msgs) do
     cond do
       Map.has_key?(enums, tname) -> {tag, label, name, kind, {:enum, tname}}
       Map.has_key?(msgs, tname)  -> {tag, label, name, kind, {:message, tname}}
     end
   end
-  defp  resolve_types({tag, label, name, :map, {key_type, {:to_resolve, tname}}}, enums, msgs) do
+  defp resolve_types({tag, label, name, :map, {key_type, {:to_resolve, tname}}}, enums, msgs) do
     cond do
       Map.has_key?(enums, tname) -> {tag, label, name, :map, {key_type, {:enum, tname}}}
       Map.has_key?(msgs, tname)  -> {tag, label, name, :map, {key_type, {:message, tname}}}
