@@ -32,6 +32,7 @@ defmodule Protox.ParseTest do
     assert field(fs, 6) == {:optional, :oneof_1_foreign_enum, {:oneof, :oneof_1}, {:enum, Abc.Def.ForeignEnum}}
     assert field(fs, 7) == {:optional, :oneof_1_proto2a, {:oneof, :oneof_1}, {:message, Proto2A}}
     assert field(fs, 8) == {nil, :map_string_timestamp, :map, {:string, {:message, Google.Protobuf.Timestamp}}}
+    assert field(fs, 9) == {:optional, :bytes, {:default, <<>>}, :bytes}
     assert field(fs, 134) == {:optional, :oneof_2_int32, {:oneof, :oneof_2}, :int32}
     assert field(fs, 135) == {:optional, :oneof_2_nested_enum, {:oneof, :oneof_2}, {:enum, Abc.Def.Proto3.NestedEnum}}
     assert field(fs, 9999) == {:optional, :nested_enum, {:default, :FOO}, {:enum, Abc.Def.Proto3.NestedEnum}}

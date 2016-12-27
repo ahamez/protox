@@ -31,6 +31,7 @@ message Proto3 {
   }
 
   map<string, google.protobuf.Timestamp> map_string_timestamp = 8;
+  bytes bytes = 9;
 
   oneof oneof_2 {
     int32 oneof_2_int32 = 134;
