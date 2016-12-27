@@ -37,6 +37,5 @@ message Proto3 {
     NestedEnum oneof_2_nested_enum = 135;
   }
 
-
   NestedEnum nested_enum = 9999;
 }

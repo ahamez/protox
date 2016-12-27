@@ -1,8 +1,8 @@
 defmodule Protox.Parse do
 
   @moduledoc """
-  Parse a protobuf encoded description of a set of .proto files. This description is produced
-  by `protoc`.
+  Parse a protobuf encoded description (Google.Protobuf.FileDescriptorSet)
+  of a set of .proto files This description is produced by `protoc`.
   """
 
   def parse(file_descriptor_set) do
@@ -25,52 +25,37 @@ defmodule Protox.Parse do
 
   defp post_process({enums, messages}) do
     enums_p = Enum.reduce(enums, [],
-      fn ({name, constants}, acc) ->
-        [{Module.concat(name), constants} | acc]
-      end
-    )
+      fn ({enum_name, constants}, acc) ->
+         [{Module.concat(enum_name), constants} | acc]
+      end)
 
     messages_p = Enum.reduce(messages, [],
       fn ({msg_name, defs}, acc) ->
-        [{Module.concat(msg_name), post_process_defs([], enums, defs)} | acc]
-      end
-    )
+        defs_p = Enum.map(defs, &post_process_pass(enums, &1))
+        [{Module.concat(msg_name), defs_p} | acc]
+      end)
 
     {enums_p, messages_p}
   end
 
 
-  defp post_process_defs(acc, _, []), do: acc
-  defp post_process_defs(acc, enums, [field | fields]) do
-    field_p = case field do
-      {tag, label, name, {:default, default}, {:enum, ename}} ->
-        default_p = case default do
-          :default_value_to_resolve ->
-            [{_, first} | _] = Map.fetch!(enums, ename)
-            first
-
-          _ ->
-            default
-        end
-        {tag, label, name, {:default, default_p}, {:enum, Module.concat(ename)}}
-
-      {tag, label, name, :map, {key_type, {enum_or_msg, emname}}} ->
-        {tag, label, name, :map, {key_type, {enum_or_msg, Module.concat(emname)}}}
-
-      {tag, label, name, kind, {:enum, ename}} ->
-        {tag, label, name, kind, {:enum, Module.concat(ename)}}
-
-      {tag, label, name, kind, {:message, mname}} ->
-        {tag, label, name, kind, {:message, Module.concat(mname)}}
-
-
-      _ ->
-        field
-    end
-
-    post_process_defs([field_p | acc], enums, fields)
+  defp post_process_pass(enums, {tag, label, name, {:default, :default_value_to_resolve}, {:enum, ename}}) do
+    [{_, first_is_default} | _] = Map.fetch!(enums, ename)
+    {tag, label, name, {:default, first_is_default}, {:enum, Module.concat(ename)}}
   end
-
+  defp post_process_pass(_, {tag, label, name, kind, {enum_or_msg, m_name}})
+  when enum_or_msg == :message or enum_or_msg == :enum
+  do
+    {tag, label, name, kind, {enum_or_msg, Module.concat(m_name)}}
+  end
+  defp post_process_pass(_, {tag, label, name, :map, {key_type, {enum_or_msg, m_name}}})
+  when enum_or_msg == :message or enum_or_msg == :enum
+  do
+    {tag, label, name, :map, {key_type, {enum_or_msg, Module.concat(m_name)}}}
+  end
+  defp post_process_pass(_, defs) do
+    defs
+  end
 
 
   defp parse_files(acc, []), do: acc
@@ -179,13 +164,7 @@ defmodule Protox.Parse do
         {nil, :map, map_type}
     end
 
-    field =  {
-      descriptor.number,
-      label,
-      String.to_atom(descriptor.name),
-      kind,
-      type,
-    }
+    field =  {descriptor.number, label, String.to_atom(descriptor.name), kind, type}
 
     {enums, Map.update(msgs, msg_name, [field], &([field|&1]))}
   end
@@ -196,8 +175,7 @@ defmodule Protox.Parse do
     if descriptor.label == :repeated and descriptor.type == :message do
       # Might be a map. Now find an nested type of upper that is the corresponding entry.
 
-      res = Enum.find(
-        upper.nested_type,
+      res = Enum.find(upper.nested_type,
         fn m ->
           if m.options != nil and m.options.map_entry do
             m_name = prefix ++ [m.name]
