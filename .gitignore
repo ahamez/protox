@@ -7,3 +7,4 @@ erl_crash.dump
 *.beam
 /protobuf-*
 /conformance_report.txt
+/protox_conformance
