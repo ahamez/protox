@@ -38,8 +38,32 @@ Furthermore, all options other than `packed` and `default` are ignored.
 
 # Conformance
 
-This library has been tested using the conformance checker provided by Google. More details
-at [protox_conformance](https://github.com/ahamez/protox_conformance).
+This library has been tested using the conformance checker provided by Google.
+Note that only the protobuf part is tested: as protox doesn't support JSON
+output, the corresponding tests are skipped.
+
+
+## How to launch the conformance test
+
+### Get conformance-test-runner
+
+Follow the instructions here: https://github.com/google/protobuf/tree/master/conformance.
+
+
+### Launch test
+
+* `mix protox.conformance --runner=/path/to/conformance-test-runner`
+
+A report will be generated in a file named `conformance_report.txt`.
+
+If everything's fine, something like the following should be displayed:
+
+```
+CONFORMANCE TEST BEGIN ====================================
+
+CONFORMANCE SUITE PASSED: 149 successes, 384 skipped, 0 expected failures, 0 unexpected failures.
+```
+
 
 
 # Credits
