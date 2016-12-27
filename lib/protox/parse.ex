@@ -54,19 +54,11 @@ defmodule Protox.Parse do
   end
 
 
-  defp post_process_pass({tag, label, name, {:default, :default_value_to_resolve}, {:enum, ename}}, enums) do
+  defp post_process_pass(
+    {tag, label, name, {:default, :default_value_to_resolve}, {:enum, ename}}, enums
+  ) do
     [{_, first_is_default} | _] = Map.fetch!(enums, ename)
-    {tag, label, name, {:default, first_is_default}, {:enum, Module.concat(ename)}}
-  end
-  defp post_process_pass({tag, label, name, kind, {enum_or_msg, m_name}}, _)
-  when enum_or_msg == :message or enum_or_msg == :enum
-  do
-    {tag, label, name, kind, {enum_or_msg, Module.concat(m_name)}}
-  end
-  defp post_process_pass({tag, label, name, :map, {key_type, {enum_or_msg, m_name}}}, _)
-  when enum_or_msg == :message or enum_or_msg == :enum
-  do
-    {tag, label, name, :map, {key_type, {enum_or_msg, Module.concat(m_name)}}}
+    {tag, label, name, {:default, first_is_default}, {:enum, ename}}
   end
   defp post_process_pass(field, _) do
     field
@@ -74,16 +66,7 @@ defmodule Protox.Parse do
 
 
   defp to_definition({enums, messages}) do
-    {
-      Enum.reduce(enums, [],
-      fn ({enum_name, constants}, acc) ->
-         [{Module.concat(enum_name), constants} | acc]
-      end),
-      Enum.reduce(messages, [],
-      fn ({msg_name, fields}, acc) ->
-        [{Module.concat(msg_name), fields} | acc]
-      end)
-    }
+    {Map.to_list(enums), Map.to_list(messages)}
   end
 
 
