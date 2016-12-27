@@ -169,7 +169,7 @@ defmodule Protox.Parse do
   defp add_extensions(acc, _, _, _, []), do: acc
   defp add_extensions(acc, syntax, upper, prefix, [field | fields]) do
     acc
-    |> add_field(syntax, upper, fq_name(prefix, field.extendee), field)
+    |> add_field(syntax, upper, fully_qualified_name(field.extendee), field)
     |> add_extensions(syntax, upper, prefix, fields)
   end
 
@@ -185,7 +185,7 @@ defmodule Protox.Parse do
   defp add_field({enums, msgs}, syntax, upper, msg_name, descriptor) do
     {label, kind, type} = case map_entry(upper, msg_name, descriptor) do
       nil ->
-        type = get_type(msg_name, descriptor)
+        type = get_type(descriptor)
         kind = get_kind(syntax, upper, descriptor, type)
         {descriptor.label, kind, type}
 
@@ -208,10 +208,10 @@ defmodule Protox.Parse do
         fn m ->
           if m.options != nil and m.options.map_entry do
             m_name = prefix ++ [m.name]
-            t_name = fq_name(prefix, descriptor.type_name)
+            t_name = fully_qualified_name(descriptor.type_name)
 
             # Test if the generated name of the MapEntry message is the same as the one
-            #  referenced by the actual map field.
+            # referenced by the actual map field.
             m_name == t_name
           else
             false
@@ -225,7 +225,7 @@ defmodule Protox.Parse do
         m ->
           key_type   = Enum.find(m.field, &(&1.name == "key")).type
           value_type_field = Enum.find(m.field, &(&1.name == "value"))
-          value_type = get_type(prefix, value_type_field)
+          value_type = get_type(value_type_field)
 
           {key_type, value_type}
       end
@@ -236,9 +236,9 @@ defmodule Protox.Parse do
   end
 
 
-  defp fq_name(_prefix, name) do
+  defp fully_qualified_name(name) do
     # TODO. Might not start with a '.', in which case it's not fully-qualified.
-    # Can this really happen?
+    #       Can this really happen?
     name
     |> String.split(".")
     |> tl # first element is "."
@@ -269,13 +269,13 @@ defmodule Protox.Parse do
   end
 
 
-  defp get_type(prefix, %FieldDescriptorProto{type_name: tyname})
+  defp get_type(%FieldDescriptorProto{type_name: tyname})
   when tyname != nil do
     # Documentation in descriptor.proto says that it's possible that `type_name` is set, but not
     # `type`. In this case, we'll have to resolve the type in a post-process pass.
-    {:to_resolve, fq_name(prefix, tyname)}
+    {:to_resolve, fully_qualified_name(tyname)}
   end
-  defp get_type(_, descriptor) do
+  defp get_type(descriptor) do
     descriptor.type
   end
 
