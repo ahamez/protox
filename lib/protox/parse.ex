@@ -11,6 +11,7 @@ defmodule Protox.Parse do
     {%{}, %{}} # enums, messages
     |> parse_files(descriptor.file)
     |> post_process()
+    |> to_definition()
   end
 
 
@@ -24,37 +25,65 @@ defmodule Protox.Parse do
 
 
   defp post_process({enums, messages}) do
-    enums_p = Enum.reduce(enums, [],
-      fn ({enum_name, constants}, acc) ->
-         [{Module.concat(enum_name), constants} | acc]
-      end)
+    messages_p = for {mname, fields} <- messages, into: %{}
+    do
+      {
+        mname,
+        Enum.map(fields, &(&1 |> resolve_types(enums, messages) |> post_process_pass(enums)))
+      }
+    end
 
-    messages_p = Enum.reduce(messages, [],
-      fn ({msg_name, defs}, acc) ->
-        defs_p = Enum.map(defs, &post_process_pass(enums, &1))
-        [{Module.concat(msg_name), defs_p} | acc]
-      end)
-
-    {enums_p, messages_p}
+    {enums, messages_p}
   end
 
 
-  defp post_process_pass(enums, {tag, label, name, {:default, :default_value_to_resolve}, {:enum, ename}}) do
+  defp  resolve_types({tag, label, name, kind, {:to_resolve, tname}}, enums, msgs) do
+    cond do
+      Map.has_key?(enums, tname) -> {tag, label, name, kind, {:enum, tname}}
+      Map.has_key?(msgs, tname)  -> {tag, label, name, kind, {:message, tname}}
+    end
+  end
+  defp  resolve_types({tag, label, name, :map, {key_type, {:to_resolve, tname}}}, enums, msgs) do
+    cond do
+      Map.has_key?(enums, tname) -> {tag, label, name, :map, {key_type, {:enum, tname}}}
+      Map.has_key?(msgs, tname)  -> {tag, label, name, :map, {key_type, {:message, tname}}}
+    end
+  end
+  defp  resolve_types(field, _, _) do
+    field
+  end
+
+
+  defp post_process_pass({tag, label, name, {:default, :default_value_to_resolve}, {:enum, ename}}, enums) do
     [{_, first_is_default} | _] = Map.fetch!(enums, ename)
     {tag, label, name, {:default, first_is_default}, {:enum, Module.concat(ename)}}
   end
-  defp post_process_pass(_, {tag, label, name, kind, {enum_or_msg, m_name}})
+  defp post_process_pass({tag, label, name, kind, {enum_or_msg, m_name}}, _)
   when enum_or_msg == :message or enum_or_msg == :enum
   do
     {tag, label, name, kind, {enum_or_msg, Module.concat(m_name)}}
   end
-  defp post_process_pass(_, {tag, label, name, :map, {key_type, {enum_or_msg, m_name}}})
+  defp post_process_pass({tag, label, name, :map, {key_type, {enum_or_msg, m_name}}}, _)
   when enum_or_msg == :message or enum_or_msg == :enum
   do
     {tag, label, name, :map, {key_type, {enum_or_msg, Module.concat(m_name)}}}
   end
-  defp post_process_pass(_, defs) do
-    defs
+  defp post_process_pass(field, _) do
+    field
+  end
+
+
+  defp to_definition({enums, messages}) do
+    {
+      Enum.reduce(enums, [],
+      fn ({enum_name, constants}, acc) ->
+         [{Module.concat(enum_name), constants} | acc]
+      end),
+      Enum.reduce(messages, [],
+      fn ({msg_name, fields}, acc) ->
+        [{Module.concat(msg_name), fields} | acc]
+      end)
+    }
   end
 
 
@@ -243,17 +272,11 @@ defmodule Protox.Parse do
   end
 
 
-  defp get_type(prefix, %FieldDescriptorProto{type_name: tyname, type: type})
-  when tyname != nil and type != nil
-  do
-    {type, fq_name(prefix, tyname)}
-  end
   defp get_type(prefix, %FieldDescriptorProto{type_name: tyname})
   when tyname != nil do
     # Documentation in descriptor.proto says that it's possible that `type_name` is set, but not
     # `type`. In this case, we'll have to resolve the type in a post-process pass.
-    # TODO.
-    {:type_to_resolve, fq_name(prefix, tyname)}
+    {:to_resolve, fq_name(prefix, tyname)}
   end
   defp get_type(_, descriptor) do
     descriptor.type
