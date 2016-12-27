@@ -1,9 +1,6 @@
 defmodule Protox.ParseTest do
   use ExUnit.Case
 
-  # In protox/test/samples:
-  # protoc --include_imports -o ./file_descriptor_set.bin  ./*.proto
-
   setup_all do
     data = File.read!("./test/samples/file_descriptor_set.bin");
     {enums, messages} = Protox.Parse.parse(data)
