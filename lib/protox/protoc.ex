@@ -3,8 +3,7 @@ defmodule Protox.Protoc do
   @moduledoc false
 
   def run(proto_files) do
-    # file = "#{Mix.Project.build_path}/protox_#{random_filename()}"
-    file = "foo.bin"
+    file = "#{Mix.Project.build_path}/protox_#{random_filename()}"
     ret = System.cmd(
       "protoc",
       ["--include_imports", "-o", file] ++ proto_files
