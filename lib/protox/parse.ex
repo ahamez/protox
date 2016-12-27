@@ -141,11 +141,20 @@ defmodule Protox.Parse do
       name = prefix ++ [descriptor.name]
 
       acc
+      |> add_message(name)
       |> make_messages(syntax, name, descriptor.nested_type)
       |> make_enums(name, descriptor.enum_type)
       |> add_fields(syntax, descriptor, name, descriptor.field)
       |> add_fields(syntax, descriptor, name, descriptor.extension)
     end
+  end
+
+
+  defp add_message({enums, msgs}, name) do
+    {
+      enums,
+      Map.put_new(msgs, name, [])
+    }
   end
 
 

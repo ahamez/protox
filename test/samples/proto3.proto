@@ -41,3 +41,6 @@ message Proto3 {
 
   NestedEnum nested_enum = 9999;
 }
+
+message EmptyProto3 {
+}
