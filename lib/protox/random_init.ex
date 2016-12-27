@@ -43,7 +43,7 @@ defmodule Protox.RandomInit do
     Enum.reduce(1..:rand.uniform(10), <<>>, fn (b, acc) -> <<b, acc::binary>> end)
   end
   defp value({:default, _}, :string) do
-    if sign() == 1, do: "#{inspect make_ref()}", else: ""
+    if sign() == 1, do: "#{Protox.Util.random_string(:rand.uniform(100))}", else: ""
   end
   defp value({:default, _}, {:message, name}) do
     if :rand.uniform(2) == 1 do
