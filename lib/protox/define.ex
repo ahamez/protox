@@ -100,7 +100,6 @@ defmodule Protox.Define do
           end
 
 
-          @spec defs() :: struct
           def defs(), do: unquote(fields_map)
 
         end # module
