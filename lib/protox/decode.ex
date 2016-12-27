@@ -46,7 +46,6 @@ defmodule Protox.Decode do
       {value, new_rest} = parse_value(rest, wire_type, type)
       {set_field(msg, name, kind, value), new_rest}
     else
-      # TODO. Keep unknown bytes?
       {msg, parse_unknown(wire_type, rest)}
     end
 

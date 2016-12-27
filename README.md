@@ -35,6 +35,7 @@ Furthermore, all options other than `packed` and `default` are ignored.
   }
   ```
 
+* When decoding, fields for which tags are unknown are discarded.
 
 # Conformance
 
