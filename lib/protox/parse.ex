@@ -187,7 +187,7 @@ defmodule Protox.Parse do
 
     field =  {descriptor.number, label, String.to_atom(descriptor.name), kind, type}
 
-    {enums, Map.update(msgs, msg_name, [field], &([field|&1]))}
+    {enums, Map.update!(msgs, msg_name, &([field|&1]))}
   end
 
 
