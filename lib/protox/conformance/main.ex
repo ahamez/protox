@@ -1,5 +1,7 @@
 defmodule Protox.Conformance.Main do
 
+  @moduledoc false
+
   def main(_args) do
     :io.setopts(:standard_io, encoding: :latin1)
 

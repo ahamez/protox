@@ -110,7 +110,7 @@ defmodule Protox.Parse do
       Map.put(
         enums,
         prefix ++ [descriptor.name],
-        make_enum_constants([], descriptor.value) |> Enum.reverse()
+        [] |> make_enum_constants(descriptor.value) |> Enum.reverse()
       ),
       msgs
     }
@@ -304,13 +304,13 @@ defmodule Protox.Parse do
     f.default_value
   end
   defp get_default_value(:proto2, f = %FieldDescriptorProto{type: :double}) do
-    Float.parse(f.default_value) |> elem(0)
+    f.default_value |> Float.parse() |> elem(0)
   end
   defp get_default_value(:proto2, f = %FieldDescriptorProto{type: :float}) do
-    Float.parse(f.default_value) |> elem(0)
+    f.default_value |> Float.parse() |> elem(0)
   end
   defp get_default_value(:proto2, f) do
-    Integer.parse(f.default_value) |> elem(0)
+    f.default_value |> Integer.parse() |> elem(0)
   end
 
 end

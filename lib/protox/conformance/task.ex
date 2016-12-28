@@ -1,5 +1,7 @@
 defmodule Mix.Tasks.Protox.Conformance do
 
+  @moduledoc false
+
   use Mix.Task
 
   def run(args) do

@@ -1,5 +1,9 @@
 defmodule Protox.Default do
 
+   @moduledoc"""
+   Default values of Protocol Buffers types.
+   """
+
   def default(:bool)     , do: false
   def default(:int32)    , do: 0
   def default(:uint32)   , do: 0
