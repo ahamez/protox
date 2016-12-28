@@ -1,6 +1,6 @@
 # Protox
 
-[![Build Status](https://travis-ci.org/ahamez/protox.svg?branch=master)](https://travis-ci.org/ahamez/protox) [![Coverage Status](https://coveralls.io/repos/github/ahamez/protox/badge.svg?branch=master)](https://coveralls.io/github/ahamez/protox?branch=master)
+[![Build Status](https://travis-ci.org/ahamez/protox.svg?branch=master)](https://travis-ci.org/ahamez/protox) [![Coverage Status](https://coveralls.io/repos/github/ahamez/protox/badge.svg?branch=master)](https://coveralls.io/github/ahamez/protox?branch=master) [![Deps Status](https://beta.hexfaktor.org/badge/all/github/ahamez/protox.svg)](https://beta.hexfaktor.org/github/ahamez/protox)
 
 
 **TODO: Add description**
