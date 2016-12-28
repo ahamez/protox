@@ -230,7 +230,7 @@ defmodule Protox.DefineEncoder do
       encode_message(unquote(var))
     end
   end
-  defp get_encode_value_ast({:enum, {_, _, enum}}, var) do
+  defp get_encode_value_ast({:enum, enum}, var) do
     mod = Module.concat(enum)
     quote do
       unquote(var) |> unquote(mod).encode() |> encode_enum()

@@ -7,17 +7,33 @@ defmodule Protox.Define do
 
 
   defmacro __using__(enums: enums, messages: messages) do
-    define(
-      Enum.map(enums,
-        fn {{_, _, name}, constant_values} ->
-          {name, constant_values}
-        end),
-      Enum.map(messages,
-       fn {{_, _, name}, fs} ->
-          fields = for {_, _, f} <- fs, do: List.to_tuple(f)
-          {name, fields}
-       end)
-    )
+    # Cleanup enums and messages to remove macro related stuff. Somehow, it feels wrong.
+    # There's must a better way to do this.
+
+    enums_p = Enum.map(enums,
+      fn {{_, _, name}, constant_values} ->
+       {name, constant_values}
+      end)
+
+    messages_p = Enum.map(messages,
+      fn {{_, _, name}, fs} ->
+        fields = for {_, _, f} <- fs do
+          case List.to_tuple(f) do
+            {tag, label, name, kind, {enum_or_msg, {_, _, emname}}} ->
+              {tag, label, name, kind, {enum_or_msg, emname}}
+
+            {tag, label, name, :map, {key_type, {enum_or_msg, {_, _, emname}}}} ->
+              {tag, label, name, :map, {key_type, {enum_or_msg, emname}}}
+
+            t ->
+              t
+          end
+        end
+
+        {name, fields}
+     end)
+
+    define(enums_p, messages_p)
   end
 
 
@@ -164,27 +180,11 @@ defmodule Protox.Define do
     |> Enum.reduce(%{},
       fn ({tag, _, name, kind, type}, acc) ->
         ty = case {kind, type} do
-          {:map, {key_type, {:message, msg}}} ->
-            {
-              key_type,
-              {:message, msg |> elem(2) |> Module.concat()}
-            }
-
-
-          {:map, {key_type, {:enum, {_, _, enum}}}} ->
-            {
-              key_type,
-              {:enum, Module.concat(enum)}
-            }
-
-          {_, {:enum, {_, _, enum}}} ->
-            {:enum, Module.concat(enum)}
-
-          {_, {:message, msg}} ->
-            {:message, msg |> elem(2) |> Module.concat()}
-
-          {_, ty} ->
-            ty
+          {:map, {key_type, {:message, msg}}} -> {key_type, {:message, msg |> Module.concat()}}
+          {:map, {key_type, {:enum, enum}}}   -> {key_type, {:enum, Module.concat(enum)}}
+          {_, {:enum, enum}}                  -> {:enum, Module.concat(enum)}
+          {_, {:message, msg}}                -> {:message, msg |> Module.concat()}
+          {_, ty}                             -> ty
         end
         Map.put(acc, tag, {name, kind, ty})
       end)
