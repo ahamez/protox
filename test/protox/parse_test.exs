@@ -46,9 +46,6 @@ defmodule Protox.ParseTest do
   test "Parse FileDescriptorSet, protobuf 2 enums",
   %{enums: enums}
   do
-    {_, constants} = Enum.find(enums, fn {name, _} -> name == ["E"] end)
-    assert constants == [{1, :E_ONE}, {2, :E_TWO}]
-
     {_, constants} = Enum.find(enums, fn {name, _} -> name == ["Proto2A", "NestedEnum"] end)
     assert constants == [{0, :N_ZERO}, {3, :N_THREE}]
   end

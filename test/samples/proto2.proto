@@ -2,11 +2,6 @@ syntax = "proto2";
 
 // no package intentionally
 
-enum E {
-  E_ONE = 1;
-  E_TWO = 2;
-}
-
 message Proto2A {
 
   enum NestedEnum {
