@@ -15,7 +15,7 @@ defmodule Protox do
 
   Note that the files should reside in the same sub-directory.
 
-  It's also possible to give a definition as a struct:
+  It's also possible to give a definition as a text:
 
     ```
     defmodule Bar do
