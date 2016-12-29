@@ -2,7 +2,7 @@ defmodule Protox.Parse do
 
   @moduledoc """
   Parse a protobuf encoded description (Google.Protobuf.FileDescriptorSet)
-  of a set of .proto files This description is produced by `protoc`.
+  of a set of .proto files. This description is produced by `protoc`.
   """
 
   def parse(file_descriptor_set) do

@@ -58,4 +58,3 @@ defmodule Protox do
   end
 
 end
-
