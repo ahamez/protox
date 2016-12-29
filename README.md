@@ -3,19 +3,75 @@
 [![Build Status](https://travis-ci.org/ahamez/protox.svg?branch=master)](https://travis-ci.org/ahamez/protox) [![Coverage Status](https://coveralls.io/repos/github/ahamez/protox/badge.svg?branch=master)](https://coveralls.io/github/ahamez/protox?branch=master) [![Deps Status](https://beta.hexfaktor.org/badge/prod/github/ahamez/protox.svg)](https://beta.hexfaktor.org/github/ahamez/protox)
 
 
-**TODO: Add description**
+Protox is an Elixir library to work with Google's Protocol Buffers.
+It supports both versions 2 and 3.
 
+# Usage
+
+From files:
+
+```elixir
+defmodule Foo do
+  use Protox, files: [
+    "./defs/foo.proto",
+    "./defs/bar.proto",
+    "./defs/baz/fiz.proto",
+  ]
+end
+```
+
+From a textual description:
+
+```elixir
+defmodule Bar do
+  use Protox, """
+  syntax = "proto3";
+
+  package fiz;
+
+  message Baz {
+  }
+
+  message Foo {
+    int32 a = 1;
+    map<int32, Baz> b = 2;
+  }
+  """
+end
+```
+
+The previous example will generate two modules: `Fiz.Baz` and `Fiz.Foo`. Here's how to create a new message:
+
+```elixir
+iex> %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}} |> Protox.Encode.encode()
+[[[], "\b", <<3>>], <<18>>, <<4>>, "\b", <<1>>, <<18>>, <<0>>]
+```
+
+Note that `Protox.Encode.encode/1` creates an iolist, not a binary.
+However, you can use `Protox.Encode.encode_binary/1` to do so:
+
+```elixir
+iex> bytes = %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}} |> Protox.Encode.encode_binary()
+<<8, 3, 18, 4, 8, 1, 18, 0>>
+```
+
+Finally, here's how to decode:
+
+```elixir
+iex> bytes |> Fiz.Foo.decode()
+{:ok, %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}}}
+```
 
 # Prerequisites
 
-Protox uses Google's `protoc` to pase `.proto` files. It must be available in `$PATH`.
+Protox uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`.
 You can get it [here](https://github.com/google/protobuf).
 
 
 # Unsupported features
 
-* groups
 * protobuf 3 JSON mapping
+* groups
 * rpc
 
 Furthermore, all options other than `packed` and `default` are ignored.
@@ -36,6 +92,40 @@ Furthermore, all options other than `packed` and `default` are ignored.
   ```
 
 * When decoding, fields for which tags are unknown are discarded.
+
+* Unset optionals
+  * For protobuf 2, unset optional fields are mapped to `nil`
+  * For protobuf 3, unset optional fields are mapped to their default values, as mandated by the protobuf spec
+
+
+# Types mapping
+
+Protobuf   | Elixir
+-----------|--------------
+int32      | integer()
+int64      | integer()
+uint32     | integer()
+uint64     | integer()
+sint32     | integer()
+sint64     | integer()
+fixed32    | integer()
+fixed64    | integer()
+sfixed32   | integer()
+sfixed64   | integer()
+float      | float()
+double     | float()
+bool       | boolean()
+string     | String.t
+bytes      | binary()
+map        | %{}
+oneof      | {:field, value}
+enum       | atom()
+message    | struct()
+
+
+# Performance
+
+TODO. Do some benchmarks.
 
 # Conformance
 
@@ -69,6 +159,5 @@ CONFORMANCE SUITE PASSED: 149 successes, 384 skipped, 0 expected failures, 0 une
 
 # Credits
 
-[gpb](https://github.com/tomas-abrahamsson/gpb)
-
-[exprotobuf](https://github.com/bitwalker/exprotobuf)
+Both [gpb](https://github.com/tomas-abrahamsson/gpb) and [exprotobuf](https://github.com/bitwalker/exprotobuf)
+were very useful in understanding how to implement Protocol Buffers.
