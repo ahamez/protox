@@ -28,12 +28,22 @@ defmodule Protox.Parse do
     messages_p = for {mname, fields} <- messages, into: %{}
     do
       {
-        mname,
-        Enum.map(fields, &(&1 |> resolve_types(enums, messages) |> post_process_pass(enums)))
+        Module.concat(mname),
+        Enum.map(fields,
+          &(&1 |> resolve_types(enums, messages) |> default_value(enums) |> concat_names())
+        )
       }
     end
 
-    {enums, messages_p}
+    enums_p = for {ename, constants} <- enums, into: %{}
+    do
+      {
+        Module.concat(ename),
+        constants
+      }
+    end
+
+    {enums_p, messages_p}
   end
 
 
@@ -54,13 +64,28 @@ defmodule Protox.Parse do
   end
 
 
-  defp post_process_pass(
-    {tag, label, name, {:default, :default_value_to_resolve}, {:enum, ename}}, enums
-  ) do
+  defp default_value({tag, label, name, {:default, :default_to_resolve}, {:enum, ename}}, enums) do
     [{_, first_is_default} | _] = Map.fetch!(enums, ename)
     {tag, label, name, {:default, first_is_default}, {:enum, ename}}
   end
-  defp post_process_pass(field, _) do
+  defp default_value(field, _) do
+    field
+  end
+
+
+  defp concat_names({tag, label, name, kind, {:enum, ename}}) do
+    {tag, label, name, kind, {:enum, Module.concat(ename)}}
+  end
+  defp concat_names({tag, label, name, kind, {:message, mname}}) do
+    {tag, label, name, kind, {:message, Module.concat(mname)}}
+  end
+  defp concat_names({tag, label, name, :map, {key_type, {:message, mname}}}) do
+    {tag, label, name, :map, {key_type, {:message, Module.concat(mname)}}}
+  end
+  defp concat_names({tag, label, name, :map, {key_type, {:enum, ename}}}) do
+    {tag, label, name, :map, {key_type, {:enum, Module.concat(ename)}}}
+  end
+  defp concat_names(field) do
     field
   end
 
@@ -215,9 +240,9 @@ defmodule Protox.Parse do
           nil
 
         m ->
-          key_type   = Enum.find(m.field, &(&1.name == "key")).type
+          key_type         = Enum.find(m.field, &(&1.name == "key")).type
           value_type_field = Enum.find(m.field, &(&1.name == "value"))
-          value_type = get_type(value_type_field)
+          value_type       = get_type(value_type_field)
 
           {key_type, value_type}
       end
@@ -274,7 +299,7 @@ defmodule Protox.Parse do
 
   defp get_default_value(:proto3, %FieldDescriptorProto{type: :enum}) do
     # Real default value will be resolved later as the corresponding enum might not exist yet.
-    :default_value_to_resolve
+    :default_to_resolve
   end
   defp get_default_value(:proto3, %FieldDescriptorProto{type: :message}) do
     nil
