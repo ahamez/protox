@@ -52,7 +52,8 @@ defmodule Protox.Conformance.Main do
     case TestAllTypes.decode(payload) do
       {:ok, msg} ->
         IO.binwrite(log_file, "Parse: success.\n")
-        %ConformanceResponse{result: {:protobuf_payload, Protox.Encode.encode_binary(msg)}}
+        encoded_payload = msg |> Protox.Encode.encode() |> :binary.list_to_bin()
+        %ConformanceResponse{result: {:protobuf_payload, encoded_payload}}
 
       {:error, reason} ->
         IO.binwrite(log_file, "Parse error: #{inspect reason}\n")
@@ -99,7 +100,7 @@ defmodule Protox.Conformance.Main do
 
 
   defp make_message_bytes(msg) do
-    data = Protox.Encode.encode_binary(msg)
+    data = msg |> Protox.Encode.encode() |> :binary.list_to_bin()
     <<byte_size(data)::unsigned-little-32, data::binary>>
   end
 

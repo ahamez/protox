@@ -13,11 +13,6 @@ defmodule Protox.Encode do
   end
 
 
-  def encode_binary(msg) do
-    msg |> encode() |> :binary.list_to_bin()
-  end
-
-
   def make_key_bytes(tag, ty) do
     Varint.LEB128.encode(make_key(tag, ty))
   end
@@ -69,7 +64,7 @@ defmodule Protox.Encode do
     <<len::binary, value::binary>>
   end
   def encode_message(value) do
-    encoded = encode_binary(value)
+    encoded = value |> encode() |> :binary.list_to_bin()
     len = encoded |> byte_size() |> Varint.LEB128.encode()
     <<len::binary, encoded::binary>>
   end

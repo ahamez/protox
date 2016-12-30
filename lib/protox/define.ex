@@ -73,12 +73,6 @@ defmodule Protox.Define do
           unquote(encoder)
 
 
-          @spec encode_binary(struct) :: binary
-          def encode_binary(msg = %unquote(msg_name){}) do
-            Protox.Encode.encode_binary(msg)
-          end
-
-
           @spec decode!(binary) :: struct | no_return
           def decode!(bytes) do
             Protox.Decode.decode!(bytes, unquote(msg_name))
