@@ -84,11 +84,7 @@ defmodule Protox.DefineEncoder do
       if unquote(var) == unquote(default) do
         acc
       else
-        [
-          acc,
-          unquote(key),
-          unquote(encode_value_ast),
-        ]
+        [acc, unquote(key), unquote(encode_value_ast)]
       end
     end
   end
@@ -215,8 +211,7 @@ defmodule Protox.DefineEncoder do
       values,
       [],
       fn (unquote(var), acc) ->
-        bytes =
-        [acc, unquote(key), unquote(encode_value_ast)]
+        bytes = [acc, unquote(key), unquote(encode_value_ast)]
       end)
     end
   end
