@@ -147,11 +147,9 @@ defmodule Protox.DefineEncoder do
     encode_map_key_ast   = get_encode_value_ast(map_key_type, k_var)
     encode_map_value_ast = get_encode_value_ast(map_value_type, v_var)
 
-    map_key_key_bytes = Protox.Encode.make_key_bytes(1, map_key_type)
-    map_key_key_len   = byte_size(map_key_key_bytes)
-
+    map_key_key_bytes   = Protox.Encode.make_key_bytes(1, map_key_type)
     map_value_key_bytes = Protox.Encode.make_key_bytes(2, map_value_type)
-    map_value_key_len   = byte_size(map_value_key_bytes)
+    map_keys_len        = byte_size(map_value_key_bytes) + byte_size(map_key_key_bytes)
 
     quote do
       map = Map.fetch!(msg, unquote(name))
@@ -169,9 +167,8 @@ defmodule Protox.DefineEncoder do
             map_value_value_len   = byte_size(map_value_value_bytes)
 
             len = Varint.LEB128.encode(
-              unquote(map_key_key_len) +
+              unquote(map_keys_len) +
               map_key_value_len +
-              unquote(map_value_key_len) +
               map_value_value_len
             )
 
