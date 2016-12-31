@@ -11,7 +11,7 @@ defmodule Protox.Mixfile do
       start_permanent: Mix.env == :prod,
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
-      escript: [main_module: Protox.Conformance.Main, name: "protox_conformance"]
+      escript: [main_module: Protox.Escript.Main]
     ]
   end
 

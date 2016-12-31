@@ -1,12 +1,13 @@
-defmodule Protox.Conformance.Main do
+defmodule Protox.Escript.Conformance do
 
   @moduledoc false
 
-  def main(_args) do
+  def run() do
     :io.setopts(:standard_io, encoding: :latin1)
 
-    log_file = File.open!("./conformance_report.txt", [:write])
-    loop(log_file)
+    "./conformance_report.txt"
+    |> File.open!([:write])
+    |> loop()
   end
 
 
