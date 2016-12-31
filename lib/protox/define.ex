@@ -1,10 +1,7 @@
 defmodule Protox.Define do
 
-  @moduledoc """
-  Generates struct from message and enumeration definitions.
-  The encoding function is also generated for each message.
-  """
-
+  @moduledoc false
+  # Generates structs from message and enumeration definitions.
 
   defmacro __using__(enums: enums, messages: messages) do
     define(

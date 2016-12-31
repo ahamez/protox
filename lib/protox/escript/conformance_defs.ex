@@ -1,15 +1,9 @@
 defmodule Protox.Conformance.Defs do
 
-  @moduledoc """
-  This module contains definitions from both `conformance.proto` and `test_messages_proto3.proto`,
-  which are used by `conformance-test-runner`.
+  @moduledoc false
 
-  test_messages_proto3.proto:
-  https://raw.githubusercontent.com/google/protobuf/master/src/google/protobuf/test_messages_proto3.proto
-
-  conformance.proto:
-  https://raw.githubusercontent.com/google/protobuf/master/conformance/conformance.proto
-  """
+  # This module contains definitions from both `conformance.proto` and
+  # `test_messages_proto3.proto`, which are used by `conformance-test-runner`.
 
   use Protox.Define,
     enums: [

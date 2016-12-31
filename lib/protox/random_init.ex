@@ -6,7 +6,7 @@ defmodule Protox.RandomInit do
 
   import Protox.Guards
 
-  def gen(mod) do
+  def generate(mod) do
     Enum.reduce(mod.defs(), struct(mod.__struct__),
       fn ({_, {name, kind, type}}, msg) ->
         case kind do
@@ -47,7 +47,7 @@ defmodule Protox.RandomInit do
   end
   defp value({:default, _}, {:message, name}) do
     if :rand.uniform(2) == 1 do
-      Protox.RandomInit.gen(name)
+      Protox.RandomInit.generate(name)
     else
       nil
     end

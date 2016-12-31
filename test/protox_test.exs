@@ -29,19 +29,19 @@ defmodule ProtoxTest do
 
 
   test "symmetric (Sub)" do
-    msg = Protox.RandomInit.gen(Sub)
+    msg = Protox.RandomInit.generate(Sub)
     assert (msg |> Sub.encode() |> :binary.list_to_bin() |> Sub.decode!()) == msg
   end
 
 
   test "symmetric (Msg)" do
-    msg = Protox.RandomInit.gen(Msg)
+    msg = Protox.RandomInit.generate(Msg)
     assert (msg |> Msg.encode() |> :binary.list_to_bin() |> Msg.decode!()) == msg
   end
 
 
   test "symmetric (Upper)" do
-    msg = Protox.RandomInit.gen(Upper)
+    msg = Protox.RandomInit.generate(Upper)
     assert (msg |> Upper.encode() |> :binary.list_to_bin() |> Upper.decode!()) == msg
   end
 
