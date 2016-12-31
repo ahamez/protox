@@ -4,8 +4,6 @@ defmodule Protox.Decode do
   Decodes a binary into a message.
   """
 
-
-  import Protox.Guards
   use Bitwise
 
 
