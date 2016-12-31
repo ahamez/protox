@@ -43,12 +43,19 @@ defmodule Defs do
         {24   , :optional, :r, {:default, :FOO}, {:enum, E}},
         {25   , :optional, :s, {:default, :ONE}, {:enum, F}},
         {26   , :optional, :t, {:default, nil} , {:enum, F}},
+        {27   , :repeated, :u, :packed         , :uint32},
+        {28   , :repeated, :w, :packed         , :sint32},
+        {29   , :repeated, :x, :packed         , :int64},
+        {30   , :repeated, :y, :packed         , :uint64},
         {10001, :required, :z, {:default, 0}   , :sint32},
       ]
     },
     {
       Msg,
       [
+        {27 , :repeated, :a           , :packed               , :sint64},
+        {28 , :repeated, :b           , :packed               , :fixed32},
+        {29 , :repeated, :c           , :packed               , :sfixed64},
         {1  , :optional, :d           , {:default, :FOO}      , {:enum, E}},
         {2  , :optional, :e           , {:default, false}     , :bool},
         {3  , :optional, :f           , {:default, nil}       , {:message, Sub}},

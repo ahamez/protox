@@ -247,6 +247,59 @@ defmodule Protox.DecodeTest do
   end
 
 
+  test "Sub.u" do
+    bytes = <<218, 1, 6, 0, 1, 2, 3, 144, 78>>
+    assert Sub.decode!(bytes) ==\
+           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [], u: [0, 1, 2, 3, 10000], z: 0}
+  end
+
+
+  test "Sub.w" do
+    bytes = <<226, 1, 7, 0, 1, 4, 5, 160, 156, 1>>
+    assert Sub.decode!(bytes) ==\
+           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [], w: [0, -1, 2, -3, 10000], z: 0}
+  end
+
+
+  test "Sub.x" do
+    bytes = <<234, 1, 24, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 1, 2, 253, 255,
+              255, 255, 255, 255, 255, 255, 255, 1, 144, 78>>
+    assert Sub.decode!(bytes) ==\
+           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [], x: [0, -1, 2, -3, 10000], z: 0}
+  end
+
+
+  test "Sub.y" do
+    bytes = <<242, 1, 6, 0, 1, 2, 3, 144, 78>>
+    assert Sub.decode!(bytes) ==\
+           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [], y: [0, 1, 2, 3, 10000], z: 0}
+  end
+
+
+  test "Msg.a" do
+    bytes = <<218, 1, 7, 0, 2, 3, 6, 159, 156, 1>>
+    assert Msg.decode!(bytes) ==\
+           %Msg{a: [0, 1, -2, 3, -10000]}
+  end
+
+
+  test "Msg.b" do
+    bytes = <<226, 1, 20, 0, 0, 0, 0, 1, 0, 0, 0, 254, 255, 255, 255, 3, 0, 0, 0, 240, 216,
+              255, 255>>
+    assert Msg.decode!(bytes) ==\
+           %Msg{b: [0, 1, -2, 3, -10000]}
+  end
+
+
+  test "Msg.c" do
+    bytes = <<234, 1, 40, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 254, 255, 255,
+              255, 255, 255, 255, 255, 3, 0, 0, 0, 0, 0, 0, 0, 240, 216, 255, 255, 255, 255,
+              255, 255>>
+    assert Msg.decode!(bytes) ==\
+           %Msg{c: [0, 1, -2, 3, -10000]}
+  end
+
+
   test "Msg.Sub.a" do
     bytes = <<26, 3, 8, 150, 1>>
     assert Msg.decode!(bytes) ==\
