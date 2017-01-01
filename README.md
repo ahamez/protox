@@ -24,7 +24,7 @@ From a textual description:
 
 ```elixir
 defmodule Bar do
-  use Protox, """
+  use Protox, schema: """
   syntax = "proto3";
 
   package fiz;
