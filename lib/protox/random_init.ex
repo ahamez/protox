@@ -6,7 +6,25 @@ defmodule Protox.RandomInit do
 
   import Protox.Guards
 
-  def generate(mod) do
+
+  @doc """
+  Generates a randomly initialized message using its definition. It's possible to
+  give a seed as the second parameter to get reproducible results.
+
+  """
+  @spec generate(atom, nil | integer) :: struct
+  def generate(mod, seed \\ nil) do
+    if seed != nil do
+      :rand.seed(:exs1024, {seed, seed, seed})
+    end
+    do_generate(mod)
+  end
+
+
+  # -- Private
+
+
+  defp do_generate(mod) do
     Enum.reduce(mod.defs(), struct(mod.__struct__),
       fn ({_, {name, kind, type}}, msg) ->
         case kind do
@@ -15,9 +33,6 @@ defmodule Protox.RandomInit do
         end
       end)
   end
-
-
-  # -- Private
 
 
   # Recursively descend a message definition to randomly init fields.
@@ -47,7 +62,7 @@ defmodule Protox.RandomInit do
   end
   defp value({:default, _}, {:message, name}) do
     if :rand.uniform(2) == 1 do
-      Protox.RandomInit.generate(name)
+      do_generate(name)
     else
       nil
     end

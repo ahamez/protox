@@ -28,20 +28,29 @@ defmodule ProtoxTest do
   ]
 
 
-  test "symmetric (Sub)" do
-    msg = Protox.RandomInit.generate(Sub)
+  setup_all do
+    {
+      :ok,
+      seed: Keyword.get(ExUnit.configuration(), :seed)
+    }
+  end
+
+
+  test "symmetric (Sub)", %{seed: seed} do
+    msg = Protox.RandomInit.generate(Sub, seed)
+    IO.puts "@@@ #{inspect msg}"
     assert (msg |> Sub.encode() |> :binary.list_to_bin() |> Sub.decode!()) == msg
   end
 
 
-  test "symmetric (Msg)" do
-    msg = Protox.RandomInit.generate(Msg)
+  test "symmetric (Msg)", %{seed: seed} do
+    msg = Protox.RandomInit.generate(Msg, seed)
     assert (msg |> Msg.encode() |> :binary.list_to_bin() |> Msg.decode!()) == msg
   end
 
 
-  test "symmetric (Upper)" do
-    msg = Protox.RandomInit.generate(Upper)
+  test "symmetric (Upper)", %{seed: seed} do
+    msg = Protox.RandomInit.generate(Upper, seed)
     assert (msg |> Upper.encode() |> :binary.list_to_bin() |> Upper.decode!()) == msg
   end
 
