@@ -1,7 +1,8 @@
 defmodule ProtoxTest do
   use ExUnit.Case
 
-  use Protox, """
+
+  use Protox, schema: """
     syntax = "proto3";
     package fiz;
 
@@ -9,16 +10,36 @@ defmodule ProtoxTest do
     }
 
     message Foo {
+      Enum a = 1;
       map<int32, Baz> b = 2;
     }
-  """
 
-  use Protox, """
+    enum Enum {
+      FOO = 0;
+      BAR = 1;
+    }
+  """,
+  namespace: Namespace
+
+
+  use Protox, schema: """
   syntax = "proto3";
 
   message Buz{
   }
   """
+
+
+  use Protox, schema: """
+  syntax = "proto3";
+
+  enum Enum {
+      FOO = 0;
+      BAR = 1;
+    }
+  """,
+  namespace: Namespace
+
 
 
   use Protox, files: [
@@ -38,7 +59,6 @@ defmodule ProtoxTest do
 
   test "symmetric (Sub)", %{seed: seed} do
     msg = Protox.RandomInit.generate(Sub, seed)
-    IO.puts "@@@ #{inspect msg}"
     assert (msg |> Sub.encode() |> :binary.list_to_bin() |> Sub.decode!()) == msg
   end
 
@@ -56,9 +76,14 @@ defmodule ProtoxTest do
 
 
   test "from text" do
-    assert Fiz.Baz.defs() == %{}
-    assert Fiz.Foo.defs() == %{2 => {:b, :map, {:int32, {:message, Fiz.Baz}}}}
+    assert Namespace.Fiz.Enum.constants() == [{0, :FOO}, {1, :BAR}]
+    assert Namespace.Fiz.Baz.defs() == %{}
+    assert Namespace.Fiz.Foo.defs() == %{
+      1 => {:a, {:default, :FOO}, {:enum, Namespace.Fiz.Enum}},
+      2 => {:b, :map, {:int32, {:message, Namespace.Fiz.Baz}}},
+    }
     assert Buz.defs() == %{}
+    assert Namespace.Enum.constants() == [{0, :FOO}, {1, :BAR}]
   end
 
 

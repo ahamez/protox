@@ -4,12 +4,12 @@ defmodule Protox.Parse do
   # Creates definitions from a protobuf encoded description (Google.Protobuf.FileDescriptorSet)
   # of a set of .proto files. This description is produced by `protoc`.
 
-  def parse(file_descriptor_set) do
+  def parse(file_descriptor_set, namespace \\ nil) do
     {:ok, descriptor} = Google.Protobuf.FileDescriptorSet.decode(file_descriptor_set)
 
     {%{}, %{}} # enums, messages
     |> parse_files(descriptor.file)
-    |> post_process()
+    |> post_process(namespace)
     |> to_definition()
   end
 
@@ -23,13 +23,13 @@ defmodule Protox.Parse do
   }
 
 
-  defp post_process({enums, messages}) do
+  defp post_process({enums, messages}, namespace) do
     messages_p = for {mname, fields} <- messages, into: %{}
     do
       {
-        Module.concat(mname),
+        Module.concat([namespace | mname]),
         Enum.map(fields,
-          &(&1 |> resolve_types(enums, messages) |> default_value(enums) |> concat_names())
+          &(&1 |> resolve_types(enums, messages) |> default_value(enums) |> concat_names(namespace))
         )
       }
     end
@@ -37,7 +37,7 @@ defmodule Protox.Parse do
     enums_p = for {ename, constants} <- enums, into: %{}
     do
       {
-        Module.concat(ename),
+        Module.concat([namespace | ename]),
         constants
       }
     end
@@ -72,19 +72,19 @@ defmodule Protox.Parse do
   end
 
 
-  defp concat_names({tag, label, name, kind, {:enum, ename}}) do
-    {tag, label, name, kind, {:enum, Module.concat(ename)}}
+  defp concat_names({tag, label, name, kind, {:enum, ename}}, namespace) do
+    {tag, label, name, kind, {:enum, Module.concat([namespace | ename])}}
   end
-  defp concat_names({tag, label, name, kind, {:message, mname}}) do
-    {tag, label, name, kind, {:message, Module.concat(mname)}}
+  defp concat_names({tag, label, name, kind, {:message, mname}}, namespace) do
+    {tag, label, name, kind, {:message, Module.concat([namespace | mname])}}
   end
-  defp concat_names({tag, label, name, :map, {key_type, {:message, mname}}}) do
-    {tag, label, name, :map, {key_type, {:message, Module.concat(mname)}}}
+  defp concat_names({tag, label, name, :map, {key_type, {:message, mname}}}, namespace) do
+    {tag, label, name, :map, {key_type, {:message, Module.concat([namespace | mname])}}}
   end
-  defp concat_names({tag, label, name, :map, {key_type, {:enum, ename}}}) do
-    {tag, label, name, :map, {key_type, {:enum, Module.concat(ename)}}}
+  defp concat_names({tag, label, name, :map, {key_type, {:enum, ename}}}, namespace) do
+    {tag, label, name, :map, {key_type, {:enum, Module.concat([namespace | ename])}}}
   end
-  defp concat_names(field) do
+  defp concat_names(field, _) do
     field
   end
 

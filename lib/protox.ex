@@ -15,11 +15,11 @@ defmodule Protox do
 
   Note that the files should reside in the same sub-directory.
 
-  It's also possible to give a definition as a text:
+  It's also possible to directly give a schema:
 
     ```
     defmodule Bar do
-      use Protox, \"\"\"
+      use Protox, schema: \"\"\"
         syntax = "proto3";
         package fiz;
 
@@ -38,10 +38,14 @@ defmodule Protox do
 
   """
 
-  defmacro __using__(opts) do
+  defmacro __using__(args) do
+    namespace = case Keyword.get(args, :namespace) do
+      nil -> nil
+      n   -> n |> Code.eval_quoted() |> elem(0)
+    end
 
-    files = case opts do
-      text when is_binary(text) ->
+    files = case Keyword.delete(args, :namespace) do
+      schema: <<text::binary>> ->
         filename = "#{__CALLER__.module}_#{:crypto.hash(:sha, text) |> Base.encode16()}.proto"
         filepath = Path.join([Mix.Project.build_path(), filename]) |> Path.expand()
         File.write!(filepath, text)
@@ -52,7 +56,7 @@ defmodule Protox do
     end
 
     {:ok, file_descriptor_set} = Protox.Protoc.run(files)
-    {enums, messages} = Protox.Parse.parse(file_descriptor_set)
+    {enums, messages} = Protox.Parse.parse(file_descriptor_set, namespace)
 
     Protox.Define.define(enums, messages)
   end

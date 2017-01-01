@@ -40,7 +40,28 @@ defmodule Bar do
 end
 ```
 
-The previous example will generate two modules: `Fiz.Baz` and `Fiz.Foo`. Here's how to create a new message:
+The previous example will generate two modules: `Fiz.Baz` and `Fiz.Foo`.
+
+It's possible to prepend a namespace to all generated modules:
+
+```elixir
+defmodule Bar do
+  use Protox, schema: """
+    syntax = "proto3";
+
+    enum Enum {
+        FOO = 0;
+        BAR = 1;
+      }
+    """,
+    namespace: Namespace
+end
+```
+
+In this case, the module `Namespace.Enum` will be generated.
+
+
+Here's how to create a new message:
 
 ```elixir
 iex> %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}} |> Protox.Encode.encode()
