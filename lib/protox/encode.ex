@@ -31,30 +31,31 @@ defmodule Protox.Encode do
   def encode_varint_signed(value) do
     value |> Varint.Zigzag.encode() |> Varint.LEB128.encode()
   end
-  def encode_varint(value) do
+  def encode_varint_64(value) do
     <<res::unsigned-native-64>> = <<value::signed-native-64>>
     Varint.LEB128.encode(res)
   end
-  def encode_varint_unsigned(value) do
-    Varint.LEB128.encode(value)
+  def encode_varint_32(value) do
+    <<res::unsigned-native-32>> = <<value::signed-native-32>>
+    Varint.LEB128.encode(res)
   end
 
 
   def encode_bool(false)    , do: <<0>>
   def encode_bool(true)     , do: <<1>>
-  def encode_int32(value)   , do: encode_varint(value)
-  def encode_int64(value)   , do: encode_varint(value)
+  def encode_int32(value)   , do: encode_varint_32(value)
+  def encode_int64(value)   , do: encode_varint_64(value)
   def encode_sint32(value)  , do: encode_varint_signed(value)
   def encode_sint64(value)  , do: encode_varint_signed(value)
-  def encode_uint32(value)  , do: encode_varint_unsigned(value)
-  def encode_uint64(value)  , do: encode_varint_unsigned(value)
+  def encode_uint32(value)  , do: encode_varint_32(value)
+  def encode_uint64(value)  , do: encode_varint_64(value)
   def encode_fixed64(value) , do: <<value::little-64>>
   def encode_sfixed64(value), do: <<value::signed-little-64>>
   def encode_fixed32(value) , do: <<value::little-32>>
   def encode_sfixed32(value), do: <<value::signed-little-32>>
   def encode_double(value)  , do: <<value::float-little-64>>
   def encode_float(value)   , do: <<value::float-little-32>>
-  def encode_enum(value)    , do: encode_varint_unsigned(value)
+  def encode_enum(value)    , do: encode_varint_32(value)
   def encode_string(value) do
     len = Varint.LEB128.encode(byte_size(value))
     <<len::binary, value::binary>>

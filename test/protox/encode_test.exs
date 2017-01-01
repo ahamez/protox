@@ -214,7 +214,7 @@ defmodule Protox.EncodeTest do
 
   test "Msg.g (negative)" do
     assert Protox.Encode.encode(%Msg{g: [1, 2, -3]}) |> :binary.list_to_bin()
-           == <<34, 12, 1, 2, 253, 255, 255, 255, 255, 255, 255, 255, 255, 1>>
+           == <<34, 7, 1, 2, 253, 255, 255, 255, 15>>
   end
 
 
