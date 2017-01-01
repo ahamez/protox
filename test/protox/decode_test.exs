@@ -1,15 +1,6 @@
 defmodule Protox.DecodeTest do
   use ExUnit.Case
 
-  setup do
-    {
-      :ok,
-      msg_defs: Msg.defs(),
-      sub_defs: Sub.defs(),
-      upper_defs: Upper.defs(),
-    }
-  end
-
 
   test "Sub.a" do
     bytes = <<8, 150, 1>>

@@ -1,6 +1,7 @@
 defmodule Protox.EncodeTest do
   use ExUnit.Case
 
+
   test "empty", %{} do
     assert Protox.Encode.encode(%Sub{z: 0}) |> :binary.list_to_bin()
            == <<>>
