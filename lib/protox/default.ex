@@ -1,9 +1,15 @@
 defmodule Protox.Default do
 
-   @moduledoc"""
-   Default values of Protocol Buffers types.
-   """
+  @moduledoc"""
+  Default values of Protocol Buffers types. For protobuf2, it's useful in
+  conjunction for get the default values which have been set to `nil`,
+  that is which were not present on the wire.
+  """
 
+  @doc"""
+  Returns the default value of a Protocol Buffer type specified with an atom.
+  """
+  @spec default(atom) :: false | 0 | binary
   def default(:bool)     , do: false
   def default(:int32)    , do: 0
   def default(:uint32)   , do: 0
