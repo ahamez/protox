@@ -7,11 +7,13 @@ defmodule Protox.Decode do
   use Bitwise
 
 
+  @spec decode!(binary, atom) :: struct | no_return
   def decode!(bytes, mod) do
     parse_key_value(bytes, mod.defs(), struct(mod.__struct__))
   end
 
 
+  @spec decode(binary, atom) :: {:ok, struct} | {:error, any}
   def decode(bytes, mod) do
     try do
       {:ok, decode!(bytes, mod)}
