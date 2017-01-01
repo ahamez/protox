@@ -5,9 +5,10 @@ defmodule Defs do
       {
         E,
         [
-          {0, :FOO},
-          {1, :BAZ},
-          {1, :BAR}
+          {0,  :FOO},
+          {1,  :BAZ},
+          {1,  :BAR},
+          {-1, :NEG},
         ]
       },
       {

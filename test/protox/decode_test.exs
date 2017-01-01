@@ -217,6 +217,13 @@ defmodule Protox.DecodeTest do
   end
 
 
+  test "Sub.r, negative constant" do
+    bytes = <<192, 1, 255, 255, 255, 255, 255, 255, 255, 255, 255, 1>>
+    assert Sub.decode!(bytes) ==\
+           %Sub{r: :NEG, z: 0}
+  end
+
+
   test "Sub.s, default" do
     bytes = <<>>
     assert Sub.decode!(bytes) ==\

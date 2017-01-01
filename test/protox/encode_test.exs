@@ -134,6 +134,12 @@ defmodule Protox.EncodeTest do
   end
 
 
+  test "Sub.r, negative constant" do
+    assert Protox.Encode.encode(%Sub{r: :NEG, z: 0}) |> :binary.list_to_bin()
+           == <<192,1,255,255,255,255,255,255,255,255,255,1,>>
+  end
+
+
   test "Sub.s, default" do
     assert Protox.Encode.encode(%Sub{s: :ONE, z: 0}) |> :binary.list_to_bin()
            == <<>>
