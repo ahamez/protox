@@ -194,7 +194,7 @@ defmodule Protox.Decode do
 
   # Set the field correponding to `tag` in `msg` with `value`.
   defp set_field(msg, name, kind, value) do
-    {f, v} = case kind do
+    field_value = case kind do
       :map ->
         previous = Map.fetch!(msg, name)
         {name, Map.put(previous, elem(value, 0), elem(value, 1))}
@@ -210,7 +210,7 @@ defmodule Protox.Decode do
         {name, previous ++ List.wrap(value)}
     end
 
-    struct!(msg, [{f, v}])
+    struct!(msg, [field_value])
   end
 
 end
