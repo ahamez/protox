@@ -48,7 +48,7 @@ defmodule Defs do
         {28   , :repeated, :w, :packed         , :sint32},
         {29   , :repeated, :x, :packed         , :int64},
         {30   , :repeated, :y, :packed         , :uint64},
-        {10001, :required, :z, {:default, 0}   , :sint32},
+        {10001, :optional, :z, {:default, 0}   , :sint32},
       ]
     },
     {
@@ -84,6 +84,12 @@ defmodule Defs do
     {
       Empty,
       []
+    },
+    {
+      Required,
+      [
+        {1, :required, :a, {:default, 0}, :int32}
+      ]
     }
   ]
 

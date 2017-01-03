@@ -1,22 +1,26 @@
 defmodule Protox.Decode do
 
-  @moduledoc """
-  Decodes a binary into a message.
-  """
+  @moduledoc false
+  # Decodes a binary into a message.
 
   use Bitwise
 
 
-  @spec decode!(binary, atom) :: struct | no_return
-  def decode!(bytes, mod) do
-    parse_key_value(bytes, mod.defs(), struct(mod.__struct__))
+  @spec decode!(binary, atom, [atom]) :: struct | no_return
+  def decode!(bytes, mod, required_fields) do
+    {msg, set_fields} = parse_key_value([], bytes, mod.defs(), struct(mod.__struct__))
+
+    case required_fields -- set_fields  do
+      []             ->  msg
+      missing_fields -> raise "Missing required fields #{inspect missing_fields}"
+    end
   end
 
 
-  @spec decode(binary, atom) :: {:ok, struct} | {:error, any}
-  def decode(bytes, mod) do
+  @spec decode(binary, atom, [atom]) :: {:ok, struct} | {:error, any}
+  def decode(bytes, mod, required_fields) do
     try do
-      {:ok, decode!(bytes, mod)}
+      {:ok, decode!(bytes, mod, required_fields)}
     rescue
       e -> {:error, e}
     end
@@ -34,22 +38,22 @@ defmodule Protox.Decode do
   end
 
 
-  defp parse_key_value(<<>>, _, msg) do
-    msg
+  defp parse_key_value(set_fields, <<>>, _, msg) do
+    {msg, set_fields}
   end
-  defp parse_key_value(bytes, defs, msg) do
+  defp parse_key_value(set_fields, bytes, defs, msg) do
     {tag, wire_type, rest} = parse_key(bytes)
 
     field = defs[tag]
-    {new_msg, new_rest} = if field do
+    {new_set_fields, new_msg, new_rest} = if field do
       {name, kind, type} = field
       {value, new_rest} = parse_value(rest, wire_type, type)
-      {set_field(msg, name, kind, value), new_rest}
+      {[elem(field, 0)| set_fields], set_field(msg, name, kind, value), new_rest}
     else
-      {msg, parse_unknown(wire_type, rest)}
+      {set_fields, msg, parse_unknown(wire_type, rest)}
     end
 
-    parse_key_value(new_rest, defs, new_msg)
+    parse_key_value(new_set_fields, new_rest, defs, new_msg)
   end
 
 
@@ -102,7 +106,7 @@ defmodule Protox.Decode do
   defp parse_delimited(bytes, :string)          , do: bytes
   defp parse_delimited(bytes, :bytes)           , do: bytes
   defp parse_delimited(bytes, type = {:enum, _}), do: parse_repeated_varint([], bytes, type)
-  defp parse_delimited(bytes, {:message, name}) , do: decode!(bytes, name)
+  defp parse_delimited(bytes, {:message, name}) , do: decode!(bytes, name, name.required_fields())
   defp parse_delimited(bytes, :int32)           , do: parse_repeated_varint([], bytes, :int32)
   defp parse_delimited(bytes, :uint32)          , do: parse_repeated_varint([], bytes, :uint32)
   defp parse_delimited(bytes, :sint32)          , do: parse_repeated_varint([], bytes, :sint32)
@@ -122,7 +126,7 @@ defmodule Protox.Decode do
       2 => {:value, {:default, :dummy}, map_value_type},
     }
 
-    %MapEntry{key: map_key, value: map_value} = parse_key_value(bytes, defs, %MapEntry{})
+    {%MapEntry{key: map_key, value: map_value}, _} = parse_key_value([], bytes, defs, %MapEntry{})
     {map_key, map_value}
   end
 

@@ -78,8 +78,8 @@ iex> %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}} |> Protox.Encode.encode()
 [[[], "\b", <<3>>], <<18>>, <<4>>, "\b", <<1>>, <<18>>, <<0>>]
 ```
 
-Note that `Protox.Encode.encode/1` creates an iolist, not a binary. Such iolists can be used directly
-with file or sockets read/write operations.
+Note that `Protox.Encode.encode/1` creates an iolist, not a binary. Such iolists can be used
+directly with files or sockets read/write operations.
 However, you can use `:binary.list_to_bin()` to get a binary:
 
 ```elixir
@@ -106,6 +106,9 @@ Furthermore, all options other than `packed` and `default` are ignored.
 
 # Implementation choices
 
+* Required fields (protobuf 2): an error is raised when decoding a message with a missing required
+  field.
+
 * When decoding enum aliases, the last encountered constant will be used.
   For instance, in the following example, `:BAR` will always be used if the value `1` is read
   on the wire.
@@ -122,7 +125,8 @@ Furthermore, all options other than `packed` and `default` are ignored.
 
 * Unset optionals
   * For protobuf 2, unset optional fields are mapped to `nil`
-  * For protobuf 3, unset optional fields are mapped to their default values, as mandated by the protobuf spec
+  * For protobuf 3, unset optional fields are mapped to their default values, as mandated by
+    the protobuf spec
 
 
 # Types mapping
@@ -176,5 +180,6 @@ Here's how to launch the conformance test:
 
 # Credits
 
-Both [gpb](https://github.com/tomas-abrahamsson/gpb) and [exprotobuf](https://github.com/bitwalker/exprotobuf)
-were very useful in understanding how to implement Protocol Buffers.
+Both [gpb](https://github.com/tomas-abrahamsson/gpb) and
+[exprotobuf](https://github.com/bitwalker/exprotobuf) were very useful in
+understanding how to implement Protocol Buffers.
