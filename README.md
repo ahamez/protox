@@ -12,6 +12,10 @@ From files:
 
 ```elixir
 defmodule Foo do
+  @external_resource "./defs/foo.proto"
+  @external_resource "./defs/bar.proto"
+  @external_resource "./defs/baz/fiz.proto"
+
   use Protox, files: [
     "./defs/foo.proto",
     "./defs/bar.proto",
