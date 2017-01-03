@@ -3,8 +3,14 @@
 [![Build Status](https://travis-ci.org/ahamez/protox.svg?branch=master)](https://travis-ci.org/ahamez/protox) [![Coverage Status](https://coveralls.io/repos/github/ahamez/protox/badge.svg?branch=master)](https://coveralls.io/github/ahamez/protox?branch=master) [![Hex.pm Version](http://img.shields.io/hexpm/v/protox.svg)](https://hex.pm/packages/protox) [![Deps Status](https://beta.hexfaktor.org/badge/prod/github/ahamez/protox.svg)](https://beta.hexfaktor.org/github/ahamez/protox) [![Inline docs](http://inch-ci.org/github/ahamez/protox.svg)](http://inch-ci.org/github/ahamez/protox)
 
 
-Protox is an Elixir library to work with Google's Protocol Buffers.
-It supports both versions 2 and 3.
+Protox is an Elixir library to work with Google's Protocol Buffers (version 2 and 3).
+
+
+# Prerequisites
+
+Protox uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`.
+You can get it [here](https://github.com/google/protobuf).
+
 
 # Usage
 
@@ -87,11 +93,6 @@ Finally, here's how to decode:
 iex> <<8, 3, 18, 4, 8, 1, 18, 0>> |> Fiz.Foo.decode()
 {:ok, %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}}}
 ```
-
-# Prerequisites
-
-Protox uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`.
-You can get it [here](https://github.com/google/protobuf).
 
 
 # Unsupported features
