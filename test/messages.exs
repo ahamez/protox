@@ -90,6 +90,12 @@ defmodule Defs do
       [
         {1, :required, :a, {:default, 0}, :int32}
       ]
+    },
+    {
+      NoNameClash,
+      [
+        {1, :optional, :__unknown_fields__, {:default, 0}, :int32}
+      ]
     }
   ]
 

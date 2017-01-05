@@ -34,7 +34,10 @@ defmodule Protox.Decode do
     @moduledoc false
 
     defstruct key: nil,
-              value: nil
+              value: nil,
+              __unknown_fields__: []
+
+    def unknown_fields_name(), do: :__unknown_fields__
   end
 
 
@@ -50,7 +53,8 @@ defmodule Protox.Decode do
       {value, new_rest} = parse_value(rest, wire_type, type)
       {[elem(field, 0)| set_fields], set_field(msg, name, kind, value), new_rest}
     else
-      {set_fields, msg, parse_unknown(wire_type, rest)}
+      {new_msg, new_rest} = parse_unknown(msg, tag, wire_type, rest)
+      {set_fields, new_msg, new_rest}
     end
 
     parse_key_value(new_set_fields, new_rest, defs, new_msg)
@@ -178,18 +182,36 @@ defmodule Protox.Decode do
   end
 
 
-  defp parse_unknown(0, bytes)                  , do: get_varint_bytes(bytes)
-  defp parse_unknown(1, <<_::64, rest::binary>>), do: rest
-  defp parse_unknown(5, <<_::32, rest::binary>>), do: rest
-  defp parse_unknown(2, bytes) do
+  defp parse_unknown(msg, tag, 0, bytes) do
+    {unknown_bytes, rest} = get_unknown_varint_bytes(<<>>, bytes)
+    {add_unknown_field(msg, tag, 0, unknown_bytes), rest}
+  end
+  defp parse_unknown(msg, tag, 1, <<unknown_bytes::64, rest::binary>>) do
+    {add_unknown_field(msg, tag, 1, <<unknown_bytes::64>>), rest}
+  end
+  defp parse_unknown(msg, tag, 2, bytes) do
     {len, new_bytes} = Varint.LEB128.decode(bytes)
-    <<_::binary-size(len), rest::binary>> = new_bytes
-    rest
+    <<unknown_bytes::binary-size(len), rest::binary>> = new_bytes
+    {add_unknown_field(msg, tag, 2, unknown_bytes), rest}
+  end
+  defp parse_unknown(msg, tag, 5, <<unknown_bytes::32, rest::binary>>) do
+    {add_unknown_field(msg, tag, 5, <<unknown_bytes::32>>), rest}
   end
 
 
-  defp get_varint_bytes(<<0::1, _::7, rest::binary>>), do: rest
-  defp get_varint_bytes(<<1::1, _::7, rest::binary>>), do: get_varint_bytes(rest)
+  defp get_unknown_varint_bytes(acc, <<0::1, b::7, rest::binary>>) do
+    {<<acc::binary, 0::1, b::7>>, rest}
+  end
+  defp get_unknown_varint_bytes(acc, <<1::1, b::7, rest::binary>>) do
+    get_unknown_varint_bytes(<<acc::binary, 1::1, b::7>>, rest)
+  end
+
+
+  defp add_unknown_field(msg, tag, wire_type, bytes) do
+    unknown_fields_name = msg.__struct__.unknown_fields_name()
+    previous = Map.fetch!(msg, unknown_fields_name)
+    struct!(msg, [{unknown_fields_name, [{tag, wire_type, bytes} | previous]}])
+  end
 
 
   # Set the field correponding to `tag` in `msg` with `value`.

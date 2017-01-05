@@ -1,4 +1,5 @@
 * TODO.
+- Encode unknown fields
 - Size in the output of encode {len, iolist}?
 - Take a look at https://ebertapp.io?
 - Test on a big-endian platform

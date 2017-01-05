@@ -95,6 +95,12 @@ iex> <<8, 3, 18, 4, 8, 1, 18, 0>> |> Fiz.Foo.decode()
 ```
 
 
+# Unknown fields
+
+If any unknown field is encountered when decoding, it is kept in the decoded message.
+It's possible to acces them with the function `unknown_fields/1` defined with the message.
+
+
 # Unsupported features
 
 * protobuf 3 JSON mapping
@@ -120,8 +126,6 @@ Furthermore, all options other than `packed` and `default` are ignored.
     BAR = 1;
   }
   ```
-
-* When decoding, fields for which tags are unknown are discarded.
 
 * Unset optionals
   * For protobuf 2, unset optional fields are mapped to `nil`

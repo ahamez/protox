@@ -49,7 +49,8 @@ defmodule Protox.Define do
   defp define_messages(messages) do
     for {msg_name, fields} <- messages do
 
-      struct_fields   = make_struct_fields(fields)
+      unknown_fields  = make_unknown_fields(:__unknown_fields__, fields)
+      struct_fields   = make_struct_fields(fields, unknown_fields)
       required_fields = get_required_fields(fields)
       fields_map      = make_fields_map(fields)
       encoder         = Protox.DefineEncoder.define(fields)
@@ -85,6 +86,10 @@ defmodule Protox.Define do
 
           def required_fields(), do: unquote(required_fields)
 
+
+          def unknown_fields(msg)  , do: msg.unquote(unknown_fields)
+          def unknown_fields_name(), do: unquote(unknown_fields)
+
         end # module
       end
     end # for
@@ -92,6 +97,23 @@ defmodule Protox.Define do
 
 
   # -- Enum
+
+
+  # Make sure the name chosen for the struct fields that stores the unknow fields
+  # of the protobuf message doesn't collide with already existing names.
+  defp make_unknown_fields(name, fields) do
+    name_in_fields = Enum.find(fields, fn {_, _, n, _, _} -> n == name end)
+    if name_in_fields do
+      name
+      |> Atom.to_string()
+      |> (fn x -> x <> "_" end).()
+      |> String.to_atom()
+      |> make_unknown_fields(fields)
+
+    else
+      name
+    end
+  end
 
 
   defp make_enum_default(constant_values) do
@@ -122,7 +144,7 @@ defmodule Protox.Define do
 
 
   # Generate fields of the struct which is created for a message.
-  defp make_struct_fields(fields) do
+  defp make_struct_fields(fields, unknown_fields) do
     for {_, _, name, kind, _} <- fields do
       case kind do
         :map                      -> {name, Macro.escape(%{})}
@@ -132,6 +154,8 @@ defmodule Protox.Define do
         {:default, default_value} -> {name, default_value}
       end
     end
+    ++
+    [{unknown_fields, []}] # TODO. Make sure this name does not collide with other fields names.
   end
 
 
