@@ -97,7 +97,7 @@ iex> <<8, 3, 18, 4, 8, 1, 18, 0>> |> Fiz.Foo.decode()
 
 # Unknown fields
 
-If any unknown field is encountered when decoding, it is kept in the decoded message.
+If any unknown fields are encountered when decoding, they are kept in the decoded message.
 It's possible to access them with the function `unknown_fields/1` defined with the message.
 
 ```elixir
