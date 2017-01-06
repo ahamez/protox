@@ -1,0 +1,17 @@
+* 0.9.0
+  - Keep unknown fields when decoding
+
+* 0.8.0
+  - Raise an error when decoding and when required fields are missing
+
+* 0.7.1
+  - Fix encoding of varint to match C++ version
+  - Fix encoding of enums to match C++ version
+
+
+* 0.7.0
+  - Read definitions from files or binaries
+  - Parse definitions with protoc
+  - Generate Elixir structs from parsed definition
+  - Can prepend namespaces
+  - Encode/decode protobuf messages
