@@ -1,9 +1,9 @@
 defmodule Protox.Default do
 
   @moduledoc"""
-  Default values of Protocol Buffers types. For protobuf2, it's useful in
-  conjunction for get the default values which have been set to `nil`,
-  that is which were not present on the wire.
+  Default values of Protocol Buffers types. For protobuf2, it's useful to
+  get the default values which have been set to `nil`, that is which were not
+  present on the wire.
   """
 
   @doc"""
