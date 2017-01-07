@@ -155,7 +155,7 @@ defmodule Protox.Define do
       end
     end
     ++
-    [{unknown_fields, []}] # TODO. Make sure this name does not collide with other fields names.
+    [{unknown_fields, []}]
   end
 
 
