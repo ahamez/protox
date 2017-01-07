@@ -87,8 +87,9 @@ defmodule Protox.Define do
           def required_fields(), do: unquote(required_fields)
 
 
-          def unknown_fields(msg)  , do: msg.unquote(unknown_fields)
-          def unknown_fields_name(), do: unquote(unknown_fields)
+          def unknown_fields(msg)      , do: msg.unquote(unknown_fields)
+          def unknown_fields_name()    , do: unquote(unknown_fields)
+          def clear_unknown_fields(msg), do: struct!(msg, [{unknown_fields_name(), []}])
 
         end # module
       end
