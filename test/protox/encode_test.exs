@@ -14,6 +14,12 @@ defmodule Protox.EncodeTest do
   end
 
 
+  test "Sub.a, negative" do
+    assert Protox.Encode.encode(%Sub{a: -150}) |> :binary.list_to_bin()
+           == <<8, 234, 254, 255, 255, 15>>
+  end
+
+
   test "Sub.b" do
     assert Protox.Encode.encode(%Sub{b: "testing"}) |> :binary.list_to_bin()
            == <<18, 7, 116, 101, 115, 116, 105, 110, 103>>

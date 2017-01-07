@@ -9,8 +9,15 @@ defmodule Protox.DecodeTest do
   end
 
 
-  test "Sub.a, negative" do
+  test "Sub.a, negative 64 bits" do
     bytes = <<8, 234, 254, 255, 255, 255, 255, 255, 255, 255, 1>>
+    assert Sub.decode!(bytes) ==\
+           %Sub{a: -150, b: ""}
+  end
+
+
+  test "Sub.a, negative 32 bits" do
+    bytes = <<8, 234, 254, 255, 255, 15>>
     assert Sub.decode!(bytes) ==\
            %Sub{a: -150, b: ""}
   end
