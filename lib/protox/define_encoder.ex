@@ -21,15 +21,17 @@ defmodule Protox.DefineEncoder do
   defp make_encode(fields) do
     # It is recommended to encode fields sequentially by field number.
     # See https://developers.google.com/protocol-buffers/docs/encoding#order.
-    sorted_fields     = Enum.sort(fields, &(elem(&1, 0) < elem(&2, 0)))
-    encode_fun_body   = make_encode_fun(sorted_fields)
-    encode_field_funs = make_encode_field_funs(fields)
+    sorted_fields             = Enum.sort(fields, &(elem(&1, 0) < elem(&2, 0)))
+    encode_fun_body           = make_encode_fun(sorted_fields)
+    encode_field_funs         = make_encode_field_funs(fields)
+    encode_unknown_fields_fun = make_encode_unknown_fields_fun()
 
     quote do
       @spec encode(struct) :: iolist
       def encode(msg), do: unquote(encode_fun_body)
 
       unquote(encode_field_funs)
+      unquote(encode_unknown_fields_fun)
     end
   end
 
@@ -46,7 +48,9 @@ defmodule Protox.DefineEncoder do
 
 
   defp make_encode_fun(ast, []) do
-    ast
+    quote do
+      unquote(ast) |> encode_unknown_fields(msg)
+    end
   end
   defp make_encode_fun(ast, [field | fields]) do
     {_, _, name, _, _} = field
@@ -176,6 +180,34 @@ defmodule Protox.DefineEncoder do
               map_value_value_bytes
             ]
           end)
+      end
+    end
+  end
+
+
+  defp make_encode_unknown_fields_fun() do
+    quote do
+      defp encode_unknown_fields(acc, msg) do
+        Enum.reduce(
+          msg.__struct__.unknown_fields(msg),
+          acc,
+          fn ({tag, wire_type, bytes}, acc) ->
+            case wire_type do
+              0 ->
+                [acc, make_key_bytes(tag, :int32), bytes]
+
+              1 ->
+                [acc, make_key_bytes(tag, :double), bytes]
+
+              2 ->
+                len_bytes = byte_size(bytes) |> Varint.LEB128.encode()
+                [acc, make_key_bytes(tag, :packed), len_bytes, bytes]
+
+              5 ->
+                [acc, make_key_bytes(tag, :float), bytes]
+            end
+          end
+        )
       end
     end
   end
