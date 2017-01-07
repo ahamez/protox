@@ -1,3 +1,6 @@
+* 0.11.0
+  - Encode unknown fields
+
 * 0.10.0
   - Update deps (dialyxir, excoveralls, hackney)
 
@@ -10,7 +13,6 @@
 * 0.7.1
   - Fix encoding of varint to match C++ version
   - Fix encoding of enums to match C++ version
-
 
 * 0.7.0
   - Read definitions from files or binaries
