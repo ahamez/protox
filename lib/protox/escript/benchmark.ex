@@ -59,25 +59,27 @@ defmodule Protox.Escript.Benchmark do
 
   defp decode_benchmark(ty, payloads) do
     t0 = System.monotonic_time(:milliseconds)
-    nb_bytes = Task.async(fn -> do_decode_benchmark(0, 30, ty, payloads) end)
-               |> Task.await()
+
+    nb_bytes = payloads
+               |> Enum.reduce(
+                  0,
+                  fn (payload, acc) ->
+                    size = byte_size(payload)
+                    acc + size * do_decode_benchmark(0, 300000, ty, payload)
+                  end)
+
     t1 = System.monotonic_time(:milliseconds)
 
     {nb_bytes, t1 - t0}
   end
 
 
-  defp do_decode_benchmark(total, 0, _, _) do
-    total
+  defp do_decode_benchmark(nb_processed, 0, _, _) do
+    nb_processed
   end
-  defp do_decode_benchmark(total, counter, ty, payloads) do
-    payloads
-    |> Enum.reduce(total,
-        fn (payload, acc) ->
-          ty.decode(payload)
-          acc + byte_size(payload)
-        end)
-    |> do_decode_benchmark(counter - 1, ty, payloads)
+  defp do_decode_benchmark(nb_processed, counter, ty, payload) do
+    ty.decode(payload)
+    do_decode_benchmark(nb_processed + 1, counter - 1, ty, payload)
   end
 
 
@@ -85,25 +87,27 @@ defmodule Protox.Escript.Benchmark do
     payloads_msg = Enum.map(payloads, fn payload -> ty.decode!(payload) end)
 
     t0 = System.monotonic_time(:milliseconds)
-    nb_bytes = Task.async(fn -> do_encode_benchmark(0, 30, ty, payloads_msg) end)
-               |> Task.await()
+
+    nb_bytes = payloads_msg
+               |> Enum.reduce(
+                  0,
+                  fn (msg, acc) ->
+                    size = Protox.Encode.encode(msg) |> :erlang.iolist_to_binary() |> byte_size()
+                    acc + size * do_encode_benchmark(0, 300000, ty, msg)
+                  end)
+
     t1 = System.monotonic_time(:milliseconds)
 
     {nb_bytes, t1 - t0}
   end
 
 
-  defp do_encode_benchmark(total, 0, _, _) do
-    total
+  defp do_encode_benchmark(nb_processed, 0, _, _) do
+    nb_processed
   end
-  defp do_encode_benchmark(total, counter, ty, payloads_msg) do
-    payloads_msg
-    |> Enum.reduce(total,
-        fn (msg, acc) ->
-          encoded = Protox.Encode.encode(msg) |> :erlang.iolist_to_binary()
-          acc + byte_size(encoded)
-        end)
-    |> do_encode_benchmark(counter - 1, ty, payloads_msg)
+  defp do_encode_benchmark(nb_processed, counter, ty, msg) do
+    Protox.Encode.encode(msg)
+    do_encode_benchmark(nb_processed + 1, counter - 1, ty, msg)
   end
 
 end
