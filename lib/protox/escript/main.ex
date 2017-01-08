@@ -7,7 +7,6 @@ defmodule Protox.Escript.Main do
       "CONFORMANCE" -> Protox.Escript.Conformance.run()
       "BENCHMARK"   -> Protox.Escript.Benchmark.run()
     end
-
   end
 
 end
