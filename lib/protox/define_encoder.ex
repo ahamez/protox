@@ -91,6 +91,8 @@ defmodule Protox.DefineEncoder do
     end
   end
   defp make_encode_field_fun({:oneof, parent_field}, tag, name, type) do
+    # TODO. We should look at the oneof field only once, not for each possible entry.
+
     key              = Protox.Encode.make_key_bytes(tag, type)
     var              = quote do: field_value
     encode_value_ast = get_encode_value_ast(type, var)
