@@ -14,7 +14,7 @@ defmodule Protox.Encode do
 
 
   def make_key_bytes(tag, ty) do
-    Varint.LEB128.encode(make_key(tag, ty))
+    Protox.Varint.encode(make_key(tag, ty))
   end
 
 
@@ -29,15 +29,15 @@ defmodule Protox.Encode do
 
 
   def encode_varint_signed(value) do
-    value |> Varint.Zigzag.encode() |> Varint.LEB128.encode()
+    value |> Varint.Zigzag.encode() |> Protox.Varint.encode()
   end
   def encode_varint_64(value) do
     <<res::unsigned-native-64>> = <<value::signed-native-64>>
-    Varint.LEB128.encode(res)
+    Protox.Varint.encode(res)
   end
   def encode_varint_32(value) do
     <<res::unsigned-native-32>> = <<value::signed-native-32>>
-    Varint.LEB128.encode(res)
+    Protox.Varint.encode(res)
   end
 
 
@@ -59,17 +59,14 @@ defmodule Protox.Encode do
   # implementation encodes enums on 64 bits.
   def encode_enum(value)    , do: encode_varint_64(value)
   def encode_string(value) do
-    len = Varint.LEB128.encode(byte_size(value))
-    <<len::binary, value::binary>>
+    [Protox.Varint.encode(byte_size(value)), value]
   end
   def encode_bytes(value) do
-    len = Varint.LEB128.encode(byte_size(value))
-    <<len::binary, value::binary>>
+    [Protox.Varint.encode(byte_size(value)), value]
   end
   def encode_message(value) do
     encoded = value |> encode() |> :binary.list_to_bin()
-    len = encoded |> byte_size() |> Varint.LEB128.encode()
-    <<len::binary, encoded::binary>>
+    [Protox.Varint.encode(byte_size(encoded)), encoded]
   end
 
 end

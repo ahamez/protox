@@ -160,13 +160,13 @@ defmodule Protox.DefineEncoder do
         Enum.reduce(map, acc,
           fn ({unquote(k_var), unquote(v_var)}, acc) ->
 
-            map_key_value_bytes = unquote(encode_map_key_ast)
+            map_key_value_bytes = [unquote(encode_map_key_ast)] |> :binary.list_to_bin()
             map_key_value_len   = byte_size(map_key_value_bytes)
 
-            map_value_value_bytes = unquote(encode_map_value_ast)
+            map_value_value_bytes = [unquote(encode_map_value_ast)] |> :binary.list_to_bin()
             map_value_value_len   = byte_size(map_value_value_bytes)
 
-            len = Varint.LEB128.encode(
+            len = Protox.Varint.encode(
               unquote(map_keys_len) +
               map_key_value_len +
               map_value_value_len
@@ -202,7 +202,8 @@ defmodule Protox.DefineEncoder do
                 [acc, make_key_bytes(tag, :double), bytes]
 
               2 ->
-                len_bytes = byte_size(bytes) |> Varint.LEB128.encode()
+                # len_bytes = byte_size(bytes) |> Varint.LEB128.encode()
+                len_bytes = byte_size(bytes) |> Protox.Varint.encode()
                 [acc, make_key_bytes(tag, :packed), len_bytes, bytes]
 
               5 ->
@@ -224,11 +225,11 @@ defmodule Protox.DefineEncoder do
         values,
         {[], 0},
         fn (unquote(var), {acc, len}) ->
-          value_bytes = unquote(encode_value_ast)
+          value_bytes = [unquote(encode_value_ast)] |> :binary.list_to_bin()
           {[acc, value_bytes], len + byte_size(value_bytes)}
         end)
 
-      [Varint.LEB128.encode(len), bytes]
+      [Protox.Varint.encode(len), bytes]
     end
   end
 
