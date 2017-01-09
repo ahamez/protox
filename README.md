@@ -80,7 +80,7 @@ iex> %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}} |> Protox.Encode.encode()
 
 Note that `Protox.Encode.encode/1` creates an iolist, not a binary. Such iolists can be used
 directly with files or sockets read/write operations.
-However, you can use `:binary.list_to_bin()` to get a binary:
+However, you can use `:binary.list_to_bin/1` to get a binary:
 
 ```elixir
 iex> %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}} |> Protox.Encode.encode() |> :binary.list_to_bin()
