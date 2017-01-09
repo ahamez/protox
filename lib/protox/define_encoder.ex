@@ -82,7 +82,7 @@ defmodule Protox.DefineEncoder do
     encode_value_ast = get_encode_value_ast(type, var)
 
     quote do
-      unquote(var) = Map.fetch!(msg, unquote(name))
+      unquote(var) = msg.unquote(name)
       if unquote(var) == unquote(default) do
         acc
       else
@@ -98,7 +98,7 @@ defmodule Protox.DefineEncoder do
     quote do
       name = unquote(name)
 
-      case Map.fetch!(msg, unquote(parent_field)) do
+      case msg.unquote(parent_field) do
         nil ->
           acc
 
@@ -116,7 +116,7 @@ defmodule Protox.DefineEncoder do
     encode_packed_ast = make_encode_packed_ast(type)
 
     quote do
-      case Map.fetch!(msg, unquote(name)) do
+      case msg.unquote(name) do
         []     -> acc
         values -> [acc, unquote(key), unquote(encode_packed_ast)]
       end
@@ -126,7 +126,7 @@ defmodule Protox.DefineEncoder do
     encode_repeated_ast = make_encode_repeated_ast(tag, type)
 
     quote do
-      case Map.fetch!(msg, unquote(name)) do
+      case msg.unquote(name) do
         []     -> acc
         values -> [acc, unquote(encode_repeated_ast)]
       end
