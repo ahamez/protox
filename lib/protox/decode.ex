@@ -62,7 +62,7 @@ defmodule Protox.Decode do
 
 
   # Get the key's tag and wire type.
-  defp parse_key(bytes) do
+  def parse_key(bytes) do
     {key, rest} = Varint.LEB128.decode(bytes)
     {key >>> 3, key &&& 0b111, rest}
   end
@@ -182,19 +182,19 @@ defmodule Protox.Decode do
   end
 
 
-  defp parse_unknown(msg, tag, 0, bytes) do
+  def parse_unknown(msg, tag, 0, bytes) do
     {unknown_bytes, rest} = get_unknown_varint_bytes(<<>>, bytes)
     {add_unknown_field(msg, tag, 0, unknown_bytes), rest}
   end
-  defp parse_unknown(msg, tag, 1, <<unknown_bytes::64, rest::binary>>) do
+  def parse_unknown(msg, tag, 1, <<unknown_bytes::64, rest::binary>>) do
     {add_unknown_field(msg, tag, 1, <<unknown_bytes::64>>), rest}
   end
-  defp parse_unknown(msg, tag, 2, bytes) do
+  def parse_unknown(msg, tag, 2, bytes) do
     {len, new_bytes} = Varint.LEB128.decode(bytes)
     <<unknown_bytes::binary-size(len), rest::binary>> = new_bytes
     {add_unknown_field(msg, tag, 2, unknown_bytes), rest}
   end
-  defp parse_unknown(msg, tag, 5, <<unknown_bytes::32, rest::binary>>) do
+  def parse_unknown(msg, tag, 5, <<unknown_bytes::32, rest::binary>>) do
     {add_unknown_field(msg, tag, 5, <<unknown_bytes::32>>), rest}
   end
 
