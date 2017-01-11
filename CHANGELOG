@@ -1,3 +1,6 @@
+* 0.12.0
+  - ~2x speed improvement when encoding
+
 * 0.11.1
   - It's now possible to clear unknown fields
 
