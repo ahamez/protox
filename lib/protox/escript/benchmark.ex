@@ -65,7 +65,7 @@ defmodule Protox.Escript.Benchmark do
                   0,
                   fn (payload, acc) ->
                     size = byte_size(payload)
-                    acc + size * do_decode_benchmark(0, 300000, ty, payload)
+                    acc + size * do_decode_benchmark(0, 300_000, ty, payload)
                   end)
 
     t1 = System.monotonic_time(:milliseconds)
@@ -93,7 +93,7 @@ defmodule Protox.Escript.Benchmark do
                   0,
                   fn (msg, acc) ->
                     size = Protox.Encode.encode(msg) |> :erlang.iolist_to_binary() |> byte_size()
-                    acc + size * do_encode_benchmark(0, 300000, ty, msg)
+                    acc + size * do_encode_benchmark(0, 300_000, ty, msg)
                   end)
 
     t1 = System.monotonic_time(:milliseconds)

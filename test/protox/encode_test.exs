@@ -38,7 +38,7 @@ defmodule Protox.EncodeTest do
 
 
   test "Sub.f" do
-    assert Protox.Encode.encode( %Sub{f: -1323}) |> :binary.list_to_bin()
+    assert Protox.Encode.encode(%Sub{f: -1323}) |> :binary.list_to_bin()
            == <<72, 213, 20>>
   end
 
