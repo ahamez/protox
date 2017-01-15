@@ -171,4 +171,46 @@ defmodule ProtoxTest do
            == %Proto2A{}
   end
 
+
+  test "Can export to protoc and read its output (Sub)", %{seed: seed} do
+    msg = Protox.RandomInit.generate(Sub, seed)
+    assert msg == msg |> Sub.encode() |> reencode_with_protoc("Sub") |> Sub.decode!()
+  end
+
+
+  test "Can export to protoc and read its output (Msg)", %{seed: seed} do
+    msg = Protox.RandomInit.generate(Msg, seed)
+    assert msg == msg |> Msg.encode() |> reencode_with_protoc("Msg") |> Msg.decode!()
+  end
+
+  test "Can export to protoc and read its output (Upper)", %{seed: seed} do
+    msg = Protox.RandomInit.generate(Upper, seed)
+    assert msg == msg |> Upper.encode() |> reencode_with_protoc("Upper") |> Upper.decode!()
+  end
+
+
+  defp reencode_with_protoc(encoded, mod) do
+    encoded_bin_path = [Mix.Project.build_path(), "protox_test_sub.bin"]
+                       |> Path.join()
+    File.write!(encoded_bin_path, encoded)
+
+    encoded_txt_cmdline = "protoc --decode=#{mod} ./test/messages.proto ./test/protobuf2.proto  < #{encoded_bin_path}"
+    encoded_txt = "#{:os.cmd(String.to_charlist(encoded_txt_cmdline))}"
+    # IO.puts "#{encoded_txt}"
+
+    encoded_txt_path = [Mix.Project.build_path(), "protox_test_sub.txt"]
+                       |> Path.join()
+    File.write!(encoded_txt_path, encoded_txt)
+
+    reencoded_bin_path = [Mix.Project.build_path(), "protoc_test_sub.bin"]
+                         |> Path.join()
+    reencode_bin_cmdline =
+      "protoc --encode=#{mod} ./test/messages.proto ./test/protobuf2.proto > #{reencoded_bin_path} < #{encoded_txt_path}"
+    :os.cmd(String.to_charlist(reencode_bin_cmdline))
+    # IO.puts "#{reencode_bin_cmdline}"
+
+    reencoded_bin_path
+    |> File.read!()
+  end
+
 end

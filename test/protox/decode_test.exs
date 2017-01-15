@@ -231,27 +231,6 @@ defmodule Protox.DecodeTest do
   end
 
 
-  test "Sub.s, default" do
-    bytes = <<>>
-    assert Sub.decode!(bytes) ==\
-           %Sub{s: :ONE}
-  end
-
-
-  test "Sub.s" do
-    bytes = <<200, 1, 2>>
-    assert Sub.decode!(bytes) ==\
-           %Sub{s: :TWO}
-  end
-
-
-  test "Sub.t, default is nil" do
-    bytes = <<>>
-    assert Sub.decode!(bytes) ==\
-           %Sub{t: nil}
-  end
-
-
   test "Sub.u" do
     bytes = <<218, 1, 6, 0, 1, 2, 3, 144, 78>>
     assert Sub.decode!(bytes) ==\
@@ -508,6 +487,26 @@ defmodule Protox.DecodeTest do
   test "No name clash for __unknown_fields__" do
     assert NoNameClash.decode!(<<>>) ==\
            %NoNameClash{__unknown_fields__: 0}
+  end
+
+  test "Protobuf2.s, default" do
+    bytes = <<>>
+    assert Protobuf2.decode!(bytes) ==\
+           %Protobuf2{s: :TWO}
+  end
+
+
+  test "Protobuf2.s" do
+    bytes = <<200, 1, 2>>
+    assert Protobuf2.decode!(bytes) ==\
+           %Protobuf2{s: :TWO}
+  end
+
+
+  test "Protobuf2.t, default is nil" do
+    bytes = <<>>
+    assert Protobuf2.decode!(bytes) ==\
+           %Protobuf2{t: nil}
   end
 
 end

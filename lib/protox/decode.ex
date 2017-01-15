@@ -131,6 +131,17 @@ defmodule Protox.Decode do
     }
 
     {%MapEntry{key: map_key, value: map_value}, _} = parse_key_value([], bytes, defs, %MapEntry{})
+
+    map_key = case map_key do
+      nil -> Protox.Default.default(map_key_type)
+      _   -> map_key
+    end
+
+    map_value = case map_value do
+      nil -> Protox.Default.default(map_value_type)
+      _   -> map_value
+    end
+
     {map_key, map_value}
   end
 

@@ -21,6 +21,13 @@ defmodule Defs do
     ],
     messages: [
     {
+      Protobuf2,
+      [
+        {25    , :optional, :s, {:default, :TWO}, {:enum, F}},
+        {26    , :optional, :t, {:default, nil} , {:enum, F}},
+      ]
+    },
+    {
       Sub,
       [
         #tag     label    name     kind           type
@@ -42,8 +49,6 @@ defmodule Defs do
         {22    , :repeated, :p, :unpacked       , :bool},
         {23    , :repeated, :q, :unpacked       , {:enum, E}},
         {24    , :optional, :r, {:default, :FOO}, {:enum, E}},
-        {25    , :optional, :s, {:default, :ONE}, {:enum, F}},
-        {26    , :optional, :t, {:default, nil} , {:enum, F}},
         {27    , :repeated, :u, :packed         , :uint32},
         {28    , :repeated, :w, :packed         , :sint32},
         {29    , :repeated, :x, :packed         , :int64},
@@ -69,7 +74,7 @@ defmodule Defs do
         {10 , :optional, :n           , {:oneof, :m}          , :string},
         {11 , :optional, :o           , {:oneof, :m}          , {:message, Sub}},
         {12 , nil      , :p           , :map                  , {:int32, {:enum, E}}},
-        {13 , :optional, :q           , {:default, :BAZ}      , {:enum, E}},
+        {13 , :optional, :q           , {:default, nil}       , {:message, Protobuf2}},
         {118, :optional, :oneof_double, {:oneof, :oneof_field}, :double},
       ]
     },

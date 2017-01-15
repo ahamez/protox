@@ -1,0 +1,11 @@
+syntax = "proto2";
+
+enum F {
+  ONE = 1;
+  TWO = 2;
+}
+
+message Protobuf2 {
+  optional F s = 25 [default = TWO];
+  optional F t = 26;
+}

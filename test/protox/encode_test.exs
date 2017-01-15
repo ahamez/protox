@@ -146,24 +146,6 @@ defmodule Protox.EncodeTest do
   end
 
 
-  test "Sub.s, default" do
-    assert Protox.Encode.encode(%Sub{s: :ONE}) |> :binary.list_to_bin()
-           == <<>>
-  end
-
-
-  test "Sub.s" do
-    assert Protox.Encode.encode(%Sub{s: :TWO}) |> :binary.list_to_bin()
-           == <<200, 1, 2>>
-  end
-
-
-  test "Sub.t, default is nil" do
-    assert Protox.Encode.encode(%Sub{t: nil}) |> :binary.list_to_bin()
-           == <<>>
-  end
-
-
   test "Sub.z" do
     assert Protox.Encode.encode(%Sub{z: -20}) |> :binary.list_to_bin()
            == <<136, 241, 4, 39>>
@@ -363,7 +345,7 @@ defmodule Protox.EncodeTest do
 
 
   test "Msg.q" do
-    assert Protox.Encode.encode(%Msg{q: :BAZ}) |> :binary.list_to_bin()
+    assert Protox.Encode.encode(%Msg{q: nil}) |> :binary.list_to_bin()
            == <<>>
   end
 
@@ -383,6 +365,23 @@ defmodule Protox.EncodeTest do
   test "Upper.empty" do
     assert Protox.Encode.encode(%Upper{empty: %Empty{}}) |> :binary.list_to_bin()
            == <<26, 0>>
+  end
+
+  test "Protobuf2.s, default" do
+    assert Protox.Encode.encode(%Protobuf2{s: :TWO}) |> :binary.list_to_bin()
+           == <<>>
+  end
+
+
+  test "Protobuf2.s" do
+    assert Protox.Encode.encode(%Protobuf2{s: :ONE}) |> :binary.list_to_bin()
+           == <<200, 1, 1>>
+  end
+
+
+  test "Protobuf2.t, default is nil" do
+    assert Protox.Encode.encode(%Protobuf2{t: nil}) |> :binary.list_to_bin()
+           == <<>>
   end
 
 end
