@@ -5,6 +5,8 @@ defmodule Protox.Escript.Benchmark do
   @moduledoc false
 
   defmodule Defs do
+    @moduledoc false
+
     @external_resource "./benchmarks/benchmark_messages_proto2.proto"
     @external_resource "./benchmarks/benchmark_messages_proto3.proto"
     @external_resource "./benchmarks/benchmarks.proto"
@@ -19,7 +21,8 @@ defmodule Protox.Escript.Benchmark do
 
 
   def run() do
-    Path.wildcard("./benchmarks/dataset.*.pb")
+    "./benchmarks/dataset.*.pb"
+    |> Path.wildcard()
     |> Enum.each(&benchmark/1)
   end
 
@@ -92,7 +95,10 @@ defmodule Protox.Escript.Benchmark do
                |> Enum.reduce(
                   0,
                   fn (msg, acc) ->
-                    size = Protox.Encode.encode(msg) |> :erlang.iolist_to_binary() |> byte_size()
+                    size = msg
+                           |> Protox.Encode.encode()
+                           |> :erlang.iolist_to_binary()
+                           |> byte_size()
                     acc + size * do_encode_benchmark(0, 300_000, ty, msg)
                   end)
 

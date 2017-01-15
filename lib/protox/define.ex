@@ -5,8 +5,8 @@ defmodule Protox.Define do
 
   defmacro __using__(enums: enums, messages: messages) do
     define(
-      Code.eval_quoted(enums)    |> elem(0),
-      Code.eval_quoted(messages) |> elem(0)
+      enums    |> Code.eval_quoted() |> elem(0),
+      messages |> Code.eval_quoted() |> elem(0)
     )
   end
 
@@ -51,7 +51,7 @@ defmodule Protox.Define do
 
       unknown_fields  = make_unknown_fields(:__unknown_fields__, fields)
       struct_fields   = make_struct_fields(fields, unknown_fields)
-      required_fields = get_required_fields(fields)
+      required_fields = make_required_fields(fields)
       fields_map      = make_fields_map(fields)
       decoder         = Protox.DefineDecoder.define(fields, required_fields)
       encoder         = Protox.DefineEncoder.define(fields)
@@ -90,12 +90,12 @@ defmodule Protox.Define do
           def defs(), do: unquote(fields_map)
 
 
-          def required_fields(), do: unquote(required_fields)
+          def get_required_fields(), do: unquote(required_fields)
 
 
-          def unknown_fields(msg)      , do: msg.unquote(unknown_fields)
-          def unknown_fields_name()    , do: unquote(unknown_fields)
-          def clear_unknown_fields(msg), do: struct!(msg, [{unknown_fields_name(), []}])
+          def get_unknown_fields(msg)  , do: msg.unquote(unknown_fields)
+          def get_unknown_fields_name(), do: unquote(unknown_fields)
+          def clear_unknown_fields(msg), do: struct!(msg, [{get_unknown_fields_name(), []}])
 
         end # module
       end
@@ -167,7 +167,7 @@ defmodule Protox.Define do
 
 
   # Get the list of fields that are marked as `required`.
-  defp get_required_fields(fields) do
+  defp make_required_fields(fields) do
     for {_, :required, name, _, _} <- fields, do: name
   end
 

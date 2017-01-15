@@ -50,8 +50,8 @@ defmodule Protox do
 
     files = case Keyword.delete(args, :namespace) do
       schema: <<text::binary>> ->
-        filename = "#{__CALLER__.module}_#{:crypto.hash(:sha, text) |> Base.encode16()}.proto"
-        filepath = Path.join([Mix.Project.build_path(), filename]) |> Path.expand()
+        filename = "#{__CALLER__.module}_#{:sha |> :crypto.hash(text) |> Base.encode16()}.proto"
+        filepath = [Mix.Project.build_path(), filename] |> Path.join() |> Path.expand()
         File.write!(filepath, text)
         [filepath]
 

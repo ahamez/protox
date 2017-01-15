@@ -191,7 +191,7 @@ defmodule Protox.DefineEncoder do
     quote do
       defp encode_unknown_fields(acc, msg) do
         Enum.reduce(
-          msg.__struct__.unknown_fields(msg),
+          msg.__struct__.get_unknown_fields(msg),
           acc,
           fn ({tag, wire_type, bytes}, acc) ->
             case wire_type do
@@ -202,8 +202,7 @@ defmodule Protox.DefineEncoder do
                 [acc, make_key_bytes(tag, :double), bytes]
 
               2 ->
-                # len_bytes = byte_size(bytes) |> Varint.LEB128.encode()
-                len_bytes = byte_size(bytes) |> Protox.Varint.encode()
+                len_bytes = bytes |> byte_size() |> Protox.Varint.encode()
                 [acc, make_key_bytes(tag, :packed), len_bytes, bytes]
 
               5 ->
