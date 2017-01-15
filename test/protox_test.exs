@@ -196,7 +196,6 @@ defmodule ProtoxTest do
 
     encoded_txt_cmdline = "protoc --decode=#{mod} ./test/messages.proto ./test/protobuf2.proto  < #{encoded_bin_path}"
     encoded_txt = "#{:os.cmd(String.to_charlist(encoded_txt_cmdline))}"
-    # IO.puts "#{encoded_txt}"
 
     encoded_txt_path = [Mix.Project.build_path(), "protox_test_sub.txt"]
                        |> Path.join()
@@ -207,7 +206,6 @@ defmodule ProtoxTest do
     reencode_bin_cmdline =
       "protoc --encode=#{mod} ./test/messages.proto ./test/protobuf2.proto > #{reencoded_bin_path} < #{encoded_txt_path}"
     :os.cmd(String.to_charlist(reencode_bin_cmdline))
-    # IO.puts "#{reencode_bin_cmdline}"
 
     reencoded_bin_path
     |> File.read!()
