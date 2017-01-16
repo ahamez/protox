@@ -78,8 +78,8 @@ iex> %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}} |> Protox.Encode.encode()
 [[[], "\b", <<3>>], <<18>>, <<4>>, "\b", <<1>>, <<18>>, <<0>>]
 ```
 
-Note that `Protox.Encode.encode/1` creates an iolist, not a binary. Such iolists can be used
-directly with files or sockets read/write operations.
+Note that `Protox.Encode.encode/1` returns an iolist, not a binary. Such iolists can be used
+directly with files or sockets write operations.
 However, you can use `:binary.list_to_bin/1` to get a binary:
 
 ```elixir
