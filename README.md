@@ -98,17 +98,17 @@ iex> <<8, 3, 18, 4, 8, 1, 18, 0>> |> Fiz.Foo.decode()
 # Unknown fields
 
 If any unknown fields are encountered when decoding, they are kept in the decoded message.
-It's possible to access them with the function `unknown_fields/1` defined with the message.
+It's possible to access them with the function `get_unknown_fields/1` defined with the message.
 
 ```elixir
 iex> msg = <<8, 42, 42, 4, 121, 97, 121, 101, 136, 241, 4, 83>> |> Msg.decode!()
 %Msg{a: 42, b: "", z: -42, __unknown_fields__: [{5, 2, <<121, 97, 121, 101>>}]}
 
-iex> Msg.unknown_fields(msg)
+iex> Msg.get_unknown_fields(msg)
 [{5, 2, <<121, 97, 121, 101>>}]
 ```
 
-You should always use `unknown_fields/1` as the name of the struct field
+You should always use `get_unknown_fields/1` as the name of the struct field
 (e.g. `__unknown_fields__`) is generated at compile-time to avoid collision with the actual
 fields of the protobuf message.
 
