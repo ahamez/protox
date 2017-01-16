@@ -53,12 +53,7 @@ defmodule Protox.Define do
       struct_fields   = make_struct_fields(fields, unknown_fields)
       required_fields = make_required_fields(fields)
       fields_map      = make_fields_map(fields)
-      decoder         = Protox.DefineDecoder.define(fields, required_fields)
       encoder         = Protox.DefineEncoder.define(fields)
-
-      # IO.puts("#{msg_name}")
-      # IO.puts("#{Macro.to_string(decoder)}")
-      # IO.puts("")
 
       quote do
         defmodule unquote(msg_name) do
@@ -70,8 +65,7 @@ defmodule Protox.Define do
           defstruct unquote(struct_fields)
 
 
-          # Encoding and decoding functions is generated for each message.
-          unquote(decoder)
+          # Encoding function is generated for each message.
           unquote(encoder)
 
 

@@ -13,7 +13,6 @@ defmodule Protox.Guards do
 
   @primitive_fixed @primitive_fixed32 ++ @primitive_fixed64
 
-
   @primitive_varint [
     :int32, :uint32, :sint32, :int64, :uint64, :sint64, :bool
   ]
