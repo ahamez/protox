@@ -104,7 +104,7 @@ It's possible to access them with the function `get_unknown_fields/1` defined wi
 iex> msg = <<8, 42, 42, 4, 121, 97, 121, 101, 136, 241, 4, 83>> |> Msg.decode!()
 %Msg{a: 42, b: "", z: -42, __unknown_fields__: [{5, 2, <<121, 97, 121, 101>>}]}
 
-iex> Msg.get_unknown_fields(msg)
+iex> msg |> Msg.get_unknown_fields()
 [{5, 2, <<121, 97, 121, 101>>}]
 ```
 
