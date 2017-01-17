@@ -1,8 +1,0 @@
-* TODO.
-- Error when a group is parsed
-- Test on a big-endian platform
-- Take a look at https://ebertapp.io?
-
-* Optimize
-- Metaprog decoder?
-- Inline functions whenever possible?
