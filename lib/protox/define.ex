@@ -171,16 +171,16 @@ defmodule Protox.Define do
     fields
     |> Enum.reduce(%{},
       fn ({tag, _, name, kind, type}, acc) ->
-        ty = case {kind, type} do
-          {:map, {key_type, {:message, msg}}} -> {key_type, {:message, msg}}
-          {:map, {key_type, {:enum, enum}}}   -> {key_type, {:enum, enum}}
-          {_, {:enum, enum}}                  -> {:enum, enum}
-          {_, {:message, msg}}                -> {:message, msg}
-          {_, ty}                             -> ty
-        end
-        Map.put(acc, tag, {name, kind, ty})
+        Map.put(acc, tag, {name, kind, make_type_field(kind, type)})
       end)
     |> Macro.escape()
   end
+
+
+  defp make_type_field(:map, {key_type, {:message, msg}}), do: {key_type, {:message, msg}}
+  defp make_type_field(:map, {key_type, {:enum, enum}})  , do: {key_type, {:enum, enum}}
+  defp make_type_field(_, {:enum, enum})                 , do: {:enum, enum}
+  defp make_type_field(_, {:message, enum})              , do: {:message, enum}
+  defp make_type_field(_, ty)                            , do: ty
 
 end

@@ -46,17 +46,18 @@ defmodule Protox.Escript.Benchmark do
     ty = get_type(dataset.message_name)
     IO.puts ">>> #{inspect ty}"
 
-    {nb_bytes, time} = decode_benchmark(ty, dataset.payload)
-    seconds = time / 1000
-    speed = (nb_bytes / 1024 / 1024) / seconds
-    IO.puts "Decode: #{nb_bytes} bytes in #{time} ms: #{speed |> Float.round(3)} MB/s"
-
-    {nb_bytes, time} = encode_benchmark(ty, dataset.payload)
-    seconds = time / 1000
-    speed = (nb_bytes / 1024 / 1024) / seconds
-    IO.puts "Encode: #{nb_bytes} bytes in #{time} ms: #{speed |> Float.round(3)} MB/s"
+    launch_benchmark("Decode", &decode_benchmark/2, ty, dataset.payload)
+    launch_benchmark("Encode", &encode_benchmark/2, ty, dataset.payload)
 
     IO.puts ""
+  end
+
+
+  defp launch_benchmark(name, fun, ty, payload) do
+    {nb_bytes, time} = fun.(ty, payload)
+    seconds = time / 1000
+    speed = (nb_bytes / 1024 / 1024) / seconds
+    IO.puts "#{name}: #{nb_bytes} bytes in #{time} ms: #{speed |> Float.round(3)} MB/s"
   end
 
 
