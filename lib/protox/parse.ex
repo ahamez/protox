@@ -4,6 +4,8 @@ defmodule Protox.Parse do
   # Creates definitions from a protobuf encoded description (Google.Protobuf.FileDescriptorSet)
   # of a set of .proto files. This description is produced by `protoc`.
 
+
+  @spec parse(binary, atom | nil) :: {[...], [...]}
   def parse(file_descriptor_set, namespace \\ nil) do
     {:ok, descriptor} = Google.Protobuf.FileDescriptorSet.decode(file_descriptor_set)
 

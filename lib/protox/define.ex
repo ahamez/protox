@@ -32,12 +32,17 @@ defmodule Protox.Define do
 
           unquote(default_fun)
 
+          @spec encode(atom) :: integer
           unquote(encode_constants_funs)
           def encode(x), do: x
 
+
+          @spec decode(integer) :: atom
           unquote(decode_constants_funs)
           def decode(x), do: x
 
+
+          @spec constants() ::  [{integer, atom}]
           def constants(), do: unquote(constants)
         end
       end
@@ -81,14 +86,25 @@ defmodule Protox.Define do
           end
 
 
+          @spec defs() :: %{
+            required(non_neg_integer) => {atom, Protox.Types.kind, Protox.Types.type}
+          }
           def defs(), do: unquote(fields_map)
 
 
+          @spec get_required_fields() :: [atom]
           def get_required_fields(), do: unquote(required_fields)
 
 
-          def get_unknown_fields(msg)  , do: msg.unquote(unknown_fields)
+          @spec get_unknown_fields(struct) :: [{non_neg_integer, Protox.Types.tag, binary}]
+          def get_unknown_fields(msg), do: msg.unquote(unknown_fields)
+
+
+          @spec get_unknown_fields_name() :: atom
           def get_unknown_fields_name(), do: unquote(unknown_fields)
+
+
+          @spec clear_unknown_fields(struct) :: struct
           def clear_unknown_fields(msg), do: struct!(msg, [{get_unknown_fields_name(), []}])
 
         end # module
@@ -120,6 +136,7 @@ defmodule Protox.Define do
   defp make_enum_default(constant_values) do
     [{_, default_value} | _] = constant_values
     quote do
+      @spec default() :: unquote(default_value)
       def default(), do: unquote(default_value)
     end
   end

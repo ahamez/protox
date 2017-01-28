@@ -37,10 +37,12 @@ defmodule Protox.Decode do
               value: nil,
               __unknown_fields__: []
 
+    @spec get_unknown_fields_name() :: :__unknown_fields__
     def get_unknown_fields_name(), do: :__unknown_fields__
   end
 
 
+  @spec parse_key_value([atom], binary, map, struct) :: {struct, [atom]}
   defp parse_key_value(set_fields, <<>>, _, msg) do
     {msg, set_fields}
   end
@@ -62,11 +64,14 @@ defmodule Protox.Decode do
 
 
   # Get the key's tag and wire type.
+  @spec parse_key(binary) :: {non_neg_integer, non_neg_integer, binary}
   def parse_key(bytes) do
     {key, rest} = Varint.LEB128.decode(bytes)
     {key >>> 3, key &&& 0b111, rest}
   end
 
+
+  @spec parse_value(binary, 0 | 1 | 2 | 5, atom) :: {any, binary}
 
   # Wire type 0: varint.
   defp parse_value(bytes, 0, type) do
@@ -174,6 +179,7 @@ defmodule Protox.Decode do
   end
 
 
+  @spec varint_value(non_neg_integer, atom) :: integer
   defp varint_value(value, :bool)       , do: value == 1
   defp varint_value(value, :sint32)     , do: Varint.Zigzag.decode(value)
   defp varint_value(value, :sint64)     , do: Varint.Zigzag.decode(value)
@@ -193,6 +199,7 @@ defmodule Protox.Decode do
   end
 
 
+  @spec parse_unknown(struct, non_neg_integer, 0 | 1 | 2 | 5, binary) :: {struct, binary}
   def parse_unknown(msg, tag, 0, bytes) do
     {unknown_bytes, rest} = get_unknown_varint_bytes(<<>>, bytes)
     {add_unknown_field(msg, tag, 0, unknown_bytes), rest}
