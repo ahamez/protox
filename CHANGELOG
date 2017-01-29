@@ -1,3 +1,8 @@
+* 0.13.0
+  - Typespecs for generated encoder
+  - Bring Varint into Protox
+  - Fix decoding of booleans encoded with a varint which is not 0 or 1
+
 * 0.12.1
   - Fix handling of unset members in map entries
 
