@@ -185,7 +185,7 @@ defmodule Protox.Decode do
 
 
   @spec varint_value(non_neg_integer, atom) :: integer
-  defp varint_value(value, :bool)       , do: value == 1
+  defp varint_value(value, :bool)       , do: value != 0
   defp varint_value(value, :sint32)     , do: Zigzag.decode(value)
   defp varint_value(value, :sint64)     , do: Zigzag.decode(value)
   defp varint_value(value, :uint32)     , do: value
