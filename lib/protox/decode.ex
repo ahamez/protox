@@ -4,6 +4,10 @@ defmodule Protox.Decode do
   # Decodes a binary into a message.
 
   use Bitwise
+  alias Protox.{
+    Varint,
+    Zigzag,
+  }
 
 
   @spec decode!(binary, atom, [atom]) :: struct | no_return
@@ -66,7 +70,7 @@ defmodule Protox.Decode do
   # Get the key's tag and wire type.
   @spec parse_key(binary) :: {non_neg_integer, non_neg_integer, binary}
   def parse_key(bytes) do
-    {key, rest} = Varint.LEB128.decode(bytes)
+    {key, rest} = Varint.decode(bytes)
     {key >>> 3, key &&& 0b111, rest}
   end
 
@@ -75,7 +79,7 @@ defmodule Protox.Decode do
 
   # Wire type 0: varint.
   defp parse_value(bytes, 0, type) do
-    {value, rest} = Varint.LEB128.decode(bytes)
+    {value, rest} = Varint.decode(bytes)
     {varint_value(value, type), rest}
   end
 
@@ -94,7 +98,7 @@ defmodule Protox.Decode do
 
   # Wire type 2: length-delimited.
   defp parse_value(bytes, 2, type) do
-    {len, new_bytes} = Varint.LEB128.decode(bytes)
+    {len, new_bytes} = Varint.decode(bytes)
     <<delimited::binary-size(len), rest::binary>> = new_bytes
     {parse_delimited(delimited, type), rest}
   end
@@ -155,7 +159,7 @@ defmodule Protox.Decode do
     Enum.reverse(acc)
   end
   defp parse_repeated_varint(acc, bytes, type) do
-    {value, rest} = Varint.LEB128.decode(bytes)
+    {value, rest} = Varint.decode(bytes)
     parse_repeated_varint([varint_value(value, type)|acc], rest, type)
   end
 
@@ -181,8 +185,8 @@ defmodule Protox.Decode do
 
   @spec varint_value(non_neg_integer, atom) :: integer
   defp varint_value(value, :bool)       , do: value == 1
-  defp varint_value(value, :sint32)     , do: Varint.Zigzag.decode(value)
-  defp varint_value(value, :sint64)     , do: Varint.Zigzag.decode(value)
+  defp varint_value(value, :sint32)     , do: Zigzag.decode(value)
+  defp varint_value(value, :sint64)     , do: Zigzag.decode(value)
   defp varint_value(value, :uint32)     , do: value
   defp varint_value(value, :uint64)     , do: value
   defp varint_value(value, {:enum, mod}) do
@@ -208,7 +212,7 @@ defmodule Protox.Decode do
     {add_unknown_field(msg, tag, 1, <<unknown_bytes::64>>), rest}
   end
   def parse_unknown(msg, tag, 2, bytes) do
-    {len, new_bytes} = Varint.LEB128.decode(bytes)
+    {len, new_bytes} = Varint.decode(bytes)
     <<unknown_bytes::binary-size(len), rest::binary>> = new_bytes
     {add_unknown_field(msg, tag, 2, unknown_bytes), rest}
   end

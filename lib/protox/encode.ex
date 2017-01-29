@@ -7,6 +7,12 @@ defmodule Protox.Encode do
   use Bitwise
 
 
+  alias Protox.{
+    Varint,
+    Zigzag,
+  }
+
+
   @spec encode(struct) :: iodata
   def encode(msg) do
     msg.__struct__.encode(msg)
@@ -15,7 +21,7 @@ defmodule Protox.Encode do
 
   @spec make_key_bytes(Protox.Types.tag, Protox.Types.type) :: iodata
   def make_key_bytes(tag, ty) do
-    Protox.Varint.encode(make_key(tag, ty))
+    Varint.encode(make_key(tag, ty))
   end
 
 
@@ -32,21 +38,21 @@ defmodule Protox.Encode do
 
   @spec encode_varint_signed(integer) :: iodata
   def encode_varint_signed(value) do
-    value |> Varint.Zigzag.encode() |> Protox.Varint.encode()
+    value |> Zigzag.encode() |> Varint.encode()
   end
 
 
   @spec encode_varint_64(integer) :: iodata
   def encode_varint_64(value) do
     <<res::unsigned-native-64>> = <<value::signed-native-64>>
-    Protox.Varint.encode(res)
+    Varint.encode(res)
   end
 
 
   @spec encode_varint_32(integer) :: iodata
   def encode_varint_32(value) do
     <<res::unsigned-native-32>> = <<value::signed-native-32>>
-    Protox.Varint.encode(res)
+    Varint.encode(res)
   end
 
 
@@ -111,20 +117,20 @@ defmodule Protox.Encode do
 
   @spec encode_string(String.t) :: iodata
   def encode_string(value) do
-    [Protox.Varint.encode(byte_size(value)), value]
+    [Varint.encode(byte_size(value)), value]
   end
 
 
   @spec encode_bytes(binary) :: iodata
   def encode_bytes(value) do
-    [Protox.Varint.encode(byte_size(value)), value]
+    [Varint.encode(byte_size(value)), value]
   end
 
 
   @spec encode_message(struct) :: iodata
   def encode_message(value) do
     encoded = value |> encode() |> :binary.list_to_bin()
-    [Protox.Varint.encode(byte_size(encoded)), encoded]
+    [Varint.encode(byte_size(encoded)), encoded]
   end
 
 end

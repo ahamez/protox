@@ -1,6 +1,6 @@
 # Protox
 
-[![Build Status](https://travis-ci.org/ahamez/protox.svg?branch=master)](https://travis-ci.org/ahamez/protox) [![Coverage Status](https://coveralls.io/repos/github/ahamez/protox/badge.svg?branch=master)](https://coveralls.io/github/ahamez/protox?branch=master) [![Hex.pm Version](http://img.shields.io/hexpm/v/protox.svg)](https://hex.pm/packages/protox) [![Deps Status](https://beta.hexfaktor.org/badge/prod/github/ahamez/protox.svg)](https://beta.hexfaktor.org/github/ahamez/protox) [![Inline docs](http://inch-ci.org/github/ahamez/protox.svg)](http://inch-ci.org/github/ahamez/protox)
+[![Build Status](https://travis-ci.org/ahamez/protox.svg?branch=master)](https://travis-ci.org/ahamez/protox) [![Coverage Status](https://coveralls.io/repos/github/ahamez/protox/badge.svg?branch=master)](https://coveralls.io/github/ahamez/protox?branch=master) [![Hex.pm Version](http://img.shields.io/hexpm/v/protox.svg)](https://hex.pm/packages/protox) [![Deps Status](https://beta.hexfaktor.org/badge/all/github/ahamez/protox.svg)](https://beta.hexfaktor.org/github/ahamez/protox) [![Inline docs](http://inch-ci.org/github/ahamez/protox.svg)](http://inch-ci.org/github/ahamez/protox)
 
 
 Protox is an Elixir library to work with Google's Protocol Buffers (version 2 and 3).

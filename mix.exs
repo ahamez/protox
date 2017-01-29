@@ -35,7 +35,6 @@ defmodule Protox.Mixfile do
       {:ex_doc, "~> 0.14", only: [:dev]},
       {:excoveralls, "~> 0.5", only: :test},
       {:inch_ex,  "~> 0.5.5", only: :docs},
-      {:varint, "~> 1.1.0"},
     ]
   end
 
