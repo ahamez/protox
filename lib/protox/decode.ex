@@ -5,6 +5,7 @@ defmodule Protox.Decode do
 
   use Bitwise
   alias Protox.{
+    Types,
     Varint,
     Zigzag,
   }
@@ -75,7 +76,7 @@ defmodule Protox.Decode do
   end
 
 
-  @spec parse_value(binary, 0 | 1 | 2 | 5, atom) :: {any, binary}
+  @spec parse_value(binary, Types.tag, atom) :: {any, binary}
 
   # Wire type 0: varint.
   defp parse_value(bytes, 0, type) do
