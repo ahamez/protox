@@ -1,3 +1,7 @@
+* 0.14.0
+  - Development now takes place at https://github.com/EasyMile/protox
+  - Remove conformance test and benchmarks escripts
+
 * 0.13.0
   - Typespecs for generated encoder
   - Bring Varint into Protox
