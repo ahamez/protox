@@ -14,7 +14,7 @@ defmodule Protox.Mixfile do
       test_coverage: [tool: ExCoveralls],
       escript: [main_module: Protox.Escript.Main],
       name: "Protox",
-      source_url: "https://github.com/ahamez/protox",
+      source_url: "https://github.com/EasyMile/protox",
       description: description(),
       package: package(),
     ]
@@ -52,7 +52,7 @@ defmodule Protox.Mixfile do
       files: ["lib", "mix.exs", "README*", "LICENSE"],
       maintainers: ["Alexandre Hamez"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/ahamez/protox",}
+      links: %{"GitHub" => "https://github.com/EasyMile/protox",}
     ]
   end
 

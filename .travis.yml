@@ -8,8 +8,8 @@ otp_release:
   - 19.1
   - 19.2
 before_script:
-  - wget https://github.com/google/protobuf/releases/download/v3.1.0/protoc-3.1.0-linux-x86_64.zip
-  - unzip -d protoc protoc-3.1.0-linux-x86_64.zip
+  - wget https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
+  - unzip -d protoc protoc-3.2.0-linux-x86_64.zip
   - export PATH=$PWD/protoc/bin/:$PATH
 env:
   - MIX_ENV=test
@@ -19,4 +19,4 @@ after_script:
   - MIX_ENV=docs mix inch.report
 notifications:
   email:
-    - alexandre.hamez+travis@gmail.com
+    - alexandre.hamez+travis@easymile.com
