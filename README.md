@@ -3,7 +3,12 @@
 [![Build Status](https://travis-ci.org/EasyMile/protox.svg?branch=master)](https://travis-ci.org/EasyMile/protox) [![Coverage Status](https://coveralls.io/repos/github/EasyMile/protox/badge.svg?branch=master)](https://coveralls.io/github/EasyMile/protox?branch=master) [![Hex.pm Version](http://img.shields.io/hexpm/v/protox.svg)](https://hex.pm/packages/protox) [![Deps Status](https://beta.hexfaktor.org/badge/all/github/EasyMile/protox.svg)](https://beta.hexfaktor.org/github/EasyMile/protox) [![Inline docs](http://inch-ci.org/github/EasyMile/protox.svg)](http://inch-ci.org/github/EasyMile/protox)
 
 
-Protox is an Elixir library to work with Google's Protocol Buffers (version 2 and 3).
+Protox is a native Elixir library to work with Google's Protocol Buffers (version 2 and 3).
+
+
+# Conformance
+
+This library has been tested using the conformance checker provided by Google. More informations at https://github.com/EasyMile/protox-conformance.
 
 
 # Prerequisites

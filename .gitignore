@@ -6,6 +6,3 @@
 erl_crash.dump
 *.ez
 *.beam
-/protobuf-*
-/conformance_report.txt
-/protox
