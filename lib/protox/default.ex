@@ -21,8 +21,8 @@ defmodule Protox.Default do
   def default(:sfixed64)    , do: 0
   def default(:fixed32)     , do: 0
   def default(:sfixed32)    , do: 0
-  def default(:double)      , do: 0
-  def default(:float)       , do: 0
+  def default(:double)      , do: 0.0
+  def default(:float)       , do: 0.0
   def default(:string)      , do: ""
   def default(:bytes)       , do: <<>>
   def default({:enum, e})   , do: e.default()

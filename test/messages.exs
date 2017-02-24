@@ -66,7 +66,7 @@ defmodule Defs do
         {2  , :optional, :e           , {:default, false}     , :bool},
         {3  , :optional, :f           , {:default, nil}       , {:message, Sub}},
         {4  , :repeated, :g           , :packed               , :int32},
-        {5  , :optional, :h           , {:default, 0}         , :double},
+        {5  , :optional, :h           , {:default, 0.0}       , :double},
         {6  , :repeated, :i           , :packed               , :float},
         {7  , :repeated, :j           , :unpacked             , {:message, Sub}},
         {8  , nil      , :k           , :map                  , {:int32, :string}},
