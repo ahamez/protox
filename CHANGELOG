@@ -1,3 +1,6 @@
+* 0.15.0
+  - Use 0.0 as default value for floats and doubles
+
 * 0.14.0
   - Development now takes place at https://github.com/EasyMile/protox
   - Remove conformance test and benchmarks escripts
