@@ -1,3 +1,6 @@
+* 0.15.1
+  - Fix typespecs for unknown and required fields accessors
+
 * 0.15.0
   - Use 0.0 as default value for floats and doubles
 
