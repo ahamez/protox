@@ -41,7 +41,7 @@ defmodule Protox.Define do
           unquote(decode_constants_funs)
           def decode(x), do: x
 
-
+          # TODO: generate type spec
           @spec constants() ::  [{integer, atom}]
           def constants(), do: unquote(constants)
         end
@@ -92,7 +92,7 @@ defmodule Protox.Define do
           def defs(), do: unquote(fields_map)
 
 
-          @spec get_required_fields() :: [atom]
+          @spec get_required_fields() :: unquote(required_fields)
           def get_required_fields(), do: unquote(required_fields)
 
 
@@ -100,7 +100,7 @@ defmodule Protox.Define do
           def get_unknown_fields(msg), do: msg.unquote(unknown_fields)
 
 
-          @spec get_unknown_fields_name() :: atom
+          @spec get_unknown_fields_name() :: unquote(unknown_fields)
           def get_unknown_fields_name(), do: unquote(unknown_fields)
 
 
