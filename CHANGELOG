@@ -1,3 +1,6 @@
+* 0.15.2
+  - Fix typespecs for enum constants accessors
+
 * 0.15.1
   - Fix typespecs for unknown and required fields accessors
 

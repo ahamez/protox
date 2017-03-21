@@ -25,7 +25,7 @@ defmodule Protox.Define do
       default_fun           = make_enum_default(constants)
       encode_constants_funs = make_encode_enum_constants(constants)
       decode_constants_funs = make_decode_enum_constants(constants)
-      constants_type_spec   = make_constants_type_spec(constants)
+      constants_typespec    = make_constants_typespec(constants)
       
       quote do
         defmodule unquote(enum_name) do
@@ -43,7 +43,7 @@ defmodule Protox.Define do
           def decode(x), do: x
 
           
-          @spec constants() :: unquote(constants_type_spec)
+          @spec constants() :: unquote(constants_typespec)
           def constants(), do: unquote(constants)
         end
       end
@@ -51,7 +51,8 @@ defmodule Protox.Define do
     end
   end
 
-  defp make_constants_type_spec(constants) do
+  
+  defp make_constants_typespec(constants) do
     lhs = Enum.reduce(constants, fn({x, _}, acc) -> quote do: unquote(acc) | unquote(x) end)
     rhs = Enum.reduce(constants, fn({_, y}, acc) -> quote do: unquote(acc) | unquote(y) end)
     quote do: [{unquote(lhs), unquote(rhs)}]
