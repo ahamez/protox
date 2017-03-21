@@ -25,7 +25,8 @@ defmodule Protox.Define do
       default_fun           = make_enum_default(constants)
       encode_constants_funs = make_encode_enum_constants(constants)
       decode_constants_funs = make_decode_enum_constants(constants)
-
+      constants_type_spec   = make_constants_type_spec(constants)
+      
       quote do
         defmodule unquote(enum_name) do
           @moduledoc false
@@ -41,8 +42,8 @@ defmodule Protox.Define do
           unquote(decode_constants_funs)
           def decode(x), do: x
 
-          # TODO: generate type spec
-          @spec constants() ::  [{integer, atom}]
+          
+          @spec constants() :: unquote(constants_type_spec)
           def constants(), do: unquote(constants)
         end
       end
@@ -50,6 +51,12 @@ defmodule Protox.Define do
     end
   end
 
+  defp make_constants_type_spec(constants) do
+    lhs = Enum.reduce(constants, fn({x, _}, acc) -> quote do: unquote(acc) | unquote(x) end)
+    rhs = Enum.reduce(constants, fn({_, y}, acc) -> quote do: unquote(acc) | unquote(y) end)
+    quote do: [{unquote(lhs), unquote(rhs)}]
+  end
+  
 
   defp define_messages(messages) do
     for {msg_name, fields} <- messages do
