@@ -11,6 +11,6 @@ defmodule Protox.Zigzag do
 
   @spec decode(non_neg_integer) :: integer
   def decode(v) when (v &&& 1) == 0, do: v >>> 1
-  def decode(v)                    , do: -((v+1) >>> 1)
+  def decode(v)                    , do: -((v + 1) >>> 1)
 
 end
