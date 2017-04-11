@@ -96,7 +96,9 @@ Finally, here's how to decode:
 
 ```elixir
 iex> <<8, 3, 18, 4, 8, 1, 18, 0>> |> Fiz.Foo.decode()
-{:ok, %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}}}
+{:ok,
+ %Fiz.Foo{__unknown_fields__: [], a: 3,
+  b: %{1 => %Fiz.Baz{__unknown_fields__: []}}}}
 ```
 
 
