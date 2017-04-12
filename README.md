@@ -139,7 +139,7 @@ Furthermore, all options other than `packed` and `default` are ignored.
 * When decoding enum aliases, the last encountered constant will be used.
   For instance, in the following example, `:BAR` will always be used if the value `1` is read
   on the wire.
-  ```
+  ```protobuf
   enum E {
     option allow_alias = true;
     FOO = 0;
