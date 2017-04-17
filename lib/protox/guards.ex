@@ -3,19 +3,13 @@ defmodule Protox.Guards do
   @moduledoc false
   # Provides macros to be used as guards when checking types is needed.
 
-  @primitive_fixed32 [
-    :fixed32, :sfixed32, :float,
-  ]
-
-  @primitive_fixed64 [
-    :fixed64, :sfixed64, :double,
-  ]
-
+  @primitive_fixed32 [:fixed32, :sfixed32, :float]
+  @primitive_fixed64 [:fixed64, :sfixed64, :double]
   @primitive_fixed @primitive_fixed32 ++ @primitive_fixed64
 
-  @primitive_varint [
-    :int32, :uint32, :sint32, :int64, :uint64, :sint64, :bool
-  ]
+  @primitive_varint32 [:int32, :uint32, :sint32]
+  @primitive_varint64 [:int64, :uint64, :sint64]
+  @primitive_varint @primitive_varint32 ++ @primitive_varint64 ++ [:bool]
 
   @primitives @primitive_varint ++ @primitive_fixed
 
