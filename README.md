@@ -13,7 +13,7 @@ This library has been tested using the conformance checker provided by Google. M
 
 # Prerequisites
 
-Protox uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`.
+Protox uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`. This dependency is only required at compile-time.
 You can get it [here](https://github.com/google/protobuf).
 
 
