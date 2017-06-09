@@ -146,6 +146,28 @@ defmodule Protox.DecodeTest do
   end
 
 
+  test "Sub.i, +inf" do
+    bytes = <<122, 8, 0, 0, 0, 0, 0, 0, 0xF0, 0x7F>>
+    assert Sub.decode!(bytes) ==\
+           %Sub{i: [:infinity]}
+  end
+
+
+  test "Sub.i, -inf" do
+    bytes = <<122, 8, 0, 0, 0, 0, 0, 0, 0xF0, 0xFF>>
+    assert Sub.decode!(bytes) ==\
+           %Sub{i: [:'-infinity']}
+  end
+
+
+  test "Sub.i, NaN" do
+    bytes = <<122, 24, 0x01, 0, 0, 0, 0, 0, 0xF0, 0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+              0, 0, 0, 0, 0, 0, 0xF8, 0xFF>>
+    assert Sub.decode!(bytes) ==\
+           %Sub{i: [:nan, :nan, :nan]}
+  end
+
+
   test "Sub.h" do
     bytes = <<114, 8, 255, 255, 255, 255, 254, 255, 255, 255>>
     assert Sub.decode!(bytes) ==\
@@ -341,6 +363,20 @@ defmodule Protox.DecodeTest do
     bytes = <<50, 8, 0, 0, 128, 63, 0, 0, 0, 64>>
     assert Msg.decode!(bytes) ==\
            %Msg{d: :FOO, e: false, f: nil, g: [], h: 0.0, i: [1.0, 2.0], j: [], k: %{}}
+  end
+
+
+  test "Msg.i, +infinity, -infinity" do
+    bytes = <<50, 8, 0, 0, 0x80, 0x7F, 0, 0, 0x80, 0xFF>>
+    assert Msg.decode!(bytes) ==\
+           %Msg{d: :FOO, e: false, f: nil, g: [], h: 0.0, i: [:infinity, :'-infinity'], j: [], k: %{}}
+  end
+
+
+  test "Msg.i, nan" do
+    bytes = <<50, 12, 0x01, 0, 0x80, 0x7F, 0, 0, 0xC0, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F>>
+    assert Msg.decode!(bytes) ==\
+           %Msg{d: :FOO, e: false, f: nil, g: [], h: 0.0, i: [:nan, :nan, :nan], j: [], k: %{}}
   end
 
 
