@@ -62,6 +62,12 @@ defmodule Protox.EncodeTest do
   end
 
 
+  test "Sub.i, infinity, -infinity, nan" do
+    assert Protox.Encode.encode(%Sub{i: [:infinity, :'-infinity', :nan]}) |> :binary.list_to_bin()
+           == <<122, 24, 0, 0, 0, 0, 0, 0, 0xF0, 0x7F, 0, 0, 0, 0, 0, 0, 0xF0, 0xFF, 0, 0, 0, 0, 0, 1, 241, 255>>
+  end
+
+
   test "Sub.h" do
     assert Protox.Encode.encode(%Sub{h: [-1,-2]}) |> :binary.list_to_bin()
            == <<114, 8, 255, 255, 255, 255, 254, 255, 255, 255>>
@@ -304,6 +310,19 @@ defmodule Protox.EncodeTest do
   test "Msg.i" do
     assert Protox.Encode.encode(%Msg{i: [2.3, -4.2]}) |> :binary.list_to_bin()
            == <<50, 8, 51, 51, 19, 64, 102, 102, 134, 192>>
+  end
+
+
+  test "Msg.i, infinity, -infinity, nan" do
+    assert Protox.Encode.encode(%Msg{i: [:infinity, :'-infinity', :nan]}) |> :binary.list_to_bin()
+           == <<50, 12, 0, 0, 0x80, 0x7F, 0, 0, 0x80, 0xFF, 0, 1, 129, 255>>
+  end
+
+
+  test "Msg.i, nan" do
+    bytes = <<50, 12, 0x01, 0, 0x80, 0x7F, 0, 0, 0xC0, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F>>
+    assert Msg.decode!(bytes) ==\
+           %Msg{d: :FOO, e: false, f: nil, g: [], h: 0.0, i: [:nan, :nan, :nan], j: [], k: %{}}
   end
 
 

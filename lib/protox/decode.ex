@@ -4,6 +4,7 @@ defmodule Protox.Decode do
   # Decodes a binary into a message.
 
   use Bitwise
+  use Protox.Float
   alias Protox.{
     Types,
     Varint,
@@ -88,10 +89,10 @@ defmodule Protox.Decode do
 
 
   @spec parse_single(binary, atom) :: {any, binary}
-  defp parse_single(<<0, 0, 0, 0, 0, 0, 0xF0, 0x7F, rest::binary>>, :double) do
+  defp parse_single(<<@positive_infinity_64, rest::binary>>, :double) do
     {:infinity, rest}
   end
-  defp parse_single(<<0, 0, 0, 0, 0, 0, 0xF0, 0xFF, rest::binary>>, :double) do
+  defp parse_single(<<@negative_infinity_64, rest::binary>>, :double) do
     {:'-infinity', rest}
   end
   defp parse_single(<<_::48, 0b1111::4, _::4, _::1, 0b1111111::7, rest::binary>>, :double) do
@@ -106,10 +107,10 @@ defmodule Protox.Decode do
   defp parse_single(<<value::signed-little-64, rest::binary>>, :fixed64) do
     {value, rest}
   end
-  defp parse_single(<<0, 0, 0x80, 0x7F, rest::binary>>, :float) do
+  defp parse_single(<<@positive_infinity_32, rest::binary>>, :float) do
     {:infinity, rest}
   end
-  defp parse_single(<<0, 0, 0x80, 0xFF, rest::binary>>, :float) do
+  defp parse_single(<<@negative_infinity_32, rest::binary>>, :float) do
     {:'-infinity', rest}
   end
   defp parse_single(<<_::16, 1::1, _::7, _::1, 0b1111111::7, rest::binary>>, :float) do

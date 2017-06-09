@@ -68,7 +68,12 @@ defmodule Protox.RandomInit do
     :rand.uniform(100) * sign()
   end
   defp value({:default, _}, ty) when ty == :double or ty == :float do
-    :rand.uniform(1_000_000) * :rand.uniform() * sign()
+    case :rand.uniform(10) do
+      1 -> :nan
+      2 -> :infinity
+      3 -> :'-infinity'
+      _ -> :rand.uniform(1_000_000) * :rand.uniform() * sign()
+    end
   end
   defp value({:default, _}, ty) when is_primitive(ty) do
     :rand.uniform(1_000_000)

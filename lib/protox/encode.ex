@@ -5,6 +5,7 @@ defmodule Protox.Encode do
 
   import Protox.Guards
   use Bitwise
+  use Protox.Float
 
 
   alias Protox.{
@@ -103,12 +104,18 @@ defmodule Protox.Encode do
   def encode_sfixed32(value), do: <<value::signed-little-32>>
 
 
-  @spec encode_double(float) :: binary
-  def encode_double(value), do: <<value::float-little-64>>
+  @spec encode_double(float | atom) :: binary
+  def encode_double(:infinity)   , do: @positive_infinity_64
+  def encode_double(:'-infinity'), do: @negative_infinity_64
+  def encode_double(:nan)        , do: @nan_64
+  def encode_double(value)       , do: <<value::float-little-64>>
 
 
-  @spec encode_float(float) :: binary
-  def encode_float(value), do: <<value::float-little-32>>
+  @spec encode_float(float | atom) :: binary
+  def encode_float(:infinity)   , do: @positive_infinity_32
+  def encode_float(:'-infinity'), do: @negative_infinity_32
+  def encode_float(:nan)        , do: @nan_32
+  def encode_float(value)       , do: <<value::float-little-32>>
 
 
   # Even if the documentation says otherwise, the C++ reference
