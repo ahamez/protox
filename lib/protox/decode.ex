@@ -77,43 +77,38 @@ defmodule Protox.Decode do
 
 
   @spec parse_value(binary, Types.tag, atom) :: {any, binary}
-
-  # Wire type 0: varint.
-  defp parse_value(bytes, 0, type) do
-    {value, rest} = Varint.decode(bytes)
-    {varint_value(value, type), rest}
-  end
-
-
-  # Wire type 1: fixed 64-bit.
-  defp parse_value(<<value::float-little-64, rest::binary>>, 1, :double) do
-    {value, rest}
-  end
-  defp parse_value(<<value::little-64, rest::binary>>, 1, :fixed64) do
-    {value, rest}
-  end
-  defp parse_value(<<value::signed-little-64, rest::binary>>, 1, :sfixed64) do
-    {value, rest}
-  end
-
-
-  # Wire type 2: length-delimited.
   defp parse_value(bytes, 2, type) do
     {len, new_bytes} = Varint.decode(bytes)
     <<delimited::binary-size(len), rest::binary>> = new_bytes
     {parse_delimited(delimited, type), rest}
   end
+  defp parse_value(bytes, _, type) do
+    parse_single(bytes, type)
+  end
 
 
-  # Wire type 5: fixed 32-bit.
-  defp parse_value(<<value::float-little-32, rest::binary>>, 5, :float) do
+  @spec parse_single(binary, atom) :: {any, binary}
+  defp parse_single(<<value::float-little-64, rest::binary>>, :double) do
     {value, rest}
   end
-  defp parse_value(<<value::little-32, rest::binary>>, 5, :fixed32) do
+  defp parse_single(<<value::signed-little-64, rest::binary>>, :sfixed64) do
     {value, rest}
   end
-  defp parse_value(<<value::signed-little-32, rest::binary>>, 5, :sfixed32) do
+  defp parse_single(<<value::signed-little-64, rest::binary>>, :fixed64) do
     {value, rest}
+  end
+  defp parse_single(<<value::float-little-32, rest::binary>>, :float) do
+    {value, rest}
+  end
+  defp parse_single(<<value::signed-little-32, rest::binary>>, :sfixed32) do
+    {value, rest}
+  end
+  defp parse_single(<<value::signed-little-32, rest::binary>>, :fixed32) do
+    {value, rest}
+  end
+  defp parse_single(bytes, type) do
+    {value, rest} = Varint.decode(bytes)
+    {varint_value(value, type), rest}
   end
 
 
@@ -165,22 +160,12 @@ defmodule Protox.Decode do
   end
 
 
-  defp parse_repeated_fixed(acc, <<value::float-little-64, rest::binary>>, :double) do
-    parse_repeated_fixed([value|acc], rest, :double)
-  end
-  defp parse_repeated_fixed(acc, <<value::float-little-32, rest::binary>>, :float) do
-    parse_repeated_fixed([value|acc], rest, :float)
-  end
-  defp parse_repeated_fixed(acc, <<value::signed-little-64, rest::binary>>, ty)
-  when ty == :fixed64 or ty == :sfixed64 do
-    parse_repeated_fixed([value|acc], rest, ty)
-  end
-  defp parse_repeated_fixed(acc, <<value::signed-little-32, rest::binary>>, ty)
-  when ty == :fixed32 or ty == :sfixed32 do
-    parse_repeated_fixed([value|acc], rest, ty)
-  end
   defp parse_repeated_fixed(acc, <<>>, _) do
     Enum.reverse(acc)
+  end
+  defp parse_repeated_fixed(acc, bytes, type) do
+    {value, rest} = parse_single(bytes, type)
+    parse_repeated_fixed([value|acc], rest, type)
   end
 
 
