@@ -1,37 +1,8 @@
 defmodule Protox.RandomInit do
 
-  @moduledoc"""
-  Provides a way to randomly init a message. Useful for tests or benchmarks.
-  """
-
   import Protox.Guards
 
 
-  @doc"""
-  Generates a randomly initialized message using its definition. It's possible to
-  give a seed as the second parameter to get reproducible results.
-
-  ## Example
-  ```
-  defmodule Definitions do
-   use Protox, schema: \"\"\"
-     syntax = "proto3";
-
-     message Baz {
-     }
-
-     message Foo {
-       int32 a = 1;
-       map<int32, Baz> b = 2;
-     }
-   \"\"\"
-  end
-
-  iex> Protox.RandomInit.generate(Foo, 42)
-  %Foo{a: -97, b: %{-83 => %Baz{}, -46 => %Baz{}}}
-  ```
-  """
-  @spec generate(atom, nil | integer) :: struct
   def generate(mod, seed \\ nil) do
     if seed != nil do
       :rand.seed(:exs1024, {seed, seed, seed})
