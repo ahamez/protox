@@ -55,6 +55,10 @@ defmodule Protox.Decode do
   defp parse_key_value(set_fields, bytes, defs, msg) do
     {tag, wire_type, rest} = parse_key(bytes)
 
+    if tag == 0 do
+      raise "Illegal field with tag 0"
+    end
+
     field = defs[tag]
     {new_set_fields, new_msg, new_rest} = if field do
       {name, kind, type} = field
