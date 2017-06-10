@@ -1,3 +1,7 @@
+* 0.16.0
+  - Fix handling of +/-infinity an NaN when encoding/decoding floats
+  - Move RandomInit to tests
+
 * 0.15.2
   - Fix typespecs for enum constants accessors
 
