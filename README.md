@@ -168,8 +168,8 @@ fixed32    | integer()
 fixed64    | integer()
 sfixed32   | integer()
 sfixed64   | integer()
-float      | float()
-double     | float()
+float      | float(), :infinity, :'-infinity', :nan
+double     | float(), :infinity, :'-infinity', :nan
 bool       | boolean()
 string     | String.t
 bytes      | binary()
