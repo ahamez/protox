@@ -41,10 +41,10 @@ defmodule Protox.Decode do
 
     defstruct key: nil,
               value: nil,
-              __unknown_fields__: []
+              __uf__: []
 
-    @spec get_unknown_fields_name() :: :__unknown_fields__
-    def get_unknown_fields_name(), do: :__unknown_fields__
+    @spec get_unknown_fields_name() :: :__uf__
+    def get_unknown_fields_name(), do: :__uf__
   end
 
 

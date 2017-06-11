@@ -99,7 +99,7 @@ defmodule Defs do
     {
       NoNameClash,
       [
-        {1, :optional, :__unknown_fields__, {:default, 0}, :int32}
+        {1, :optional, :__uf__, {:default, 0}, :int32}
       ]
     }
   ]

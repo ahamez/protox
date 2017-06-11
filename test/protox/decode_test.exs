@@ -61,35 +61,35 @@ defmodule Protox.DecodeTest do
   test "Sub, unknown tag (double)" do
     bytes = <<8, 42, 25, 246, 40, 92, 143, 194, 53, 69, 64, 136, 241, 4, 83>>
     assert Sub.decode!(bytes) ==\
-           %Sub{a: 42, b: "", z: -42, __unknown_fields__: [{3, 1, <<246, 40, 92, 143, 194, 53, 69, 64>>}]}
+           %Sub{a: 42, b: "", z: -42, __uf__: [{3, 1, <<246, 40, 92, 143, 194, 53, 69, 64>>}]}
   end
 
 
   test "Sub, unknown tag (embedded message)" do
     bytes = <<8, 42, 34, 0, 136, 241, 4, 83>>
     assert Sub.decode!(bytes) ==\
-           %Sub{a: 42, b: "", z: -42, __unknown_fields__: [{4, 2, <<>>}]}
+           %Sub{a: 42, b: "", z: -42, __uf__: [{4, 2, <<>>}]}
   end
 
 
   test "Sub, unknown tag (string)" do
     bytes = <<8, 42, 42, 4, 121, 97, 121, 101, 136, 241, 4, 83>>
     assert Sub.decode!(bytes) ==\
-           %Sub{a: 42, b: "", z: -42, __unknown_fields__: [{5, 2, <<121, 97, 121, 101>>}]}
+           %Sub{a: 42, b: "", z: -42, __uf__: [{5, 2, <<121, 97, 121, 101>>}]}
   end
 
 
   test "Sub, unknown tag (bytes)" do
     bytes = <<8, 142, 26, 82, 4, 104, 101, 121, 33, 136, 241, 4, 19>>
     assert Sub.decode!(bytes) ==\
-           %Sub{a: 3342, b: "", z: -10, __unknown_fields__: [{10, 2, <<104, 101, 121, 33>>}]}
+           %Sub{a: 3342, b: "", z: -10, __uf__: [{10, 2, <<104, 101, 121, 33>>}]}
   end
 
 
   test "Sub, unknown tag (varint)" do
     bytes = <<8, 142, 26, 82, 4, 104, 101, 121, 33, 88, 154, 5, 136, 241, 4, 19>>
     assert Sub.decode!(bytes) ==\
-           %Sub{a: 3342, b: "", z: -10, __unknown_fields__: [{11, 0, <<154, 5>>}, {10, 2, <<104, 101, 121, 33>>}]}
+           %Sub{a: 3342, b: "", z: -10, __uf__: [{11, 0, <<154, 5>>}, {10, 2, <<104, 101, 121, 33>>}]}
   end
 
 
@@ -97,7 +97,7 @@ defmodule Protox.DecodeTest do
     bytes = <<8, 142, 26, 82, 4, 104, 101, 121, 33, 88, 154, 5, 101, 236, 81, 5, 66, 136,
               241, 4, 19>>
     assert Sub.decode!(bytes) ==\
-           %Sub{a: 3342, b: "", z: -10, __unknown_fields__: [{12, 5, <<236, 81, 5, 66>>}, {11, 0, <<154, 5>>}, {10, 2, <<104, 101, 121, 33>>}]}
+           %Sub{a: 3342, b: "", z: -10, __uf__: [{12, 5, <<236, 81, 5, 66>>}, {11, 0, <<154, 5>>}, {10, 2, <<104, 101, 121, 33>>}]}
   end
 
 
@@ -520,9 +520,9 @@ defmodule Protox.DecodeTest do
   end
 
 
-  test "No name clash for __unknown_fields__" do
+  test "No name clash for __uf__" do
     assert NoNameClash.decode!(<<>>) ==\
-           %NoNameClash{__unknown_fields__: 0}
+           %NoNameClash{__uf__: 0}
   end
 
   test "Protobuf2.s, default" do

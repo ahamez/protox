@@ -62,7 +62,7 @@ defmodule Protox.Define do
   defp define_messages(messages) do
     for {msg_name, fields} <- messages do
 
-      unknown_fields  = make_unknown_fields(:__unknown_fields__, fields)
+      unknown_fields  = make_unknown_fields(:__uf__, fields)
       struct_fields   = make_struct_fields(fields, unknown_fields)
       required_fields = make_required_fields(fields)
       fields_map      = make_fields_map(fields)
@@ -131,7 +131,7 @@ defmodule Protox.Define do
     if name_in_fields do
       name
       |> Atom.to_string()
-      |> (fn x -> x <> "_" end).()
+      |> (fn x -> x <> "_" end).() # Append a '_' while there's a collision
       |> String.to_atom()
       |> make_unknown_fields(fields)
 

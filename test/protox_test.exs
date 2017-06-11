@@ -166,7 +166,7 @@ defmodule ProtoxTest do
 
 
   test "clear unknown fields" do
-    assert %Proto2A{__unknown_fields__: [{10, 2, <<104, 101, 121, 33>>}]}
+    assert %Proto2A{__uf__: [{10, 2, <<104, 101, 121, 33>>}]}
            |> Proto2A.clear_unknown_fields()
            == %Proto2A{}
   end

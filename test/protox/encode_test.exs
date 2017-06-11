@@ -163,14 +163,14 @@ defmodule Protox.EncodeTest do
       a: 42,
       b: "",
       z: -42,
-      __unknown_fields__: [{3, 1, <<246, 40, 92, 143, 194, 53, 69, 64>>}]})
+      __uf__: [{3, 1, <<246, 40, 92, 143, 194, 53, 69, 64>>}]})
     |> :binary.list_to_bin()
     == <<8, 42, 136, 241, 4, 83, 25, 246, 40, 92, 143, 194, 53, 69, 64>>
   end
 
 
   test "Sub, unknown tag (embedded message)" do
-    assert Protox.Encode.encode(%Sub{a: 42, b: "", z: -42, __unknown_fields__: [{4, 2, <<>>}]})
+    assert Protox.Encode.encode(%Sub{a: 42, b: "", z: -42, __uf__: [{4, 2, <<>>}]})
           |> :binary.list_to_bin()
            == <<8, 42, 136, 241, 4, 83, 34, 0>>
   end
@@ -181,7 +181,7 @@ defmodule Protox.EncodeTest do
       a: 42,
       b: "",
       z: -42,
-      __unknown_fields__: [{5, 2, <<121, 97, 121, 101>>}]})
+      __uf__: [{5, 2, <<121, 97, 121, 101>>}]})
     |> :binary.list_to_bin()
     == <<8, 42, 136, 241, 4, 83, 42, 4, 121, 97, 121, 101>>
   end
@@ -193,7 +193,7 @@ defmodule Protox.EncodeTest do
       a: 3342,
       b: "",
       z: -10,
-      __unknown_fields__: [{10, 2, bytes}]})
+      __uf__: [{10, 2, bytes}]})
     |> :binary.list_to_bin()
     == <<8, 142, 26, 136, 241, 4, 19, 82, 128, 1, bytes::binary>>
   end
@@ -204,7 +204,7 @@ defmodule Protox.EncodeTest do
       a: 3342,
       b: "",
       z: -10,
-      __unknown_fields__: [
+      __uf__: [
         {11, 0, <<154, 5>>},
         {10, 2, <<104, 101, 121, 33>>}
       ]})
@@ -218,7 +218,7 @@ defmodule Protox.EncodeTest do
       a: 3342,
       b: "",
       z: -10,
-      __unknown_fields__: [
+      __uf__: [
         {12, 5, <<236, 81, 5, 66>>},
         {11, 0, <<154, 5>>},
         {10, 2, <<104, 101, 121, 33>>}

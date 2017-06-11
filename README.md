@@ -97,8 +97,8 @@ Finally, here's how to decode:
 ```elixir
 iex> <<8, 3, 18, 4, 8, 1, 18, 0>> |> Fiz.Foo.decode()
 {:ok,
- %Fiz.Foo{__unknown_fields__: [], a: 3,
-  b: %{1 => %Fiz.Baz{__unknown_fields__: []}}}}
+ %Fiz.Foo{__uf__: [], a: 3,
+  b: %{1 => %Fiz.Baz{__uf__: []}}}}
 ```
 
 
@@ -109,14 +109,14 @@ It's possible to access them with the function `get_unknown_fields/1` defined wi
 
 ```elixir
 iex> msg = <<8, 42, 42, 4, 121, 97, 121, 101, 136, 241, 4, 83>> |> Msg.decode!()
-%Msg{a: 42, b: "", z: -42, __unknown_fields__: [{5, 2, <<121, 97, 121, 101>>}]}
+%Msg{a: 42, b: "", z: -42, __uf__: [{5, 2, <<121, 97, 121, 101>>}]}
 
 iex> msg |> Msg.get_unknown_fields()
 [{5, 2, <<121, 97, 121, 101>>}]
 ```
 
 You should always use `get_unknown_fields/1` as the name of the struct field
-(e.g. `__unknown_fields__`) is generated at compile-time to avoid collision with the actual
+(e.g. `__uf__`) is generated at compile-time to avoid collision with the actual
 fields of the protobuf message.
 
 It returns a list of tuples `{tag, wire_type, bytes}`.
