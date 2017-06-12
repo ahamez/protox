@@ -1,3 +1,6 @@
+* 0.16.1
+  - Change base name for unknown fields from '__unknown_fields__' to '__uf__'
+
 * 0.16.0
   - Fix handling of +/-infinity an NaN when encoding/decoding floats
   - Move RandomInit to tests
