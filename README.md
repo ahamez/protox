@@ -101,6 +101,8 @@ iex> <<8, 3, 18, 4, 8, 1, 18, 0>> |> Fiz.Foo.decode()
   b: %{1 => %Fiz.Baz{__uf__: []}}}}
 ```
 
+The `__uf__` field is explained in the section [Unknown fields](https://github.com/EasyMile/protox#unknown-fields).
+
 
 # Unknown fields
 
@@ -115,11 +117,11 @@ iex> msg |> Msg.get_unknown_fields()
 [{5, 2, <<121, 97, 121, 101>>}]
 ```
 
-You should always use `get_unknown_fields/1` as the name of the struct field
+You must always use `get_unknown_fields/1` as the name of the struct field
 (e.g. `__uf__`) is generated at compile-time to avoid collision with the actual
 fields of the protobuf message.
 
-It returns a list of tuples `{tag, wire_type, bytes}`.
+This function returns a list of tuples `{tag, wire_type, bytes}`.
 
 
 # Unsupported features
@@ -155,6 +157,8 @@ Furthermore, all options other than `packed` and `default` are ignored.
 
 
 # Types mapping
+
+The following table shows how Protobuf types are mapped to Elixir's ones.
 
 Protobuf   | Elixir
 -----------|--------------
