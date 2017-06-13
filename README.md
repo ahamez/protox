@@ -8,18 +8,18 @@ Protox is a native Elixir library to work with Google's Protocol Buffers (versio
 
 # Conformance
 
-This library has been tested using the conformance checker provided by Google. More informations at https://github.com/EasyMile/protox-conformance.
+This library has been tested using the conformance checker provided by Google. More information at https://github.com/EasyMile/protox-conformance.
 
 
 # Prerequisites
 
-Protox uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`. This dependency is only required at compile-time.
+Protox uses Google `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`. This dependency is only required at compile time.
 You can get it [here](https://github.com/google/protobuf).
 
 
 # Usage
 
-From files:
+## From Files
 
 ```elixir
 defmodule Foo do
@@ -35,7 +35,7 @@ defmodule Foo do
 end
 ```
 
-From a textual description:
+## From a Textual Description
 
 ```elixir
 defmodule Bar do
@@ -55,9 +55,11 @@ defmodule Bar do
 end
 ```
 
-The previous example will generate two modules: `Fiz.Baz` and `Fiz.Foo`.
+The previous example generates two modules: `Fiz.Baz` and `Fiz.Foo`.
 
-It's possible to prepend a namespace to all generated modules:
+## Working With Namespaces
+
+It is possible to prepend a namespace to all generated modules:
 
 ```elixir
 defmodule Bar do
@@ -73,17 +75,16 @@ defmodule Bar do
 end
 ```
 
-In this case, the module `Namespace.Enum` will be generated.
+In this case, the module `Namespace.Enum` is generated.
 
-
-Here's how to create a new message:
+## Encode
 
 ```elixir
 iex> %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}} |> Protox.Encode.encode()
 [[[], "\b", <<3>>], <<18>>, <<4>>, "\b", <<1>>, <<18>>, <<0>>]
 ```
 
-Note that `Protox.Encode.encode/1` returns an iolist, not a binary. Such iolists can be used
+Note that `Protox.Encode.encode/1` returns an IO list, not a binary. Such IO lists can be used
 directly with files or sockets write operations.
 However, you can use `:binary.list_to_bin/1` to get a binary:
 
@@ -92,7 +93,7 @@ iex> %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}} |> Protox.Encode.encode() |> :binary.
 <<8, 3, 18, 4, 8, 1, 18, 0>>
 ```
 
-Finally, here's how to decode:
+## Decode
 
 ```elixir
 iex> <<8, 3, 18, 4, 8, 1, 18, 0>> |> Fiz.Foo.decode()
@@ -104,10 +105,10 @@ iex> <<8, 3, 18, 4, 8, 1, 18, 0>> |> Fiz.Foo.decode()
 The `__uf__` field is explained in the section [Unknown fields](https://github.com/EasyMile/protox#unknown-fields).
 
 
-# Unknown fields
+# Unknown Fields
 
-If any unknown fields are encountered when decoding, they are kept in the decoded message.
-It's possible to access them with the function `get_unknown_fields/1` defined with the message.
+If any unknown field is encountered when decoding, it is kept in the decoded message.
+It is possible to access them with the function `get_unknown_fields/1` defined with the message.
 
 ```elixir
 iex> msg = <<8, 42, 42, 4, 121, 97, 121, 101, 136, 241, 4, 83>> |> Msg.decode!()
@@ -117,29 +118,29 @@ iex> msg |> Msg.get_unknown_fields()
 [{5, 2, <<121, 97, 121, 101>>}]
 ```
 
-You must always use `get_unknown_fields/1` as the name of the struct field
-(e.g. `__uf__`) is generated at compile-time to avoid collision with the actual
-fields of the protobuf message.
+You must always use `get_unknown_fields/1` as the name of the field
+(e.g. `__uf__`) is generated at compile time to avoid collision with the actual
+fields of the Protobuf message.
 
 This function returns a list of tuples `{tag, wire_type, bytes}`.
 
 
-# Unsupported features
+# Unsupported Features
 
-* protobuf 3 JSON mapping
+* Protobuf 3 JSON mapping
 * groups
 * rpc
 
 Furthermore, all options other than `packed` and `default` are ignored.
 
 
-# Implementation choices
+# Implementation Choices
 
-* Required fields (protobuf 2): an error is raised when decoding a message with a missing required
+* Required fields (Protobuf 2): an error is raised when decoding a message with a missing required
   field.
 
-* When decoding enum aliases, the last encountered constant will be used.
-  For instance, in the following example, `:BAR` will always be used if the value `1` is read
+* When decoding enum aliases, the last encountered constant is used.
+  For instance, in the following example, `:BAR` is always used if the value `1` is read
   on the wire.
   ```protobuf
   enum E {
@@ -151,14 +152,14 @@ Furthermore, all options other than `packed` and `default` are ignored.
   ```
 
 * Unset optionals
-  * For protobuf 2, unset optional fields are mapped to `nil`
-  * For protobuf 3, unset optional fields are mapped to their default values, as mandated by
-    the protobuf spec
+  * For Protobuf 2, unset optional fields are mapped to `nil`.
+  * For Protobuf 3, unset optional fields are mapped to their default values, as mandated by
+    the Protobuf spec.
 
 
-# Types mapping
+# Types Mapping
 
-The following table shows how Protobuf types are mapped to Elixir's ones.
+The following table shows how Protobuf types are mapped to Elixir ones.
 
 Protobuf   | Elixir
 -----------|--------------
