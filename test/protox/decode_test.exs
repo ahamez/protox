@@ -104,21 +104,21 @@ defmodule Protox.DecodeTest do
   test "Sub.c" do
     bytes = <<48, 212, 253, 255, 255, 255, 255, 255, 255, 255, 1>>
     assert Sub.decode!(bytes) ==\
-           %Sub{c: 0, b: "", c: -300}
+           %Sub{a: 0, b: "", c: -300}
   end
 
 
   test "Sub.d; Sub.e" do
     bytes = <<56, 133, 7, 64, 177, 3>>
     assert Sub.decode!(bytes) ==\
-           %Sub{c: 0, b: "", c: 0, d: 901, e: 433}
+           %Sub{a: 0, b: "", c: 0, d: 901, e: 433}
   end
 
 
   test "Sub.f" do
     bytes = <<72, 213, 20>>
     assert Sub.decode!(bytes) ==\
-           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: -1323}
+           %Sub{a: 0, b: "", c: 0, d: 0, e: 0, f: -1323}
   end
 
 
@@ -126,7 +126,7 @@ defmodule Protox.DecodeTest do
     bytes = <<106, 16, 1, 0, 0, 0, 0, 0, 0, 0, 254, 255,
               255, 255, 255, 255, 255, 255>>
     assert Sub.decode!(bytes) ==\
-           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [1,-2], h: [], i: []}
+           %Sub{a: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [1,-2], h: [], i: []}
   end
 
 
@@ -134,7 +134,7 @@ defmodule Protox.DecodeTest do
     bytes = <<106, 8, 1, 0, 0, 0, 0, 0, 0, 0, 8, 150, 1, 106, 8, 254, 255,
               255, 255, 255, 255, 255, 255>>
     assert Sub.decode!(bytes) ==\
-           %Sub{a: 150, c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [1,-2], h: [], i: []}
+           %Sub{a: 150, c: 0, b: "", d: 0, e: 0, f: 0, g: [1,-2], h: [], i: []}
   end
 
 
@@ -142,7 +142,7 @@ defmodule Protox.DecodeTest do
     bytes = <<106, 8, 0, 0, 0, 0, 0, 0, 0, 0, 114, 4, 255, 255, 255, 255, 122, 16, 154, 153,
               153, 153, 153, 153, 64, 64, 0, 0, 0, 0, 0, 0, 70, 192>>
     assert Sub.decode!(bytes) ==\
-           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [0], h: [-1], i: [33.2, -44.0]}
+           %Sub{a: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [0], h: [-1], i: [33.2, -44.0]}
   end
 
 
@@ -171,7 +171,7 @@ defmodule Protox.DecodeTest do
   test "Sub.h" do
     bytes = <<114, 8, 255, 255, 255, 255, 254, 255, 255, 255>>
     assert Sub.decode!(bytes) ==\
-           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [-1,-2], i: []}
+           %Sub{a: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [-1,-2], i: []}
   end
 
 
@@ -185,7 +185,7 @@ defmodule Protox.DecodeTest do
   test "Sub.n" do
     bytes = <<162, 1, 4, 1, 0, 0, 1>>
     assert Sub.decode!(bytes) ==\
-           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
+           %Sub{a: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
                 n: [true, false, false, true]}
   end
 
@@ -193,7 +193,7 @@ defmodule Protox.DecodeTest do
   test "Sub.n (all false)" do
     bytes = <<162, 1, 4, 0, 0, 0, 0>>
     assert Sub.decode!(bytes) ==\
-           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
+           %Sub{a: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
                 n: [false, false, false, false]}
   end
 
@@ -201,7 +201,7 @@ defmodule Protox.DecodeTest do
   test "Sub.o " do
     bytes = <<170, 1, 3, 0, 1, 0>>
     assert Sub.decode!(bytes) ==\
-           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
+           %Sub{a: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
                 n: [], o: [:FOO, :BAR, :FOO]}
   end
 
@@ -209,7 +209,7 @@ defmodule Protox.DecodeTest do
   test "Sub.o (unknown entry) " do
     bytes = <<170, 1, 4, 0, 1, 0, 2>>
     assert Sub.decode!(bytes) ==\
-           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
+           %Sub{a: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
                 n: [], o: [:FOO, :BAR, :FOO, 2]}
   end
 
@@ -217,7 +217,7 @@ defmodule Protox.DecodeTest do
   test "Sub.p" do
     bytes = <<176, 1, 1, 176, 1, 0, 176, 1, 1, 176, 1, 0>>
     assert Sub.decode!(bytes) ==\
-           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
+           %Sub{a: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
                 n: [], o: [], p: [true, false, true, false]}
   end
 
@@ -225,7 +225,7 @@ defmodule Protox.DecodeTest do
   test "Sub.p, not contiguous, should be concatenated" do
     bytes = <<176, 1, 1, 176, 1, 0, 8, 150, 1, 176, 1, 1, 176, 1, 0>>
     assert Sub.decode!(bytes) ==\
-           %Sub{a: 150, c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
+           %Sub{a: 150, c: 0, b: "", d: 0, e: 0, f: 0, g: [], h: [], i: [],
                 n: [], o: [], p: [true, false, true, false]}
   end
 
@@ -233,7 +233,7 @@ defmodule Protox.DecodeTest do
   test "Sub.q (unpacked in definition) " do
     bytes = <<184, 1, 0, 184, 1, 1, 184, 1, 1, 184, 1, 0>>
     assert Sub.decode!(bytes) ==\
-           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
+           %Sub{a: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
                 n: [], o: [], p: [], q: [:FOO, :BAR, :BAR, :FOO]}
   end
 
@@ -241,7 +241,7 @@ defmodule Protox.DecodeTest do
   test "Sub.q (unpacked in definition, with unknown values) " do
     bytes = <<184, 1, 0, 184, 1, 1, 184, 1, 2, 184, 1, 0>>
     assert Sub.decode!(bytes) ==\
-           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
+           %Sub{a: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [],
                 n: [], o: [], p: [], q: [:FOO, :BAR, 2, :FOO]}
   end
 
@@ -256,14 +256,14 @@ defmodule Protox.DecodeTest do
   test "Sub.u" do
     bytes = <<218, 1, 6, 0, 1, 2, 3, 144, 78>>
     assert Sub.decode!(bytes) ==\
-           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [], u: [0, 1, 2, 3, 10_000]}
+           %Sub{a: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [], u: [0, 1, 2, 3, 10_000]}
   end
 
 
   test "Sub.w" do
     bytes = <<226, 1, 7, 0, 1, 4, 5, 160, 156, 1>>
     assert Sub.decode!(bytes) ==\
-           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [], w: [0, -1, 2, -3, 10_000]}
+           %Sub{a: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [], w: [0, -1, 2, -3, 10_000]}
   end
 
 
@@ -271,14 +271,14 @@ defmodule Protox.DecodeTest do
     bytes = <<234, 1, 24, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 1, 2, 253, 255,
               255, 255, 255, 255, 255, 255, 255, 1, 144, 78>>
     assert Sub.decode!(bytes) ==\
-           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [], x: [0, -1, 2, -3, 10_000]}
+           %Sub{a: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [], x: [0, -1, 2, -3, 10_000]}
   end
 
 
   test "Sub.y" do
     bytes = <<242, 1, 6, 0, 1, 2, 3, 144, 78>>
     assert Sub.decode!(bytes) ==\
-           %Sub{c: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [], y: [0, 1, 2, 3, 10_000]}
+           %Sub{a: 0, b: "", c: 0, d: 0, e: 0, f: 0, g: [], h: [], i: [], y: [0, 1, 2, 3, 10_000]}
   end
 
 
