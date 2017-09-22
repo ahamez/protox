@@ -5,6 +5,7 @@ defmodule Protox.Decode do
 
   use Bitwise
   use Protox.Float
+  use Protox.WireTypes
   alias Protox.{
     Types,
     Varint,
@@ -82,7 +83,7 @@ defmodule Protox.Decode do
 
 
   @spec parse_value(binary, Types.tag, atom) :: {any, binary}
-  defp parse_value(bytes, 2, type) do
+  defp parse_value(bytes, @wire_delimited, type) do
     {len, new_bytes} = Varint.decode(bytes)
     <<delimited::binary-size(len), rest::binary>> = new_bytes
     {parse_delimited(delimited, type), rest}
@@ -213,20 +214,20 @@ defmodule Protox.Decode do
 
 
   @spec parse_unknown(struct, non_neg_integer, 0 | 1 | 2 | 5, binary) :: {struct, binary}
-  def parse_unknown(msg, tag, 0, bytes) do
+  def parse_unknown(msg, tag, @wire_varint, bytes) do
     {unknown_bytes, rest} = get_unknown_varint_bytes(<<>>, bytes)
-    {add_unknown_field(msg, tag, 0, unknown_bytes), rest}
+    {add_unknown_field(msg, tag, @wire_varint, unknown_bytes), rest}
   end
-  def parse_unknown(msg, tag, 1, <<unknown_bytes::64, rest::binary>>) do
-    {add_unknown_field(msg, tag, 1, <<unknown_bytes::64>>), rest}
+  def parse_unknown(msg, tag, @wire_64bits, <<unknown_bytes::64, rest::binary>>) do
+    {add_unknown_field(msg, tag, @wire_64bits, <<unknown_bytes::64>>), rest}
   end
-  def parse_unknown(msg, tag, 2, bytes) do
+  def parse_unknown(msg, tag, @wire_delimited, bytes) do
     {len, new_bytes} = Varint.decode(bytes)
     <<unknown_bytes::binary-size(len), rest::binary>> = new_bytes
-    {add_unknown_field(msg, tag, 2, unknown_bytes), rest}
+    {add_unknown_field(msg, tag, @wire_delimited, unknown_bytes), rest}
   end
-  def parse_unknown(msg, tag, 5, <<unknown_bytes::32, rest::binary>>) do
-    {add_unknown_field(msg, tag, 5, <<unknown_bytes::32>>), rest}
+  def parse_unknown(msg, tag, @wire_32bits, <<unknown_bytes::32, rest::binary>>) do
+    {add_unknown_field(msg, tag, @wire_32bits, <<unknown_bytes::32>>), rest}
   end
 
 
