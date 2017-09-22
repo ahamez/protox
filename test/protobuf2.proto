@@ -6,6 +6,7 @@ enum F {
 }
 
 message Protobuf2 {
+  optional int32 a = 1;
   optional F s = 25 [default = TWO];
   optional F t = 26;
 }

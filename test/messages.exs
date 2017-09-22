@@ -23,6 +23,7 @@ defmodule Defs do
     {
       Protobuf2,
       [
+        {1     , :optional, :a, {:default, 0}   , :uint64},
         {25    , :optional, :s, {:default, :TWO}, {:enum, F}},
         {26    , :optional, :t, {:default, nil} , {:enum, F}},
       ]

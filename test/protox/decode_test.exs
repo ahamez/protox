@@ -9,6 +9,13 @@ defmodule Protox.DecodeTest do
   end
 
 
+  test "Sub.a, repeated scalar, select last" do
+    bytes = <<8, 150, 1, 8, 1, 8, 150, 1, 8, 2>>
+    assert Sub.decode!(bytes) ==\
+           %Sub{a: 2, b: ""}
+  end
+
+
   test "Sub.a, negative 64 bits" do
     bytes = <<8, 234, 254, 255, 255, 255, 255, 255, 255, 255, 1>>
     assert Sub.decode!(bytes) ==\
@@ -543,6 +550,13 @@ defmodule Protox.DecodeTest do
     bytes = <<>>
     assert Protobuf2.decode!(bytes) ==\
            %Protobuf2{t: nil}
+  end
+
+
+  test "Protobuf2.a, repeated scalar, select last" do
+    bytes = <<8, 150, 1, 8, 1>>
+    assert Protobuf2.decode!(bytes) ==\
+           %Protobuf2{a: 1}
   end
 
 end
