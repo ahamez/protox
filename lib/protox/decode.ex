@@ -213,7 +213,7 @@ defmodule Protox.Decode do
   end
 
 
-  @spec parse_unknown(struct, non_neg_integer, 0 | 1 | 2 | 5, binary) :: {struct, binary}
+  @spec parse_unknown(struct, non_neg_integer, Types.tag, binary) :: {struct, binary}
   def parse_unknown(msg, tag, @wire_varint, bytes) do
     {unknown_bytes, rest} = get_unknown_varint_bytes(<<>>, bytes)
     {add_unknown_field(msg, tag, @wire_varint, unknown_bytes), rest}
