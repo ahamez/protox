@@ -16,7 +16,8 @@
 
 * 0.14.0
   - Development now takes place at https://github.com/EasyMile/protox
-  - Remove conformance test and benchmarks escripts
+  - Move conformance test escript to https://github.com/EasyMile/protox-conformance
+  - Remove benchmarks escripts
 
 * 0.13.0
   - Typespecs for generated encoder
