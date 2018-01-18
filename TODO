@@ -1,0 +1,2 @@
+- Test @compile: native
+- Inline (e.g. @compile {:inline, init_dumper: 0, maybe_escape: 2})

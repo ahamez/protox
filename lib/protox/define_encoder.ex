@@ -1,16 +1,12 @@
 defmodule Protox.DefineEncoder do
-
   @moduledoc false
   # Internal. Generates the encoder of a message.
-
 
   def define(fields) do
     make_encode(fields)
   end
 
-
   # -- Private
-
 
   defp make_encode([]) do
     quote do
@@ -18,12 +14,13 @@ defmodule Protox.DefineEncoder do
       def encode(msg), do: []
     end
   end
+
   defp make_encode(fields) do
     # It is recommended to encode fields sequentially by field number.
     # See https://developers.google.com/protocol-buffers/docs/encoding#order.
-    sorted_fields             = Enum.sort(fields, &(elem(&1, 0) < elem(&2, 0)))
-    encode_fun_body           = make_encode_fun(sorted_fields)
-    encode_field_funs         = make_encode_field_funs(fields)
+    sorted_fields = Enum.sort(fields, &(elem(&1, 0) < elem(&2, 0)))
+    encode_fun_body = make_encode_fun(sorted_fields)
+    encode_field_funs = make_encode_field_funs(fields)
     encode_unknown_fields_fun = make_encode_unknown_fields_fun()
 
     quote do
@@ -35,54 +32,55 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-
   defp make_encode_fun([field | fields]) do
     {_, _, name, _, _} = field
     fun_name = String.to_atom("encode_#{name}")
 
-    ast = quote do
-      [] |> unquote(fun_name)(msg)
-    end
+    ast =
+      quote do
+        [] |> unquote(fun_name)(msg)
+      end
+
     make_encode_fun(ast, fields)
   end
-
 
   defp make_encode_fun(ast, []) do
     quote do
       unquote(ast) |> encode_unknown_fields(msg)
     end
   end
+
   defp make_encode_fun(ast, [field | fields]) do
     {_, _, name, _, _} = field
     fun_name = String.to_atom("encode_#{name}")
 
-    ast = quote do
-      unquote(ast) |> unquote(fun_name)(msg)
-    end
+    ast =
+      quote do
+        unquote(ast) |> unquote(fun_name)(msg)
+      end
+
     make_encode_fun(ast, fields)
   end
-
 
   defp make_encode_field_funs(fields) do
     for {tag, _, name, kind, type} <- fields do
       fun_name = String.to_atom("encode_#{name}")
-      fun_ast  = make_encode_field_fun(kind, tag, name, type)
+      fun_ast = make_encode_field_fun(kind, tag, name, type)
 
       quote do
         defp unquote(fun_name)(acc, msg), do: unquote(fun_ast)
       end
-
     end
   end
 
-
   defp make_encode_field_fun({:default, default}, tag, name, type) do
-    key              = Protox.Encode.make_key_bytes(tag, type)
-    var              = quote do: field_value
+    key = Protox.Encode.make_key_bytes(tag, type)
+    var = quote do: field_value
     encode_value_ast = get_encode_value_ast(type, var)
 
     quote do
       unquote(var) = msg.unquote(name)
+
       if unquote(var) == unquote(default) do
         acc
       else
@@ -90,11 +88,12 @@ defmodule Protox.DefineEncoder do
       end
     end
   end
+
   defp make_encode_field_fun({:oneof, parent_field}, tag, name, type) do
     # TODO. We should look at the oneof field only once, not for each possible entry.
 
-    key              = Protox.Encode.make_key_bytes(tag, type)
-    var              = quote do: field_value
+    key = Protox.Encode.make_key_bytes(tag, type)
+    var = quote do: field_value
     encode_value_ast = get_encode_value_ast(type, var)
 
     quote do
@@ -109,31 +108,34 @@ defmodule Protox.DefineEncoder do
           [acc, unquote(key), unquote(encode_value_ast)]
 
         _ ->
-         acc
+          acc
       end
     end
   end
+
   defp make_encode_field_fun(:packed, tag, name, type) do
     key = Protox.Encode.make_key_bytes(tag, :packed)
     encode_packed_ast = make_encode_packed_ast(type)
 
     quote do
       case msg.unquote(name) do
-        []     -> acc
+        [] -> acc
         values -> [acc, unquote(key), unquote(encode_packed_ast)]
       end
     end
   end
+
   defp make_encode_field_fun(:unpacked, tag, name, type) do
     encode_repeated_ast = make_encode_repeated_ast(tag, type)
 
     quote do
       case msg.unquote(name) do
-        []     -> acc
+        [] -> acc
         values -> [acc, unquote(encode_repeated_ast)]
       end
     end
   end
+
   defp make_encode_field_fun(:map, tag, name, type) do
     # Each key/value entry of a map has the same layout as a message.
     # https://developers.google.com/protocol-buffers/docs/proto3#backwards-compatibility
@@ -142,88 +144,75 @@ defmodule Protox.DefineEncoder do
 
     {map_key_type, map_value_type} = type
 
-    k_var                = quote do: k
-    v_var                = quote do: v
-    encode_map_key_ast   = get_encode_value_ast(map_key_type, k_var)
+    k_var = quote do: k
+    v_var = quote do: v
+    encode_map_key_ast = get_encode_value_ast(map_key_type, k_var)
     encode_map_value_ast = get_encode_value_ast(map_value_type, v_var)
 
-    map_key_key_bytes   = Protox.Encode.make_key_bytes(1, map_key_type)
+    map_key_key_bytes = Protox.Encode.make_key_bytes(1, map_key_type)
     map_value_key_bytes = Protox.Encode.make_key_bytes(2, map_value_type)
-    map_keys_len        = byte_size(map_value_key_bytes) + byte_size(map_key_key_bytes)
+    map_keys_len = byte_size(map_value_key_bytes) + byte_size(map_key_key_bytes)
 
     quote do
       map = Map.fetch!(msg, unquote(name))
+
       if map_size(map) == 0 do
         acc
-
       else
-        Enum.reduce(map, acc,
-          fn ({unquote(k_var), unquote(v_var)}, acc) ->
+        Enum.reduce(map, acc, fn {unquote(k_var), unquote(v_var)}, acc ->
+          map_key_value_bytes = [unquote(encode_map_key_ast)] |> :binary.list_to_bin()
+          map_key_value_len = byte_size(map_key_value_bytes)
 
-            map_key_value_bytes = [unquote(encode_map_key_ast)] |> :binary.list_to_bin()
-            map_key_value_len   = byte_size(map_key_value_bytes)
+          map_value_value_bytes = [unquote(encode_map_value_ast)] |> :binary.list_to_bin()
+          map_value_value_len = byte_size(map_value_value_bytes)
 
-            map_value_value_bytes = [unquote(encode_map_value_ast)] |> :binary.list_to_bin()
-            map_value_value_len   = byte_size(map_value_value_bytes)
+          len =
+            Protox.Varint.encode(unquote(map_keys_len) + map_key_value_len + map_value_value_len)
 
-            len = Protox.Varint.encode(
-              unquote(map_keys_len) +
-              map_key_value_len +
-              map_value_value_len
-            )
-
-            [
-              acc,
-              unquote(key),
-              len,
-              unquote(map_key_key_bytes),
-              map_key_value_bytes,
-              unquote(map_value_key_bytes),
-              map_value_value_bytes
-            ]
-          end)
+          [
+            acc,
+            unquote(key),
+            len,
+            unquote(map_key_key_bytes),
+            map_key_value_bytes,
+            unquote(map_value_key_bytes),
+            map_value_value_bytes
+          ]
+        end)
       end
     end
   end
-
 
   defp make_encode_unknown_fields_fun() do
     quote do
       defp encode_unknown_fields(acc, msg) do
-        Enum.reduce(
-          msg.__struct__.get_unknown_fields(msg),
-          acc,
-          fn ({tag, wire_type, bytes}, acc) ->
-            case wire_type do
-              0 ->
-                [acc, make_key_bytes(tag, :int32), bytes]
+        Enum.reduce(msg.__struct__.get_unknown_fields(msg), acc, fn {tag, wire_type, bytes}, acc ->
+          case wire_type do
+            0 ->
+              [acc, make_key_bytes(tag, :int32), bytes]
 
-              1 ->
-                [acc, make_key_bytes(tag, :double), bytes]
+            1 ->
+              [acc, make_key_bytes(tag, :double), bytes]
 
-              2 ->
-                len_bytes = bytes |> byte_size() |> Protox.Varint.encode()
-                [acc, make_key_bytes(tag, :packed), len_bytes, bytes]
+            2 ->
+              len_bytes = bytes |> byte_size() |> Protox.Varint.encode()
+              [acc, make_key_bytes(tag, :packed), len_bytes, bytes]
 
-              5 ->
-                [acc, make_key_bytes(tag, :float), bytes]
-            end
+            5 ->
+              [acc, make_key_bytes(tag, :float), bytes]
           end
-        )
+        end)
       end
     end
   end
-
 
   defp make_encode_packed_ast(type) do
     var = quote do: value
     encode_value_ast = get_encode_value_ast(type, var)
 
     quote do
-      {bytes, len} = Enum.reduce(
-        values,
-        {[], 0},
-        fn (unquote(var), {acc, len}) ->
+      {bytes, len} =
+        Enum.reduce(values, {[], 0}, fn unquote(var), {acc, len} ->
           value_bytes = [unquote(encode_value_ast)] |> :binary.list_to_bin()
           {[acc, value_bytes], len + byte_size(value_bytes)}
         end)
@@ -232,38 +221,35 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-
   defp make_encode_repeated_ast(tag, type) do
     key = Protox.Encode.make_key_bytes(tag, type)
     var = quote do: value
     encode_value_ast = get_encode_value_ast(type, var)
 
     quote do
-      Enum.reduce(
-      values,
-      [],
-      fn (unquote(var), acc) ->
+      Enum.reduce(values, [], fn unquote(var), acc ->
         bytes = [acc, unquote(key), unquote(encode_value_ast)]
       end)
     end
   end
-
 
   defp get_encode_value_ast({:message, _}, var) do
     quote do
       encode_message(unquote(var))
     end
   end
+
   defp get_encode_value_ast({:enum, enum}, var) do
     quote do
       unquote(var) |> unquote(enum).encode() |> encode_enum()
     end
   end
+
   defp get_encode_value_ast(type, var) do
     fun_name = String.to_atom("encode_#{type}")
+
     quote do
       unquote(fun_name)(unquote(var))
     end
   end
-
 end

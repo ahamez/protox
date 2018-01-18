@@ -1,5 +1,4 @@
 defmodule Protox.Guards do
-
   @moduledoc false
   # Provides macros to be used as guards when checking types is needed.
 
@@ -17,32 +16,25 @@ defmodule Protox.Guards do
     quote do: unquote(type) in unquote(@primitives)
   end
 
-
   defmacro is_primitive_varint(type) do
     quote do: unquote(type) in unquote(@primitive_varint)
   end
-
 
   defmacro is_primitive_fixed32(type) do
     quote do: unquote(type) in unquote(@primitive_fixed32)
   end
 
-
   defmacro is_primitive_fixed64(type) do
     quote do: unquote(type) in unquote(@primitive_fixed64)
   end
-
 
   defmacro is_primitive_fixed(type) do
     quote do: unquote(type) in unquote(@primitive_fixed)
   end
 
-
   defmacro is_delimited(type) do
     quote do
-      unquote(type) == :string or unquote(type) == :bytes or\
-      unquote(type) == Protox.Message
+      unquote(type) == :string or unquote(type) == :bytes or unquote(type) == Protox.Message
     end
   end
-
 end

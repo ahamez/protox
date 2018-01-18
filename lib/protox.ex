@@ -1,5 +1,4 @@
 defmodule Protox do
-
   @moduledoc ~S'''
   Use this module to generate the Elixir modules from a set of protobuf definitions:
 
@@ -40,26 +39,27 @@ defmodule Protox do
   '''
 
   defmacro __using__(args) do
-    namespace = case Keyword.get(args, :namespace) do
-      nil -> nil
-      n   -> n |> Code.eval_quoted() |> elem(0)
-    end
+    namespace =
+      case Keyword.get(args, :namespace) do
+        nil -> nil
+        n -> n |> Code.eval_quoted() |> elem(0)
+      end
 
-    files = case Keyword.delete(args, :namespace) do
-      schema: <<text::binary>> ->
-        filename = "#{__CALLER__.module}_#{:sha |> :crypto.hash(text) |> Base.encode16()}.proto"
-        filepath = [Mix.Project.build_path(), filename] |> Path.join() |> Path.expand()
-        File.write!(filepath, text)
-        [filepath]
+    files =
+      case Keyword.delete(args, :namespace) do
+        schema: <<text::binary>> ->
+          filename = "#{__CALLER__.module}_#{:sha |> :crypto.hash(text) |> Base.encode16()}.proto"
+          filepath = [Mix.Project.build_path(), filename] |> Path.join() |> Path.expand()
+          File.write!(filepath, text)
+          [filepath]
 
-      files: files ->
-        files |> Enum.map(&Path.expand/1)
-    end
+        files: files ->
+          files |> Enum.map(&Path.expand/1)
+      end
 
     {:ok, file_descriptor_set} = Protox.Protoc.run(files)
     {enums, messages} = Protox.Parse.parse(file_descriptor_set, namespace)
 
     Protox.Define.define(enums, messages)
   end
-
 end
