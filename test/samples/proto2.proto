@@ -36,3 +36,8 @@ extend Proto2A {
   optional int32 extension_int32 = 126;
 }
 
+message SeveralRequired {
+  required uint32 one = 1;
+  required uint32 two = 2;
+  required string three = 3;
+}

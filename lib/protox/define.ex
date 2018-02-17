@@ -54,6 +54,7 @@ defmodule Protox.Define do
       unknown_fields = make_unknown_fields(:__uf__, fields)
       struct_fields = make_struct_fields(fields, unknown_fields)
       required_fields = make_required_fields(fields)
+      required_fields_typesecs = make_required_fields_typespec(required_fields)
       fields_map = make_fields_map(fields)
       encoder = Protox.DefineEncoder.define(fields)
 
@@ -83,7 +84,7 @@ defmodule Protox.Define do
                 }
           def defs(), do: unquote(fields_map)
 
-          @spec get_required_fields() :: unquote(required_fields)
+          @spec get_required_fields() :: unquote(required_fields_typesecs)
           def get_required_fields(), do: unquote(required_fields)
 
           @spec get_unknown_fields(struct) :: [{non_neg_integer, Protox.Types.tag(), binary}]
@@ -164,6 +165,18 @@ defmodule Protox.Define do
   # Get the list of fields that are marked as `required`.
   defp make_required_fields(fields) do
     for {_, :required, name, _, _} <- fields, do: name
+  end
+
+  defp make_required_fields_typespec([]) do
+    quote do: []
+  end
+  defp make_required_fields_typespec(fields) do
+    specs = Enum.reduce(
+              fields, 
+              fn field, acc ->
+                quote do: unquote(acc) | unquote(field)
+              end)
+    quote do: [unquote(specs)]
   end
 
   # Generate a map used to store a message's definitions.
