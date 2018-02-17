@@ -1,3 +1,6 @@
+* 0.16.2
+  - Fix generation of typespecs for when there are more than one required field
+
 * 0.16.1
   - Change base name for unknown fields from '__unknown_fields__' to '__uf__'
 
