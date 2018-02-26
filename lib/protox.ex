@@ -51,8 +51,6 @@ defmodule Protox do
         p -> Path.expand(p)
       end
 
-    IO.puts(path)
-
     files =
       case Keyword.drop(args, [:namespace, :path]) do
         schema: <<text::binary>> ->
