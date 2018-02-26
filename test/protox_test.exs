@@ -55,6 +55,21 @@ defmodule ProtoxTest do
     ],
     namespace: Namespace
 
+  use Protox,
+    files: [
+      "./test/samples/prefix/foo.proto",
+      "./test/samples/prefix/bar/bar.proto",
+    ],
+    namespace: TestPrefix,
+    path: "./test/samples"
+
+  use Protox,
+    files: [
+      "./test/samples/prefix/baz.proto",
+    ],
+    namespace: TestPrefix,
+    path: "./test/samples"
+
   setup_all do
     {
       :ok,
