@@ -1,3 +1,6 @@
+* 0.17.0
+  - Add path: option to specify import path
+
 * 0.16.2
   - Fix generation of typespecs for when there are more than one required field
 
