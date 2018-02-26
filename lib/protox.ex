@@ -45,8 +45,14 @@ defmodule Protox do
         n -> n |> Code.eval_quoted() |> elem(0)
       end
 
+    path =
+      case Keyword.get(args, :path) do
+        nil -> nil
+        p -> Path.expand(p)
+      end
+
     files =
-      case Keyword.delete(args, :namespace) do
+      case Keyword.drop(args, [:namespace, :path]) do
         schema: <<text::binary>> ->
           filename = "#{__CALLER__.module}_#{:sha |> :crypto.hash(text) |> Base.encode16()}.proto"
           filepath = [Mix.Project.build_path(), filename] |> Path.join() |> Path.expand()
@@ -57,7 +63,7 @@ defmodule Protox do
           files |> Enum.map(&Path.expand/1)
       end
 
-    {:ok, file_descriptor_set} = Protox.Protoc.run(files)
+    {:ok, file_descriptor_set} = Protox.Protoc.run(files, path)
     {enums, messages} = Protox.Parse.parse(file_descriptor_set, namespace)
 
     Protox.Define.define(enums, messages)

@@ -1,12 +1,20 @@
 defmodule Protox.Protoc do
   @moduledoc false
 
-  def run([proto_file]) do
+  def run([proto_file], nil) do
     do_run([proto_file], ["-I", "#{proto_file |> Path.dirname() |> Path.expand()}"])
   end
 
-  def run(proto_files) do
+  def run([proto_file], path) do
+    do_run([proto_file], ["-I", path])
+  end
+
+  def run(proto_files, nil) do
     do_run(proto_files, ["-I", "#{common_directory_path(proto_files)}"])
+  end
+
+  def run(proto_files, path) do
+    do_run(proto_files, ["-I", path])
   end
 
   # -- Private
