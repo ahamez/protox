@@ -77,6 +77,26 @@ end
 
 In this case, the module `Namespace.Enum` is generated.
 
+## Specify import path
+
+An import path can be specified using the `path:` option:
+
+```elixir
+defmodule Baz do
+  @external_resource "./defs/prefix/foo.proto"
+  @external_resource "./defs/prefix/bar/bar.proto"
+
+  use Protox,
+    files: [
+      "./defs/prefix/foo.proto",
+      "./defs/prefix/bar/bar.proto",
+    ],
+    path: "./defs"
+end
+```
+
+It corresponds to the `-I` option of `protoc`.
+
 ## Encode
 
 ```elixir
