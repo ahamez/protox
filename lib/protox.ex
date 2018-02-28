@@ -15,8 +15,6 @@ defmodule Protox do
         ]
       end
 
-  Note that the files should reside in the same sub-directory.
-
   It's also possible to directly give a schema:
 
       defmodule Bar do
