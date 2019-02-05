@@ -5,8 +5,8 @@ elixir:
 otp_release:
   - 19.2
 before_script:
-  - wget https://github.com/google/protobuf/releases/download/v3.5.1/protoc-3.5.1-linux-x86_64.zip
-  - unzip -d protoc protoc-3.5.1-linux-x86_64.zip
+  - wget https://github.com/google/protobuf/releases/download/v3.6.1/protoc-3.6.1-linux-x86_64.zip
+  - unzip -d protoc protoc-3.6.1-linux-x86_64.zip
   - export PATH=$PWD/protoc/bin/:$PATH
 env:
   - MIX_ENV=test
