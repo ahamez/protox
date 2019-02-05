@@ -42,7 +42,7 @@ defmodule ProtoxTest do
 
   use Protox,
     files: [
-      "./test/samples/proto2.proto",
+      Path.join(__DIR__, "test/samples/proto2.proto"),
       "./test/samples/proto2_extension.proto",
       "./test/samples/proto3.proto"
     ]
@@ -58,14 +58,14 @@ defmodule ProtoxTest do
   use Protox,
     files: [
       "./test/samples/prefix/foo.proto",
-      "./test/samples/prefix/bar/bar.proto",
+      "./test/samples/prefix/bar/bar.proto"
     ],
     namespace: TestPrefix,
-    path: "./test/samples"
+    path: Path.join(__DIR__, "test/samples")
 
   use Protox,
     files: [
-      "./test/samples/prefix/baz.proto",
+      "./test/samples/prefix/baz.proto"
     ],
     namespace: TestPrefix,
     path: "./test/samples"

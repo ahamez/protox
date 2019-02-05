@@ -37,10 +37,12 @@ defmodule Protox do
   '''
 
   defmacro __using__(args) do
+    {args, _} = Code.eval_quoted(args)
+
     namespace =
       case Keyword.get(args, :namespace) do
         nil -> nil
-        n -> n |> Code.eval_quoted() |> elem(0)
+        n -> n
       end
 
     path =
