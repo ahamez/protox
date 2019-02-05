@@ -170,12 +170,16 @@ defmodule Protox.Define do
   defp make_required_fields_typespec([]) do
     quote do: []
   end
+
   defp make_required_fields_typespec(fields) do
-    specs = Enum.reduce(
-              fields, 
-              fn field, acc ->
-                quote do: unquote(acc) | unquote(field)
-              end)
+    specs =
+      Enum.reduce(
+        fields,
+        fn field, acc ->
+          quote do: unquote(acc) | unquote(field)
+        end
+      )
+
     quote do: [unquote(specs)]
   end
 

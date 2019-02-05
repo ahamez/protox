@@ -28,7 +28,9 @@ defmodule Protox.Parse do
           Module.concat([namespace | mname]),
           Enum.map(
             fields,
-            &(&1 |> resolve_types(enums, messages) |> default_value(enums)
+            &(&1
+              |> resolve_types(enums, messages)
+              |> default_value(enums)
               |> concat_names(namespace))
           )
         }

@@ -75,7 +75,8 @@ defmodule Protox.Descriptor do
           {4, :repeated, :enum_type, :unpacked, {:message, Google.Protobuf.EnumDescriptorProto}},
           {5, :repeated, :extension_range, :unpacked,
            {:message, Google.Protobuf.DescriptorProto.ExtensionRange}},
-          {8, :repeated, :oneof_decl, :unpacked, {:message, Google.Protobuf.OneofDescriptorProto}},
+          {8, :repeated, :oneof_decl, :unpacked,
+           {:message, Google.Protobuf.OneofDescriptorProto}},
           {7, :none, :options, {:default, nil}, {:message, Google.Protobuf.MessageOptions}}
         ]
       },
@@ -85,7 +86,8 @@ defmodule Protox.Descriptor do
           # Ignored: 10
           {1, :none, :name, {:default, nil}, :string},
           {3, :none, :number, {:default, nil}, :int32},
-          {4, :none, :label, {:default, nil}, {:enum, Google.Protobuf.FieldDescriptorProto.Label}},
+          {4, :none, :label, {:default, nil},
+           {:enum, Google.Protobuf.FieldDescriptorProto.Label}},
           {5, :none, :type, {:default, nil}, {:enum, Google.Protobuf.FieldDescriptorProto.Type}},
           {6, :none, :type_name, {:default, nil}, :string},
           {2, :none, :extendee, {:default, nil}, :string},

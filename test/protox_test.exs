@@ -135,7 +135,8 @@ defmodule ProtoxTest do
              9 => {:bytes, {:default, ""}, :bytes},
              10 => {:map_int64_nested_enum, :map, {:int64, {:enum, Abc.Def.Proto3.NestedEnum}}},
              134 => {:oneof_2_int32, {:oneof, :oneof_2}, :int32},
-             135 => {:oneof_2_nested_enum, {:oneof, :oneof_2}, {:enum, Abc.Def.Proto3.NestedEnum}},
+             135 =>
+               {:oneof_2_nested_enum, {:oneof, :oneof_2}, {:enum, Abc.Def.Proto3.NestedEnum}},
              9999 => {:nested_enum, {:default, :FOO}, {:enum, Abc.Def.Proto3.NestedEnum}}
            }
   end

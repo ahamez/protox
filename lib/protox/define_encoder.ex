@@ -186,7 +186,8 @@ defmodule Protox.DefineEncoder do
   defp make_encode_unknown_fields_fun() do
     quote do
       defp encode_unknown_fields(acc, msg) do
-        Enum.reduce(msg.__struct__.get_unknown_fields(msg), acc, fn {tag, wire_type, bytes}, acc ->
+        Enum.reduce(msg.__struct__.get_unknown_fields(msg), acc, fn {tag, wire_type, bytes},
+                                                                    acc ->
           case wire_type do
             0 ->
               [acc, make_key_bytes(tag, :int32), bytes]

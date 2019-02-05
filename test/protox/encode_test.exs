@@ -44,13 +44,17 @@ defmodule Protox.EncodeTest do
   end
 
   test "Sub.g; Sub.h; Sub.i" do
-    assert %Sub{g: [0], h: [-1], i: [33.2, -44.0]} |> Protox.Encode.encode() |> :binary.list_to_bin() ==
+    assert %Sub{g: [0], h: [-1], i: [33.2, -44.0]}
+           |> Protox.Encode.encode()
+           |> :binary.list_to_bin() ==
              <<106, 8, 0, 0, 0, 0, 0, 0, 0, 0, 114, 4, 255, 255, 255, 255, 122, 16, 154, 153, 153,
                153, 153, 153, 64, 64, 0, 0, 0, 0, 0, 0, 70, 192>>
   end
 
   test "Sub.i, infinity, -infinity, nan" do
-    assert %Sub{i: [:infinity, :"-infinity", :nan]} |> Protox.Encode.encode() |> :binary.list_to_bin() ==
+    assert %Sub{i: [:infinity, :"-infinity", :nan]}
+           |> Protox.Encode.encode()
+           |> :binary.list_to_bin() ==
              <<122, 24, 0, 0, 0, 0, 0, 0, 0xF0, 0x7F, 0, 0, 0, 0, 0, 0, 0xF0, 0xFF, 0, 0, 0, 0, 0,
                1, 241, 255>>
   end
@@ -80,27 +84,29 @@ defmodule Protox.EncodeTest do
   end
 
   test "Sub.n" do
-    assert %Sub{n: [true, false, false, true]}|> Protox.Encode.encode() |> :binary.list_to_bin() ==
+    assert %Sub{n: [true, false, false, true]} |> Protox.Encode.encode() |> :binary.list_to_bin() ==
              <<162, 1, 4, 1, 0, 0, 1>>
   end
 
   test "Sub.n (all true)" do
-    assert %Sub{n: [true, true, true, true]}|> Protox.Encode.encode() |> :binary.list_to_bin() ==
+    assert %Sub{n: [true, true, true, true]} |> Protox.Encode.encode() |> :binary.list_to_bin() ==
              <<162, 1, 4, 1, 1, 1, 1>>
   end
 
   test "Sub.n (all false)" do
-    assert %Sub{n: [false, false, false, false]}|> Protox.Encode.encode() |> :binary.list_to_bin() ==
+    assert %Sub{n: [false, false, false, false]}
+           |> Protox.Encode.encode()
+           |> :binary.list_to_bin() ==
              <<162, 1, 4, 0, 0, 0, 0>>
   end
 
   test "Sub.o " do
-    assert %Sub{o: [:FOO, :BAR, :FOO]}|> Protox.Encode.encode() |> :binary.list_to_bin() ==
+    assert %Sub{o: [:FOO, :BAR, :FOO]} |> Protox.Encode.encode() |> :binary.list_to_bin() ==
              <<170, 1, 3, 0, 1, 0>>
   end
 
   test "Sub.o (unknown entry) " do
-    assert %Sub{o: [:FOO, :BAR, :FOO, 2]}|> Protox.Encode.encode() |> :binary.list_to_bin() ==
+    assert %Sub{o: [:FOO, :BAR, :FOO, 2]} |> Protox.Encode.encode() |> :binary.list_to_bin() ==
              <<170, 1, 4, 0, 1, 0, 2>>
   end
 
@@ -115,17 +121,17 @@ defmodule Protox.EncodeTest do
   end
 
   test "Sub.q (unpacked in definition, with unknown values) " do
-    assert %Sub{q: [:FOO, :BAR, 2, :FOO]}|> Protox.Encode.encode() |> :binary.list_to_bin() ==
+    assert %Sub{q: [:FOO, :BAR, 2, :FOO]} |> Protox.Encode.encode() |> :binary.list_to_bin() ==
              <<184, 1, 0, 184, 1, 1, 184, 1, 2, 184, 1, 0>>
   end
 
   test "Sub.r, negative constant" do
-    assert %Sub{r: :NEG}|> Protox.Encode.encode() |> :binary.list_to_bin() ==
+    assert %Sub{r: :NEG} |> Protox.Encode.encode() |> :binary.list_to_bin() ==
              <<192, 1, 255, 255, 255, 255, 255, 255, 255, 255, 255, 1>>
   end
 
   test "Sub.z" do
-    assert %Sub{z: -20}|> Protox.Encode.encode() |> :binary.list_to_bin() == <<136, 241, 4, 39>>
+    assert %Sub{z: -20} |> Protox.Encode.encode() |> :binary.list_to_bin() == <<136, 241, 4, 39>>
   end
 
   test "Sub, unknown fields (double)" do
@@ -141,7 +147,8 @@ defmodule Protox.EncodeTest do
   end
 
   test "Sub, unknown tag (embedded message)" do
-    assert %Sub{a: 42, b: "", z: -42, __uf__: [{4, 2, <<>>}]}|> Protox.Encode.encode()
+    assert %Sub{a: 42, b: "", z: -42, __uf__: [{4, 2, <<>>}]}
+           |> Protox.Encode.encode()
            |> :binary.list_to_bin() == <<8, 42, 136, 241, 4, 83, 34, 0>>
   end
 
@@ -159,7 +166,8 @@ defmodule Protox.EncodeTest do
   test "Sub, unknown tag (bytes)" do
     bytes = Stream.repeatedly(fn -> <<0>> end) |> Enum.take(128) |> Enum.join()
 
-    assert %Sub{a: 3342, b: "", z: -10, __uf__: [{10, 2, bytes}]}|> Protox.Encode.encode()
+    assert %Sub{a: 3342, b: "", z: -10, __uf__: [{10, 2, bytes}]}
+           |> Protox.Encode.encode()
            |> :binary.list_to_bin() == <<8, 142, 26, 136, 241, 4, 19, 82, 128, 1, bytes::binary>>
   end
 
@@ -200,7 +208,7 @@ defmodule Protox.EncodeTest do
   end
 
   test "Msg.d, :BAR" do
-    assert %Msg{d: :BAR}|> Protox.Encode.encode() |> :binary.list_to_bin() == <<8, 1>>
+    assert %Msg{d: :BAR} |> Protox.Encode.encode() |> :binary.list_to_bin() == <<8, 1>>
   end
 
   test "Msg.d, :BAZ" do
@@ -238,7 +246,8 @@ defmodule Protox.EncodeTest do
   end
 
   test "Msg.g" do
-    assert %Msg{g: [1, 2, 3]} |> Protox.Encode.encode() |> :binary.list_to_bin() == <<34, 3, 1, 2, 3>>
+    assert %Msg{g: [1, 2, 3]} |> Protox.Encode.encode() |> :binary.list_to_bin() ==
+             <<34, 3, 1, 2, 3>>
   end
 
   test "Msg.h, empty" do
@@ -256,7 +265,9 @@ defmodule Protox.EncodeTest do
   end
 
   test "Msg.i, infinity, -infinity, nan" do
-    assert %Msg{i: [:infinity, :"-infinity", :nan]} |> Protox.Encode.encode() |> :binary.list_to_bin() ==
+    assert %Msg{i: [:infinity, :"-infinity", :nan]}
+           |> Protox.Encode.encode()
+           |> :binary.list_to_bin() ==
              <<50, 12, 0, 0, 0x80, 0x7F, 0, 0, 0x80, 0xFF, 0, 1, 129, 255>>
   end
 
@@ -276,7 +287,9 @@ defmodule Protox.EncodeTest do
   end
 
   test "Msg.j" do
-    assert %Msg{j: [%Sub{a: 42}, %Sub{b: "foo"}]} |> Protox.Encode.encode() |> :binary.list_to_bin() ==
+    assert %Msg{j: [%Sub{a: 42}, %Sub{b: "foo"}]}
+           |> Protox.Encode.encode()
+           |> :binary.list_to_bin() ==
              <<58, 2, 8, 42, 58, 5, 18, 3, 102, 111, 111>>
   end
 
@@ -286,7 +299,9 @@ defmodule Protox.EncodeTest do
   end
 
   test "Msg.l" do
-    assert %Msg{l: %{"bar" => 1.0, "foo" => 43.2}} |> Protox.Encode.encode() |> :binary.list_to_bin() ==
+    assert %Msg{l: %{"bar" => 1.0, "foo" => 43.2}}
+           |> Protox.Encode.encode()
+           |> :binary.list_to_bin() ==
              <<74, 14, 10, 3, 98, 97, 114, 17, 0, 0, 0, 0, 0, 0, 240, 63, 74, 14, 10, 3, 102, 111,
                111, 17, 154, 153, 153, 153, 153, 153, 69, 64>>
   end
@@ -311,7 +326,9 @@ defmodule Protox.EncodeTest do
   end
 
   test "Msg.oneof_double" do
-    assert %Msg{oneof_field: {:oneof_double, 0}} |> Protox.Encode.encode() |> :binary.list_to_bin() ==
+    assert %Msg{oneof_field: {:oneof_double, 0}}
+           |> Protox.Encode.encode()
+           |> :binary.list_to_bin() ==
              <<177, 7, 0, 0, 0, 0, 0, 0, 0, 0>>
   end
 
