@@ -1,5 +1,8 @@
+* 0.18.0
+  - Allow ability to construct file names at compile time (thanks to https://github.com/ananthakumaran)
+
 * 0.17.0
-  - Add path: option to specify import path
+  - Add path: option to specify import path (thanks to https://github.com/mathsaey)
 
 * 0.16.2
   - Fix generation of typespecs for when there are more than one required field
