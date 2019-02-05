@@ -26,11 +26,11 @@ defmodule Protox.Mixfile do
 
   defp deps do
     [
-      {:credo, "~> 0.7", only: [:dev]},
+      {:credo, "~> 1.0.2", only: [:dev]},
       {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
       {:excoveralls, "~> 0.6", only: :test},
       {:ex_doc, "~> 0.16", only: [:dev]},
-      {:inch_ex, "~> 0.5.5", only: :docs}
+      {:inch_ex, "~> 2.0.0", only: :docs}
     ]
   end
 
