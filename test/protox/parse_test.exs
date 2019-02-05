@@ -91,7 +91,8 @@ defmodule Protox.ParseTest do
   end
 
   defp field(fields, tag) do
-    Enum.find(fields, &(elem(&1, 0) == tag))
+    fields
+    |> Enum.find(&(elem(&1, 0) == tag))
     |> Tuple.delete_at(0)
   end
 end
