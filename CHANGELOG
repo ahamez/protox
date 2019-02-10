@@ -1,3 +1,6 @@
+* 0.19.0
+  - CamelCase for all generated modules (fixes https://github.com/EasyMile/protox/issues/3)
+
 * 0.18.0
   - Allow ability to construct file names at compile time (thanks to https://github.com/ananthakumaran)
 
