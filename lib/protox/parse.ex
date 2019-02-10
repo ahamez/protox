@@ -21,11 +21,12 @@ defmodule Protox.Parse do
     FieldOptions
   }
 
+  # canonization: camelization, fqdn, prepend with namespace
   defp post_process({enums, messages}, namespace) do
     messages_p =
       for {mname, fields} <- messages, into: %{} do
         {
-          Module.concat([namespace | mname]),
+          Module.concat([namespace | Enum.map(mname, &Macro.camelize(&1))]),
           Enum.map(
             fields,
             &(&1
@@ -39,7 +40,7 @@ defmodule Protox.Parse do
     enums_p =
       for {ename, constants} <- enums, into: %{} do
         {
-          Module.concat([namespace | ename]),
+          Module.concat([namespace | Enum.map(ename, &Macro.camelize(&1))]),
           constants
         }
       end

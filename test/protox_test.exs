@@ -70,6 +70,19 @@ defmodule ProtoxTest do
     namespace: TestPrefix,
     path: "./test/samples"
 
+  use Protox,
+    schema: """
+    syntax = "proto3";
+
+    message non_camel {
+      int32 x = 1;
+    }
+
+    message Camel {
+      non_camel x = 1;
+    }
+    """
+
   setup_all do
     {
       :ok,
@@ -208,6 +221,11 @@ defmodule ProtoxTest do
   test "Can export to protoc and read its output (Upper)", %{seed: seed} do
     msg = Protox.RandomInit.generate(Upper, seed)
     assert msg == msg |> Upper.encode() |> reencode_with_protoc("Upper") |> Upper.decode!()
+  end
+
+  test "Non Camel_case", %{seed: seed} do
+    msg = Protox.RandomInit.generate(Camel, seed)
+    assert msg == msg |> Camel.encode() |> :binary.list_to_bin() |> Camel.decode!()
   end
 
   defp reencode_with_protoc(encoded, mod) do

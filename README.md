@@ -176,6 +176,19 @@ Furthermore, all options other than `packed` and `default` are ignored.
   * For Protobuf 3, unset optional fields are mapped to their default values, as mandated by
     the Protobuf spec.
 
+* Messages and enums names: non camel case names are converted using the
+  [`Macro.camelize/1`](https://hexdocs.pm/elixir/Macro.html#camelize/1) function.
+  Thus, in the following example, `non_camel` becomes `NonCamel`.
+  ```protobuf
+  syntax = "proto3";
+
+  message non_camel {
+  }
+
+  message Camel {
+    non_camel x = 1;
+  }
+  ```
 
 # Types Mapping
 
