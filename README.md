@@ -19,22 +19,6 @@ You can get it [here](https://github.com/google/protobuf).
 
 # Usage
 
-## From Files
-
-```elixir
-defmodule Foo do
-  @external_resource "./defs/foo.proto"
-  @external_resource "./defs/bar.proto"
-  @external_resource "./defs/baz/fiz.proto"
-
-  use Protox, files: [
-    "./defs/foo.proto",
-    "./defs/bar.proto",
-    "./defs/baz/fiz.proto",
-  ]
-end
-```
-
 ## From a Textual Description
 
 ```elixir
@@ -56,6 +40,23 @@ end
 ```
 
 The previous example generates two modules: `Fiz.Baz` and `Fiz.Foo`.
+Note that the module in which the `Protox` macro is called is completely ignored.
+
+## From Files
+
+```elixir
+defmodule Foo do
+  @external_resource "./defs/foo.proto"
+  @external_resource "./defs/bar.proto"
+  @external_resource "./defs/baz/fiz.proto"
+
+  use Protox, files: [
+    "./defs/foo.proto",
+    "./defs/bar.proto",
+    "./defs/baz/fiz.proto",
+  ]
+end
+```
 
 ## Working With Namespaces
 
