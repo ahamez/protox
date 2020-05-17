@@ -229,9 +229,7 @@ defmodule ProtoxTest do
   end
 
   defp reencode_with_protoc(encoded, mod) do
-    encoded_bin_path =
-      [Mix.Project.build_path(), "protox_test_sub.bin"]
-      |> Path.join()
+    encoded_bin_path = Path.join([Mix.Project.build_path(), "protox_test_sub.bin"])
 
     File.write!(encoded_bin_path, encoded)
 
@@ -240,15 +238,11 @@ defmodule ProtoxTest do
 
     encoded_txt = "#{:os.cmd(String.to_charlist(encoded_txt_cmdline))}"
 
-    encoded_txt_path =
-      [Mix.Project.build_path(), "protox_test_sub.txt"]
-      |> Path.join()
+    encoded_txt_path = Path.join([Mix.Project.build_path(), "protox_test_sub.txt"])
 
     File.write!(encoded_txt_path, encoded_txt)
 
-    reencoded_bin_path =
-      [Mix.Project.build_path(), "protoc_test_sub.bin"]
-      |> Path.join()
+    reencoded_bin_path = Path.join([Mix.Project.build_path(), "protoc_test_sub.bin"])
 
     reencode_bin_cmdline =
       "protoc --encode=#{mod} ./test/messages.proto ./test/protobuf2.proto > #{reencoded_bin_path} < #{
@@ -257,7 +251,6 @@ defmodule ProtoxTest do
 
     :os.cmd(String.to_charlist(reencode_bin_cmdline))
 
-    reencoded_bin_path
-    |> File.read!()
+    File.read!(reencoded_bin_path)
   end
 end
