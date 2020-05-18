@@ -440,356 +440,366 @@ defmodule Protox.DecodeTest do
            }
   end
 
-  test "Msg.a" do
+  test "Msg.msg_a" do
     bytes = <<218, 1, 7, 0, 2, 3, 6, 159, 156, 1>>
-    assert Msg.decode!(bytes) == %Msg{a: [0, 1, -2, 3, -10_000]}
+    assert Msg.decode!(bytes) == %Msg{msg_a: [0, 1, -2, 3, -10_000]}
   end
 
-  test "Msg.b" do
+  test "Msg.msg_b" do
     bytes =
       <<226, 1, 20, 0, 0, 0, 0, 1, 0, 0, 0, 254, 255, 255, 255, 3, 0, 0, 0, 240, 216, 255, 255>>
 
-    assert Msg.decode!(bytes) == %Msg{b: [0, 1, -2, 3, -10_000]}
+    assert Msg.decode!(bytes) == %Msg{msg_b: [0, 1, -2, 3, -10_000]}
   end
 
-  test "Msg.c" do
+  test "Msg.msg_c" do
     bytes =
       <<234, 1, 40, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 254, 255, 255, 255, 255, 255,
         255, 255, 3, 0, 0, 0, 0, 0, 0, 0, 240, 216, 255, 255, 255, 255, 255, 255>>
 
-    assert Msg.decode!(bytes) == %Msg{c: [0, 1, -2, 3, -10_000]}
+    assert Msg.decode!(bytes) == %Msg{msg_c: [0, 1, -2, 3, -10_000]}
   end
 
-  test "Msg.Sub.a" do
+  test "Msg.msg_Sub.a" do
     bytes = <<26, 3, 8, 150, 1>>
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :FOO,
-             e: false,
-             f: %Sub{a: 150, b: ""},
-             g: [],
-             h: 0.0,
-             i: [],
-             j: [],
-             k: %{}
+             msg_d: :FOO,
+             msg_e: false,
+             msg_f: %Sub{a: 150, b: ""},
+             msg_g: [],
+             msg_h: 0.0,
+             msg_i: [],
+             msg_j: [],
+             msg_k: %{}
            }
   end
 
-  test "Msg.Sub.a; Msg.Sub.b" do
+  test "Msg.msg_Sub.a; Msg.msg_Sub.b" do
     bytes = <<26, 12, 8, 150, 1, 18, 7, 116, 101, 115, 116, 105, 110, 103>>
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :FOO,
-             e: false,
-             f: %Sub{a: 150, b: "testing"},
-             g: [],
-             h: 0.0,
-             i: [],
-             j: [],
-             k: %{}
+             msg_d: :FOO,
+             msg_e: false,
+             msg_f: %Sub{a: 150, b: "testing"},
+             msg_g: [],
+             msg_h: 0.0,
+             msg_i: [],
+             msg_j: [],
+             msg_k: %{}
            }
   end
 
-  test "Msg.g" do
+  test "Msg.msg_g" do
     bytes = <<34, 6, 3, 142, 2, 158, 167, 5>>
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :FOO,
-             e: false,
-             f: nil,
-             g: [3, 270, 86_942],
-             h: 0.0,
-             i: [],
-             j: [],
-             k: %{}
+             msg_d: :FOO,
+             msg_e: false,
+             msg_f: nil,
+             msg_g: [3, 270, 86_942],
+             msg_h: 0.0,
+             msg_i: [],
+             msg_j: [],
+             msg_k: %{}
            }
   end
 
-  test "Msg.g (unpacked)" do
+  test "Msg.msg_g (unpacked)" do
     bytes = <<32, 1, 32, 2, 32, 3>>
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :FOO,
-             e: false,
-             f: nil,
-             g: [1, 2, 3],
-             h: 0.0,
-             i: [],
-             j: [],
-             k: %{}
+             msg_d: :FOO,
+             msg_e: false,
+             msg_f: nil,
+             msg_g: [1, 2, 3],
+             msg_h: 0.0,
+             msg_i: [],
+             msg_j: [],
+             msg_k: %{}
            }
   end
 
-  test "Msg.Sub.a; Msg.Sub.b; Msg.g" do
+  test "Msg.msg_Sub.a; Msg.msg_Sub.b; Msg.msg_g" do
     bytes =
       <<26, 12, 8, 150, 1, 18, 7, 116, 101, 115, 116, 105, 110, 103, 34, 6, 3, 142, 2, 158, 167,
         5>>
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :FOO,
-             e: false,
-             f: %Sub{a: 150, b: "testing"},
-             g: [3, 270, 86_942],
-             h: 0.0,
-             i: [],
-             j: [],
-             k: %{}
+             msg_d: :FOO,
+             msg_e: false,
+             msg_f: %Sub{a: 150, b: "testing"},
+             msg_g: [3, 270, 86_942],
+             msg_h: 0.0,
+             msg_i: [],
+             msg_j: [],
+             msg_k: %{}
            }
   end
 
-  test "Msg.e" do
+  test "Msg.msg_e" do
     bytes = <<16, 1>>
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :FOO,
-             e: true,
-             f: nil,
-             g: [],
-             h: 0.0,
-             i: [],
-             j: [],
-             k: %{}
+             msg_d: :FOO,
+             msg_e: true,
+             msg_f: nil,
+             msg_g: [],
+             msg_h: 0.0,
+             msg_i: [],
+             msg_j: [],
+             msg_k: %{}
            }
   end
 
-  test "Msg.h" do
+  test "Msg.msg_h" do
     bytes = <<41, 246, 40, 92, 143, 194, 181, 64, 192>>
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :FOO,
-             e: false,
-             f: nil,
-             g: [],
-             h: -33.42,
-             i: [],
-             j: [],
-             k: %{}
+             msg_d: :FOO,
+             msg_e: false,
+             msg_f: nil,
+             msg_g: [],
+             msg_h: -33.42,
+             msg_i: [],
+             msg_j: [],
+             msg_k: %{}
            }
   end
 
-  test "Msg.i" do
+  test "Msg.msg_i" do
     bytes = <<50, 8, 0, 0, 128, 63, 0, 0, 0, 64>>
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :FOO,
-             e: false,
-             f: nil,
-             g: [],
-             h: 0.0,
-             i: [1.0, 2.0],
-             j: [],
-             k: %{}
+             msg_d: :FOO,
+             msg_e: false,
+             msg_f: nil,
+             msg_g: [],
+             msg_h: 0.0,
+             msg_i: [1.0, 2.0],
+             msg_j: [],
+             msg_k: %{}
            }
   end
 
-  test "Msg.i, infinity, -infinity" do
+  test "Msg.msg_i, infinity, -infinity" do
     bytes = <<50, 8, 0, 0, 0x80, 0x7F, 0, 0, 0x80, 0xFF>>
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :FOO,
-             e: false,
-             f: nil,
-             g: [],
-             h: 0.0,
-             i: [:infinity, :"-infinity"],
-             j: [],
-             k: %{}
+             msg_d: :FOO,
+             msg_e: false,
+             msg_f: nil,
+             msg_g: [],
+             msg_h: 0.0,
+             msg_i: [:infinity, :"-infinity"],
+             msg_j: [],
+             msg_k: %{}
            }
   end
 
-  test "Msg.i, nan" do
+  test "Msg.msg_i, nan" do
     bytes = <<50, 12, 0x01, 0, 0x80, 0x7F, 0, 0, 0xC0, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F>>
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :FOO,
-             e: false,
-             f: nil,
-             g: [],
-             h: 0.0,
-             i: [:nan, :nan, :nan],
-             j: [],
-             k: %{}
+             msg_d: :FOO,
+             msg_e: false,
+             msg_f: nil,
+             msg_g: [],
+             msg_h: 0.0,
+             msg_i: [:nan, :nan, :nan],
+             msg_j: [],
+             msg_k: %{}
            }
   end
 
-  test "Msg.d" do
+  test "Msg.msg_d" do
     bytes = <<8, 1>>
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :BAR,
-             e: false,
-             f: nil,
-             g: [],
-             h: 0.0,
-             i: [],
-             j: [],
-             k: %{}
+             msg_d: :BAR,
+             msg_e: false,
+             msg_f: nil,
+             msg_g: [],
+             msg_h: 0.0,
+             msg_i: [],
+             msg_j: [],
+             msg_k: %{}
            }
   end
 
-  test "Msg.d, unknown enum entry" do
+  test "Msg.msg_d, unknown enum entry" do
     bytes = <<8, 2>>
-    assert Msg.decode!(bytes) == %Msg{d: 2, e: false, f: nil, g: [], h: 0.0, i: [], j: [], k: %{}}
+
+    assert Msg.decode!(bytes) == %Msg{
+             msg_d: 2,
+             msg_e: false,
+             msg_f: nil,
+             msg_g: [],
+             msg_h: 0.0,
+             msg_i: [],
+             msg_j: [],
+             msg_k: %{}
+           }
   end
 
-  test "Msg.j" do
+  test "Msg.msg_j" do
     bytes = <<58, 3, 8, 146, 6, 58, 5, 18, 3, 102, 111, 111>>
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :FOO,
-             e: false,
-             f: nil,
-             g: [],
-             h: 0.0,
-             i: [],
-             j: [%Sub{a: 786}, %Sub{b: "foo"}],
-             k: %{}
+             msg_d: :FOO,
+             msg_e: false,
+             msg_f: nil,
+             msg_g: [],
+             msg_h: 0.0,
+             msg_i: [],
+             msg_j: [%Sub{a: 786}, %Sub{b: "foo"}],
+             msg_k: %{}
            }
   end
 
-  test "Msg.k" do
+  test "Msg.msg_k" do
     bytes = <<66, 7, 8, 2, 18, 3, 98, 97, 114, 66, 7, 8, 1, 18, 3, 102, 111, 111>>
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :FOO,
-             e: false,
-             f: nil,
-             g: [],
-             h: 0.0,
-             i: [],
-             j: [],
-             k: %{1 => "foo", 2 => "bar"}
+             msg_d: :FOO,
+             msg_e: false,
+             msg_f: nil,
+             msg_g: [],
+             msg_h: 0.0,
+             msg_i: [],
+             msg_j: [],
+             msg_k: %{1 => "foo", 2 => "bar"}
            }
   end
 
-  test "Msg.k, with unknown data in map entry" do
+  test "Msg.msg_k, with unknown data in map entry" do
     bytes = <<66, 7, 8, 2, 18, 3, 98, 97, 114, 66, 10, 8, 1, 18, 3, 102, 111, 111, 26, 1, 102>>
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :FOO,
-             e: false,
-             f: nil,
-             g: [],
-             h: 0.0,
-             i: [],
-             j: [],
-             k: %{1 => "foo", 2 => "bar"}
+             msg_d: :FOO,
+             msg_e: false,
+             msg_f: nil,
+             msg_g: [],
+             msg_h: 0.0,
+             msg_i: [],
+             msg_j: [],
+             msg_k: %{1 => "foo", 2 => "bar"}
            }
   end
 
-  test "Msg.k (reversed)" do
+  test "Msg.msg_k (reversed)" do
     bytes = <<66, 7, 8, 1, 18, 3, 102, 111, 111, 66, 7, 8, 2, 18, 3, 98, 97, 114>>
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :FOO,
-             e: false,
-             f: nil,
-             g: [],
-             h: 0.0,
-             i: [],
-             j: [],
-             k: %{1 => "foo", 2 => "bar"}
+             msg_d: :FOO,
+             msg_e: false,
+             msg_f: nil,
+             msg_g: [],
+             msg_h: 0.0,
+             msg_i: [],
+             msg_j: [],
+             msg_k: %{1 => "foo", 2 => "bar"}
            }
   end
 
-  test "Msg.k (reversed inside map entry)" do
+  test "Msg.msg_k (reversed inside map entry)" do
     bytes = <<66, 7, 18, 3, 98, 97, 114, 8, 2, 66, 7, 8, 1, 18, 3, 102, 111, 111>>
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :FOO,
-             e: false,
-             f: nil,
-             g: [],
-             h: 0.0,
-             i: [],
-             j: [],
-             k: %{1 => "foo", 2 => "bar"}
+             msg_d: :FOO,
+             msg_e: false,
+             msg_f: nil,
+             msg_g: [],
+             msg_h: 0.0,
+             msg_i: [],
+             msg_j: [],
+             msg_k: %{1 => "foo", 2 => "bar"}
            }
   end
 
-  test "Msg.l" do
+  test "Msg.msg_l" do
     bytes =
       <<74, 14, 10, 3, 98, 97, 114, 17, 0, 0, 0, 0, 0, 0, 240, 63, 74, 14, 10, 3, 102, 111, 111,
         17, 154, 153, 153, 153, 153, 153, 69, 64>>
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :FOO,
-             e: false,
-             f: nil,
-             g: [],
-             h: 0.0,
-             i: [],
-             j: [],
-             k: %{},
-             l: %{"bar" => 1.0, "foo" => 43.2}
+             msg_d: :FOO,
+             msg_e: false,
+             msg_f: nil,
+             msg_g: [],
+             msg_h: 0.0,
+             msg_i: [],
+             msg_j: [],
+             msg_k: %{},
+             msg_l: %{"bar" => 1.0, "foo" => 43.2}
            }
   end
 
-  test "Msg.m, empty" do
+  test "Msg.msg_m, empty" do
     bytes = ""
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :FOO,
-             e: false,
-             f: nil,
-             g: [],
-             h: 0.0,
-             i: [],
-             j: [],
-             k: %{},
-             l: %{},
-             m: nil
+             msg_d: :FOO,
+             msg_e: false,
+             msg_f: nil,
+             msg_g: [],
+             msg_h: 0.0,
+             msg_i: [],
+             msg_j: [],
+             msg_k: %{},
+             msg_l: %{},
+             msg_m: nil
            }
   end
 
-  test "Msg.m, string" do
+  test "Msg.msg_m, string" do
     bytes = <<82, 3, 98, 97, 114>>
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :FOO,
-             e: false,
-             f: nil,
-             g: [],
-             h: 0.0,
-             i: [],
-             j: [],
-             k: %{},
-             l: %{},
-             m: {:n, "bar"}
+             msg_d: :FOO,
+             msg_e: false,
+             msg_f: nil,
+             msg_g: [],
+             msg_h: 0.0,
+             msg_i: [],
+             msg_j: [],
+             msg_k: %{},
+             msg_l: %{},
+             msg_m: {:msg_n, "bar"}
            }
   end
 
-  test "Msg.m, Sub" do
+  test "Msg.msg_m, Sub" do
     bytes = <<90, 2, 8, 42>>
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :FOO,
-             e: false,
-             f: nil,
-             g: [],
-             h: 0.0,
-             i: [],
-             j: [],
-             k: %{},
-             l: %{},
-             m: {:o, %Sub{a: 42}}
+             msg_d: :FOO,
+             msg_e: false,
+             msg_f: nil,
+             msg_g: [],
+             msg_h: 0.0,
+             msg_i: [],
+             msg_j: [],
+             msg_k: %{},
+             msg_l: %{},
+             msg_m: {:msg_o, %Sub{a: 42}}
            }
   end
 
-  test "Msg.m, several fields on the wire, keep the last one" do
+  test "Msg.msg_m, several fields on the wire, keep the last one" do
     bytes = <<90, 2, 8, 42, 82, 3, 98, 97, 114, 82, 3, 98, 97, 114>>
 
     assert Msg.decode!(bytes) == %Msg{
-             d: :FOO,
-             e: false,
-             f: nil,
-             g: [],
-             h: 0.0,
-             i: [],
-             j: [],
-             k: %{},
-             l: %{},
-             m: {:n, "bar"}
+             msg_d: :FOO,
+             msg_e: false,
+             msg_f: nil,
+             msg_g: [],
+             msg_h: 0.0,
+             msg_i: [],
+             msg_j: [],
+             msg_k: %{},
+             msg_l: %{},
+             msg_m: {:msg_n, "bar"}
            }
   end
 
@@ -797,7 +807,15 @@ defmodule Protox.DecodeTest do
     bytes = <<10, 4, 26, 2, 8, 42>>
 
     assert Upper.decode!(bytes) == %Upper{
-             msg: %Msg{d: :FOO, e: false, f: %Sub{a: 42}, g: [], h: 0.0, i: [], j: []}
+             msg: %Msg{
+               msg_d: :FOO,
+               msg_e: false,
+               msg_f: %Sub{a: 42},
+               msg_g: [],
+               msg_h: 0.0,
+               msg_i: [],
+               msg_j: []
+             }
            }
   end
 
@@ -808,28 +826,28 @@ defmodule Protox.DecodeTest do
              msg: nil,
              msg_map: %{
                "foo" => %Msg{
-                 d: :BAR,
-                 e: false,
-                 f: nil,
-                 g: [],
-                 h: 0.0,
-                 i: [],
-                 j: [],
-                 k: %{},
-                 l: %{},
-                 m: nil
+                 msg_d: :BAR,
+                 msg_e: false,
+                 msg_f: nil,
+                 msg_g: [],
+                 msg_h: 0.0,
+                 msg_i: [],
+                 msg_j: [],
+                 msg_k: %{},
+                 msg_l: %{},
+                 msg_m: nil
                },
                "baz" => %Msg{
-                 d: :FOO,
-                 e: true,
-                 f: nil,
-                 g: [],
-                 h: 0.0,
-                 i: [],
-                 j: [],
-                 k: %{},
-                 l: %{},
-                 m: nil
+                 msg_d: :FOO,
+                 msg_e: true,
+                 msg_f: nil,
+                 msg_g: [],
+                 msg_h: 0.0,
+                 msg_i: [],
+                 msg_j: [],
+                 msg_k: %{},
+                 msg_l: %{},
+                 msg_m: nil
                }
              }
            }
