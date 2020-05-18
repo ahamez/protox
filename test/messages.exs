@@ -102,39 +102,5 @@ defmodule Defs do
           {1, :optional, :__uf__, {:default, 0}, :int32}
         ]
       },
-      {
-        Foo,
-        [
-          # tag     label    name     kind           type
-          {1, :optional, :a, {:default, 0}, :int32},
-          {2, :optional, :b, {:default, ""}, :string},
-          {6, :optional, :c, {:default, 0}, :int64},
-          {7, :optional, :d, {:default, 0}, :uint32},
-          {8, :optional, :e, {:default, 0}, :uint64},
-          {9, :optional, :f, {:default, 0}, :sint64},
-          {13, :repeated, :g, :packed, :fixed64},
-          {14, :repeated, :h, :packed, :sfixed32},
-          {15, :repeated, :i, :packed, :double},
-          {16, :repeated, :j, :unpacked, :int32},
-          {17, :optional, :k, {:default, 0}, :fixed32},
-          {18, :optional, :l, {:default, 0}, :sfixed64},
-          {19, :optional, :m, {:default, <<>>}, :bytes},
-          {20, :repeated, :n, :packed, :bool},
-          {21, :repeated, :o, :packed, {:enum, E}},
-          {22, :repeated, :p, :unpacked, :bool},
-          {23, :repeated, :q, :unpacked, {:enum, E}},
-          {24, :optional, :r, {:default, :FOO}, {:enum, E}},
-          {27, :repeated, :u, :packed, :uint32},
-          {28, :repeated, :w, :packed, :sint32},
-          {29, :repeated, :x, :packed, :int64},
-          {30, :repeated, :y, :packed, :uint64},
-          {10_001, :optional, :z, {:default, 0}, :sint32},
-          {666, :optional, :aa, {:oneof, :fofo}, :string},
-          {1024, :optional, :bb, {:oneof, :fofo}, :int32},
-          {300, :optional, :pb2, {:default, nil}, {:message, Protobuf2}},
-          {301, :repeated, :zzz, :unpacked, {:message, Protobuf2}},
-          {400, nil, :kaboum, :map, {:int32, :string}}
-        ]
-      }
     ]
 end
