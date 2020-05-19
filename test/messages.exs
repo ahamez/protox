@@ -103,6 +103,6 @@ defmodule Defs do
         [
           {1, :optional, :__uf__, {:default, 0}, :int32}
         ]
-      },
+      }
     ]
 end
