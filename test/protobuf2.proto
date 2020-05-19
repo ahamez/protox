@@ -10,3 +10,8 @@ message Protobuf2 {
   optional F s = 25 [default = TWO];
   optional F t = 26;
 }
+
+message Required {
+  required int32 a = 1;
+  optional int32 b = 2;
+}

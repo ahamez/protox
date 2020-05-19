@@ -353,4 +353,9 @@ defmodule Protox.EncodeTest do
   test "Protobuf2.t, default is nil" do
     assert %Protobuf2{t: nil} |> Protox.Encode.encode() |> :binary.list_to_bin() == <<>>
   end
+
+  test "Required" do
+    assert %Required{a: 0} |> Protox.Encode.encode() |> :binary.list_to_bin() == <<8, 0>>
+    assert %Required{a: 1} |> Protox.Encode.encode() |> :binary.list_to_bin() == <<8, 1>>
+  end
 end

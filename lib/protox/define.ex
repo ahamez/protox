@@ -56,7 +56,7 @@ defmodule Protox.Define do
       required_fields = make_required_fields(fields)
       required_fields_typesecs = make_required_fields_typespec(required_fields)
       fields_map = make_fields_map(fields)
-      encoder = Protox.DefineEncoder.define(fields)
+      encoder = Protox.DefineEncoder.define(fields, required_fields)
 
       quote do
         defmodule unquote(msg_name) do

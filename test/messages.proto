@@ -64,6 +64,7 @@ message Upper {
   Msg msg = 1;
   map<string, Msg> map = 2;
   Empty empty = 3;
+  Required req = 4;
 }
 
 message Empty {

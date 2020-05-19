@@ -867,9 +867,14 @@ defmodule Protox.DecodeTest do
     assert {:error, _} = Empty.decode(<<1, 2, 3>>)
   end
 
-  test "Required field" do
+  test "Raise when required field is missing" do
     assert {:error, %RuntimeError{message: "Missing required fields [:a]"}} =
              Required.decode(<<>>)
+  end
+
+  test "Required field" do
+    assert Required.decode!(<<8, 0>>) == %Required{a: 0}
+    assert Required.decode!(<<8, 1>>) == %Required{a: 1}
   end
 
   test "No name clash for __uf__" do

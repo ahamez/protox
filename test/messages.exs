@@ -83,7 +83,8 @@ defmodule Defs do
         [
           {1, :optional, :msg, {:default, nil}, {:message, Msg}},
           {2, nil, :msg_map, :map, {:string, {:message, Msg}}},
-          {3, :optional, :empty, {:default, nil}, {:message, Empty}}
+          {3, :optional, :empty, {:default, nil}, {:message, Empty}},
+          {4, :optional, :req, {:default, nil}, {:message, Required}}
         ]
       },
       {
@@ -93,7 +94,8 @@ defmodule Defs do
       {
         Required,
         [
-          {1, :required, :a, {:default, 0}, :int32}
+          {1, :required, :a, {:default, 0}, :int32},
+          {2, :optional, :b, {:default, 0}, :int32}
         ]
       },
       {
