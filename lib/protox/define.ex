@@ -96,12 +96,8 @@ defmodule Protox.Define do
           @spec clear_unknown_fields(struct) :: struct
           def clear_unknown_fields(msg), do: struct!(msg, [{get_unknown_fields_name(), []}])
         end
-
-        # module
       end
     end
-
-    # for
   end
 
   # -- Enum
