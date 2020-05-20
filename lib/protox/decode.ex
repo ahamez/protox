@@ -56,13 +56,13 @@ defmodule Protox.Decode do
       raise "Illegal field with tag 0"
     end
 
-    field = defs[tag]
+    field_def = defs[tag]
 
     {new_set_fields, new_msg, new_rest} =
-      if field do
-        {name, kind, type} = field
+      if field_def do
+        {name, kind, type} = field_def
         {value, new_rest} = parse_value(rest, wire_type, type)
-        {[elem(field, 0) | set_fields], set_field(msg, name, kind, value), new_rest}
+        {[elem(field_def, 0) | set_fields], set_field(msg, name, kind, value), new_rest}
       else
         {new_msg, new_rest} = parse_unknown(msg, tag, wire_type, rest)
         {set_fields, new_msg, new_rest}
