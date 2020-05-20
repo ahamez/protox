@@ -258,7 +258,7 @@ defmodule Protox.Decode do
     struct!(msg, [{unknown_fields_name, [{tag, wire_type, bytes} | previous]}])
   end
 
-  # Set the field correponding to `tag` in `msg` with `value`.
+  # Set the field `name` in `msg` with `value`.
   defp set_field(msg, name, kind, value) do
     field_value =
       case kind do
