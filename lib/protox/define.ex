@@ -56,6 +56,7 @@ defmodule Protox.Define do
       required_fields = make_required_fields(fields)
       required_fields_typesecs = make_required_fields_typespec(required_fields)
       fields_map = make_fields_map(fields)
+      fields_by_name_map = make_fields_by_name_map(fields)
       encoder = Protox.DefineEncoder.define(fields, required_fields)
 
       quote do
@@ -83,6 +84,11 @@ defmodule Protox.Define do
                   required(non_neg_integer) => {atom, Protox.Types.kind(), Protox.Types.type()}
                 }
           def defs(), do: unquote(fields_map)
+
+          @spec defs_by_name() :: %{
+                  required(atom) => {non_neg_integer, Protox.Types.kind(), Protox.Types.type()}
+                }
+          def defs_by_name(), do: unquote(fields_by_name_map)
 
           @spec get_required_fields() :: unquote(required_fields_typesecs)
           def get_required_fields(), do: unquote(required_fields)
@@ -187,6 +193,14 @@ defmodule Protox.Define do
     fields
     |> Enum.reduce(%{}, fn {tag, _, name, kind, type}, acc ->
       Map.put(acc, tag, {name, kind, make_type_field(kind, type)})
+    end)
+    |> Macro.escape()
+  end
+
+  defp make_fields_by_name_map(fields) do
+    fields
+    |> Enum.reduce(%{}, fn {tag, _, name, kind, type}, acc ->
+      Map.put(acc, name, {tag, kind, make_type_field(kind, type)})
     end)
     |> Macro.escape()
   end
