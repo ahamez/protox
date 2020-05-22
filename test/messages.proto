@@ -29,9 +29,11 @@ message Sub {
 }
 
 enum E {
+  option allow_alias = true;
+
   FOO = 0;
   BAR = 1;
-  BAZ = 2;
+  BAZ = 1;
   NEG = -1;
 }
 
