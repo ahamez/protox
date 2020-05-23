@@ -3,14 +3,21 @@ defmodule Protox.PropertiesTest do
   use PropCheck
 
   property "Upper", [:verbose] do
-    forall fields <- generate_fields(Upper) do
-      msg = generate_struct(Upper, fields)
+    forall {msg, encoded, encoded_bin, decoded} <- generate_msg(Upper) do
+      is_list(encoded) and is_binary(encoded_bin) and decoded == msg
+    end
+  end
 
+  # ------------------------------------------------------------------- #
+
+  defp generate_msg(mod) do
+    let fields <- generate_fields(mod) do
+      msg = generate_struct(mod, fields)
       encoded = Protox.Encode.encode(msg)
       encoded_bin = :binary.list_to_bin(encoded)
-      decoded = Upper.decode!(encoded_bin)
+      decoded = mod.decode!(encoded_bin)
 
-      is_list(encoded) and is_binary(encoded_bin) and decoded == msg
+      {msg, encoded, encoded_bin, decoded}
     end
   end
 
