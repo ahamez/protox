@@ -109,7 +109,6 @@ defmodule Protox.Define do
     end
   end
 
-  # -- Enum
 
   # Make sure the name chosen for the struct fields that stores the unknow fields
   # of the protobuf message doesn't collide with already existing names.
@@ -127,6 +126,8 @@ defmodule Protox.Define do
       name
     end
   end
+
+  # -- Enum
 
   defp make_enum_default(constant_values) do
     [{_, default_value} | _] = constant_values
@@ -153,6 +154,8 @@ defmodule Protox.Define do
       end
     end
   end
+
+  # -- Message
 
   # Generate fields of the struct which is created for a message.
   defp make_struct_fields(fields, unknown_fields, syntax) do
