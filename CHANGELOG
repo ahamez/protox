@@ -1,6 +1,7 @@
 * xxx
   - Always serialize required fields
-  - Add defs_by_name/0 in generated structures
+  - Add defs_by_name/0 in generated structures for messages
+  - Add syntax/0 in generated structures for messages
   - Add Protox.Message.merge/2 to merge two messages of the same type
 
 * 0.19.1

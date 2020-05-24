@@ -17,6 +17,7 @@ defmodule Protox.ParseTest do
   end
 
   test "Parse FileDescriptorSet, protobuf 3 messages", %{messages: messages} do
+    assert syntax(messages, Abc.Def.Proto3) == :proto3
     fs = fields(messages, Abc.Def.Proto3)
     assert field(fs, 1) == {:repeated, :repeated_int32, :packed, :int32}
     assert field(fs, 2) == {:optional, :double, {:default, 0}, :double}
@@ -46,6 +47,7 @@ defmodule Protox.ParseTest do
     assert field(fs, 9999) ==
              {:optional, :nested_enum, {:default, :FOO}, {:enum, Abc.Def.Proto3.NestedEnum}}
 
+    assert syntax(messages, Abc.Def.EmptyProto3) == :proto3
     assert [] = fields(messages, Abc.Def.EmptyProto3)
   end
 
@@ -55,11 +57,13 @@ defmodule Protox.ParseTest do
   end
 
   test "Parse FileDescriptorSet, protobuf 2 messages", %{messages: messages} do
+    assert syntax(messages, Proto2A.NestedMessage) == :proto2
     fs = fields(messages, Proto2A.NestedMessage)
     assert field(fs, 1) == {:required, :required_string, {:default, "foo"}, :string}
     assert field(fs, 2) == {:optional, :optional_float, {:default, -1.1}, :float}
     assert field(fs, 3) == {:optional, :optional_fixed64, {:default, 32_108}, :fixed64}
 
+    assert syntax(messages, Proto2A) == :proto2
     fs = fields(messages, Proto2A)
     assert field(fs, 1) == {:repeated, :repeated_int32_packed, :packed, :int32}
     assert field(fs, 2) == {:repeated, :repeated_int32_unpacked, :unpacked, :int32}
@@ -78,6 +82,7 @@ defmodule Protox.ParseTest do
     assert field(fs, 126) == {:optional, :extension_int32, {:default, nil}, :int32}
     assert field(fs, 199) == {:optional, :extension_double, {:default, 42.42}, :double}
 
+    assert syntax(messages, Proto2B) == :proto2
     fs = fields(messages, Proto2B)
 
     assert field(fs, 1) ==
@@ -95,8 +100,13 @@ defmodule Protox.ParseTest do
     |> Tuple.delete_at(0)
   end
 
+  def syntax(messages, name) do
+    {_, syntax, _} = Enum.find(messages, fn {n, _, _} -> n == name end)
+    syntax
+  end
+
   defp fields(messages, name) do
-    {_, fs} = Enum.find(messages, fn {n, _} -> n == name end)
+    {_, _, fs} = Enum.find(messages, fn {n, _, _} -> n == name end)
     fs
   end
 end

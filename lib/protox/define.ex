@@ -50,7 +50,7 @@ defmodule Protox.Define do
   end
 
   defp define_messages(messages) do
-    for {msg_name, fields} <- messages do
+    for {msg_name, syntax, fields} <- messages do
       unknown_fields = make_unknown_fields(:__uf__, fields)
       struct_fields = make_struct_fields(fields, unknown_fields)
       required_fields = make_required_fields(fields)
@@ -101,6 +101,9 @@ defmodule Protox.Define do
 
           @spec clear_unknown_fields(struct) :: struct
           def clear_unknown_fields(msg), do: struct!(msg, [{get_unknown_fields_name(), []}])
+
+          @spec syntax() :: atom
+          def syntax(), do: unquote(syntax)
         end
       end
     end

@@ -119,6 +119,8 @@ defmodule ProtoxTest do
   end
 
   test "from files" do
+    assert Proto2A.syntax() == :proto2
+
     assert Proto2A.defs() == %{
              1 => {:repeated_int32_packed, :packed, :int32},
              2 => {:repeated_int32_unpacked, :unpacked, :int32},
@@ -130,11 +132,15 @@ defmodule ProtoxTest do
              199 => {:extension_double, {:default, 42.42}, :double}
            }
 
+    assert Proto2B.syntax() == :proto2
+
     assert Proto2B.defs() == %{
              1 => {:optional_proto2a_nested_enum, {:default, nil}, {:enum, Proto2A.NestedEnum}},
              2 =>
                {:required_proto2a_nested_enum, {:default, :N_THREE}, {:enum, Proto2A.NestedEnum}}
            }
+
+    assert Abc.Def.Proto3.syntax() == :proto3
 
     assert Abc.Def.Proto3.defs() == %{
              1 => {:repeated_int32, :packed, :int32},
@@ -155,6 +161,8 @@ defmodule ProtoxTest do
   end
 
   test "from files, with namespace" do
+    assert Namespace.Proto2A.syntax() == :proto2
+
     assert Namespace.Proto2A.defs() == %{
              1 => {:repeated_int32_packed, :packed, :int32},
              2 => {:repeated_int32_unpacked, :unpacked, :int32},
@@ -169,6 +177,8 @@ defmodule ProtoxTest do
              199 => {:extension_double, {:default, 42.42}, :double}
            }
 
+    assert Namespace.Proto2B.syntax() == :proto2
+
     assert Namespace.Proto2B.defs() == %{
              1 =>
                {:optional_proto2a_nested_enum, {:default, nil},
@@ -177,6 +187,8 @@ defmodule ProtoxTest do
                {:required_proto2a_nested_enum, {:default, :N_THREE},
                 {:enum, Namespace.Proto2A.NestedEnum}}
            }
+
+    assert Namespace.Abc.Def.Proto3.syntax() == :proto3
 
     assert Namespace.Abc.Def.Proto3.defs() == %{
              1 => {:repeated_int32, :packed, :int32},

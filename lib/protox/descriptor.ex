@@ -40,12 +40,14 @@ defmodule Protox.Descriptor do
     messages: [
       {
         Google.Protobuf.FileDescriptorSet,
+        :proto3,
         [
           {1, :repeated, :file, :unpacked, {:message, Google.Protobuf.FileDescriptorProto}}
         ]
       },
       {
         Google.Protobuf.FileDescriptorProto,
+        :proto3,
         [
           # Ignored: 3, 6, 8, 9, 10, 11
           {1, :none, :name, {:default, ""}, :string},
@@ -58,6 +60,7 @@ defmodule Protox.Descriptor do
       },
       {
         Google.Protobuf.DescriptorProto.ExtensionRange,
+        :proto3,
         [
           {1, :none, :start, {:default, 0}, :int32},
           {2, :none, :end, {:default, 0}, :int32}
@@ -66,6 +69,7 @@ defmodule Protox.Descriptor do
       # Google.Protobuf.DescriptorProto.ReservedRange ignored
       {
         Google.Protobuf.DescriptorProto,
+        :proto3,
         [
           # Ignored: 9, 10
           {1, :none, :name, {:default, nil}, :string},
@@ -82,6 +86,7 @@ defmodule Protox.Descriptor do
       },
       {
         Google.Protobuf.FieldDescriptorProto,
+        :proto3,
         [
           # Ignored: 10
           {1, :none, :name, {:default, nil}, :string},
@@ -98,6 +103,7 @@ defmodule Protox.Descriptor do
       },
       {
         Google.Protobuf.OneofDescriptorProto,
+        :proto3,
         [
           # Ignored: 2
           {1, :none, :name, {:default, nil}, :string}
@@ -105,6 +111,7 @@ defmodule Protox.Descriptor do
       },
       {
         Google.Protobuf.EnumDescriptorProto,
+        :proto3,
         [
           # Ignored: 3
           {1, :none, :name, {:default, nil}, :string},
@@ -113,6 +120,7 @@ defmodule Protox.Descriptor do
       },
       {
         Google.Protobuf.EnumValueDescriptorProto,
+        :proto3,
         [
           # Ignored: 3
           {1, :none, :name, {:default, nil}, :string},
@@ -124,6 +132,7 @@ defmodule Protox.Descriptor do
       # FileOptions ignored
       {
         Google.Protobuf.MessageOptions,
+        :proto3,
         [
           # 1, 2, 999 ignored
           {3, :none, :deprecated, {:default, false}, :bool},
@@ -132,6 +141,7 @@ defmodule Protox.Descriptor do
       },
       {
         Google.Protobuf.FieldOptions,
+        :proto3,
         [
           # 1, 6, 5, 10, 999 ignored
           {2, :none, :packed, {:default, nil}, :bool},

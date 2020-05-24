@@ -11,7 +11,6 @@ defmodule Protox.Parse do
     {%{}, %{}}
     |> parse_files(descriptor.file)
     |> post_process(namespace)
-    |> to_definition()
   end
 
   # -- Private
@@ -24,9 +23,10 @@ defmodule Protox.Parse do
   # canonization: camelization, fqdn, prepend with namespace
   defp post_process({enums, messages}, namespace) do
     messages_p =
-      for {mname, fields} <- messages, into: %{} do
+      for {mname, {syntax, fields}} <- messages, into: [] do
         {
           Module.concat([namespace | Enum.map(mname, &Macro.camelize(&1))]),
+          syntax,
           Enum.map(
             fields,
             &(&1
@@ -38,7 +38,7 @@ defmodule Protox.Parse do
       end
 
     enums_p =
-      for {ename, constants} <- enums, into: %{} do
+      for {ename, constants} <- enums, into: [] do
         {
           Module.concat([namespace | Enum.map(ename, &Macro.camelize(&1))]),
           constants
@@ -97,10 +97,6 @@ defmodule Protox.Parse do
     field
   end
 
-  defp to_definition({enums, messages}) do
-    {Map.to_list(enums), Map.to_list(messages)}
-  end
-
   defp parse_files(acc, []), do: acc
 
   defp parse_files(acc, [descriptor | descriptors]) do
@@ -126,7 +122,7 @@ defmodule Protox.Parse do
     acc
     |> make_enums(prefix, descriptor.enum_type)
     |> make_messages(syntax, prefix, descriptor.message_type)
-    |> add_extensions(syntax, nil, prefix, descriptor.extension)
+    |> add_extensions(nil, prefix, {syntax, descriptor.extension})
   end
 
   defp make_enums(acc, _, []), do: acc
@@ -171,35 +167,35 @@ defmodule Protox.Parse do
       name = prefix ++ [descriptor.name]
 
       acc
-      |> add_message(name)
+      |> add_message(syntax, name)
       |> make_messages(syntax, name, descriptor.nested_type)
       |> make_enums(name, descriptor.enum_type)
-      |> add_fields(syntax, descriptor, name, descriptor.field)
-      |> add_fields(syntax, descriptor, name, descriptor.extension)
+      |> add_fields(descriptor, name, {syntax, descriptor.field})
+      |> add_fields(descriptor, name, {syntax, descriptor.extension})
     end
   end
 
-  defp add_message({enums, msgs}, name) do
+  defp add_message({enums, msgs}, syntax, name) do
     {
       enums,
-      Map.put_new(msgs, name, [])
+      Map.put_new(msgs, name, {syntax, []})
     }
   end
 
-  defp add_extensions(acc, _, _, _, []), do: acc
+  defp add_extensions(acc, _, _, {_, []}), do: acc
 
-  defp add_extensions(acc, syntax, upper, prefix, [field | fields]) do
+  defp add_extensions(acc, upper, prefix, {syntax, [field | fields]}) do
     acc
     |> add_field(syntax, upper, fully_qualified_name(field.extendee), field)
-    |> add_extensions(syntax, upper, prefix, fields)
+    |> add_extensions(upper, prefix, {syntax, fields})
   end
 
-  defp add_fields(acc, _, _, _, []), do: acc
+  defp add_fields(acc, _, _, {_, []}), do: acc
 
-  defp add_fields(acc, syntax, upper, msg_name, [field | fields]) do
+  defp add_fields(acc, upper, msg_name, {syntax, [field | fields]}) do
     acc
     |> add_field(syntax, upper, msg_name, field)
-    |> add_fields(syntax, upper, msg_name, fields)
+    |> add_fields(upper, msg_name, {syntax, fields})
   end
 
   defp add_field({enums, msgs}, syntax, upper, msg_name, descriptor) do
@@ -216,7 +212,10 @@ defmodule Protox.Parse do
 
     field = {descriptor.number, label, String.to_atom(descriptor.name), kind, type}
 
-    {enums, Map.update!(msgs, msg_name, &[field | &1])}
+    {
+      enums,
+      Map.update!(msgs, msg_name, fn {syntax, fields} -> {syntax, [field | fields]} end)
+    }
   end
 
   defp map_entry(nil, _, _), do: nil

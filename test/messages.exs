@@ -21,6 +21,7 @@ defmodule Defs do
     messages: [
       {
         Protobuf2,
+        :proto2,
         [
           {1, :optional, :a, {:default, 0}, :uint64},
           {25, :optional, :s, {:default, :TWO}, {:enum, F}},
@@ -29,6 +30,7 @@ defmodule Defs do
       },
       {
         Sub,
+        :proto3,
         [
           # tag     label    name     kind           type
           {1, :optional, :a, {:default, 0}, :int32},
@@ -58,6 +60,7 @@ defmodule Defs do
       },
       {
         Msg,
+        :proto3,
         [
           {27, :repeated, :msg_a, :packed, :sint64},
           {28, :repeated, :msg_b, :packed, :fixed32},
@@ -80,6 +83,7 @@ defmodule Defs do
       },
       {
         Upper,
+        :proto3,
         [
           {1, :optional, :msg, {:default, nil}, {:message, Msg}},
           {2, nil, :msg_map, :map, {:string, {:message, Msg}}},
@@ -89,10 +93,12 @@ defmodule Defs do
       },
       {
         Empty,
+        :proto3,
         []
       },
       {
         Required,
+        :proto2,
         [
           {1, :required, :a, {:default, 0}, :int32},
           {2, :optional, :b, {:default, 0}, :int32}
@@ -100,6 +106,7 @@ defmodule Defs do
       },
       {
         NoNameClash,
+        :proto3,
         [
           {1, :optional, :__uf__, {:default, 0}, :int32}
         ]
