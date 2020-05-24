@@ -174,12 +174,27 @@ Furthermore, all options other than `packed` and `default` are ignored.
 
 * Unset optionals
   * For Protobuf 2, unset optional fields are mapped to `nil`.
+    You can use the generated `default/1` function to get the default value:
+    ```elixir
+    use Protox,
+    schema: """
+      syntax = "proto2";
+
+      message Foo {
+        optional int32 a = 1 [default = 42];
+      }
+    """
+
+    iex> Foo.default(:a)
+    {:ok, 42}
+    ```
+
   * For Protobuf 3, unset optional fields are mapped to their default values, as mandated by
-    the Protobuf spec.
+    the [Protobuf spec](https://developers.google.com/protocol-buffers/docs/proto3#default).
 
 * Messages and enums names: non camel case names are converted using the
   [`Macro.camelize/1`](https://hexdocs.pm/elixir/Macro.html#camelize/1) function.
-  Thus, in the following example, `non_camel` becomes `NonCamel`.
+  Thus, in the following example, `non_camel` becomes `NonCamel`:
   ```protobuf
   syntax = "proto3";
 
