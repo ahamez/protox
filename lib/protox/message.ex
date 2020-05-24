@@ -3,6 +3,11 @@ defmodule Protox.Message do
   Singular fields of `msg` will be overwritten, if specified in `from`, except for
   embedded messages which will be merged. Repeated fields will be concatenated.
 
+  Note that "specified" means a different thing in protobuf 2 and 3:
+  - 2: if the singular field from `from` is nil, the value from `msg` is kept
+  - 3: if the singular field from `from` is set to the default value, the value from `msg` is kept
+  This behaviour matches the C++ reference implementation behaviour.
+
   `msg` and `from` must be of the same type
   """
   @spec merge(struct, struct) :: struct
@@ -30,9 +35,23 @@ defmodule Protox.Message do
 
           {_, {:default, _}, _} ->
             case {syntax, v1, v2} do
-              {:proto2, ^v1, nil} -> v1
-              {:proto3, _, nil} -> nil
-              {_, _, ^v2} -> v2
+              # v2 is not set in protobuf2 message
+              {:proto2, ^v1, nil} ->
+                v1
+
+              {:proto3, ^v1, ^v2} ->
+                {:ok, default} = msg.__struct__.default(name)
+
+                if v2 == default do
+                  # when v2 is set to the default value, the C++ reference implementation
+                  # keeps v1
+                  v1
+                else
+                  v2
+                end
+
+              {_, _, ^v2} ->
+                v2
             end
 
           # It's a oneof as `name` is not in defs

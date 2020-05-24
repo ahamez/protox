@@ -33,7 +33,7 @@ defmodule Protox.MessageTest do
     m2 = %Msg{msg_e: false, msg_f: %Sub{g: [10, 20], j: [1, 2, 3]}}
 
     assert Protox.Message.merge(m1, m2) == %Msg{
-             msg_e: false,
+             msg_e: true,
              msg_f: %Sub{g: [10, 20], j: [4, 5, 6, 1, 2, 3]}
            }
 
@@ -114,7 +114,7 @@ defmodule Protox.MessageTest do
 
     assert Protox.Message.merge(m1, m2) == %Upper{
              msg_map: %{
-               "1" => %Msg{msg_e: false, msg_f: %Sub{g: [10, 20], j: [4, 5, 6, 1, 2, 3]}},
+               "1" => %Msg{msg_e: true, msg_f: %Sub{g: [10, 20], j: [4, 5, 6, 1, 2, 3]}},
                "2" => %Msg{msg_d: :BAR, msg_m: {:msg_o, %Sub{}}},
                "100" => %Msg{msg_a: 33},
                "101" => %Msg{msg_a: 44}
@@ -124,7 +124,7 @@ defmodule Protox.MessageTest do
     assert Protox.Message.merge(m2, m1) == %Upper{
              msg_map: %{
                "1" => %Msg{msg_e: true, msg_f: %Sub{g: [10, 20], j: [1, 2, 3, 4, 5, 6]}},
-               "2" => %Msg{msg_d: :FOO, msg_m: {:msg_n, "FOO"}},
+               "2" => %Msg{msg_d: :BAR, msg_m: {:msg_n, "FOO"}},
                "100" => %Msg{msg_a: 33},
                "101" => %Msg{msg_a: 44}
              }
