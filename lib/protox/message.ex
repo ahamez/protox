@@ -28,8 +28,8 @@ defmodule Protox.Message do
 
           {_, {:default, _}, {:message, _}} ->
             case {v1, v2} do
-              {nil, v} -> v
-              {_, nil} -> nil
+              {nil, ^v2} -> v2
+              {^v1, nil} -> v1
               _ -> merge(v1, v2)
             end
 
@@ -57,11 +57,11 @@ defmodule Protox.Message do
           # It's a oneof as `name` is not in defs
           nil ->
             case {v1, v2} do
-              {nil, v} ->
-                v
+              {nil, ^v2} ->
+                v2
 
-              {_, nil} ->
-                nil
+              {^v1, nil} ->
+                v1
 
               {{v1_field, v1_value}, {v2_field, v2_value}} when v1_field == v2_field ->
                 case {defs[v1_field], defs[v2_field]} do

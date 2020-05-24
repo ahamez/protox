@@ -50,9 +50,14 @@ defmodule Protox.MessageTest do
     assert Protox.Message.merge(m1, m2) == %Msg{
              msg_f: %Sub{g: [10, 20], j: [1, 2, 3]}
            }
+  end
+
+  test "Don't overwrite with nil messages" do
+    m1 = %Msg{msg_f: nil}
+    m2 = %Msg{msg_f: %Sub{g: [10, 20], j: [1, 2, 3]}}
 
     assert Protox.Message.merge(m2, m1) == %Msg{
-             msg_f: nil
+             msg_f: %Sub{g: [10, 20], j: [1, 2, 3]}
            }
   end
 
