@@ -16,7 +16,7 @@ defmodule Protox.Message do
     syntax = msg.__struct__.syntax()
 
     Map.merge(msg, from, fn name, v1, v2 ->
-      if name == :__struct__ or name == msg.__struct__.get_unknown_fields_name() do
+      if name == :__struct__ or name == msg.__struct__.unknown_fields_name() do
         v1
       else
         case defs[name] do

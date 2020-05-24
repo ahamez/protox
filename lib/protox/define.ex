@@ -91,17 +91,17 @@ defmodule Protox.Define do
                 }
           def defs_by_name(), do: unquote(fields_by_name_map)
 
-          @spec get_required_fields() :: unquote(required_fields_typesecs)
-          def get_required_fields(), do: unquote(required_fields)
+          @spec required_fields() :: unquote(required_fields_typesecs)
+          def required_fields(), do: unquote(required_fields)
 
-          @spec get_unknown_fields(struct) :: [{non_neg_integer, Protox.Types.tag(), binary}]
-          def get_unknown_fields(msg), do: msg.unquote(unknown_fields)
+          @spec unknown_fields(struct) :: [{non_neg_integer, Protox.Types.tag(), binary}]
+          def unknown_fields(msg), do: msg.unquote(unknown_fields)
 
-          @spec get_unknown_fields_name() :: unquote(unknown_fields)
-          def get_unknown_fields_name(), do: unquote(unknown_fields)
+          @spec unknown_fields_name() :: unquote(unknown_fields)
+          def unknown_fields_name(), do: unquote(unknown_fields)
 
           @spec clear_unknown_fields(struct) :: struct
-          def clear_unknown_fields(msg), do: struct!(msg, [{get_unknown_fields_name(), []}])
+          def clear_unknown_fields(msg), do: struct!(msg, [{unknown_fields_name(), []}])
 
           @spec syntax() :: atom
           def syntax(), do: unquote(syntax)

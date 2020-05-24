@@ -4,6 +4,9 @@
   - Add syntax/0 in generated structures for messages
   - Add Protox.Message.merge/2 to merge two messages of the same type
   - [Breaking change] proto2: use nil for unset fields
+  - [Breaking change] rename generated get_required_fields/0 into required_fields/0
+  - [Breaking change] rename generated get_unknown_fields/0 into unknown_fields/0
+  - [Breaking change] rename generated get_unknown_fields_name/0 into unknown_fields_name/0
 
 * 0.19.1
   - Fix warning about duplicate keys (thanks to https://github.com/ananthakumaran)

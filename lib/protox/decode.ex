@@ -40,8 +40,8 @@ defmodule Protox.Decode do
               value: nil,
               __uf__: []
 
-    @spec get_unknown_fields_name() :: :__uf__
-    def get_unknown_fields_name(), do: :__uf__
+    @spec unknown_fields_name() :: :__uf__
+    def unknown_fields_name(), do: :__uf__
   end
 
   @spec parse_key_value([atom], binary, map, struct) :: {struct, [atom]}
@@ -146,7 +146,7 @@ defmodule Protox.Decode do
   defp parse_delimited(bytes, :string), do: bytes
   defp parse_delimited(bytes, :bytes), do: bytes
   defp parse_delimited(bytes, type = {:enum, _}), do: parse_repeated_varint([], bytes, type)
-  defp parse_delimited(bytes, {:message, m}), do: decode!(bytes, m, m.get_required_fields())
+  defp parse_delimited(bytes, {:message, m}), do: decode!(bytes, m, m.required_fields())
   defp parse_delimited(bytes, :int32), do: parse_repeated_varint([], bytes, :int32)
   defp parse_delimited(bytes, :uint32), do: parse_repeated_varint([], bytes, :uint32)
   defp parse_delimited(bytes, :sint32), do: parse_repeated_varint([], bytes, :sint32)
@@ -253,7 +253,7 @@ defmodule Protox.Decode do
   end
 
   defp add_unknown_field(msg, tag, wire_type, bytes) do
-    unknown_fields_name = msg.__struct__.get_unknown_fields_name()
+    unknown_fields_name = msg.__struct__.unknown_fields_name()
     previous = Map.fetch!(msg, unknown_fields_name)
     struct!(msg, [{unknown_fields_name, [{tag, wire_type, bytes} | previous]}])
   end
