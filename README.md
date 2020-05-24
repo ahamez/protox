@@ -207,14 +207,14 @@ fixed32    | integer()
 fixed64    | integer()
 sfixed32   | integer()
 sfixed64   | integer()
-float      | float(), :infinity, :'-infinity', :nan
-double     | float(), :infinity, :'-infinity', :nan
+float      | float() \| :infinity \| :'-infinity' \| :nan
+double     | float() \| :infinity \| :'-infinity' \| :nan
 bool       | boolean()
 string     | String.t
 bytes      | binary()
 map        | %{}
 oneof      | {:field, value}
-enum       | atom()
+enum       | atom() \| integer()
 message    | struct()
 
 
