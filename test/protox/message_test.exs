@@ -1,6 +1,17 @@
 defmodule Protox.MessageTest do
   use ExUnit.Case
 
+  test "Protobuf 2, replace only set scalar fields" do
+    r1 = %Protobuf2{a: 0, s: :ONE}
+    r2 = %Protobuf2{a: nil, s: :TWO}
+    r3 = %Protobuf2{a: 1, s: nil}
+
+    assert Protox.Message.merge(r1, r2) == %Protobuf2{a: 0, s: :TWO}
+    assert Protox.Message.merge(r1, r3) == %Protobuf2{a: 1, s: :ONE}
+    assert Protox.Message.merge(r2, r1) == %Protobuf2{a: 0, s: :ONE}
+    assert Protox.Message.merge(r3, r1) == %Protobuf2{a: 0, s: :ONE}
+  end
+
   test "Replace scalar fields" do
     r1 = %Required{a: 3, b: 4}
     r2 = %Required{a: 5, b: 7}

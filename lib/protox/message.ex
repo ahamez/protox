@@ -8,6 +8,7 @@ defmodule Protox.Message do
   @spec merge(struct, struct) :: struct
   def merge(msg, from) do
     defs = msg.__struct__.defs_by_name()
+    syntax = msg.__struct__.syntax()
 
     Map.merge(msg, from, fn name, v1, v2 ->
       if name == :__struct__ or name == msg.__struct__.get_unknown_fields_name() do
@@ -25,6 +26,13 @@ defmodule Protox.Message do
               {nil, v} -> v
               {_, nil} -> nil
               _ -> merge(v1, v2)
+            end
+
+          {_, {:default, _}, _} ->
+            case {syntax, v1, v2} do
+              {:proto2, ^v1, nil} -> v1
+              {:proto3, _, nil} -> nil
+              {_, _, ^v2} -> v2
             end
 
           # It's a oneof as `name` is not in defs
@@ -54,9 +62,6 @@ defmodule Protox.Message do
 
           {_, :map, _} ->
             Map.merge(v1, v2)
-
-          _ ->
-            v2
         end
       end
     end)
