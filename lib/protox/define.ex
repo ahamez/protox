@@ -58,6 +58,7 @@ defmodule Protox.Define do
       fields_map = make_fields_map(fields)
       fields_by_name_map = make_fields_by_name_map(fields)
       encoder = Protox.DefineEncoder.define(fields, required_fields, syntax)
+      default_fun = make_default_fun(fields)
 
       quote do
         defmodule unquote(msg_name) do
@@ -104,11 +105,40 @@ defmodule Protox.Define do
 
           @spec syntax() :: atom
           def syntax(), do: unquote(syntax)
+
+          unquote(default_fun)
         end
       end
     end
   end
 
+  defp make_default_fun(fields) do
+    spec =
+      quote do
+        @spec default(atom) ::
+                {:ok, boolean | integer | String.t() | binary | float} | {:error, any}
+      end
+
+    match_all =
+      quote do
+        def default(_), do: {:error, :no_such_field}
+      end
+
+    ast =
+      Enum.map(fields, fn
+        {_, _, name, {:default, default}, _ty} ->
+          quote do
+            def default(unquote(name)), do: {:ok, unquote(default)}
+          end
+
+        {_, _, name, _, _} ->
+          quote do
+            def default(unquote(name)), do: {:error, :no_default_value}
+          end
+      end)
+
+    [spec, ast, match_all]
+  end
 
   # Make sure the name chosen for the struct fields that stores the unknow fields
   # of the protobuf message doesn't collide with already existing names.
