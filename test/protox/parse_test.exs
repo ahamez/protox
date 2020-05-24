@@ -17,7 +17,7 @@ defmodule Protox.ParseTest do
   end
 
   test "Parse FileDescriptorSet, protobuf 3 messages", %{messages: messages} do
-    {_, fs} = Enum.find(messages, fn {name, _} -> name == Abc.Def.Proto3 end)
+    fs = fields(messages, Abc.Def.Proto3)
     assert field(fs, 1) == {:repeated, :repeated_int32, :packed, :int32}
     assert field(fs, 2) == {:optional, :double, {:default, 0}, :double}
     assert field(fs, 3) == {nil, :map_sfixed32_fixed64, :map, {:sfixed32, :fixed64}}
@@ -46,8 +46,7 @@ defmodule Protox.ParseTest do
     assert field(fs, 9999) ==
              {:optional, :nested_enum, {:default, :FOO}, {:enum, Abc.Def.Proto3.NestedEnum}}
 
-    {_, fs} = Enum.find(messages, fn {name, _} -> name == Abc.Def.EmptyProto3 end)
-    assert [] = fs
+    assert [] = fields(messages, Abc.Def.EmptyProto3)
   end
 
   test "Parse FileDescriptorSet, protobuf 2 enums", %{enums: enums} do
@@ -56,12 +55,12 @@ defmodule Protox.ParseTest do
   end
 
   test "Parse FileDescriptorSet, protobuf 2 messages", %{messages: messages} do
-    {_, fs} = Enum.find(messages, fn {name, _} -> name == Proto2A.NestedMessage end)
+    fs = fields(messages, Proto2A.NestedMessage)
     assert field(fs, 1) == {:required, :required_string, {:default, "foo"}, :string}
     assert field(fs, 2) == {:optional, :optional_float, {:default, -1.1}, :float}
     assert field(fs, 3) == {:optional, :optional_fixed64, {:default, 32_108}, :fixed64}
 
-    {_, fs} = Enum.find(messages, fn {name, _} -> name == Proto2A end)
+    fs = fields(messages, Proto2A)
     assert field(fs, 1) == {:repeated, :repeated_int32_packed, :packed, :int32}
     assert field(fs, 2) == {:repeated, :repeated_int32_unpacked, :unpacked, :int32}
 
@@ -79,7 +78,7 @@ defmodule Protox.ParseTest do
     assert field(fs, 126) == {:optional, :extension_int32, {:default, nil}, :int32}
     assert field(fs, 199) == {:optional, :extension_double, {:default, 42.42}, :double}
 
-    {_, fs} = Enum.find(messages, fn {name, _} -> name == Proto2B end)
+    fs = fields(messages, Proto2B)
 
     assert field(fs, 1) ==
              {:optional, :optional_proto2a_nested_enum, {:default, nil},
@@ -94,5 +93,10 @@ defmodule Protox.ParseTest do
     fields
     |> Enum.find(&(elem(&1, 0) == tag))
     |> Tuple.delete_at(0)
+  end
+
+  defp fields(messages, name) do
+    {_, fs} = Enum.find(messages, fn {n, _} -> n == name end)
+    fs
   end
 end
