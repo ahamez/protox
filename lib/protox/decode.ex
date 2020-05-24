@@ -62,7 +62,7 @@ defmodule Protox.Decode do
       if field_def do
         {name, kind, type} = field_def
         {value, new_rest} = parse_value(rest, wire_type, type)
-        {[elem(field_def, 0) | set_fields], set_field(msg, name, kind, value), new_rest}
+        {[name | set_fields], set_field(msg, name, kind, value), new_rest}
       else
         {new_msg, new_rest} = parse_unknown(msg, tag, wire_type, rest)
         {set_fields, new_msg, new_rest}
@@ -264,7 +264,8 @@ defmodule Protox.Decode do
       case kind do
         :map ->
           previous = Map.fetch!(msg, name)
-          {name, Map.put(previous, elem(value, 0), elem(value, 1))}
+          {entry_key, entry_value} = value
+          {name, Map.put(previous, entry_key, entry_value)}
 
         {:oneof, parent_field} ->
           {parent_field, {name, value}}
