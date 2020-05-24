@@ -52,12 +52,12 @@ defmodule Protox.Define do
   defp define_messages(messages) do
     for {msg_name, syntax, fields} <- messages do
       unknown_fields = make_unknown_fields(:__uf__, fields)
-      struct_fields = make_struct_fields(fields, unknown_fields)
+      struct_fields = make_struct_fields(fields, unknown_fields, syntax)
       required_fields = make_required_fields(fields)
       required_fields_typesecs = make_required_fields_typespec(required_fields)
       fields_map = make_fields_map(fields)
       fields_by_name_map = make_fields_by_name_map(fields)
-      encoder = Protox.DefineEncoder.define(fields, required_fields)
+      encoder = Protox.DefineEncoder.define(fields, required_fields, syntax)
 
       quote do
         defmodule unquote(msg_name) do
@@ -155,7 +155,7 @@ defmodule Protox.Define do
   end
 
   # Generate fields of the struct which is created for a message.
-  defp make_struct_fields(fields, unknown_fields) do
+  defp make_struct_fields(fields, unknown_fields, syntax) do
     struct_fields =
       for {_, _, name, kind, _} <- fields do
         case kind do
@@ -163,7 +163,8 @@ defmodule Protox.Define do
           {:oneof, parent} -> {parent, nil}
           :packed -> {name, []}
           :unpacked -> {name, []}
-          {:default, default_value} -> {name, default_value}
+          {:default, _} when syntax == :proto2 -> {name, nil}
+          {:default, default_value} when syntax == :proto3 -> {name, default_value}
         end
       end ++ [{unknown_fields, []}]
 

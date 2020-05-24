@@ -2,30 +2,30 @@ defmodule Protox.DefineEncoder do
   @moduledoc false
   # Internal. Generates the encoder of a message.
 
-  def define(fields, required_fields) do
-    make_encode(fields, required_fields)
+  def define(fields, required_fields, syntax) do
+    make_encode(fields, required_fields, syntax)
   end
 
   # -- Private
 
-  defp make_encode([], _) do
+  defp make_encode([], _, _) do
     quote do
       @spec encode(struct) :: iolist
       def encode(msg), do: []
     end
   end
 
-  defp make_encode(fields, required_fields) do
+  defp make_encode(fields, required_fields, syntax) do
     # It is recommended to encode fields sequentially by field number.
     # See https://developers.google.com/protocol-buffers/docs/encoding#order.
     sorted_fields = Enum.sort(fields, &(elem(&1, 0) < elem(&2, 0)))
-    encode_fun_body = make_encode_fun(sorted_fields)
-    encode_field_funs = make_encode_field_funs(fields, required_fields)
+    encode_fun = make_encode_fun(sorted_fields)
+    encode_field_funs = make_encode_field_funs(fields, required_fields, syntax)
     encode_unknown_fields_fun = make_encode_unknown_fields_fun()
 
     quote do
       @spec encode(struct) :: iolist
-      def encode(msg), do: unquote(encode_fun_body)
+      def encode(msg), do: unquote(encode_fun)
 
       unquote(encode_field_funs)
       unquote(encode_unknown_fields_fun)
@@ -62,11 +62,11 @@ defmodule Protox.DefineEncoder do
     make_encode_fun(ast, fields)
   end
 
-  defp make_encode_field_funs(fields, required_fields) do
+  defp make_encode_field_funs(fields, required_fields, syntax) do
     for {tag, _, name, kind, type} <- fields do
       required = name in required_fields
       fun_name = String.to_atom("encode_#{name}")
-      fun_ast = make_encode_field_fun(kind, tag, name, type, required)
+      fun_ast = make_encode_field_fun(kind, tag, name, type, required, syntax)
 
       quote do
         defp unquote(fun_name)(acc, msg), do: unquote(fun_ast)
@@ -74,30 +74,43 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_field_fun({:default, default}, tag, name, type, required) do
+  defp make_encode_field_fun({:default, default}, tag, name, type, required, syntax) do
     key = Protox.Encode.make_key_bytes(tag, type)
     var = quote do: field_value
     encode_value_ast = get_encode_value_ast(type, var)
 
-    if required do
-      quote do
-        unquote(var) = msg.unquote(name)
-        [acc, unquote(key), unquote(encode_value_ast)]
-      end
-    else
-      quote do
-        unquote(var) = msg.unquote(name)
-
-        if unquote(var) == unquote(default) do
-          acc
+    case syntax do
+      :proto2 ->
+        if required do
+          quote do
+            unquote(var) = msg.unquote(name)
+            [acc, unquote(key), unquote(encode_value_ast)]
+          end
         else
-          [acc, unquote(key), unquote(encode_value_ast)]
+          quote do
+            unquote(var) = msg.unquote(name)
+
+            case unquote(var) do
+              nil -> acc
+              _ -> [acc, unquote(key), unquote(encode_value_ast)]
+            end
+          end
         end
-      end
+
+      :proto3 ->
+        quote do
+          unquote(var) = msg.unquote(name)
+          default = unquote(default)
+
+          case unquote(var) do
+            ^default -> acc
+            _ -> [acc, unquote(key), unquote(encode_value_ast)]
+          end
+        end
     end
   end
 
-  defp make_encode_field_fun({:oneof, parent_field}, tag, name, type, _required) do
+  defp make_encode_field_fun({:oneof, parent_field}, tag, name, type, _required, _syntax) do
     # TODO. We should look at the oneof field only once, not for each possible entry.
 
     key = Protox.Encode.make_key_bytes(tag, type)
@@ -121,7 +134,7 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_field_fun(:packed, tag, name, type, _required) do
+  defp make_encode_field_fun(:packed, tag, name, type, _required, _syntax) do
     key = Protox.Encode.make_key_bytes(tag, :packed)
     encode_packed_ast = make_encode_packed_ast(type)
 
@@ -133,7 +146,7 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_field_fun(:unpacked, tag, name, type, _required) do
+  defp make_encode_field_fun(:unpacked, tag, name, type, _required, _syntax) do
     encode_repeated_ast = make_encode_repeated_ast(tag, type)
 
     quote do
@@ -144,7 +157,7 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_field_fun(:map, tag, name, type, _required) do
+  defp make_encode_field_fun(:map, tag, name, type, _required, _syntax) do
     # Each key/value entry of a map has the same layout as a message.
     # https://developers.google.com/protocol-buffers/docs/proto3#backwards-compatibility
 

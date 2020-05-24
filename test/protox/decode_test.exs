@@ -881,9 +881,9 @@ defmodule Protox.DecodeTest do
     assert NoNameClash.decode!(<<>>) == %NoNameClash{__uf__: 0}
   end
 
-  test "Protobuf2.s, default" do
+  test "Protobuf2, all fields unset" do
     bytes = <<>>
-    assert Protobuf2.decode!(bytes) == %Protobuf2{s: :TWO}
+    assert Protobuf2.decode!(bytes) == %Protobuf2{a: nil, s: nil, t: nil}
   end
 
   test "Protobuf2.s" do

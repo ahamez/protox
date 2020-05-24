@@ -342,8 +342,12 @@ defmodule Protox.EncodeTest do
     assert %Upper{empty: %Empty{}} |> Protox.Encode.encode() |> :binary.list_to_bin() == <<26, 0>>
   end
 
+  test "Protobuf2.a, unset" do
+    assert %Protobuf2{a: nil} |> Protox.Encode.encode() |> :binary.list_to_bin() == <<>>
+  end
+
   test "Protobuf2.s, default" do
-    assert %Protobuf2{s: :TWO} |> Protox.Encode.encode() |> :binary.list_to_bin() == <<>>
+    assert %Protobuf2{s: :TWO} |> Protox.Encode.encode() |> :binary.list_to_bin() == <<200, 1, 2>>
   end
 
   test "Protobuf2.s" do
