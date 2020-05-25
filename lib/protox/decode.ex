@@ -171,19 +171,20 @@ defmodule Protox.Decode do
 
     {%MapEntry{key: map_key, value: map_value}, _} = parse_key_value([], bytes, defs, %MapEntry{})
 
-    map_key2 =
+    map_key =
       case map_key do
         nil -> Protox.Default.default(map_key_type)
         _ -> map_key
       end
 
-    map_value2 =
-      case map_value do
-        nil -> Protox.Default.default(map_value_type)
+    map_value =
+      case {map_value, map_value_type} do
+        {nil, {:message, msg_ty}} -> struct!(msg_ty)
+        {nil, _} -> Protox.Default.default(map_value_type)
         _ -> map_value
       end
 
-    {map_key2, map_value2}
+    {map_key, map_value}
   end
 
   defp parse_repeated_varint(acc, <<>>, _) do

@@ -729,6 +729,12 @@ defmodule Protox.DecodeTest do
     assert Msg.decode!(bytes) == %Msg{msg_k: %{1 => ""}}
   end
 
+  test "Upper.msg_map, missing message value" do
+    bytes = <<18, 5, 10, 3, 102, 111, 111>>
+
+    assert Upper.decode!(bytes) == %Upper{msg_map: %{"foo" => %Msg{}}}
+  end
+
   test "Msg.msg_l" do
     bytes =
       <<74, 14, 10, 3, 98, 97, 114, 17, 0, 0, 0, 0, 0, 0, 240, 63, 74, 14, 10, 3, 102, 111, 111,
