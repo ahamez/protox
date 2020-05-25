@@ -1,4 +1,8 @@
 defmodule Protox.Message do
+  @moduledoc """
+  This module provides functions to work with messages.
+  """
+
   @doc """
   Singular fields of `msg` will be overwritten, if specified in `from`, except for
   embedded messages which will be merged. Repeated fields will be concatenated.
