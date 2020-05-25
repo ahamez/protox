@@ -129,17 +129,17 @@ The `__uf__` field is explained in the section [Unknown fields](https://github.c
 # Unknown Fields
 
 If any unknown field is encountered when decoding, it is kept in the decoded message.
-It is possible to access them with the function `get_unknown_fields/1` defined with the message.
+It is possible to access them with the function `unknown_fields/1` defined with the message.
 
 ```elixir
 iex> msg = <<8, 42, 42, 4, 121, 97, 121, 101, 136, 241, 4, 83>> |> Msg.decode!()
 %Msg{a: 42, b: "", z: -42, __uf__: [{5, 2, <<121, 97, 121, 101>>}]}
 
-iex> msg |> Msg.get_unknown_fields()
+iex> msg |> Msg.unknown_fields()
 [{5, 2, <<121, 97, 121, 101>>}]
 ```
 
-You must always use `get_unknown_fields/1` as the name of the field
+You must always use `unknown_fields/1` as the name of the field
 (e.g. `__uf__`) is generated at compile time to avoid collision with the actual
 fields of the Protobuf message.
 
