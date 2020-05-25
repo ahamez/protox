@@ -285,7 +285,7 @@ defmodule Protox.Parse do
         end
 
       %FieldDescriptorProto{label: label} when label == :optional or label == :required ->
-        {:default, get_default_value(syntax, descriptor)}
+        {:default, get_default_value(descriptor)}
     end
   end
 
@@ -300,46 +300,46 @@ defmodule Protox.Parse do
     descriptor.type
   end
 
-  defp get_default_value(_syntax, %FieldDescriptorProto{type: :enum, default_value: nil}) do
+  defp get_default_value(%FieldDescriptorProto{type: :enum, default_value: nil}) do
     :default_to_resolve
   end
 
-  defp get_default_value(_syntax, f = %FieldDescriptorProto{type: :enum}) do
+  defp get_default_value(f = %FieldDescriptorProto{type: :enum}) do
     String.to_atom(f.default_value)
   end
 
-  defp get_default_value(_syntax, %FieldDescriptorProto{type: :message}) do
+  defp get_default_value(%FieldDescriptorProto{type: :message}) do
     nil
   end
 
-  defp get_default_value(_syntax, %FieldDescriptorProto{type: ty, default_value: nil}) do
+  defp get_default_value(%FieldDescriptorProto{type: ty, default_value: nil}) do
     Protox.Default.default(ty)
   end
 
-  defp get_default_value(:proto2, f = %FieldDescriptorProto{type: :bool}) do
+  defp get_default_value(f = %FieldDescriptorProto{type: :bool}) do
     case f.default_value do
       "true" -> true
       "false" -> false
     end
   end
 
-  defp get_default_value(:proto2, f = %FieldDescriptorProto{type: :string}) do
+  defp get_default_value(f = %FieldDescriptorProto{type: :string}) do
     f.default_value
   end
 
-  defp get_default_value(:proto2, f = %FieldDescriptorProto{type: :bytes}) do
+  defp get_default_value(f = %FieldDescriptorProto{type: :bytes}) do
     f.default_value
   end
 
-  defp get_default_value(:proto2, f = %FieldDescriptorProto{type: :double}) do
+  defp get_default_value(f = %FieldDescriptorProto{type: :double}) do
     f.default_value |> Float.parse() |> elem(0)
   end
 
-  defp get_default_value(:proto2, f = %FieldDescriptorProto{type: :float}) do
+  defp get_default_value(f = %FieldDescriptorProto{type: :float}) do
     f.default_value |> Float.parse() |> elem(0)
   end
 
-  defp get_default_value(:proto2, f) do
+  defp get_default_value(f) do
     f.default_value |> Integer.parse() |> elem(0)
   end
 end
