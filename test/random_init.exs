@@ -199,9 +199,9 @@ defmodule Protox.RandomInit do
   defp get_gen(:unpacked, :uint64), do: list(non_neg_integer())
 
   defp get_gen(:packed, :float), do: list(gen_float())
-  defp get_gen(:packed, :double), do: list(gen_float())
+  defp get_gen(:packed, :double), do: list(gen_double())
   defp get_gen(:unpacked, :float), do: list(gen_float())
-  defp get_gen(:unpacked, :double), do: list(gen_float())
+  defp get_gen(:unpacked, :double), do: list(gen_double())
 
   defp get_gen(kind, {:enum, e}) when kind == :packed or kind == :unpacked do
     list(oneof(e.constants() |> Map.new() |> Map.values()))
@@ -229,7 +229,10 @@ defmodule Protox.RandomInit do
   # ----------------------
 
   defp gen_float() do
-    # oneof([float(), :nan, :infinity, :"-infinity"])
     oneof([integer(), :nan, :infinity, :"-infinity"])
+  end
+
+  defp gen_double() do
+    oneof([float(), :nan, :infinity, :"-infinity"])
   end
 end

@@ -127,6 +127,16 @@ defmodule Defs do
           {112, :none, :oneof_nested_message, {:oneof, :oneof_field},
            {:message, ProtobufTestMessages.Proto3.NestedMessage}}
         ]
+      },
+      {
+        FloatPrecision,
+        :proto3,
+        [
+          {1, :optional, :a, {:default, 0.0}, :double},
+          {2, :optional, :b, {:default, 0.0}, :float},
+          {3, :repeated, :c, :packed, :double},
+          {4, :repeated, :d, :packed, :float}
+        ]
       }
     ]
 end

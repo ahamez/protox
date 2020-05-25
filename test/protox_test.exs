@@ -90,6 +90,17 @@ defmodule ProtoxTest do
     }
   end
 
+  test "symmetric float precision" do
+    msg = %FloatPrecision{
+      a: 8.73291669056208,
+      b: 0.1,
+    }
+
+    decoded = msg |> FloatPrecision.encode() |> :binary.list_to_bin() |> FloatPrecision.decode!()
+    assert decoded.a == msg.a
+    assert Float.round(decoded.b, 1) == msg.b
+  end
+
   test "symmetric (Sub)" do
     msg = Protox.RandomInit.generate_msg(Sub)
     assert msg |> Sub.encode() |> :binary.list_to_bin() |> Sub.decode!() == msg
