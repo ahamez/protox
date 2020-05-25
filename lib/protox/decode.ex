@@ -62,7 +62,9 @@ defmodule Protox.Decode do
       if field_def do
         {name, kind, type} = field_def
         {value, new_rest} = parse_value(rest, wire_type, type)
-        {[name | set_fields], set_field(msg, name, kind, value, type), new_rest}
+        field = update_field(msg, name, kind, value, type)
+        msg_updated = struct!(msg, [field])
+        {[name | set_fields], msg_updated, new_rest}
       else
         {new_msg, new_rest} = parse_unknown(msg, tag, wire_type, rest)
         {set_fields, new_msg, new_rest}
@@ -259,50 +261,46 @@ defmodule Protox.Decode do
   end
 
   # Set the field `name` in `msg` with `value`.
-  defp set_field(msg, name, kind, value, type) do
-    field_value =
-      case kind do
-        :map ->
-          previous = Map.fetch!(msg, name)
-          {entry_key, entry_value} = value
-          {name, Map.put(previous, entry_key, entry_value)}
+  defp update_field(msg, name, :map, value, _type) do
+    previous = Map.fetch!(msg, name)
+    {entry_key, entry_value} = value
 
-        {:oneof, parent_field} ->
-          case type do
-            {:message, _} ->
-              case Map.fetch!(msg, parent_field) do
-                {^name, previous_value} ->
-                  {parent_field, {name, Protox.Message.merge(previous_value, value)}}
+    {name, Map.put(previous, entry_key, entry_value)}
+  end
 
-                _ ->
-                  {parent_field, {name, value}}
-              end
+  defp update_field(msg, name, {:oneof, parent_field}, value, type) do
+    case type do
+      {:message, _} ->
+        case Map.fetch!(msg, parent_field) do
+          {^name, previous_value} ->
+            {parent_field, {name, Protox.Message.merge(previous_value, value)}}
 
-            _ ->
-              {parent_field, {name, value}}
-          end
+          _ ->
+            {parent_field, {name, value}}
+        end
 
-        {:default, _} ->
-          case type do
-            {:message, _} ->
-              previous = Map.fetch!(msg, name)
+      _ ->
+        {parent_field, {name, value}}
+    end
+  end
 
-              if previous do
-                {name, Protox.Message.merge(previous, value)}
-              else
-                {name, value}
-              end
+  defp update_field(msg, name, {:default, _}, value, type) do
+    case type do
+      {:message, _} ->
+        case Map.fetch!(msg, name) do
+          nil -> {name, value}
+          previous -> {name, Protox.Message.merge(previous, value)}
+        end
 
-            _ ->
-              {name, value}
-          end
+      _ ->
+        {name, value}
+    end
+  end
 
-        # repeated
-        _ ->
-          previous = Map.fetch!(msg, name)
-          {name, previous ++ List.wrap(value)}
-      end
+  # repeated
+  defp update_field(msg, name, _kind, value, _type) do
+    previous = Map.fetch!(msg, name)
 
-    struct!(msg, [field_value])
+    {name, previous ++ List.wrap(value)}
   end
 end
