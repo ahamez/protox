@@ -126,7 +126,7 @@ defmodule Protox.Define do
 
     ast =
       Enum.map(fields, fn
-        {_, _, name, {:default, default}, _ty} ->
+        {_, _, name, {:default, default}, _} ->
           quote do
             def default(unquote(name)), do: {:ok, unquote(default)}
           end
@@ -160,6 +160,9 @@ defmodule Protox.Define do
   # -- Enum
 
   defp make_enum_default(constant_values) do
+    # proto2: the first entry is always the default value
+    # proto3: the entry with value 0 is the default value, and protoc mandates the first entry
+    # to have the value 0
     [{_, default_value} | _] = constant_values
 
     quote do

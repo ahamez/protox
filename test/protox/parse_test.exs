@@ -79,14 +79,14 @@ defmodule Protox.ParseTest do
              {:repeated, :repeated_nested_message, :unpacked, {:message, Proto2A.NestedMessage}}
 
     assert field(fs, 6) == {:optional, :bytes, {:default, <<96, 118>>}, :bytes}
-    assert field(fs, 126) == {:optional, :extension_int32, {:default, nil}, :int32}
+    assert field(fs, 126) == {:optional, :extension_int32, {:default, 0}, :int32}
     assert field(fs, 199) == {:optional, :extension_double, {:default, 42.42}, :double}
 
     assert syntax(messages, Proto2B) == :proto2
     fs = fields(messages, Proto2B)
 
     assert field(fs, 1) ==
-             {:optional, :optional_proto2a_nested_enum, {:default, nil},
+             {:optional, :optional_proto2a_nested_enum, {:default, :N_ZERO},
               {:enum, Proto2A.NestedEnum}}
 
     assert field(fs, 2) ==

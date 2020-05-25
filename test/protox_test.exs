@@ -128,14 +128,15 @@ defmodule ProtoxTest do
              4 => {:repeated_nested_enum, :unpacked, {:enum, Proto2A.NestedEnum}},
              5 => {:repeated_nested_message, :unpacked, {:message, Proto2A.NestedMessage}},
              6 => {:bytes, {:default, "`v"}, :bytes},
-             126 => {:extension_int32, {:default, nil}, :int32},
+             126 => {:extension_int32, {:default, 0}, :int32},
              199 => {:extension_double, {:default, 42.42}, :double}
            }
 
     assert Proto2B.syntax() == :proto2
 
     assert Proto2B.defs() == %{
-             1 => {:optional_proto2a_nested_enum, {:default, nil}, {:enum, Proto2A.NestedEnum}},
+             1 =>
+               {:optional_proto2a_nested_enum, {:default, :N_ZERO}, {:enum, Proto2A.NestedEnum}},
              2 =>
                {:required_proto2a_nested_enum, {:default, :N_THREE}, {:enum, Proto2A.NestedEnum}}
            }
@@ -173,7 +174,7 @@ defmodule ProtoxTest do
              5 =>
                {:repeated_nested_message, :unpacked, {:message, Namespace.Proto2A.NestedMessage}},
              6 => {:bytes, {:default, "`v"}, :bytes},
-             126 => {:extension_int32, {:default, nil}, :int32},
+             126 => {:extension_int32, {:default, 0}, :int32},
              199 => {:extension_double, {:default, 42.42}, :double}
            }
 
@@ -181,7 +182,7 @@ defmodule ProtoxTest do
 
     assert Namespace.Proto2B.defs() == %{
              1 =>
-               {:optional_proto2a_nested_enum, {:default, nil},
+               {:optional_proto2a_nested_enum, {:default, :N_ZERO},
                 {:enum, Namespace.Proto2A.NestedEnum}},
              2 =>
                {:required_proto2a_nested_enum, {:default, :N_THREE},

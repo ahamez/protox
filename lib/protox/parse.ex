@@ -22,7 +22,7 @@ defmodule Protox.Parse do
 
   # canonization: camelization, fqdn, prepend with namespace
   defp post_process({enums, messages}, namespace) do
-    messages_p =
+    processed_messages =
       for {mname, {syntax, fields}} <- messages, into: [] do
         {
           Module.concat([namespace | Enum.map(mname, &Macro.camelize(&1))]),
@@ -37,7 +37,7 @@ defmodule Protox.Parse do
         }
       end
 
-    enums_p =
+    processsed_enums =
       for {ename, constants} <- enums, into: [] do
         {
           Module.concat([namespace | Enum.map(ename, &Macro.camelize(&1))]),
@@ -45,7 +45,7 @@ defmodule Protox.Parse do
         }
       end
 
-    {enums_p, messages_p}
+    {processsed_enums, processed_messages}
   end
 
   defp resolve_types({tag, label, name, kind, {:to_resolve, tname}}, enums, _) do
@@ -69,6 +69,9 @@ defmodule Protox.Parse do
   end
 
   defp default_value({tag, label, name, {:default, :default_to_resolve}, {:enum, ename}}, enums) do
+    # proto2: the first entry is always the default value
+    # proto3: the entry with value 0 is the default value, and protoc mandates the first entry
+    # to have the value 0
     [{_, first_is_default} | _] = Map.fetch!(enums, ename)
     {tag, label, name, {:default, first_is_default}, {:enum, ename}}
   end
@@ -297,37 +300,27 @@ defmodule Protox.Parse do
     descriptor.type
   end
 
-  defp get_default_value(:proto3, %FieldDescriptorProto{type: :enum}) do
-    # Real default value will be resolved later as the corresponding enum might not exist yet.
+  defp get_default_value(_syntax, %FieldDescriptorProto{type: :enum, default_value: nil}) do
     :default_to_resolve
   end
 
-  defp get_default_value(:proto3, %FieldDescriptorProto{type: :message}) do
-    nil
-  end
-
-  defp get_default_value(:proto3, descriptor) do
-    Protox.Default.default(descriptor.type)
-  end
-
-  defp get_default_value(:proto2, %FieldDescriptorProto{type: :enum, default_value: nil}) do
-    nil
-  end
-
-  defp get_default_value(:proto2, f = %FieldDescriptorProto{type: :enum}) do
+  defp get_default_value(_syntax, f = %FieldDescriptorProto{type: :enum}) do
     String.to_atom(f.default_value)
   end
 
-  defp get_default_value(:proto2, %FieldDescriptorProto{default_value: nil}) do
+  defp get_default_value(_syntax, %FieldDescriptorProto{type: :message}) do
     nil
   end
 
-  defp get_default_value(:proto2, %FieldDescriptorProto{type: :bool, default_value: "true"}) do
-    true
+  defp get_default_value(_syntax, %FieldDescriptorProto{type: ty, default_value: nil}) do
+    Protox.Default.default(ty)
   end
 
-  defp get_default_value(:proto2, %FieldDescriptorProto{type: :bool, default_value: "false"}) do
-    false
+  defp get_default_value(:proto2, f = %FieldDescriptorProto{type: :bool}) do
+    case f.default_value do
+      "true" -> true
+      "false" -> false
+    end
   end
 
   defp get_default_value(:proto2, f = %FieldDescriptorProto{type: :string}) do
