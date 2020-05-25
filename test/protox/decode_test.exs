@@ -909,7 +909,7 @@ defmodule Protox.DecodeTest do
     assert Protobuf2.decode!(bytes) == %Protobuf2{s: :TWO}
   end
 
-  test "Protobuf2.t, default is nil" do
+  test "Protobuf2.t, optional is nil when not set" do
     bytes = <<>>
     assert Protobuf2.decode!(bytes) == %Protobuf2{t: nil}
   end
