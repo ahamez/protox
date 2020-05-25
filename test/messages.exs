@@ -110,6 +110,23 @@ defmodule Defs do
         [
           {1, :optional, :__uf__, {:default, 0}, :int32}
         ]
+      },
+      {
+        ProtobufTestMessages.Proto3.NestedMessage,
+        :proto3,
+        [
+          {1, :none, :a, {:default, 0}, :int32},
+          {2, :none, :corecursive, {:default, nil},
+           {:message, ProtobufTestMessages.Proto3.TestAllTypesProto3}}
+        ]
+      },
+      {
+        ProtobufTestMessages.Proto3.TestAllTypesProto3,
+        :proto3,
+        [
+          {112, :none, :oneof_nested_message, {:oneof, :oneof_field},
+           {:message, ProtobufTestMessages.Proto3.NestedMessage}}
+        ]
       }
     ]
 end

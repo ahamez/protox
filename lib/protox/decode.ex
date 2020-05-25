@@ -268,7 +268,19 @@ defmodule Protox.Decode do
           {name, Map.put(previous, entry_key, entry_value)}
 
         {:oneof, parent_field} ->
-          {parent_field, {name, value}}
+          case type do
+            {:message, _} ->
+              case Map.fetch!(msg, parent_field) do
+                {^name, previous_value} ->
+                  {parent_field, {name, Protox.Message.merge(previous_value, value)}}
+
+                _ ->
+                  {parent_field, {name, value}}
+              end
+
+            _ ->
+              {parent_field, {name, value}}
+          end
 
         {:default, _} ->
           case type do
