@@ -61,6 +61,20 @@ defmodule Protox.MessageTest do
            }
   end
 
+  test "Don't overwrite oneof with nil" do
+    m1 = %Msg{msg_m: {:msg_o, %Sub{k: 2, j: [4, 5, 6]}}}
+    m2 = %Msg{msg_m: nil}
+
+    assert Protox.Message.merge(m1, m2) == %Msg{msg_m: {:msg_o, %Sub{k: 2, j: [4, 5, 6]}}}
+  end
+
+  test "Overwrite nil oneof" do
+    m1 = %Msg{msg_m: {:msg_o, %Sub{k: 2, j: [4, 5, 6]}}}
+    m2 = %Msg{msg_m: nil}
+
+    assert Protox.Message.merge(m2, m1) == %Msg{msg_m: {:msg_o, %Sub{k: 2, j: [4, 5, 6]}}}
+  end
+
   test "Recursively merge messages in oneof" do
     m1 = %Msg{msg_m: {:msg_o, %Sub{k: 2, j: [4, 5, 6]}}}
     m2 = %Msg{msg_m: {:msg_o, %Sub{k: 3, j: [1, 2, 3]}}}
