@@ -717,6 +717,18 @@ defmodule Protox.DecodeTest do
            }
   end
 
+  test "Msg.msg_k, missing key" do
+    bytes = <<66, 5, 18, 3, 102, 111, 111>>
+
+    assert Msg.decode!(bytes) == %Msg{msg_k: %{0 => "foo"}}
+  end
+
+  test "Msg.msg_k, missing value" do
+    bytes = <<66, 2, 8, 1>>
+
+    assert Msg.decode!(bytes) == %Msg{msg_k: %{1 => ""}}
+  end
+
   test "Msg.msg_l" do
     bytes =
       <<74, 14, 10, 3, 98, 97, 114, 17, 0, 0, 0, 0, 0, 0, 240, 63, 74, 14, 10, 3, 102, 111, 111,
