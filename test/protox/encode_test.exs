@@ -362,4 +362,11 @@ defmodule Protox.EncodeTest do
     assert %Required{a: 0} |> Protox.Encode.encode() |> :binary.list_to_bin() == <<8, 0>>
     assert %Required{a: 1} |> Protox.Encode.encode() |> :binary.list_to_bin() == <<8, 1>>
   end
+
+  test "Do not output default double/float" do
+    assert %FloatPrecision{a: 0.0, b: 0.0} |> Protox.Encode.encode() |> :binary.list_to_bin() ==
+             <<>>
+
+    assert %FloatPrecision{a: 0, b: 0} |> Protox.Encode.encode() |> :binary.list_to_bin() == <<>>
+  end
 end

@@ -102,9 +102,11 @@ defmodule Protox.DefineEncoder do
           unquote(var) = msg.unquote(name)
           default = unquote(default)
 
-          case unquote(var) do
-            ^default -> acc
-            _ -> [acc, unquote(key), unquote(encode_value_ast)]
+          # Use == rather than pattern match for float comparison
+          if unquote(var) == default do
+            acc
+          else
+            [acc, unquote(key), unquote(encode_value_ast)]
           end
         end
     end
