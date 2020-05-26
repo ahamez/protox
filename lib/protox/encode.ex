@@ -101,10 +101,8 @@ defmodule Protox.Encode do
   def encode_float(:nan), do: @nan_32
   def encode_float(value), do: <<value::float-little-32>>
 
-  # Even if the documentation says otherwise, the C++ reference
-  # implementation encodes enums on 64 bits.
   @spec encode_enum(integer) :: iodata
-  def encode_enum(value), do: encode_varint_64(value)
+  def encode_enum(value), do: encode_varint_32(value)
 
   @spec encode_string(String.t()) :: iodata
   def encode_string(value) do

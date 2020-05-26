@@ -229,7 +229,7 @@ defmodule Protox.Decode do
   end
 
   defp varint_value(value, {:enum, mod}) do
-    <<res::signed-64>> = <<value::64>>
+    <<res::signed-native-32>> = <<value::signed-native-32>>
     mod.decode(res)
   end
 
