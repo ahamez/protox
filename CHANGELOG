@@ -1,9 +1,10 @@
 * xxx
-  - Always serialize required fields
-  - Add defs_by_name/0 in generated structures for messages
-  - Add syntax/0 in generated structures for messages
+  - Pass all required tests of protobuf 3.12 conformance suite tests
+  - (proto2) Always serialize required fields
+  - Add defs_by_name/0 in generated modules for messages
+  - Add syntax/0 in generated modules for messages
   - Add Protox.Message.merge/2 to merge two messages of the same type
-  - [Breaking change] proto2: use nil for unset fields
+  - [Breaking change] (proto2) use nil for unset fields
   - [Breaking change] rename generated get_required_fields/0 into required_fields/0
   - [Breaking change] rename generated get_unknown_fields/0 into unknown_fields/0
   - [Breaking change] rename generated get_unknown_fields_name/0 into unknown_fields_name/0
