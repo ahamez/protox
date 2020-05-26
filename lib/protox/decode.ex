@@ -80,7 +80,7 @@ defmodule Protox.Decode do
     {key >>> 3, key &&& 0b111, rest}
   end
 
-  @spec parse_value(binary, Types.tag(), atom) :: {any, binary}
+  @spec parse_value(binary, Types.tag(), Types.type()) :: {any, binary}
   defp parse_value(bytes, @wire_delimited, type) do
     {len, new_bytes} = Varint.decode(bytes)
     <<delimited::binary-size(len), rest::binary>> = new_bytes
