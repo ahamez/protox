@@ -11,7 +11,7 @@ defmodule Protox.EncodeTest do
 
   test "Sub.a, negative" do
     assert %Sub{a: -150} |> Protox.Encode.encode() |> :binary.list_to_bin() ==
-             <<8, 234, 254, 255, 255, 15>>
+             <<8, 234, 254, 255, 255, 255, 255, 255, 255, 255, 1>>
   end
 
   test "Sub.b" do
@@ -242,7 +242,7 @@ defmodule Protox.EncodeTest do
 
   test "Msg.msg_g (negative)" do
     assert %Msg{msg_g: [1, 2, -3]} |> Protox.Encode.encode() |> :binary.list_to_bin() ==
-             <<34, 7, 1, 2, 253, 255, 255, 255, 15>>
+             <<34, 12, 1, 2, 253, 255, 255, 255, 255, 255, 255, 255, 255, 1>>
   end
 
   test "Msg.msg_g" do

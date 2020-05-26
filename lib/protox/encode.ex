@@ -46,6 +46,10 @@ defmodule Protox.Encode do
   end
 
   @spec encode_varint_32(integer) :: iodata
+  def encode_varint_32(value) when value < 0 do
+    encode_varint_64(value)
+  end
+
   def encode_varint_32(value) do
     <<res::unsigned-native-32>> = <<value::signed-native-32>>
     Varint.encode(res)
