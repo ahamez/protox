@@ -111,8 +111,6 @@ defmodule Protox.DefineEncoder do
   end
 
   defp make_encode_field_fun({:oneof, parent_field}, tag, name, type, _required, _syntax) do
-    # TODO. We should look at the oneof field only once, not for each possible entry.
-
     key = Protox.Encode.make_key_bytes(tag, type)
     var = quote do: field_value
     encode_value_ast = get_encode_value_ast(type, var)
@@ -121,9 +119,6 @@ defmodule Protox.DefineEncoder do
       name = unquote(name)
 
       case msg.unquote(parent_field) do
-        nil ->
-          acc
-
         # The parent oneof field is set to the current field.
         {^name, field_value} ->
           [acc, unquote(key), unquote(encode_value_ast)]
