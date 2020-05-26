@@ -207,8 +207,16 @@ defmodule Protox.Decode do
 
   @spec varint_value(non_neg_integer, atom) :: integer
   defp varint_value(value, :bool), do: value != 0
-  defp varint_value(value, :sint32), do: Zigzag.decode(value)
-  defp varint_value(value, :sint64), do: Zigzag.decode(value)
+
+  defp varint_value(value, :sint32) do
+    <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
+    Zigzag.decode(res)
+  end
+
+  defp varint_value(value, :sint64) do
+    <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
+    Zigzag.decode(res)
+  end
 
   defp varint_value(value, :uint32) do
     <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
