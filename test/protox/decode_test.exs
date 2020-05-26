@@ -121,6 +121,12 @@ defmodule Protox.DecodeTest do
     assert Sub.decode!(bytes) == %Sub{a: 0, b: "", c: 0, d: 901, e: 433}
   end
 
+  test "Sub.d, overflow values > MAX UINT32" do
+    #  <<128, 128, 128, 128, 32>> == 8589934592
+    bytes = <<56, 128, 128, 128, 128, 32>>
+    assert Sub.decode!(bytes) == %Sub{d: 0}
+  end
+
   test "Sub.f" do
     bytes = <<72, 213, 20>>
     assert Sub.decode!(bytes) == %Sub{a: 0, b: "", c: 0, d: 0, e: 0, f: -1323}

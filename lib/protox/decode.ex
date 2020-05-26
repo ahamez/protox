@@ -209,8 +209,16 @@ defmodule Protox.Decode do
   defp varint_value(value, :bool), do: value != 0
   defp varint_value(value, :sint32), do: Zigzag.decode(value)
   defp varint_value(value, :sint64), do: Zigzag.decode(value)
-  defp varint_value(value, :uint32), do: value
-  defp varint_value(value, :uint64), do: value
+
+  defp varint_value(value, :uint32) do
+    <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
+    res
+  end
+
+  defp varint_value(value, :uint64) do
+    <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
+    res
+  end
 
   defp varint_value(value, {:enum, mod}) do
     <<res::signed-64>> = <<value::64>>
