@@ -26,6 +26,7 @@ message Sub {
   repeated int64 x = 29;
   repeated uint64 y = 30;
   sint32 z = 10001;
+  sint64 zz = 10002;
 }
 
 enum E {

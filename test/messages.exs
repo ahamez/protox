@@ -55,7 +55,8 @@ defmodule Defs do
           {28, :repeated, :w, :packed, :sint32},
           {29, :repeated, :x, :packed, :int64},
           {30, :repeated, :y, :packed, :uint64},
-          {10_001, :optional, :z, {:default, 0}, :sint32}
+          {10_001, :optional, :z, {:default, 0}, :sint32},
+          {10_002, :optional, :zz, {:default, 0}, :sint64}
         ]
       },
       {
