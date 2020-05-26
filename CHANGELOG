@@ -1,5 +1,5 @@
 * xxx
-  - Pass all required tests of protobuf 3.12 conformance suite tests
+  - Pass all tests of protobuf 3.12 conformance suite tests
   - (proto2) Always serialize required fields
   - Add defs_by_name/0 in generated modules for messages
   - Add syntax/0 in generated modules for messages
