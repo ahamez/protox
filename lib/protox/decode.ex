@@ -234,12 +234,12 @@ defmodule Protox.Decode do
   end
 
   defp varint_value(value, :int32) do
-    <<res::signed-32>> = <<value::32>>
+    <<res::signed-native-32>> = <<value::signed-native-32>>
     res
   end
 
   defp varint_value(value, :int64) do
-    <<res::signed-64>> = <<value::64>>
+    <<res::signed-native-64>> = <<value::signed-native-64>>
     res
   end
 
