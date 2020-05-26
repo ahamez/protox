@@ -93,7 +93,7 @@ defmodule ProtoxTest do
   test "symmetric float precision" do
     msg = %FloatPrecision{
       a: 8.73291669056208,
-      b: 0.1,
+      b: 0.1
     }
 
     decoded = msg |> FloatPrecision.encode() |> :binary.list_to_bin() |> FloatPrecision.decode!()
