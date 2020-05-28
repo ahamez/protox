@@ -3,9 +3,15 @@ defmodule Protox.Parse do
   # Creates definitions from a protobuf encoded description (Google.Protobuf.FileDescriptorSet)
   # of a set of .proto files. This description is produced by `protoc`.
 
+  alias Google.Protobuf.{
+    FieldDescriptorProto,
+    FieldOptions,
+    FileDescriptorSet
+  }
+
   @spec parse(binary, atom | nil) :: {[...], [...]}
   def parse(file_descriptor_set, namespace \\ nil) do
-    {:ok, descriptor} = Google.Protobuf.FileDescriptorSet.decode(file_descriptor_set)
+    {:ok, descriptor} = FileDescriptorSet.decode(file_descriptor_set)
 
     # enums, messages
     {%{}, %{}}
@@ -15,10 +21,6 @@ defmodule Protox.Parse do
 
   # -- Private
 
-  alias Google.Protobuf.{
-    FieldDescriptorProto,
-    FieldOptions
-  }
 
   # canonization: camelization, fqdn, prepend with namespace
   defp post_process({enums, messages}, namespace) do
