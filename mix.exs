@@ -4,7 +4,7 @@ defmodule Protox.Mixfile do
   def project do
     [
       app: :protox,
-      version: "0.19.1",
+      version: "0.20.0",
       elixir: "~> 1.4",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -35,7 +35,7 @@ defmodule Protox.Mixfile do
 
   defp description do
     """
-    A library for Protocol Buffers
+    A 100% conformant Elixir library for Protocol Buffers
     """
   end
 
