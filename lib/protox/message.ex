@@ -16,77 +16,65 @@ defmodule Protox.Message do
   """
   @spec merge(struct, struct) :: struct
   def merge(msg, from) do
-    defs = msg.__struct__.defs_by_name()
-    syntax = msg.__struct__.syntax()
-
     Map.merge(msg, from, fn name, v1, v2 ->
       if name == :__struct__ or name == msg.__struct__.unknown_fields_name() do
         v1
       else
-        case defs[name] do
-          {_, :packed, _} ->
-            v1 ++ v2
-
-          {_, :unpacked, _} ->
-            v1 ++ v2
-
-          {_, {:default, _}, {:message, _}} ->
-            case {v1, v2} do
-              {nil, ^v2} -> v2
-              {^v1, nil} -> v1
-              _ -> merge(v1, v2)
-            end
-
-          {_, {:default, _}, _} ->
-            case {syntax, v1, v2} do
-              # v2 is not set in protobuf2 message
-              {:proto2, ^v1, nil} ->
-                v1
-
-              {:proto3, ^v1, ^v2} ->
-                {:ok, default} = msg.__struct__.default(name)
-
-                if v2 == default do
-                  # when v2 is set to the default value, the C++ reference implementation
-                  # keeps v1
-                  v1
-                else
-                  v2
-                end
-
-              {_, _, ^v2} ->
-                v2
-            end
-
-          # It's a oneof as `name` is not in defs
-          nil ->
-            case {v1, v2} do
-              {nil, ^v2} ->
-                v2
-
-              {^v1, nil} ->
-                v1
-
-              {{v1_field, v1_value}, {v2_field, v2_value}} when v1_field == v2_field ->
-                case {defs[v1_field], defs[v2_field]} do
-                  {{_, {:oneof, _}, {:message, _}}, {_, {:oneof, _}, {:message, _}}} ->
-                    {v1_field, merge(v1_value, v2_value)}
-
-                  _ ->
-                    v2
-                end
-
-              _ ->
-                v2
-            end
-
-          {_, :map, {_, {:message, _}}} ->
-            Map.merge(v1, v2, fn _k, w1, w2 -> merge(w1, w2) end)
-
-          {_, :map, _} ->
-            Map.merge(v1, v2)
-        end
+        merge_field(msg, name, v1, v2)
       end
     end)
   end
+
+  defp merge_field(msg, name, v1, v2) do
+    defs = msg.__struct__.defs_by_name()
+    syntax = msg.__struct__.syntax()
+
+    case defs[name] do
+      {_, :packed, _} ->
+        v1 ++ v2
+
+      {_, :unpacked, _} ->
+        v1 ++ v2
+
+      {_, {:default, _}, {:message, _}} ->
+        merge_message(v1, v2)
+
+      {_, {:default, _}, _} ->
+        {:ok, default} = msg.__struct__.default(name)
+        merge_scalar(syntax, v1, v2, default)
+
+      nil ->
+        merge_oneof(v1, v2, defs)
+
+      {_, :map, {_, {:message, _}}} ->
+        Map.merge(v1, v2, fn _k, w1, w2 -> merge(w1, w2) end)
+
+      {_, :map, _} ->
+        Map.merge(v1, v2)
+    end
+  end
+
+  defp merge_message(nil, v2), do: v2
+  defp merge_message(v1, nil), do: v1
+  defp merge_message(v1, v2), do: merge(v1, v2)
+
+  defp merge_scalar(:proto2, v1, nil, _default), do: v1
+  defp merge_scalar(:proto3, v1, v2, default) when v2 == default, do: v1
+  defp merge_scalar(_syntax, _v1, v2, _default), do: v2
+
+  defp merge_oneof(nil, v2, _defs), do: v2
+  defp merge_oneof(v1, nil, _defs), do: v1
+
+  defp merge_oneof({v1_field, v1_value}, v2 = {v2_field, v2_value}, defs)
+       when v1_field == v2_field do
+    case {defs[v1_field], defs[v2_field]} do
+      {{_, {:oneof, _}, {:message, _}}, {_, {:oneof, _}, {:message, _}}} ->
+        {v1_field, merge(v1_value, v2_value)}
+
+      _ ->
+        v2
+    end
+  end
+
+  defp merge_oneof(_v1, v2, _defs), do: v2
 end
