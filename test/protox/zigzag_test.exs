@@ -32,4 +32,10 @@ defmodule Protox.ZigzagTest do
       decoded <= 2_147_483_647 and decoded >= -2_147_483_648
     end
   end
+
+  test "Symmetric" do
+    forall value <- integer() do
+      value == value |> Protox.Zigzag.encode() |> Protox.Zigzag.decode()
+    end
+  end
 end
