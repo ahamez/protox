@@ -49,6 +49,7 @@ defmodule Protox.Define do
     quote do: [{unquote(lhs), unquote(rhs)}]
   end
 
+  # credo:disable-for-next-line Credo.Check.Refactor.CyclomaticComplexity
   defp define_messages(messages) do
     for {msg_name, syntax, fields} <- messages do
       unknown_fields = make_unknown_fields(:__uf__, fields)
