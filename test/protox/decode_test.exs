@@ -331,6 +331,19 @@ defmodule Protox.DecodeTest do
            }
   end
 
+  test "Sub.p, packed and unpacked, should be concatenated" do
+    packed = <<178, 1, 2, 1, 0>>
+    unpacked = <<176, 1, 1, 176, 1, 0>>
+    merge_1 = packed <> unpacked
+    merge_2 = unpacked <> packed
+
+    msg = %Sub{p: [true, false, true, false]}
+
+    assert Sub.decode!(packed) == Sub.decode!(unpacked)
+    assert Sub.decode!(merge_1) == msg
+    assert Sub.decode!(merge_2) == msg
+  end
+
   test "Sub.q (unpacked in definition) " do
     bytes = <<184, 1, 0, 184, 1, 1, 184, 1, 1, 184, 1, 0>>
 
