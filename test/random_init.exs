@@ -1,3 +1,5 @@
+# credo:disable-for-this-file Credo.Check.Refactor.CyclomaticComplexity
+# credo:disable-for-this-file Credo.Check.Refactor.Nesting
 defmodule Protox.RandomInit do
   use PropCheck
 

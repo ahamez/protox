@@ -260,6 +260,7 @@ defmodule ProtoxTest do
     encoded_txt_cmdline =
       "protoc --decode=#{mod} ./test/messages.proto ./test/protobuf2.proto  < #{encoded_bin_path}"
 
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeExec
     encoded_txt = "#{:os.cmd(String.to_charlist(encoded_txt_cmdline))}"
 
     encoded_txt_path = Path.join([Mix.Project.build_path(), "protox_test_sub.txt"])
@@ -273,6 +274,7 @@ defmodule ProtoxTest do
         encoded_txt_path
       }"
 
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeExec
     :os.cmd(String.to_charlist(reencode_bin_cmdline))
 
     File.read!(reencoded_bin_path)
