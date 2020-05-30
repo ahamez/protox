@@ -5,10 +5,7 @@
 
 Protox is a native Elixir library to work with Google's Protocol Buffers (version 2 and 3).
 
-
-# Conformance
-
-This library has been tested using the conformance checker provided by Google. More information at https://github.com/EasyMile/protox-conformance.
+This library passes all the tests of the conformance checker provided by Google. See the Conformance section for more information.
 
 
 # Prerequisites
@@ -232,6 +229,29 @@ oneof      | {:field, value}
 enum       | atom() \| integer()
 message    | struct()
 
+# Conformance
+
+The protox library has been tested using the conformance checker provided by Google. Note that only the binary part is tested as protox supports only this format. For instance, JSON tests are skipped.
+
+Here's how to launch the conformance test:
+
+* Get conformance-test-runner [sources](https://github.com/google/protobuf/archive/v3.12.1.tar.gz).
+* Compile conformance-test-runner:
+  `tar xf protobuf-3.12.1.tar.gz && cd protobuf-3.12.1 && ./autogen.sh && ./configure && make -j && cd conformance && make -j`
+* `mix protox.conformance --runner=/path/to/protobuf-3.12.1/conformance/conformance-test-runner`.
+  A report will be generated in a directory `conformance_report`.
+  If everything's fine, the following text should be displayed:
+
+  ```
+CONFORMANCE TEST BEGIN ====================================
+
+CONFORMANCE SUITE PASSED: 1302 successes, 705 skipped, 0 expected failures, 0 unexpected failures.
+
+
+CONFORMANCE TEST BEGIN ====================================
+
+CONFORMANCE SUITE PASSED: 0 successes, 69 skipped, 0 expected failures, 0 unexpected failures.
+  ```
 
 # Credits
 

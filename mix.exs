@@ -10,7 +10,7 @@ defmodule Protox.Mixfile do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
-      escript: [main_module: Protox.Escript.Main],
+      escript: escript(),
       name: "Protox",
       source_url: "https://github.com/EasyMile/protox",
       description: description(),
@@ -37,6 +37,15 @@ defmodule Protox.Mixfile do
     """
     A 100% conformant Elixir library for Protocol Buffers
     """
+  end
+
+  def escript do
+    [
+      # do not start any application: avoid propcheck app to fail when running escript
+      app: nil,
+      main_module: Protox.Conformance.Main,
+      name: "protox_conformance"
+    ]
   end
 
   defp package do

@@ -7,3 +7,6 @@ erl_crash.dump
 *.ez
 *.beam
 .DS_Store
+/protobuf-*
+/conformance_report
+/protox_conformance
