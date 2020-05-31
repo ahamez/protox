@@ -21,7 +21,6 @@ defmodule Protox.Parse do
 
   # -- Private
 
-
   # canonization: camelization, fqdn, prepend with namespace
   defp post_process({enums, messages}, namespace) do
     processed_messages =
@@ -262,6 +261,7 @@ defmodule Protox.Parse do
   defp fully_qualified_name(name) do
     # first element is "."
     true = String.starts_with?(name, ".")
+
     name
     |> String.split(".")
     |> tl
