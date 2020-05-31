@@ -243,14 +243,14 @@ Here's how to launch the conformance test:
   If everything's fine, the following text should be displayed:
 
   ```
-CONFORMANCE TEST BEGIN ====================================
+  CONFORMANCE TEST BEGIN ====================================
 
-CONFORMANCE SUITE PASSED: 1302 successes, 705 skipped, 0 expected failures, 0 unexpected failures.
+  CONFORMANCE SUITE PASSED: 1302 successes, 705 skipped, 0 expected failures, 0 unexpected failures.
 
 
-CONFORMANCE TEST BEGIN ====================================
+  CONFORMANCE TEST BEGIN ====================================
 
-CONFORMANCE SUITE PASSED: 0 successes, 69 skipped, 0 expected failures, 0 unexpected failures.
+  CONFORMANCE SUITE PASSED: 0 successes, 69 skipped, 0 expected failures, 0 unexpected failures.
   ```
 
 # Credits
