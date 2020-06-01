@@ -19,7 +19,7 @@ defmodule Protox.Mixfile do
   end
 
   def application do
-    []
+    [extra_applications: [:mix]]
   end
 
   defp deps do
