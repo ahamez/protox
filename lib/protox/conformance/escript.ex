@@ -5,7 +5,11 @@ defmodule Protox.Conformance.Escript do
   # It reads a conformance test request on its standard input and outputs
   # the test results on the standard output.
 
-  def run() do
+  def main(_args) do
+    run()
+  end
+
+  defp run() do
     :io.setopts(:standard_io, encoding: :latin1)
 
     :ok = File.mkdir_p("conformance_report")

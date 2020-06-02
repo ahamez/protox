@@ -44,7 +44,7 @@ defmodule Protox.Mixfile do
     [
       # do not start any application: avoid propcheck app to fail when running escript
       app: nil,
-      main_module: Protox.Conformance.Main,
+      main_module: Protox.Conformance.Escript,
       name: "protox_conformance"
     ]
   end
