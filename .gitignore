@@ -10,3 +10,5 @@ erl_crash.dump
 /protobuf-*
 /conformance_report
 /protox_conformance
+/priv/plts/*.plt
+ /priv/plts/*.plt.hash

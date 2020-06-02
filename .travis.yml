@@ -8,10 +8,15 @@ before_script:
   - export PATH=$PWD/protoc/bin/:$PATH
 env:
   - MIX_ENV=test
-script: mix coveralls.travis
+script:
+  - mix dialyzer
+  - mix coveralls.travis
 after_script:
   - MIX_ENV=docs mix deps.get
   - MIX_ENV=docs mix inch.report
 notifications:
   email:
     - alexandre.hamez+travis@easymile.com
+cache:
+  directories:
+    - priv/plts

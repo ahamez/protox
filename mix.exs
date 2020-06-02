@@ -25,7 +25,8 @@ defmodule Protox.Mixfile do
   defp deps do
     [
       {:credo, "~> 1.4", only: [:dev]},
-      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
+      {:dialyxir, "~> 1.0",
+       only: [:test, :dev], runtime: false, plt_file: {:no_warn, "priv/plts/dialyzer.plt"}},
       {:excoveralls, "~> 0.12", only: :test},
       {:ex_doc, "~> 0.22", only: [:dev]},
       {:inch_ex, "~> 2.0.0", only: :docs},
