@@ -1,6 +1,5 @@
 {
   "skip_files": [
-    "lib/protox/conformance",
-    "lib/mix"
+    "conformance"
   ]
 }

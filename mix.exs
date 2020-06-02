@@ -10,6 +10,7 @@ defmodule Protox.Mixfile do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
+      elixirc_paths: elixirc_paths(Mix.env()),
       escript: escript(),
       name: "Protox",
       source_url: "https://github.com/EasyMile/protox",
@@ -17,6 +18,10 @@ defmodule Protox.Mixfile do
       package: package()
     ]
   end
+
+  # Do not compile conformance related files when in production
+  defp elixirc_paths(:prod), do: ["lib"]
+  defp elixirc_paths(_), do: ["lib", "conformance"]
 
   def application do
     [extra_applications: [:mix]]
