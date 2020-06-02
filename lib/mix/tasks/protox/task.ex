@@ -3,10 +3,12 @@ defmodule Mix.Tasks.Protox.Conformance do
 
   use Mix.Task
 
+  @spec run(any) :: any
   def run(args) do
-    {options, _} = OptionParser.parse!(args, strict: [runner: :string])
-    runner = Keyword.fetch!(options, :runner)
-    Mix.Tasks.Escript.Build.run([])
-    Mix.shell().cmd("#{runner} --enforce_recommended ./protox_conformance")
+    with {options, _, []} <- OptionParser.parse(args, strict: [runner: :string]),
+         {:ok, runner} <- Keyword.fetch(options, :runner),
+         :ok <- Mix.Tasks.Escript.Build.run([]) do
+      Mix.shell().cmd("#{runner} --enforce_recommended ./protox_conformance")
+    end
   end
 end
