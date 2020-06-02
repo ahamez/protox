@@ -3,6 +3,7 @@ defmodule Mix.Tasks.Protox.Conformance do
 
   use Mix.Task
 
+  @impl Mix.Task
   @spec run(any) :: any
   def run(args) do
     with {options, _, []} <- OptionParser.parse(args, strict: [runner: :string]),
