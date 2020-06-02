@@ -1,6 +1,6 @@
 language: elixir
 elixir:
-  - 1.4.5
+  - 1.6.6
   - 1.9.4
 before_script:
   - wget https://github.com/protocolbuffers/protobuf/releases/download/v3.12.0/protoc-3.12.0-linux-x86_64.zip
