@@ -253,6 +253,11 @@ Here's how to launch the conformance test:
   CONFORMANCE SUITE PASSED: 0 successes, 69 skipped, 0 expected failures, 0 unexpected failures.
   ```
 
+You can alternatively launch these conformance tests with `mix test` by setting the `PROTOBUF_CONFORMANCE_RUNNER` environment variable and including the `conformance` tag:
+   ```
+   PROTOBUF_CONFORMANCE_RUNNER=./protobuf-3.12.1/conformance/conformance-test-runner MIX_ENV=test mix test --include conformance
+   ```
+
 # Credits
 
 Both [gpb](https://github.com/tomas-abrahamsson/gpb) and

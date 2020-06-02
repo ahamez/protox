@@ -252,6 +252,20 @@ defmodule ProtoxTest do
     assert msg == msg |> Camel.encode() |> :binary.list_to_bin() |> Camel.decode!()
   end
 
+  @tag conformance: true
+  test "Launch conformance" do
+    {:ok, _} = File.rm_rf("./failing_tests.txt")
+
+    runner = System.get_env("PROTOBUF_CONFORMANCE_RUNNER")
+    assert runner != nil, "PROTOBUF_CONFORMANCE_RUNNER not set"
+
+    Mix.Tasks.Protox.Conformance.run(["--runner=#{runner}"])
+
+    # protobuf conformance runner produces this file only when some tests have failed
+    refute File.exists?("./failing_tests.txt"),
+           "Please check 'failing_tests.txt' file and 'conformance' directory for more information about this failure"
+  end
+
   defp reencode_with_protoc(encoded, mod) do
     encoded_bin_path = Path.join([Mix.Project.build_path(), "protox_test_sub.bin"])
 
