@@ -6,11 +6,13 @@ before_script:
   - wget https://github.com/protocolbuffers/protobuf/releases/download/v3.12.0/protoc-3.12.0-linux-x86_64.zip
   - unzip -d protoc protoc-3.12.0-linux-x86_64.zip
   - export PATH=$PWD/protoc/bin/:$PATH
+  - wget https://github.com/EasyMile/protox/releases/download/0.20.0/conformance-linux-x86_64.zip
+  - unzip conformance-linux-x86_64.zip
 env:
-  - MIX_ENV=test
+  - MIX_ENV=test PROTOBUF_CONFORMANCE_RUNNER=./conformance/conformance-test-runner LD_LIBRARY_PATH=./conformance/.libs
 script:
   - mix dialyzer
-  - mix coveralls.travis
+  - mix coveralls.travis --include conformance
 after_script:
   - MIX_ENV=docs mix deps.get
   - MIX_ENV=docs mix inch.report
