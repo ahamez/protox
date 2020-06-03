@@ -15,7 +15,8 @@ defmodule Protox.Mixfile do
       name: "Protox",
       source_url: "https://github.com/EasyMile/protox",
       description: description(),
-      package: package()
+      package: package(),
+      dialyzer: [plt_file: {:no_warn, "priv/plts/dialyzer.plt"}]
     ]
   end
 
@@ -30,8 +31,7 @@ defmodule Protox.Mixfile do
   defp deps do
     [
       {:credo, "~> 1.4", only: [:dev]},
-      {:dialyxir, "~> 1.0",
-       only: [:test, :dev], runtime: false, plt_file: {:no_warn, "priv/plts/dialyzer.plt"}},
+      {:dialyxir, "~> 1.0", only: [:test, :dev], runtime: false},
       {:excoveralls, "~> 0.12", only: :test},
       {:ex_doc, "~> 0.22", only: [:dev]},
       {:inch_ex, "~> 2.0.0", only: :docs},
