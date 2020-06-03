@@ -11,4 +11,5 @@ erl_crash.dump
 /conformance_report
 /protox_conformance
 /priv/plts/*.plt
- /priv/plts/*.plt.hash
+/priv/plts/*.plt.hash
+/conformance-test-runner
