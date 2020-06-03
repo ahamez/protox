@@ -10,7 +10,7 @@ This library passes all the tests of the conformance checker provided by Google.
 
 # Prerequisites
 
-Protox uses Google `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`. This dependency is only required at compile time.
+Protox uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`. This dependency is only required at compile-time.
 You can get it [here](https://github.com/google/protobuf).
 
 
@@ -36,7 +36,7 @@ defmodule Bar do
 end
 ```
 
-The previous example generates two modules: `Fiz.Baz` and `Fiz.Foo`.
+The previous example will generate two modules: `Fiz.Baz` and `Fiz.Foo`.
 Note that the module in which the `Protox` macro is called is completely ignored.
 
 ## From Files
@@ -57,7 +57,7 @@ end
 
 ## Working With Namespaces
 
-It is possible to prepend a namespace to all generated modules:
+It's possible to prepend a namespace to all generated modules:
 
 ```elixir
 defmodule Bar do
@@ -97,12 +97,14 @@ It corresponds to the `-I` option of `protoc`.
 
 ## Encode
 
+Here's how to create a new message:
+
 ```elixir
 iex> %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}} |> Protox.Encode.encode()
 [[[], "\b", <<3>>], <<18>>, <<4>>, "\b", <<1>>, <<18>>, <<0>>]
 ```
 
-Note that `Protox.Encode.encode/1` returns an IO list, not a binary. Such IO lists can be used
+Note that `Protox.Encode.encode/1` returns an iolist, not a binary. Such iolists can be used
 directly with files or sockets write operations.
 However, you can use `:binary.list_to_bin/1` to get a binary:
 
@@ -112,6 +114,8 @@ iex> %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}} |> Protox.Encode.encode() |> :binary.
 ```
 
 ## Decode
+
+Here's how to decode:
 
 ```elixir
 iex> <<8, 3, 18, 4, 8, 1, 18, 0>> |> Fiz.Foo.decode()
@@ -125,8 +129,8 @@ The `__uf__` field is explained in the section [Unknown fields](https://github.c
 
 # Unknown Fields
 
-If any unknown field is encountered when decoding, it is kept in the decoded message.
-It is possible to access them with the function `unknown_fields/1` defined with the message.
+If any unknown fields are encountered when decoding, they are kept in the decoded message.
+It's possible to access them with the function `unknown_fields/1` defined with the message.
 
 ```elixir
 iex> msg = <<8, 42, 42, 4, 121, 97, 121, 101, 136, 241, 4, 83>> |> Msg.decode!()
@@ -137,7 +141,7 @@ iex> msg |> Msg.unknown_fields()
 ```
 
 You must always use `unknown_fields/1` as the name of the field
-(e.g. `__uf__`) is generated at compile time to avoid collision with the actual
+(e.g. `__uf__`) is generated at compile-time to avoid collision with the actual
 fields of the Protobuf message.
 
 This function returns a list of tuples `{tag, wire_type, bytes}`.
@@ -205,7 +209,7 @@ Furthermore, all options other than `packed` and `default` are ignored.
 
 # Types Mapping
 
-The following table shows how Protobuf types are mapped to Elixir ones.
+The following table shows how Protobuf types are mapped to Elixir's ones.
 
 Protobuf   | Elixir
 -----------|--------------
