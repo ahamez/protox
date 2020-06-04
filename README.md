@@ -262,6 +262,12 @@ You can alternatively launch these conformance tests with `mix test` by setting 
    PROTOBUF_CONFORMANCE_RUNNER=./protobuf-3.12.1/conformance/conformance-test-runner MIX_ENV=test mix test --include conformance
    ```
 
+# Benchmark
+
+```
+MIX_ENV=benchmarks mix run benchmarks/run.exs
+```
+
 # Credits
 
 Both [gpb](https://github.com/tomas-abrahamsson/gpb) and

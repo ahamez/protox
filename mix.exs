@@ -20,8 +20,9 @@ defmodule Protox.Mixfile do
     ]
   end
 
-  # Do not compile conformance related files when in production
+  # Do not compile conformance and benchmarks related files when in production
   defp elixirc_paths(:prod), do: ["lib"]
+  defp elixirc_paths(:benchmarks), do: ["lib", "benchmarks"]
   defp elixirc_paths(_), do: ["lib", "conformance"]
 
   def application do
@@ -30,6 +31,8 @@ defmodule Protox.Mixfile do
 
   defp deps do
     [
+      {:benchee, "~> 1.0", only: :benchmarks},
+      {:benchee_html, "~> 1.0", only: :benchmarks},
       {:credo, "~> 1.4", only: [:dev]},
       {:dialyxir, "~> 1.0", only: [:test, :dev], runtime: false},
       {:excoveralls, "~> 0.12", only: :test},

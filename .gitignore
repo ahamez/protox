@@ -14,3 +14,4 @@ erl_crash.dump
 /priv/plts/*.plt.hash
 /conformance-test-runner
 .tool-versions
+/benchmarks/output/
