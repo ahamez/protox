@@ -6,7 +6,7 @@ defmodule Protox.Descriptor do
   use Protox.Define,
     enums: [
       {
-        Google.Protobuf.FieldDescriptorProto.Type,
+        Protox.Google.Protobuf.FieldDescriptorProto.Type,
         [
           {1, :double},
           {2, :float},
@@ -29,7 +29,7 @@ defmodule Protox.Descriptor do
         ]
       },
       {
-        Google.Protobuf.FieldDescriptorProto.Label,
+        Protox.Google.Protobuf.FieldDescriptorProto.Label,
         [
           {1, :optional},
           {2, :required},
@@ -39,70 +39,78 @@ defmodule Protox.Descriptor do
     ],
     messages: [
       {
-        Google.Protobuf.FileDescriptorSet,
+        Protox.Google.Protobuf.FileDescriptorSet,
         :proto3,
         [
-          {1, :repeated, :file, :unpacked, {:message, Google.Protobuf.FileDescriptorProto}}
+          {1, :repeated, :file, :unpacked, {:message, Protox.Google.Protobuf.FileDescriptorProto}}
         ]
       },
       {
-        Google.Protobuf.FileDescriptorProto,
+        Protox.Google.Protobuf.FileDescriptorProto,
         :proto3,
         [
           # Ignored: 3, 6, 8, 9, 10, 11
           {1, :none, :name, {:default, ""}, :string},
           {2, :none, :package, {:default, ""}, :string},
-          {4, :repeated, :message_type, :unpacked, {:message, Google.Protobuf.DescriptorProto}},
-          {5, :repeated, :enum_type, :unpacked, {:message, Google.Protobuf.EnumDescriptorProto}},
-          {7, :repeated, :extension, :unpacked, {:message, Google.Protobuf.FieldDescriptorProto}},
+          {4, :repeated, :message_type, :unpacked,
+           {:message, Protox.Google.Protobuf.DescriptorProto}},
+          {5, :repeated, :enum_type, :unpacked,
+           {:message, Protox.Google.Protobuf.EnumDescriptorProto}},
+          {7, :repeated, :extension, :unpacked,
+           {:message, Protox.Google.Protobuf.FieldDescriptorProto}},
           {12, :none, :syntax, {:default, ""}, :string}
         ]
       },
       {
-        Google.Protobuf.DescriptorProto.ExtensionRange,
+        Protox.Google.Protobuf.DescriptorProto.ExtensionRange,
         :proto3,
         [
           {1, :none, :start, {:default, 0}, :int32},
           {2, :none, :end, {:default, 0}, :int32}
         ]
       },
-      # Google.Protobuf.DescriptorProto.ReservedRange ignored
+      # Protox.Google.Protobuf.DescriptorProto.ReservedRange ignored
       {
-        Google.Protobuf.DescriptorProto,
+        Protox.Google.Protobuf.DescriptorProto,
         :proto3,
         [
           # Ignored: 9, 10
           {1, :none, :name, {:default, nil}, :string},
-          {2, :repeated, :field, :unpacked, {:message, Google.Protobuf.FieldDescriptorProto}},
-          {6, :repeated, :extension, :unpacked, {:message, Google.Protobuf.FieldDescriptorProto}},
-          {3, :repeated, :nested_type, :unpacked, {:message, Google.Protobuf.DescriptorProto}},
-          {4, :repeated, :enum_type, :unpacked, {:message, Google.Protobuf.EnumDescriptorProto}},
+          {2, :repeated, :field, :unpacked,
+           {:message, Protox.Google.Protobuf.FieldDescriptorProto}},
+          {6, :repeated, :extension, :unpacked,
+           {:message, Protox.Google.Protobuf.FieldDescriptorProto}},
+          {3, :repeated, :nested_type, :unpacked,
+           {:message, Protox.Google.Protobuf.DescriptorProto}},
+          {4, :repeated, :enum_type, :unpacked,
+           {:message, Protox.Google.Protobuf.EnumDescriptorProto}},
           {5, :repeated, :extension_range, :unpacked,
-           {:message, Google.Protobuf.DescriptorProto.ExtensionRange}},
+           {:message, Protox.Google.Protobuf.DescriptorProto.ExtensionRange}},
           {8, :repeated, :oneof_decl, :unpacked,
-           {:message, Google.Protobuf.OneofDescriptorProto}},
-          {7, :none, :options, {:default, nil}, {:message, Google.Protobuf.MessageOptions}}
+           {:message, Protox.Google.Protobuf.OneofDescriptorProto}},
+          {7, :none, :options, {:default, nil}, {:message, Protox.Google.Protobuf.MessageOptions}}
         ]
       },
       {
-        Google.Protobuf.FieldDescriptorProto,
+        Protox.Google.Protobuf.FieldDescriptorProto,
         :proto3,
         [
           # Ignored: 10
           {1, :none, :name, {:default, nil}, :string},
           {3, :none, :number, {:default, nil}, :int32},
           {4, :none, :label, {:default, nil},
-           {:enum, Google.Protobuf.FieldDescriptorProto.Label}},
-          {5, :none, :type, {:default, nil}, {:enum, Google.Protobuf.FieldDescriptorProto.Type}},
+           {:enum, Protox.Google.Protobuf.FieldDescriptorProto.Label}},
+          {5, :none, :type, {:default, nil},
+           {:enum, Protox.Google.Protobuf.FieldDescriptorProto.Type}},
           {6, :none, :type_name, {:default, nil}, :string},
           {2, :none, :extendee, {:default, nil}, :string},
           {7, :none, :default_value, {:default, nil}, :string},
           {9, :none, :oneof_index, {:default, nil}, :int32},
-          {8, :none, :options, {:default, nil}, {:message, Google.Protobuf.FieldOptions}}
+          {8, :none, :options, {:default, nil}, {:message, Protox.Google.Protobuf.FieldOptions}}
         ]
       },
       {
-        Google.Protobuf.OneofDescriptorProto,
+        Protox.Google.Protobuf.OneofDescriptorProto,
         :proto3,
         [
           # Ignored: 2
@@ -110,16 +118,17 @@ defmodule Protox.Descriptor do
         ]
       },
       {
-        Google.Protobuf.EnumDescriptorProto,
+        Protox.Google.Protobuf.EnumDescriptorProto,
         :proto3,
         [
           # Ignored: 3
           {1, :none, :name, {:default, nil}, :string},
-          {2, :repeated, :value, :unpacked, {:message, Google.Protobuf.EnumValueDescriptorProto}}
+          {2, :repeated, :value, :unpacked,
+           {:message, Protox.Google.Protobuf.EnumValueDescriptorProto}}
         ]
       },
       {
-        Google.Protobuf.EnumValueDescriptorProto,
+        Protox.Google.Protobuf.EnumValueDescriptorProto,
         :proto3,
         [
           # Ignored: 3
@@ -131,7 +140,7 @@ defmodule Protox.Descriptor do
       # MethodDescriptorProto ignored
       # FileOptions ignored
       {
-        Google.Protobuf.MessageOptions,
+        Protox.Google.Protobuf.MessageOptions,
         :proto3,
         [
           # 1, 2, 999 ignored
@@ -140,7 +149,7 @@ defmodule Protox.Descriptor do
         ]
       },
       {
-        Google.Protobuf.FieldOptions,
+        Protox.Google.Protobuf.FieldOptions,
         :proto3,
         [
           # 1, 6, 5, 10, 999 ignored

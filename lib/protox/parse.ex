@@ -1,9 +1,9 @@
 defmodule Protox.Parse do
   @moduledoc false
-  # Creates definitions from a protobuf encoded description (Google.Protobuf.FileDescriptorSet)
+  # Creates definitions from a protobuf encoded description (Protox.Google.Protobuf.FileDescriptorSet)
   # of a set of .proto files. This description is produced by `protoc`.
 
-  alias Google.Protobuf.{
+  alias Protox.Google.Protobuf.{
     FieldDescriptorProto,
     FieldOptions,
     FileDescriptorSet
