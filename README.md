@@ -1,9 +1,9 @@
 # Protox
 
-[![Build Status](https://travis-ci.org/EasyMile/protox.svg?branch=master)](https://travis-ci.org/EasyMile/protox) [![Coverage Status](https://coveralls.io/repos/github/EasyMile/protox/badge.svg?branch=master)](https://coveralls.io/github/EasyMile/protox?branch=master) [![Hex.pm Version](http://img.shields.io/hexpm/v/protox.svg)](https://hex.pm/packages/protox) [![Inline docs](http://inch-ci.org/github/EasyMile/protox.svg)](http://inch-ci.org/github/EasyMile/protox)
+[![Build Status](https://travis-ci.org/ahamez/protox.svg?branch=master)](https://travis-ci.org/ahamez/protox) [![Coverage Status](https://coveralls.io/repos/github/ahamez/protox/badge.svg?branch=master)](https://coveralls.io/github/ahamez/protox?branch=master) [![Hex.pm Version](http://img.shields.io/hexpm/v/protox.svg)](https://hex.pm/packages/protox) [![Inline docs](https://inch-ci.org/github/ahamez/protox.svg)](https://inch-ci.org/github/ahamez/protox)
 
 
-Protox is a native Elixir library to work with Google's Protocol Buffers (version 2 and 3).
+Protox is a native Elixir library to work with Google's Protocol Buffers (aka protobuf), versions 2 and 3.
 
 This library passes all the tests of the conformance checker provided by Google. See the Conformance section for more information.
 
@@ -124,7 +124,7 @@ iex> <<8, 3, 18, 4, 8, 1, 18, 0>> |> Fiz.Foo.decode()
   b: %{1 => %Fiz.Baz{__uf__: []}}}}
 ```
 
-The `__uf__` field is explained in the section [Unknown fields](https://github.com/EasyMile/protox#unknown-fields).
+The `__uf__` field is explained in the section [Unknown fields](https://github.com/ahamez/protox#unknown-fields).
 
 
 # Unknown Fields

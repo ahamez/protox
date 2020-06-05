@@ -1,3 +1,10 @@
+* xxx
+  - Move back to ahamez/protox
+  - Bump to Elixir 1.6 as minimal supported version
+  - Add benchmarks
+  - Add conformance tests to CI
+  - Add dialyzer to CI
+
 * 0.20.0
   - Pass all tests of protobuf 3.12 conformance suite tests
   - (proto2) Always serialize required fields
@@ -13,7 +20,7 @@
   - Fix warning about duplicate keys (thanks to https://github.com/ananthakumaran)
 
 * 0.19.0
-  - CamelCase for all generated modules (fixes https://github.com/EasyMile/protox/issues/3)
+  - CamelCase for all generated modules (fixes https://github.com/ahamez/protox/issues/3)
 
 * 0.18.0
   - Allow ability to construct file names at compile time (thanks to https://github.com/ananthakumaran)

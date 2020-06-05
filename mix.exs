@@ -4,7 +4,7 @@ defmodule Protox.Mixfile do
   def project do
     [
       app: :protox,
-      version: "0.20.0",
+      version: "0.21.0",
       elixir: "~> 1.6",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -13,7 +13,7 @@ defmodule Protox.Mixfile do
       elixirc_paths: elixirc_paths(Mix.env()),
       escript: escript(),
       name: "Protox",
-      source_url: "https://github.com/EasyMile/protox",
+      source_url: "https://github.com/ahamez/protox",
       description: description(),
       package: package(),
       dialyzer: [plt_file: {:no_warn, "priv/plts/dialyzer.plt"}]
@@ -44,7 +44,7 @@ defmodule Protox.Mixfile do
 
   defp description do
     """
-    A 100% conformant Elixir library for Protocol Buffers
+    A fast, easy to use and 100% conformant Elixir library for Google Protocol Buffers (aka protobuf)
     """
   end
 
@@ -63,7 +63,7 @@ defmodule Protox.Mixfile do
       files: ["lib", "mix.exs", "README*", "LICENSE"],
       maintainers: ["Alexandre Hamez"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/EasyMile/protox"}
+      links: %{"GitHub" => "https://github.com/ahamez/protox"}
     ]
   end
 end
