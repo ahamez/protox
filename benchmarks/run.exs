@@ -4,6 +4,7 @@ defmodule Protox.Benchmarks do
   @external_resource "./benchmarks/benchmarks.proto"
   use Protox, files: ["./benchmarks/benchmarks.proto"], namespace: Protox.Benchmarks
 end
+
 # -------------------------------------------------------------------------------------------------#
 
 defmodule Benchmark do
@@ -19,8 +20,6 @@ end
 # -------------------------------------------------------------------------------------------------#
 
 defmodule Data do
-
-
   def decode_inputs() do
     [
       %{
@@ -109,13 +108,13 @@ defmodule Data do
   def encode_inputs() do
     [
       %{
-        protox: %Protox.Benchmarks.Sub{a: 150},
+        protox: %Protox.Benchmarks.Sub{a: 150}
       },
       %{
-        protox: %Protox.Benchmarks.Sub{b: "testing"},
+        protox: %Protox.Benchmarks.Sub{b: "testing"}
       },
       %{
-        protox: %Protox.Benchmarks.Sub{a: 150, b: "testing", c: 300, r: :BAR},
+        protox: %Protox.Benchmarks.Sub{a: 150, b: "testing", c: 300, r: :BAR}
       },
       %{
         protox: %Protox.Benchmarks.Msg{
@@ -129,21 +128,21 @@ defmodule Data do
             g: [1, 2, 3, 4, 5, 6, 7],
             n: [true, false, true, false, true, false]
           }
-        },
+        }
       },
       %{
-        protox: %Protox.Benchmarks.Msg{g: [1, 2, -3]},
+        protox: %Protox.Benchmarks.Msg{g: [1, 2, -3]}
       },
       %{
         protox: %Protox.Benchmarks.Msg{
           j: [%Protox.Benchmarks.Sub{a: 42}, %Protox.Benchmarks.Sub{b: "foo"}]
-        },
+        }
       },
       %{
         protox: %Protox.Benchmarks.Msg{
           l: %{"1" => 1.0, "2" => 2.0, "3" => 3.0, "4" => 4.0},
           m: {:n, "foo"}
-        },
+        }
       }
     ]
   end
@@ -158,7 +157,7 @@ Benchee.run(
     end,
     "encode_protox" => fn ->
       Enum.map(Data.encode_inputs(), &Benchmark.encode(:protox, 1000, &1))
-    end,
+    end
   },
   formatters: [
     Benchee.Formatters.HTML,
