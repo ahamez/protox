@@ -5,7 +5,7 @@
 
 Protox is a native Elixir library to work with Google's Protocol Buffers (aka protobuf), versions 2 and 3.
 
-This library passes all the tests of the conformance checker provided by Google. See the Conformance section for more information.
+This library passes all the tests of the conformance checker provided by Google. See [Conformance](https://github.com/ahamez/protox#conformance) section for more information.
 
 
 # Prerequisites
@@ -226,7 +226,7 @@ sfixed64   | integer()
 float      | float() \| :infinity \| :'-infinity' \| :nan
 double     | float() \| :infinity \| :'-infinity' \| :nan
 bool       | boolean()
-string     | String.t
+string     | String.t()
 bytes      | binary()
 map        | %{}
 oneof      | {:field, value}
@@ -235,7 +235,7 @@ message    | struct()
 
 # Conformance
 
-The protox library has been tested using the conformance checker provided by Google. Note that only the binary part is tested as protox supports only this format. For instance, JSON tests are skipped.
+The protox library has been thoroughly tested using the conformance checker provided by Google. Note that only the binary part is tested as protox supports only this format. For instance, JSON tests are skipped.
 
 Here's how to launch the conformance test:
 
@@ -262,8 +262,9 @@ You can alternatively launch these conformance tests with `mix test` by setting 
    PROTOBUF_CONFORMANCE_RUNNER=./protobuf-3.12.1/conformance/conformance-test-runner MIX_ENV=test mix test --include conformance
    ```
 
-# Benchmark
+# Benchmarks
 
+You can launch benchmarks to see how Protox perform:
 ```
 MIX_ENV=benchmarks mix run benchmarks/run.exs
 ```
