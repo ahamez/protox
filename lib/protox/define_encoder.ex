@@ -32,15 +32,8 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_fun([field | fields]) do
-    {_, _, name, _, _} = field
-    fun_name = String.to_atom("encode_#{name}")
-
-    ast =
-      quote do
-        [] |> unquote(fun_name)(msg)
-      end
-
+  defp make_encode_fun(fields) do
+    ast = quote do: []
     make_encode_fun(ast, fields)
   end
 
