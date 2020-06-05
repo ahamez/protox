@@ -16,10 +16,7 @@ defmodule Protox.DefineEncoder do
   end
 
   defp make_encode(fields, required_fields, syntax) do
-    # It is recommended to encode fields sequentially by field number.
-    # See https://developers.google.com/protocol-buffers/docs/encoding#order.
-    sorted_fields = Enum.sort(fields, &(elem(&1, 0) < elem(&2, 0)))
-    encode_fun = make_encode_fun(sorted_fields)
+    encode_fun = make_encode_fun(fields)
     encode_field_funs = make_encode_field_funs(fields, required_fields, syntax)
     encode_unknown_fields_fun = make_encode_unknown_fields_fun()
 
