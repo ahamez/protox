@@ -16,7 +16,10 @@ defmodule Protox.DefineEncoder do
   end
 
   defp make_encode(fields, required_fields, syntax) do
-    encode_fun = make_encode_fun(fields)
+    {oneofs, fields_without_oneofs} = split_oneofs(fields)
+
+    encode_fun = make_encode_fun(oneofs, fields_without_oneofs)
+    encode_oneof_funs = make_encode_oneof_funs(oneofs)
     encode_field_funs = make_encode_field_funs(fields, required_fields, syntax)
     encode_unknown_fields_fun = make_encode_unknown_fields_fun()
 
@@ -24,23 +27,39 @@ defmodule Protox.DefineEncoder do
       @spec encode(struct) :: iolist
       def encode(msg), do: unquote(encode_fun)
 
+      unquote(encode_oneof_funs)
       unquote(encode_field_funs)
       unquote(encode_unknown_fields_fun)
     end
   end
 
-  defp make_encode_fun(fields) do
-    ast = quote do: []
-    make_encode_fun(ast, fields)
+  # Extract oneofs and regroup them by parent field.
+  defp split_oneofs(fields) do
+    {oneofs, fields} =
+      Enum.split_with(fields, fn
+        {_, _, _, {:oneof, _}, _} -> true
+        _ -> false
+      end)
+
+    {
+      oneofs |> Enum.group_by(fn {_, _, _, {:oneof, parent}, _} -> parent end) |> Map.to_list(),
+      fields
+    }
   end
 
-  defp make_encode_fun(ast, []) do
+  defp make_encode_fun(oneofs, fields) do
+    ast = quote do: []
+    ast = make_encode_oneof_fun(ast, oneofs)
+    _make_encode_fun(ast, fields)
+  end
+
+  defp _make_encode_fun(ast, []) do
     quote do
       unquote(ast) |> encode_unknown_fields(msg)
     end
   end
 
-  defp make_encode_fun(ast, [field | fields]) do
+  defp _make_encode_fun(ast, [field | fields]) do
     {_, _, name, _, _} = field
     fun_name = String.to_atom("encode_#{name}")
 
@@ -49,7 +68,54 @@ defmodule Protox.DefineEncoder do
         unquote(ast) |> unquote(fun_name)(msg)
       end
 
-    make_encode_fun(ast, fields)
+    _make_encode_fun(ast, fields)
+  end
+
+  defp make_encode_oneof_fun(ast, []) do
+    ast
+  end
+
+  defp make_encode_oneof_fun(ast, [oneof | oneofs]) do
+    {parent_name, _} = oneof
+    fun_name = String.to_atom("encode_#{parent_name}")
+
+    ast =
+      quote do
+        unquote(ast) |> unquote(fun_name)(msg)
+      end
+
+    make_encode_oneof_fun(ast, oneofs)
+  end
+
+  defp make_encode_oneof_funs(oneofs) do
+    for {parent_name, children} <- oneofs do
+      nil_case =
+        quote do
+          nil -> acc
+        end
+
+      children_case_ast =
+        nil_case ++
+          (children
+           |> Enum.map(fn {_, _, child_name, _, _} ->
+             encode_child_fun_name = String.to_atom("encode_#{child_name}")
+
+             quote do
+               {unquote(child_name), _field_value} -> unquote(encode_child_fun_name)(acc, msg)
+             end
+           end)
+           |> List.flatten())
+
+      encode_parent_fun_name = String.to_atom("encode_#{parent_name}")
+
+      quote do
+        defp unquote(encode_parent_fun_name)(acc, msg) do
+          case msg.unquote(parent_name) do
+            unquote(children_case_ast)
+          end
+        end
+      end
+    end
   end
 
   defp make_encode_field_funs(fields, required_fields, syntax) do
@@ -102,22 +168,17 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_field_fun({:oneof, parent_field}, tag, name, type, _required, _syntax) do
+  # Generate the AST to encode child `_child_name` of oneof `parent_field`
+  defp make_encode_field_fun({:oneof, parent_field}, tag, _child_name, type, _required, _syntax) do
     key = Protox.Encode.make_key_bytes(tag, type)
     var = quote do: field_value
     encode_value_ast = get_encode_value_ast(type, var)
 
+    # The dispatch on the correct child is performed by the parent encoding function,
+    # this is why we don't check if the child is set.
     quote do
-      name = unquote(name)
-
-      case msg.unquote(parent_field) do
-        # The parent oneof field is set to the current field.
-        {^name, field_value} ->
-          [acc, unquote(key), unquote(encode_value_ast)]
-
-        _ ->
-          acc
-      end
+      {_, unquote(var)} = msg.unquote(parent_field)
+      [acc, unquote(key), unquote(encode_value_ast)]
     end
   end
 
