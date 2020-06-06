@@ -61,15 +61,12 @@ defmodule Protox.Define do
       encoder = Protox.DefineEncoder.define(fields, required_fields, syntax)
       default_fun = make_default_fun(fields)
 
-      quote do
-        defmodule unquote(msg_name) do
-          @moduledoc false
-
+      module_ast =
+        quote do
           import Protox.Encode
 
           defstruct unquote(struct_fields)
 
-          # Encoding function is generated for each message.
           unquote(encoder)
 
           @spec decode!(binary) :: struct | no_return
@@ -109,6 +106,31 @@ defmodule Protox.Define do
 
           unquote(default_fun)
         end
+
+      debug_fun = make_debug_fun(module_ast)
+
+      quote do
+        defmodule unquote(msg_name) do
+          @moduledoc false
+          unquote(module_ast)
+          unquote(debug_fun)
+        end
+      end
+    end
+  end
+
+  defp make_debug_fun(module_ast) do
+    if Mix.env() in [:dev, :test] do
+      str = Macro.to_string(module_ast)
+
+      quote do
+        def __generated_code__() do
+          unquote(str)
+        end
+      end
+    else
+      quote do
+        []
       end
     end
   end
