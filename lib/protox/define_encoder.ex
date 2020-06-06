@@ -156,10 +156,9 @@ defmodule Protox.DefineEncoder do
       :proto3 ->
         quote do
           unquote(var) = msg.unquote(name)
-          default = unquote(default)
 
           # Use == rather than pattern match for float comparison
-          if unquote(var) == default do
+          if unquote(var) == unquote(default) do
             acc
           else
             [acc, unquote(key), unquote(encode_value_ast)]
