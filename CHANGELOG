@@ -1,3 +1,6 @@
+* 0.22.0
+  - O(1) encoding of oneof fields
+
 * 0.21.0
   - Move back to ahamez/protox
   - Bump to Elixir 1.6 as minimal supported version
