@@ -18,7 +18,7 @@ defmodule Protox.Decode do
 
     case required_fields -- set_fields do
       [] -> msg
-      missing_fields -> raise "Missing required fields #{inspect(missing_fields)}"
+      missing_fields -> raise Protox.RequiredFieldsError.new(missing_fields)
     end
   end
 

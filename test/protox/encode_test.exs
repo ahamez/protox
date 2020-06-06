@@ -369,4 +369,13 @@ defmodule Protox.EncodeTest do
 
     assert %FloatPrecision{a: 0, b: 0} |> Protox.Encode.encode() |> :binary.list_to_bin() == <<>>
   end
+
+  test "Raise when required field is missing" do
+    exception =
+      assert_raise Protox.RequiredFieldsError, fn ->
+        Protox.Encode.encode(%Required{})
+      end
+
+    assert exception.missing_fields == [:a]
+  end
 end

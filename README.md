@@ -185,8 +185,24 @@ This function returns a list of tuples `{tag, wire_type, bytes}`.
 
 ## Implementation choices
 
-* Required fields (Protobuf 2): an error is raised when encoding or decoding a message with a missing required
-  field.
+* This library enforces the presence of required fields (Protobuf 2). Therefore an error is raised when encoding or decoding a message with a missing required field:
+    ```elixir
+    defmodule Bar do
+      use Protox, schema: """
+        syntax = "proto2";
+
+        message Required {
+          required int32 a = 1;
+        }
+      """
+    end
+
+    iex> Protox.Encode.encode(%Required{})
+    ** (Protox.RequiredFieldsError) Some required fields are not set: [:a]
+
+    iex> Required.decode!(<<>>)
+    ** (Protox.RequiredFieldsError) Some required fields are not set: [:a]
+    ```
 
 * When decoding enum aliases, the last encountered constant is used. For instance, in the following example, `:BAR` is always used if the value `1` is read on the wire:
     ```protobuf

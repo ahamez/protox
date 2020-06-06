@@ -139,8 +139,10 @@ defmodule Protox.DefineEncoder do
       :proto2 ->
         if required do
           quote do
-            unquote(var) = msg.unquote(name)
-            [acc, unquote(key), unquote(encode_value_ast)]
+            case msg.unquote(name) do
+              nil -> raise Protox.RequiredFieldsError.new([unquote(name)])
+              unquote(var) -> [acc, unquote(key), unquote(encode_value_ast)]
+            end
           end
         else
           quote do

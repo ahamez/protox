@@ -1,3 +1,7 @@
+* xxx
+  - Raise RequiredFieldsError when encoding or decoding a Protobuf 2 message
+    with unset required fields (that is, that have the value `nil`).
+
 * 0.22.0
   - O(1) encoding of oneof fields
 
