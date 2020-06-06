@@ -2,10 +2,9 @@
 
 [![Build Status](https://travis-ci.org/ahamez/protox.svg?branch=master)](https://travis-ci.org/ahamez/protox) [![Coverage Status](https://coveralls.io/repos/github/ahamez/protox/badge.svg?branch=master)](https://coveralls.io/github/ahamez/protox?branch=master) [![Hex.pm Version](http://img.shields.io/hexpm/v/protox.svg)](https://hex.pm/packages/protox) [![Inline docs](https://inch-ci.org/github/ahamez/protox.svg)](https://inch-ci.org/github/ahamez/protox)
 
-
 Protox is a native Elixir library to work with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers) (aka protobuf), versions 2 and 3.
 
-Generally speaking, a lof of effort has been put into making sure that the library is reliable (for intance using [property based testing](https://github.com/alfert/propcheck) and by having a [100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master)). As such, this library passes all the tests of the conformance checker provided by Google. See [Conformance](https://github.com/ahamez/protox#conformance) section for more information.
+Generally speaking, a lof of effort has been put into making sure that the library is reliable (for intance using [property based testing](https://github.com/alfert/propcheck) and by having a [100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master)). Therefore, this library passes all the tests of the conformance checker provided by Google. See [Conformance](https://github.com/ahamez/protox#conformance) section for more information.
 
 ## Prerequisites
 
@@ -46,7 +45,7 @@ end
 ```
 
 This example will generate two modules: `Fiz.Baz` and `Fiz.Foo`.
-Note that the module in which the `Protox` macro is called is completely ignored and as such does not appear in the names of the generated modules.
+Note that the module in which the `Protox` macro is called is completely ignored and therefore does not appear in the names of the generated modules.
 
 ## Usage with files
 
@@ -80,7 +79,7 @@ iex> Protox.Encode.encode(msg)
 As you can see, you can interact with protobuf messages as if they were native Elixir structures!
 
 Note that `Protox.Encode.encode/1` returns an [IO data](https://hexdocs.pm/elixir/IO.html#module-use-cases-for-io-data), not a binary, for efficiency reasons. Such  IO data can be used
-directly with [files](https://hexdocs.pm/elixir/IO.html#binwrite/2) or sockets write operations, and as such you don't need to transform them:
+directly with [files](https://hexdocs.pm/elixir/IO.html#binwrite/2) or sockets write operations, and therefore you don't need to transform them:
 ```elixir
 iex> {:ok, file} = File.open("msg.bin", [:write])
 {:ok, #PID<0.1023.0>}
