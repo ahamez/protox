@@ -35,7 +35,7 @@ defmodule Protox.Conformance.Escript do
         :stdio
         |> IO.binread(len)
         |> dump_data(log_file)
-        |> Protox.Conformance.ConformanceRequest.decode()
+        |> Protox.Conformance.ConformanceRequest.decode_meta()
         |> handle_request(log_file)
         |> make_message_bytes()
         |> output(log_file)
@@ -79,7 +79,7 @@ defmodule Protox.Conformance.Escript do
           Protox.ProtobufTestMessages.Proto3.TestAllTypesProto3
       end
 
-    case proto_type.decode(payload) do
+    case proto_type.decode_meta(payload) do
       {:ok, msg} ->
         IO.binwrite(log_file, "Parse: success.\n")
         IO.binwrite(log_file, "Message: #{inspect(msg, limit: :infinity)}\n")
