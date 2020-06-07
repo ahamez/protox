@@ -83,7 +83,7 @@ defmodule Protox.Conformance.Escript do
       {:ok, msg} ->
         IO.binwrite(log_file, "Parse: success.\n")
         IO.binwrite(log_file, "Message: #{inspect(msg, limit: :infinity)}\n")
-        encoded_payload = msg |> Protox.Encode.encode() |> :binary.list_to_bin()
+        encoded_payload = msg |> Protox.Encode.encode!() |> :binary.list_to_bin()
         IO.binwrite(log_file, "Encoded payload: #{inspect(encoded_payload, limit: :infinity)}\n")
         %Protox.Conformance.ConformanceResponse{result: {:protobuf_payload, encoded_payload}}
 
@@ -144,7 +144,7 @@ defmodule Protox.Conformance.Escript do
   end
 
   defp make_message_bytes(msg) do
-    data = msg |> Protox.Encode.encode() |> :binary.list_to_bin()
+    data = msg |> Protox.Encode.encode!() |> :binary.list_to_bin()
     <<byte_size(data)::unsigned-little-32, data::binary>>
   end
 end

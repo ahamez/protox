@@ -96,24 +96,24 @@ defmodule ProtoxTest do
       b: 0.1
     }
 
-    decoded = msg |> FloatPrecision.encode() |> :binary.list_to_bin() |> FloatPrecision.decode!()
+    decoded = msg |> FloatPrecision.encode!() |> :binary.list_to_bin() |> FloatPrecision.decode!()
     assert decoded.a == msg.a
     assert Float.round(decoded.b, 1) == msg.b
   end
 
   test "symmetric (Sub)" do
     msg = Protox.RandomInit.generate_msg(Sub)
-    assert msg |> Sub.encode() |> :binary.list_to_bin() |> Sub.decode!() == msg
+    assert msg |> Sub.encode!() |> :binary.list_to_bin() |> Sub.decode!() == msg
   end
 
   test "symmetric (Msg)" do
     msg = Protox.RandomInit.generate_msg(Msg)
-    assert msg |> Msg.encode() |> :binary.list_to_bin() |> Msg.decode!() == msg
+    assert msg |> Msg.encode!() |> :binary.list_to_bin() |> Msg.decode!() == msg
   end
 
   test "symmetric (Upper)" do
     msg = Protox.RandomInit.generate_msg(Upper)
-    assert msg |> Upper.encode() |> :binary.list_to_bin() |> Upper.decode!() == msg
+    assert msg |> Upper.encode!() |> :binary.list_to_bin() |> Upper.decode!() == msg
   end
 
   test "from text" do
@@ -234,22 +234,22 @@ defmodule ProtoxTest do
 
   test "Can export to protoc and read its output (Sub)" do
     msg = Protox.RandomInit.generate_msg(Sub)
-    assert msg == msg |> Sub.encode() |> reencode_with_protoc("Sub") |> Sub.decode!()
+    assert msg == msg |> Sub.encode!() |> reencode_with_protoc("Sub") |> Sub.decode!()
   end
 
   test "Can export to protoc and read its output (Msg)" do
     msg = Protox.RandomInit.generate_msg(Msg)
-    assert msg == msg |> Msg.encode() |> reencode_with_protoc("Msg") |> Msg.decode!()
+    assert msg == msg |> Msg.encode!() |> reencode_with_protoc("Msg") |> Msg.decode!()
   end
 
   test "Can export to protoc and read its output (Upper)" do
     msg = Protox.RandomInit.generate_msg(Upper)
-    assert msg == msg |> Upper.encode() |> reencode_with_protoc("Upper") |> Upper.decode!()
+    assert msg == msg |> Upper.encode!() |> reencode_with_protoc("Upper") |> Upper.decode!()
   end
 
   test "Non Camel_case" do
     msg = Protox.RandomInit.generate_msg(Camel)
-    assert msg == msg |> Camel.encode() |> :binary.list_to_bin() |> Camel.decode!()
+    assert msg == msg |> Camel.encode!() |> :binary.list_to_bin() |> Camel.decode!()
   end
 
   @tag conformance: true

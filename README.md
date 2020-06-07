@@ -73,18 +73,18 @@ Here's how to create and encode a new message:
 
 ```elixir
 iex> msg = %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}}
-iex> Protox.Encode.encode(msg)
+iex> Protox.Encode.encode!(msg)
 ```
 
 As you can see, you can interact with protobuf messages as if they were native Elixir structures!
 
-Note that `Protox.Encode.encode/1` returns an [IO data](https://hexdocs.pm/elixir/IO.html#module-use-cases-for-io-data), not a binary, for efficiency reasons. Such  IO data can be used
+Note that `Protox.Encode.encode!/1` returns an [IO data](https://hexdocs.pm/elixir/IO.html#module-use-cases-for-io-data), not a binary, for efficiency reasons. Such  IO data can be used
 directly with [files](https://hexdocs.pm/elixir/IO.html#binwrite/2) or sockets write operations, and therefore you don't need to transform them:
 ```elixir
 iex> {:ok, file} = File.open("msg.bin", [:write])
 {:ok, #PID<0.1023.0>}
 
-iex> iodata = Protox.Encode.encode(%Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}})
+iex> iodata = Protox.Encode.encode!(%Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}})
 [[[], <<18>>, <<4>>, "\b", <<1>>, <<18>>, <<0>>], "\b", <<3>>]
 
 iex> IO.binwrite(file, iodata)
@@ -94,7 +94,7 @@ iex> IO.binwrite(file, iodata)
 However, you can use [`:binary.list_to_bin/1`](https://erlang.org/doc/man/binary.html#list_to_bin-1) or [`IO.iodata_to_binary`](https://hexdocs.pm/elixir/IO.html#iodata_to_binary/1) to get a binary should the need arises:
 
 ```elixir
-iex> %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}} |> Protox.Encode.encode() |> :binary.list_to_bin()
+iex> %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}} |> Protox.Encode.encode!() |> :binary.list_to_bin()
 <<8, 3, 18, 4, 8, 1, 18, 0>>
 ```
 
@@ -196,7 +196,7 @@ This function returns a list of tuples `{tag, wire_type, bytes}`.
       """
     end
 
-    iex> Protox.Encode.encode(%Required{})
+    iex> Protox.Encode.encode!(%Required{})
     ** (Protox.RequiredFieldsError) Some required fields are not set: [:a]
 
     iex> Required.decode!(<<>>)
