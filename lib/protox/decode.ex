@@ -63,7 +63,7 @@ defmodule Protox.Decode do
         {name, kind, type} = field_def
         {value, new_rest} = parse_value(rest, wire_type, type)
         field = update_field(msg, name, kind, value, type)
-        msg_updated = struct!(msg, [field])
+        msg_updated = struct(msg, [field])
         {[name | set_fields], msg_updated, new_rest}
       else
         {new_msg, new_rest} = parse_unknown(msg, tag, wire_type, rest)
@@ -179,7 +179,7 @@ defmodule Protox.Decode do
 
     map_value =
       case {map_value, map_value_type} do
-        {nil, {:message, msg_ty}} -> struct!(msg_ty)
+        {nil, {:message, msg_ty}} -> struct(msg_ty)
         {nil, _} -> Protox.Default.default(map_value_type)
         _ -> map_value
       end
@@ -274,7 +274,7 @@ defmodule Protox.Decode do
   defp add_unknown_field(msg, tag, wire_type, bytes) do
     unknown_fields_name = msg.__struct__.unknown_fields_name()
     previous = Map.fetch!(msg, unknown_fields_name)
-    struct!(msg, [{unknown_fields_name, [{tag, wire_type, bytes} | previous]}])
+    struct(msg, [{unknown_fields_name, [{tag, wire_type, bytes} | previous]}])
   end
 
   # Set the field `name` in `msg` with `value`.
