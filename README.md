@@ -2,14 +2,32 @@
 
 [![Build Status](https://travis-ci.org/ahamez/protox.svg?branch=master)](https://travis-ci.org/ahamez/protox) [![Coverage Status](https://coveralls.io/repos/github/ahamez/protox/badge.svg?branch=master)](https://coveralls.io/github/ahamez/protox?branch=master) [![Hex.pm Version](http://img.shields.io/hexpm/v/protox.svg)](https://hex.pm/packages/protox) [![Inline docs](https://inch-ci.org/github/ahamez/protox.svg)](https://inch-ci.org/github/ahamez/protox)
 
-Protox is a native Elixir library to work with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers) (aka protobuf), versions 2 and 3.
+Protox is an Elixir library to work with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers) (aka protobuf), versions 2 and 3.
 
 Generally speaking, a lof of effort has been put into making sure that the library is reliable (for intance using [property based testing](https://github.com/alfert/propcheck) and by having a [100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master)). Therefore, this library passes all the tests of the conformance checker provided by Google. See [Conformance](https://github.com/ahamez/protox#conformance) section for more information.
 
+This library is easy to use: you just point to the `*.proto` files or give the schema to the `Protox` macro, no need to generate any file! Furthermore, it provides a full-Elixir experience with protobuf messages. For instance, given the following protobuf file:
+```proto
+syntax = "proto3";
+
+message Msg{
+  int32 a = 1;
+  map<int32, string> b = 2;
+}
+```
+
+You can interact with `Msg` as if it were a native Elixir structure (note how the map `b` is translated into an [Elixir Map](https://hexdocs.pm/elixir/Map.html)):
+
+```elixir
+iex> %Msg{a: 42, b: %{1 => "a map entry"}}
+iex> Protox.Encode.encode!(msg)
+iex> Protox.Encode.decode!(<<...>>)
+```
+
+
 ## Prerequisites
 
-Protox uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`. This dependency is only required at compile-time.
-You can get it [here](https://github.com/google/protobuf).
+Protox uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`. This dependency is only required at compile-time. You can download it [here](https://github.com/google/protobuf) or you can install with your favorite package manager (`brew install protobuf`, `apt install protobuf-compiler`, etc.).
 
 
 ## Installation
@@ -112,7 +130,7 @@ iex> Fiz.Foo.decode(<<8, 3, 18, 4, 8, 1, 18, 0>>)
 The `__uf__` field is explained in the section [Unknown fields](https://github.com/ahamez/protox#unknown-fields).
 
 
-## Working with namespaces
+## Prepend namespaces
 
 It's possible to prepend a namespace to all generated modules:
 
@@ -157,8 +175,9 @@ It corresponds to the `-I` option of `protoc`.
 
 ## Unknown fields
 
-If any unknown fields are encountered when decoding, they are kept in the decoded message.
-It's possible to access them with the function `unknown_fields/1` defined with the message.
+[Unknown fields](https://developers.google.com/protocol-buffers/docs/proto3#unknowns) are fields that are present on the wire but which do not correspond to an entry in the protobuf definition. Typically, it occurs when the sender has a newer version of the protobuf definition, it makes possible to have backward compatibility.
+
+When unknown fields are encountered when decoding, they are kept in the decoded message. It's possible to access them with the function `unknown_fields/1` defined with the message.
 
 ```elixir
 iex> msg = Msg.decode!(<<8, 42, 42, 4, 121, 97, 121, 101, 136, 241, 4, 83>>)
@@ -168,12 +187,11 @@ iex> Msg.unknown_fields(msg)
 [{5, 2, <<121, 97, 121, 101>>}]
 ```
 
-You must always use `unknown_fields/1` as the name of the field
-(e.g. `__uf__`) is generated at compile-time to avoid collision with the actual
-fields of the Protobuf message.
+You must always use `unknown_fields/1` as the name of the field (e.g. `__uf__`) is generated at compile-time to avoid collision with the actual fields of the Protobuf message.
 
 This function returns a list of tuples `{tag, wire_type, bytes}`.
 
+When you encode a message that contains unknown fields, they will be reencoded in the serialized output.
 
 ## Unsupported features
 
@@ -234,6 +252,7 @@ This function returns a list of tuples `{tag, wire_type, bytes}`.
         nil
 
         ```
+        It means that if you need to know if a field has been set by the sender, you just have to test if its value is `nil` or not.
 
     * For Protobuf 3, unset optional fields are mapped to their default values, as mandated by the [Protobuf spec](https://developers.google.com/protocol-buffers/docs/proto3#default):
         ```elixir
@@ -314,7 +333,7 @@ The protox library has been thoroughly tested using the [conformance checker pro
 Here's how to launch the conformance test:
 
 * Get conformance-test-runner [sources](https://github.com/google/protobuf/archive/v3.12.1.tar.gz).
-* Compile conformance-test-runner:
+* Compile conformance-test-runner ([macOS and Linux only](https://github.com/protocolbuffers/protobuf/tree/master/conformance#portability)):
   `tar xf protobuf-3.12.1.tar.gz && cd protobuf-3.12.1 && ./autogen.sh && ./configure && make -j && cd conformance && make -j`
 * `mix protox.conformance --runner=/path/to/protobuf-3.12.1/conformance/conformance-test-runner`.
   A report will be generated in a directory `conformance_report`.
