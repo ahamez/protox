@@ -145,25 +145,25 @@ defmodule Protox.Decode do
     {varint_value(value, type), rest}
   end
 
-  defp parse_delimited(bytes, :string), do: bytes
-  defp parse_delimited(bytes, :bytes), do: bytes
-  defp parse_delimited(bytes, type = {:enum, _}), do: parse_repeated_varint([], bytes, type)
-  defp parse_delimited(bytes, {:message, m}), do: decode!(bytes, m, m.required_fields())
-  defp parse_delimited(bytes, :int32), do: parse_repeated_varint([], bytes, :int32)
-  defp parse_delimited(bytes, :uint32), do: parse_repeated_varint([], bytes, :uint32)
-  defp parse_delimited(bytes, :sint32), do: parse_repeated_varint([], bytes, :sint32)
-  defp parse_delimited(bytes, :int64), do: parse_repeated_varint([], bytes, :int64)
-  defp parse_delimited(bytes, :uint64), do: parse_repeated_varint([], bytes, :uint64)
-  defp parse_delimited(bytes, :sint64), do: parse_repeated_varint([], bytes, :sint64)
-  defp parse_delimited(bytes, :bool), do: parse_repeated_varint([], bytes, :bool)
-  defp parse_delimited(bytes, :fixed32), do: parse_repeated_fixed([], bytes, :fixed32)
-  defp parse_delimited(bytes, :sfixed32), do: parse_repeated_fixed([], bytes, :sfixed32)
-  defp parse_delimited(bytes, :float), do: parse_repeated_fixed([], bytes, :float)
-  defp parse_delimited(bytes, :fixed64), do: parse_repeated_fixed([], bytes, :fixed64)
-  defp parse_delimited(bytes, :sfixed64), do: parse_repeated_fixed([], bytes, :sfixed64)
-  defp parse_delimited(bytes, :double), do: parse_repeated_fixed([], bytes, :double)
+  def parse_delimited(bytes, :string), do: bytes
+  def parse_delimited(bytes, :bytes), do: bytes
+  def parse_delimited(bytes, type = {:enum, _}), do: parse_repeated_varint([], bytes, type)
+  def parse_delimited(bytes, {:message, m}), do: decode!(bytes, m, m.required_fields())
+  def parse_delimited(bytes, :int32), do: parse_repeated_varint([], bytes, :int32)
+  def parse_delimited(bytes, :uint32), do: parse_repeated_varint([], bytes, :uint32)
+  def parse_delimited(bytes, :sint32), do: parse_repeated_varint([], bytes, :sint32)
+  def parse_delimited(bytes, :int64), do: parse_repeated_varint([], bytes, :int64)
+  def parse_delimited(bytes, :uint64), do: parse_repeated_varint([], bytes, :uint64)
+  def parse_delimited(bytes, :sint64), do: parse_repeated_varint([], bytes, :sint64)
+  def parse_delimited(bytes, :bool), do: parse_repeated_varint([], bytes, :bool)
+  def parse_delimited(bytes, :fixed32), do: parse_repeated_fixed([], bytes, :fixed32)
+  def parse_delimited(bytes, :sfixed32), do: parse_repeated_fixed([], bytes, :sfixed32)
+  def parse_delimited(bytes, :float), do: parse_repeated_fixed([], bytes, :float)
+  def parse_delimited(bytes, :fixed64), do: parse_repeated_fixed([], bytes, :fixed64)
+  def parse_delimited(bytes, :sfixed64), do: parse_repeated_fixed([], bytes, :sfixed64)
+  def parse_delimited(bytes, :double), do: parse_repeated_fixed([], bytes, :double)
 
-  defp parse_delimited(bytes, {map_key_type, map_value_type}) do
+  def parse_delimited(bytes, {map_key_type, map_value_type}) do
     defs = %{
       1 => {:key, {:default, :dummy}, map_key_type},
       2 => {:value, {:default, :dummy}, map_value_type}
