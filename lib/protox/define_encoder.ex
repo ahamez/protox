@@ -259,17 +259,17 @@ defmodule Protox.DefineEncoder do
         Enum.reduce(msg.__struct__.unknown_fields(msg), acc, fn {tag, wire_type, bytes}, acc ->
           case wire_type do
             0 ->
-              [acc, make_key_bytes(tag, :int32), bytes]
+              [acc, Protox.Encode.make_key_bytes(tag, :int32), bytes]
 
             1 ->
-              [acc, make_key_bytes(tag, :double), bytes]
+              [acc, Protox.Encode.make_key_bytes(tag, :double), bytes]
 
             2 ->
               len_bytes = bytes |> byte_size() |> Protox.Varint.encode()
-              [acc, make_key_bytes(tag, :packed), len_bytes, bytes]
+              [acc, Protox.Encode.make_key_bytes(tag, :packed), len_bytes, bytes]
 
             5 ->
-              [acc, make_key_bytes(tag, :float), bytes]
+              [acc, Protox.Encode.make_key_bytes(tag, :float), bytes]
           end
         end)
       end
@@ -305,21 +305,73 @@ defmodule Protox.DefineEncoder do
 
   defp get_encode_value_body({:message, _}, var) do
     quote do
-      encode_message(unquote(var))
+      Protox.Encode.encode_message(unquote(var))
     end
   end
 
   defp get_encode_value_body({:enum, enum}, var) do
     quote do
-      unquote(var) |> unquote(enum).encode() |> encode_enum()
+      unquote(var) |> unquote(enum).encode() |> Protox.Encode.encode_enum()
     end
   end
 
-  defp get_encode_value_body(type, var) do
-    fun_name = String.to_atom("encode_#{type}")
+  defp get_encode_value_body(:bool, var) do
+    quote(do: Protox.Encode.encode_bool(unquote(var)))
+  end
 
-    quote do
-      unquote(fun_name)(unquote(var))
-    end
+  defp get_encode_value_body(:bytes, var) do
+    quote(do: Protox.Encode.encode_bytes(unquote(var)))
+  end
+
+  defp get_encode_value_body(:string, var) do
+    quote(do: Protox.Encode.encode_string(unquote(var)))
+  end
+
+  defp get_encode_value_body(:int32, var) do
+    quote(do: Protox.Encode.encode_int32(unquote(var)))
+  end
+
+  defp get_encode_value_body(:int64, var) do
+    quote(do: Protox.Encode.encode_int64(unquote(var)))
+  end
+
+  defp get_encode_value_body(:uint32, var) do
+    quote(do: Protox.Encode.encode_uint32(unquote(var)))
+  end
+
+  defp get_encode_value_body(:uint64, var) do
+    quote(do: Protox.Encode.encode_uint64(unquote(var)))
+  end
+
+  defp get_encode_value_body(:sint32, var) do
+    quote(do: Protox.Encode.encode_sint32(unquote(var)))
+  end
+
+  defp get_encode_value_body(:sint64, var) do
+    quote(do: Protox.Encode.encode_sint64(unquote(var)))
+  end
+
+  defp get_encode_value_body(:fixed32, var) do
+    quote(do: Protox.Encode.encode_fixed32(unquote(var)))
+  end
+
+  defp get_encode_value_body(:fixed64, var) do
+    quote(do: Protox.Encode.encode_fixed64(unquote(var)))
+  end
+
+  defp get_encode_value_body(:sfixed32, var) do
+    quote(do: Protox.Encode.encode_sfixed32(unquote(var)))
+  end
+
+  defp get_encode_value_body(:sfixed64, var) do
+    quote(do: Protox.Encode.encode_sfixed64(unquote(var)))
+  end
+
+  defp get_encode_value_body(:float, var) do
+    quote(do: Protox.Encode.encode_float(unquote(var)))
+  end
+
+  defp get_encode_value_body(:double, var) do
+    quote(do: Protox.Encode.encode_double(unquote(var)))
   end
 end

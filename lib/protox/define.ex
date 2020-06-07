@@ -63,8 +63,6 @@ defmodule Protox.Define do
 
       module_ast =
         quote do
-          import Protox.Encode
-
           defstruct unquote(struct_fields)
 
           unquote(encoder)
