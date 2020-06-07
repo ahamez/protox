@@ -9,7 +9,11 @@ end
 
 defmodule Benchmark do
   def decode(:protox, iterations, %{protox: mod, bytes: bytes}) do
-    for _ <- 1..iterations, do: mod.decode(bytes)
+    for _ <- 1..iterations, do: mod.decode!(bytes)
+  end
+
+  def decode_meta(:protox, iterations, %{protox: mod, bytes: bytes}) do
+    for _ <- 1..iterations, do: mod.decode_meta!(bytes)
   end
 
   def encode(:protox, iterations, %{protox: msg}) do
@@ -155,9 +159,12 @@ Benchee.run(
     "decode_protox" => fn ->
       Enum.map(Data.decode_inputs(), &Benchmark.decode(:protox, 1000, &1))
     end,
-    "encode_protox" => fn ->
-      Enum.map(Data.encode_inputs(), &Benchmark.encode(:protox, 1000, &1))
+    "decode_meta_protox" => fn ->
+      Enum.map(Data.decode_inputs(), &Benchmark.decode(:protox, 1000, &1))
     end
+    # "encode_protox" => fn ->
+    #   Enum.map(Data.encode_inputs(), &Benchmark.encode(:protox, 1000, &1))
+    # end
   },
   formatters: [
     Benchee.Formatters.HTML,
