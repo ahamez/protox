@@ -81,13 +81,13 @@ defmodule Protox.Decode do
   end
 
   @spec parse_value(binary, Types.tag(), Types.type()) :: {any, binary}
-  defp parse_value(bytes, @wire_delimited, type) do
+  def parse_value(bytes, @wire_delimited, type) do
     {len, new_bytes} = Varint.decode(bytes)
     <<delimited::binary-size(len), rest::binary>> = new_bytes
     {parse_delimited(delimited, type), rest}
   end
 
-  defp parse_value(bytes, _, type) do
+  def parse_value(bytes, _, type) do
     parse_single(bytes, type)
   end
 
@@ -278,14 +278,14 @@ defmodule Protox.Decode do
   end
 
   # Set the field `name` in `msg` with `value`.
-  defp update_field(msg, name, :map, value, _type) do
+  def update_field(msg, name, :map, value, _type) do
     previous = Map.fetch!(msg, name)
     {entry_key, entry_value} = value
 
     {name, Map.put(previous, entry_key, entry_value)}
   end
 
-  defp update_field(msg, name, {:oneof, parent_field}, value, type) do
+  def update_field(msg, name, {:oneof, parent_field}, value, type) do
     case type do
       {:message, _} ->
         case Map.fetch!(msg, parent_field) do
@@ -301,7 +301,7 @@ defmodule Protox.Decode do
     end
   end
 
-  defp update_field(msg, name, {:default, _}, value, type) do
+  def update_field(msg, name, {:default, _}, value, type) do
     case type do
       {:message, _} ->
         case Map.fetch!(msg, name) do
@@ -315,7 +315,7 @@ defmodule Protox.Decode do
   end
 
   # repeated
-  defp update_field(msg, name, _kind, value, _type) do
+  def update_field(msg, name, _kind, value, _type) do
     previous = Map.fetch!(msg, name)
 
     {name, previous ++ List.wrap(value)}
