@@ -18,7 +18,10 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_decode(msg_name, _fields, required_fields, _syntax) do
+  defp make_decode(msg_name, _fields, required_fields, syntax) do
+    decode_return = make_decode_return(syntax, required_fields)
+    _parse_key_value_case = make_parse_key_value_case()
+
     quote do
       @spec decode_meta(binary) :: {:ok, struct} | {:error, any}
       def decode_meta(bytes) do
@@ -34,10 +37,7 @@ defmodule Protox.DefineDecoder do
         {msg, set_fields} =
           parse_key_value([], bytes, unquote(msg_name).defs(), struct(unquote(msg_name)))
 
-        case unquote(required_fields) -- set_fields do
-          [] -> msg
-          missing_fields -> raise Protox.RequiredFieldsError.new(missing_fields)
-        end
+        unquote(decode_return)
       end
 
       @spec parse_key_value([atom], binary, map, struct) :: {struct, [atom]}
@@ -69,5 +69,25 @@ defmodule Protox.DefineDecoder do
         parse_key_value(new_set_fields, new_rest, defs, new_msg)
       end
     end
+  end
+
+  defp make_decode_return(:proto2, required_fields) do
+    quote do
+      case unquote(required_fields) -- set_fields do
+        [] -> msg
+        missing_fields -> raise Protox.RequiredFieldsError.new(missing_fields)
+      end
+    end
+  end
+
+  # No need to check for missing required fields for Protobuf 3
+  defp make_decode_return(:proto3, _required_fields) do
+    quote do
+      msg
+    end
+  end
+
+  defp make_parse_key_value_case() do
+    []
   end
 end
