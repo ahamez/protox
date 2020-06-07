@@ -917,9 +917,10 @@ defmodule Protox.DecodeTest do
   end
 
   test "Raise when required field is missing" do
-    exception = assert_raise Protox.RequiredFieldsError, fn ->
-      Required.decode!(<<>>)
-    end
+    exception =
+      assert_raise Protox.RequiredFieldsError, fn ->
+        Required.decode!(<<>>)
+      end
 
     assert exception.missing_fields == [:a]
   end
