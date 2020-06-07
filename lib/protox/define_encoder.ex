@@ -10,10 +10,10 @@ defmodule Protox.DefineEncoder do
 
   defp make_encode([], _, _) do
     quote do
-      @spec encode(struct) :: {:ok, iolist}
+      @spec encode(struct) :: {:ok, iodata}
       def encode(_msg), do: {:ok, []}
 
-      @spec encode!(struct) :: iolist
+      @spec encode!(struct) :: iodata
       def encode!(_msg), do: []
     end
   end
@@ -27,7 +27,7 @@ defmodule Protox.DefineEncoder do
     encode_unknown_fields_fun = make_encode_unknown_fields_fun()
 
     quote do
-      @spec encode(struct) :: {:ok, iolist} | {:error, any}
+      @spec encode(struct) :: {:ok, iodata} | {:error, any}
       def encode(msg) do
         try do
           {:ok, encode!(msg)}
@@ -36,7 +36,7 @@ defmodule Protox.DefineEncoder do
         end
       end
 
-      @spec encode!(struct) :: iolist | no_return
+      @spec encode!(struct) :: iodata | no_return
       def encode!(msg), do: unquote(encode_fun)
 
       unquote(encode_oneof_funs)
