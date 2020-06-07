@@ -238,30 +238,26 @@ defmodule Protox.DefineEncoder do
     quote do
       map = Map.fetch!(msg, unquote(name))
 
-      if map_size(map) == 0 do
-        acc
-      else
-        Enum.reduce(map, acc, fn {unquote(k_var), unquote(v_var)}, acc ->
-          map_key_value_bytes = [unquote(encode_map_key_ast)] |> :binary.list_to_bin()
-          map_key_value_len = byte_size(map_key_value_bytes)
+      Enum.reduce(map, acc, fn {unquote(k_var), unquote(v_var)}, acc ->
+        map_key_value_bytes = [unquote(encode_map_key_ast)] |> :binary.list_to_bin()
+        map_key_value_len = byte_size(map_key_value_bytes)
 
-          map_value_value_bytes = [unquote(encode_map_value_ast)] |> :binary.list_to_bin()
-          map_value_value_len = byte_size(map_value_value_bytes)
+        map_value_value_bytes = [unquote(encode_map_value_ast)] |> :binary.list_to_bin()
+        map_value_value_len = byte_size(map_value_value_bytes)
 
-          len =
-            Protox.Varint.encode(unquote(map_keys_len) + map_key_value_len + map_value_value_len)
+        len =
+          Protox.Varint.encode(unquote(map_keys_len) + map_key_value_len + map_value_value_len)
 
-          [
-            acc,
-            unquote(key),
-            len,
-            unquote(map_key_key_bytes),
-            map_key_value_bytes,
-            unquote(map_value_key_bytes),
-            map_value_value_bytes
-          ]
-        end)
-      end
+        [
+          acc,
+          unquote(key),
+          len,
+          unquote(map_key_key_bytes),
+          map_key_value_bytes,
+          unquote(map_value_key_bytes),
+          map_value_value_bytes
+        ]
+      end)
     end
   end
 
