@@ -18,9 +18,9 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_decode(msg_name, _fields, required_fields, syntax) do
+  defp make_decode(msg_name, fields, required_fields, syntax) do
     decode_return = make_decode_return(syntax, required_fields)
-    _parse_key_value_case = make_parse_key_value_case()
+    parse_key_value = make_parse_key_value(fields)
 
     quote do
       @spec decode_meta(binary) :: {:ok, struct} | {:error, any}
@@ -46,27 +46,7 @@ defmodule Protox.DefineDecoder do
       end
 
       defp parse_key_value(set_fields, bytes, defs, msg) do
-        {tag, wire_type, rest} = Protox.Decode.parse_key(bytes)
-
-        if tag == 0 do
-          raise "Illegal field with tag 0"
-        end
-
-        field_def = defs[tag]
-
-        {new_set_fields, new_msg, new_rest} =
-          if field_def do
-            {name, kind, type} = field_def
-            {value, new_rest} = Protox.Decode.parse_value(rest, wire_type, type)
-            field = Protox.Decode.update_field(msg, name, kind, value, type)
-            msg_updated = struct!(msg, [field])
-            {[name | set_fields], msg_updated, new_rest}
-          else
-            {new_msg, new_rest} = Protox.Decode.parse_unknown(msg, tag, wire_type, rest)
-            {set_fields, new_msg, new_rest}
-          end
-
-        parse_key_value(new_set_fields, new_rest, defs, new_msg)
+        unquote(parse_key_value)
       end
     end
   end
@@ -87,7 +67,40 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_parse_key_value_case() do
-    []
+  defp make_parse_key_value(fields) do
+    tag_0_case =
+      quote do
+        {0, _, _} -> raise "Illegal field with tag 0"
+      end
+
+    unknwon_tag_case =
+      quote do
+        {tag, wire_type, rest} ->
+          {new_msg, new_rest} = Protox.Decode.parse_unknown(msg, tag, wire_type, rest)
+          {set_fields, new_msg, new_rest}
+      end
+
+    known_tags_case =
+      Enum.map(fields, fn {tag, _, name, kind, type} ->
+        quote do
+          {unquote(tag), wire_type, rest} ->
+            {value, new_rest} = Protox.Decode.parse_value(rest, wire_type, unquote(type))
+            field = Protox.Decode.update_field(msg, unquote(name), unquote(kind), value, unquote(type))
+            msg_updated = struct!(msg, [field])
+            {[unquote(name) | set_fields], msg_updated, new_rest}
+        end
+      end)
+      |> List.flatten()
+
+    all_cases = tag_0_case ++ known_tags_case ++ unknwon_tag_case
+
+    quote do
+      {new_set_fields, new_msg, new_rest} =
+        case Protox.Decode.parse_key(bytes) do
+          unquote(all_cases)
+        end
+
+      parse_key_value(new_set_fields, new_rest, defs, new_msg)
+    end
   end
 end
