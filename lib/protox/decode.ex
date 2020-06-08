@@ -6,6 +6,22 @@ defmodule Protox.Decode do
   use Protox.Float
   use Protox.WireTypes
 
+  @compile {:inline,
+            parse_bool: 1,
+            parse_sint32: 1,
+            parse_sint64: 1,
+            parse_uint32: 1,
+            parse_uint64: 1,
+            parse_enum: 2,
+            parse_int32: 1,
+            parse_int64: 1,
+            parse_double: 1,
+            parse_float: 1,
+            parse_fixed32: 1,
+            parse_sfixed32: 1,
+            parse_fixed64: 1,
+            parse_sfixed64: 1}
+
   alias Protox.{
     Types,
     Varint,
@@ -196,103 +212,12 @@ defmodule Protox.Decode do
     parse_repeated_varint([varint_value(value, type) | acc], rest, type)
   end
 
-  # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-  def parse_repeated_bool(acc, <<>>), do: Enum.reverse(acc)
-
-  def parse_repeated_bool(acc, bytes) do
-    {value, rest} = Protox.Varint.decode(bytes)
-    parse_repeated_bool([value != 0 | acc], rest)
-  end
-
-  def parse_repeated_int32(acc, <<>>), do: Enum.reverse(acc)
-
-  def parse_repeated_int32(acc, bytes) do
-    {value, rest} = Protox.Varint.decode(bytes)
-    <<res::signed-native-32>> = <<value::signed-native-32>>
-    parse_repeated_int32([res | acc], rest)
-  end
-
-  def parse_repeated_uint32(acc, <<>>), do: Enum.reverse(acc)
-
-  def parse_repeated_uint32(acc, bytes) do
-    {value, rest} = Protox.Varint.decode(bytes)
-    <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
-    parse_repeated_uint32([res | acc], rest)
-  end
-
-  def parse_repeated_sint32(acc, <<>>), do: Enum.reverse(acc)
-
-  def parse_repeated_sint32(acc, bytes) do
-    {value, rest} = Protox.Varint.decode(bytes)
-    <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
-    parse_repeated_sint32([Protox.Zigzag.decode(res) | acc], rest)
-  end
-
-  def parse_repeated_int64(acc, <<>>), do: Enum.reverse(acc)
-
-  def parse_repeated_int64(acc, bytes) do
-    {value, rest} = Protox.Varint.decode(bytes)
-    <<res::signed-native-64>> = <<value::signed-native-64>>
-    parse_repeated_int64([res | acc], rest)
-  end
-
-  def parse_repeated_uint64(acc, <<>>), do: Enum.reverse(acc)
-
-  def parse_repeated_uint64(acc, bytes) do
-    {value, rest} = Protox.Varint.decode(bytes)
-    <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
-    parse_repeated_uint64([res | acc], rest)
-  end
-
-  def parse_repeated_sint64(acc, <<>>), do: Enum.reverse(acc)
-
-  def parse_repeated_sint64(acc, bytes) do
-    {value, rest} = Protox.Varint.decode(bytes)
-    <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
-    parse_repeated_sint64([Protox.Zigzag.decode(res) | acc], rest)
-  end
-
-  # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
   defp parse_repeated_fixed(acc, <<>>, _), do: Enum.reverse(acc)
 
   defp parse_repeated_fixed(acc, bytes, type) do
     {value, rest} = parse_single(bytes, type)
     parse_repeated_fixed([value | acc], rest, type)
   end
-
-  # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-  def parse_repeated_fixed32(acc, <<>>), do: Enum.reverse(acc)
-
-  def parse_repeated_fixed32(acc, bytes) do
-    <<value::signed-little-32, rest::binary>> = bytes
-    parse_repeated_fixed32([value | acc], rest)
-  end
-
-  def parse_repeated_fixed64(acc, <<>>), do: Enum.reverse(acc)
-
-  def parse_repeated_fixed64(acc, bytes) do
-    <<value::signed-little-64, rest::binary>> = bytes
-    parse_repeated_fixed64([value | acc], rest)
-  end
-
-  def parse_repeated_sfixed32(acc, <<>>), do: Enum.reverse(acc)
-
-  def parse_repeated_sfixed32(acc, bytes) do
-    <<value::signed-little-32, rest::binary>> = bytes
-    parse_repeated_sfixed32([value | acc], rest)
-  end
-
-  def parse_repeated_sfixed64(acc, <<>>), do: Enum.reverse(acc)
-
-  def parse_repeated_sfixed64(acc, bytes) do
-    <<value::signed-little-64, rest::binary>> = bytes
-    parse_repeated_sfixed64([value | acc], rest)
-  end
-
-  # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   @spec varint_value(non_neg_integer, atom) :: integer
   defp varint_value(value, :bool), do: value != 0
@@ -331,57 +256,6 @@ defmodule Protox.Decode do
     <<res::signed-native-64>> = <<value::signed-native-64>>
     res
   end
-
-  # >>>>>>>>>>>>>>>>>>>><
-
-  # def varint_value_bool(bytes) do
-  #   {value, rest} = Varint.decode(bytes)
-  #   {value != 0, rest}
-  # end
-
-  # def varint_value_sint32(bytes) do
-  #   {value, rest} = Varint.decode(bytes)
-  #   <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
-  #   {Zigzag.decode(res), rest}
-  # end
-
-  # def varint_value_sint64(bytes) do
-  #   {value, rest} = Varint.decode(bytes)
-  #   <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
-  #   {Zigzag.decode(res), rest}
-  # end
-
-  # def varint_value_uint32(bytes) do
-  #   {value, rest} = Varint.decode(bytes)
-  #   <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
-  #   {res, rest}
-  # end
-
-  # def varint_value_uint64(bytes) do
-  #   {value, rest} = Varint.decode(bytes)
-  #   <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
-  #   {res, rest}
-  # end
-
-  # def varint_value_enum(bytes, mod) do
-  #   {value, rest} = Varint.decode(bytes)
-  #   <<res::signed-native-32>> = <<value::signed-native-32>>
-  #   {mod.decode(res), rest}
-  # end
-
-  # def varint_value_int32(bytes) do
-  #   {value, rest} = Varint.decode(bytes)
-  #   <<res::signed-native-32>> = <<value::signed-native-32>>
-  #   {res, rest}
-  # end
-
-  # def varint_value_int64(bytes) do
-  #   {value, rest} = Varint.decode(bytes)
-  #   <<res::signed-native-64>> = <<value::signed-native-64>>
-  #   {res, rest}
-  # end
-
-  # <<<<<<<<<<<<<<<<<<<<<<<<
 
   @spec parse_unknown(struct, non_neg_integer, Types.tag(), binary) :: {struct, binary}
   def parse_unknown(msg, tag, @wire_varint, bytes) do
@@ -459,5 +333,160 @@ defmodule Protox.Decode do
     previous = Map.fetch!(msg, name)
 
     {name, previous ++ List.wrap(value)}
+  end
+
+  # ---------------- META DECODER --------------------
+
+  def parse_double(<<@positive_infinity_64, rest::binary>>), do: {:infinity, rest}
+  def parse_double(<<@negative_infinity_64, rest::binary>>), do: {:"-infinity", rest}
+  def parse_double(<<_::48, 0b1111::4, _::4, _::1, 0b1111111::7, rest::binary>>), do: {:nan, rest}
+  def parse_double(<<value::float-little-64, rest::binary>>), do: {value, rest}
+
+  def parse_float(<<@positive_infinity_32, rest::binary>>), do: {:infinity, rest}
+  def parse_float(<<@negative_infinity_32, rest::binary>>), do: {:"-infinity", rest}
+  def parse_float(<<_::16, 1::1, _::7, _::1, 0b1111111::7, rest::binary>>), do: {:nan, rest}
+  def parse_float(<<value::float-little-32, rest::binary>>), do: {value, rest}
+
+  def parse_sfixed64(<<value::signed-little-64, rest::binary>>), do: {value, rest}
+  def parse_fixed64(<<value::signed-little-64, rest::binary>>), do: {value, rest}
+  def parse_sfixed32(<<value::signed-little-32, rest::binary>>), do: {value, rest}
+  def parse_fixed32(<<value::signed-little-32, rest::binary>>), do: {value, rest}
+
+  def parse_bool(bytes) do
+    {value, rest} = Varint.decode(bytes)
+    {value != 0, rest}
+  end
+
+  def parse_sint32(bytes) do
+    {value, rest} = Varint.decode(bytes)
+    <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
+    {Zigzag.decode(res), rest}
+  end
+
+  def parse_sint64(bytes) do
+    {value, rest} = Varint.decode(bytes)
+    <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
+    {Zigzag.decode(res), rest}
+  end
+
+  def parse_uint32(bytes) do
+    {value, rest} = Varint.decode(bytes)
+    <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
+    {res, rest}
+  end
+
+  def parse_uint64(bytes) do
+    {value, rest} = Varint.decode(bytes)
+    <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
+    {res, rest}
+  end
+
+  def parse_enum(bytes, mod) do
+    {value, rest} = Varint.decode(bytes)
+    <<res::signed-native-32>> = <<value::signed-native-32>>
+    {mod.decode(res), rest}
+  end
+
+  def parse_int32(bytes) do
+    {value, rest} = Varint.decode(bytes)
+    <<res::signed-native-32>> = <<value::signed-native-32>>
+    {res, rest}
+  end
+
+  def parse_int64(bytes) do
+    {value, rest} = Varint.decode(bytes)
+    <<res::signed-native-64>> = <<value::signed-native-64>>
+    {res, rest}
+  end
+
+  def parse_repeated_bool(acc, <<>>), do: Enum.reverse(acc)
+
+  def parse_repeated_bool(acc, bytes) do
+    {value, rest} = Protox.Varint.decode(bytes)
+    parse_repeated_bool([value != 0 | acc], rest)
+  end
+
+  def parse_repeated_int32(acc, <<>>), do: Enum.reverse(acc)
+
+  def parse_repeated_int32(acc, bytes) do
+    {value, rest} = parse_int32(bytes)
+    parse_repeated_int32([value | acc], rest)
+  end
+
+  def parse_repeated_uint32(acc, <<>>), do: Enum.reverse(acc)
+
+  def parse_repeated_uint32(acc, bytes) do
+    {value, rest} = parse_uint32(bytes)
+    parse_repeated_uint32([value | acc], rest)
+  end
+
+  def parse_repeated_sint32(acc, <<>>), do: Enum.reverse(acc)
+
+  def parse_repeated_sint32(acc, bytes) do
+    {value, rest} = parse_sint32(bytes)
+    parse_repeated_sint32([value | acc], rest)
+  end
+
+  def parse_repeated_int64(acc, <<>>), do: Enum.reverse(acc)
+
+  def parse_repeated_int64(acc, bytes) do
+    {value, rest} = parse_int64(bytes)
+    parse_repeated_int64([value | acc], rest)
+  end
+
+  def parse_repeated_uint64(acc, <<>>), do: Enum.reverse(acc)
+
+  def parse_repeated_uint64(acc, bytes) do
+    {value, rest} = parse_uint64(bytes)
+    parse_repeated_uint64([value | acc], rest)
+  end
+
+  def parse_repeated_sint64(acc, <<>>), do: Enum.reverse(acc)
+
+  def parse_repeated_sint64(acc, bytes) do
+    {value, rest} = parse_sint64(bytes)
+    parse_repeated_sint64([value | acc], rest)
+  end
+
+  def parse_repeated_fixed32(acc, <<>>), do: Enum.reverse(acc)
+
+  def parse_repeated_fixed32(acc, bytes) do
+    {value, rest} = parse_fixed32(bytes)
+    parse_repeated_fixed32([value | acc], rest)
+  end
+
+  def parse_repeated_fixed64(acc, <<>>), do: Enum.reverse(acc)
+
+  def parse_repeated_fixed64(acc, bytes) do
+    {value, rest} = parse_fixed64(bytes)
+    parse_repeated_fixed64([value | acc], rest)
+  end
+
+  def parse_repeated_sfixed32(acc, <<>>), do: Enum.reverse(acc)
+
+  def parse_repeated_sfixed32(acc, bytes) do
+    {value, rest} = parse_sfixed32(bytes)
+    parse_repeated_sfixed32([value | acc], rest)
+  end
+
+  def parse_repeated_sfixed64(acc, <<>>), do: Enum.reverse(acc)
+
+  def parse_repeated_sfixed64(acc, bytes) do
+    {value, rest} = parse_sfixed64(bytes)
+    parse_repeated_sfixed64([value | acc], rest)
+  end
+
+  def parse_repeated_float(acc, <<>>), do: Enum.reverse(acc)
+
+  def parse_repeated_float(acc, bytes) do
+    {value, rest} = parse_float(bytes)
+    parse_repeated_float([value | acc], rest)
+  end
+
+  def parse_repeated_double(acc, <<>>), do: Enum.reverse(acc)
+
+  def parse_repeated_double(acc, bytes) do
+    {value, rest} = parse_double(bytes)
+    parse_repeated_double([value | acc], rest)
   end
 end
