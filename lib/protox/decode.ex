@@ -277,6 +277,25 @@ defmodule Protox.Decode do
     {add_unknown_field(msg, tag, @wire_32bits, <<unknown_bytes::32>>), rest}
   end
 
+  def parse_unknown(tag, @wire_varint, bytes) do
+    {unknown_bytes, rest} = get_unknown_varint_bytes(<<>>, bytes)
+    {{tag, @wire_varint, unknown_bytes}, rest}
+  end
+
+  def parse_unknown(tag, @wire_64bits, <<unknown_bytes::64, rest::binary>>) do
+    {{tag, @wire_64bits, <<unknown_bytes::64>>}, rest}
+  end
+
+  def parse_unknown(tag, @wire_delimited, bytes) do
+    {len, new_bytes} = Varint.decode(bytes)
+    <<unknown_bytes::binary-size(len), rest::binary>> = new_bytes
+    {{tag, @wire_delimited, unknown_bytes}, rest}
+  end
+
+  def parse_unknown(tag, @wire_32bits, <<unknown_bytes::32, rest::binary>>) do
+    {{tag, @wire_32bits, <<unknown_bytes::32>>}, rest}
+  end
+
   defp get_unknown_varint_bytes(acc, <<0::1, b::7, rest::binary>>) do
     {<<acc::binary, 0::1, b::7>>, rest}
   end
@@ -328,10 +347,8 @@ defmodule Protox.Decode do
     end
   end
 
-  # repeated
   def update_field(msg, name, _kind, value, _type) do
     previous = Map.fetch!(msg, name)
-
     {name, previous ++ List.wrap(value)}
   end
 
