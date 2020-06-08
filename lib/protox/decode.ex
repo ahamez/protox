@@ -198,59 +198,59 @@ defmodule Protox.Decode do
 
   # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-  def parse_repeated_varint_bool(acc, <<>>), do: Enum.reverse(acc)
+  def parse_repeated_bool(acc, <<>>), do: Enum.reverse(acc)
 
-  def parse_repeated_varint_bool(acc, bytes) do
+  def parse_repeated_bool(acc, bytes) do
     {value, rest} = Protox.Varint.decode(bytes)
-    parse_repeated_varint_bool([value != 0 | acc], rest)
+    parse_repeated_bool([value != 0 | acc], rest)
   end
 
-  def parse_repeated_varint_int32(acc, <<>>), do: Enum.reverse(acc)
+  def parse_repeated_int32(acc, <<>>), do: Enum.reverse(acc)
 
-  def parse_repeated_varint_int32(acc, bytes) do
+  def parse_repeated_int32(acc, bytes) do
     {value, rest} = Protox.Varint.decode(bytes)
     <<res::signed-native-32>> = <<value::signed-native-32>>
-    parse_repeated_varint_int32([res | acc], rest)
+    parse_repeated_int32([res | acc], rest)
   end
 
-  def parse_repeated_varint_uint32(acc, <<>>), do: Enum.reverse(acc)
+  def parse_repeated_uint32(acc, <<>>), do: Enum.reverse(acc)
 
-  def parse_repeated_varint_uint32(acc, bytes) do
+  def parse_repeated_uint32(acc, bytes) do
     {value, rest} = Protox.Varint.decode(bytes)
     <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
-    parse_repeated_varint_uint32([res | acc], rest)
+    parse_repeated_uint32([res | acc], rest)
   end
 
-  def parse_repeated_varint_sint32(acc, <<>>), do: Enum.reverse(acc)
+  def parse_repeated_sint32(acc, <<>>), do: Enum.reverse(acc)
 
-  def parse_repeated_varint_sint32(acc, bytes) do
+  def parse_repeated_sint32(acc, bytes) do
     {value, rest} = Protox.Varint.decode(bytes)
     <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
-    parse_repeated_varint_sint32([Protox.Zigzag.decode(res) | acc], rest)
+    parse_repeated_sint32([Protox.Zigzag.decode(res) | acc], rest)
   end
 
-  def parse_repeated_varint_int64(acc, <<>>), do: Enum.reverse(acc)
+  def parse_repeated_int64(acc, <<>>), do: Enum.reverse(acc)
 
-  def parse_repeated_varint_int64(acc, bytes) do
+  def parse_repeated_int64(acc, bytes) do
     {value, rest} = Protox.Varint.decode(bytes)
     <<res::signed-native-64>> = <<value::signed-native-64>>
-    parse_repeated_varint_int64([res | acc], rest)
+    parse_repeated_int64([res | acc], rest)
   end
 
-  def parse_repeated_varint_uint64(acc, <<>>), do: Enum.reverse(acc)
+  def parse_repeated_uint64(acc, <<>>), do: Enum.reverse(acc)
 
-  def parse_repeated_varint_uint64(acc, bytes) do
+  def parse_repeated_uint64(acc, bytes) do
     {value, rest} = Protox.Varint.decode(bytes)
     <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
-    parse_repeated_varint_uint64([res | acc], rest)
+    parse_repeated_uint64([res | acc], rest)
   end
 
-  def parse_repeated_varint_sint64(acc, <<>>), do: Enum.reverse(acc)
+  def parse_repeated_sint64(acc, <<>>), do: Enum.reverse(acc)
 
-  def parse_repeated_varint_sint64(acc, bytes) do
+  def parse_repeated_sint64(acc, bytes) do
     {value, rest} = Protox.Varint.decode(bytes)
     <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
-    parse_repeated_varint_sint64([Protox.Zigzag.decode(res) | acc], rest)
+    parse_repeated_sint64([Protox.Zigzag.decode(res) | acc], rest)
   end
 
   # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
