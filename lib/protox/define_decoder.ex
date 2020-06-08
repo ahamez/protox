@@ -23,7 +23,7 @@ defmodule Protox.DefineDecoder do
 
   defp make_decode(msg_name, fields, required_fields, syntax) do
     decode_return = make_decode_return(syntax, required_fields)
-    parse_key_value = make_parse_key_value(fields)
+    parse_key_value = make_parse_key_value(syntax, fields)
 
     quote do
       @spec decode_meta(binary) :: {:ok, struct} | {:error, any}
@@ -70,40 +70,56 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_parse_key_value(fields) do
+  defp make_parse_key_value(syntax, fields) do
     tag_0_case =
       quote do
         {0, _, _} -> raise "Illegal field with tag 0"
       end
 
-    unknwon_tag_case =
-      quote do
-        {tag, wire_type, rest} ->
-          {new_msg, new_rest} = Protox.Decode.parse_unknown(msg, tag, wire_type, rest)
-          {set_fields, new_msg, new_rest}
-      end
+    unknown_tag_case =
+      (
+        case_return =
+          case syntax do
+            :proto2 -> quote do: {set_fields, new_msg, new_rest}
+            :proto3 -> quote do: {[], new_msg, new_rest}
+          end
+
+        quote do
+          {tag, wire_type, rest} ->
+            {new_msg, new_rest} = Protox.Decode.parse_unknown(msg, tag, wire_type, rest)
+            unquote(case_return)
+        end
+      )
 
     known_tags_case =
       Enum.map(fields, fn {tag, _, name, kind, type} ->
         delimited =
-          quote do
-            {unquote(tag), unquote(@wire_delimited), bytes} ->
-              {len, new_bytes} = Protox.Varint.decode(bytes)
-              <<delimited::binary-size(len), new_rest::binary>> = new_bytes
-              value = Protox.Decode.parse_delimited(delimited, unquote(type))
+          (
+            case_return =
+              case syntax do
+                :proto2 -> quote do: {[unquote(name) | set_fields], msg_updated, new_rest}
+                :proto3 -> quote do: {[], msg_updated, new_rest}
+              end
 
-              field =
-                Protox.Decode.update_field(
-                  msg,
-                  unquote(name),
-                  unquote(kind),
-                  value,
-                  unquote(type)
-                )
+            quote do
+              {unquote(tag), unquote(@wire_delimited), bytes} ->
+                {len, new_bytes} = Protox.Varint.decode(bytes)
+                <<delimited::binary-size(len), new_rest::binary>> = new_bytes
+                value = Protox.Decode.parse_delimited(delimited, unquote(type))
 
-              msg_updated = struct(msg, [field])
-              {[unquote(name) | set_fields], msg_updated, new_rest}
-          end
+                field =
+                  Protox.Decode.update_field(
+                    msg,
+                    unquote(name),
+                    unquote(kind),
+                    value,
+                    unquote(type)
+                  )
+
+                msg_updated = struct(msg, [field])
+                unquote(case_return)
+            end
+          )
 
         single =
           case type do
@@ -123,6 +139,12 @@ defmodule Protox.DefineDecoder do
             _ ->
               parse_single = make_parse_single(type)
 
+              case_return =
+                case syntax do
+                  :proto2 -> quote do: {[unquote(name) | set_fields], msg_updated, new_rest}
+                  :proto3 -> quote do: {[], msg_updated, new_rest}
+                end
+
               quote do
                 {unquote(tag), _, bytes} ->
                   {value, new_rest} = unquote(parse_single)
@@ -137,7 +159,7 @@ defmodule Protox.DefineDecoder do
                     )
 
                   msg_updated = struct(msg, [field])
-                  {[unquote(name) | set_fields], msg_updated, new_rest}
+                  unquote(case_return)
               end
           end
 
@@ -145,7 +167,7 @@ defmodule Protox.DefineDecoder do
       end)
       |> List.flatten()
 
-    all_cases = tag_0_case ++ known_tags_case ++ unknwon_tag_case
+    all_cases = tag_0_case ++ known_tags_case ++ unknown_tag_case
 
     quote do
       {new_set_fields, new_msg, new_rest} =
