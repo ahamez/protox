@@ -14,7 +14,10 @@ defmodule Protox.Message do
 
   `msg` and `from` must be of the same type
   """
-  @spec merge(struct, struct) :: struct
+  @spec merge(struct | nil, struct | nil) :: struct | nil
+  def merge(nil, from), do: from
+  def merge(msg, nil), do: msg
+
   def merge(msg, from) do
     Map.merge(msg, from, fn name, v1, v2 ->
       if name == :__struct__ or name == msg.__struct__.unknown_fields_name() do

@@ -311,14 +311,14 @@ defmodule Protox.Decode do
   end
 
   # Set the field `name` in `msg` with `value`.
-  def update_field(msg, name, :map, value, _type) do
+  defp update_field(msg, name, :map, value, _type) do
     previous = Map.fetch!(msg, name)
     {entry_key, entry_value} = value
 
     {name, Map.put(previous, entry_key, entry_value)}
   end
 
-  def update_field(msg, name, {:oneof, parent_field}, value, type) do
+  defp update_field(msg, name, {:oneof, parent_field}, value, type) do
     case type do
       {:message, _} ->
         case Map.fetch!(msg, parent_field) do
@@ -334,7 +334,7 @@ defmodule Protox.Decode do
     end
   end
 
-  def update_field(msg, name, {:default, _}, value, type) do
+  defp update_field(msg, name, {:default, _}, value, type) do
     case type do
       {:message, _} ->
         case Map.fetch!(msg, name) do
@@ -347,7 +347,7 @@ defmodule Protox.Decode do
     end
   end
 
-  def update_field(msg, name, _kind, value, _type) do
+  defp update_field(msg, name, _kind, value, _type) do
     previous = Map.fetch!(msg, name)
     {name, previous ++ List.wrap(value)}
   end
