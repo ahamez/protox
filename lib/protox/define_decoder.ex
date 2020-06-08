@@ -93,78 +93,8 @@ defmodule Protox.DefineDecoder do
 
     known_tags_case =
       Enum.map(fields, fn {tag, _, name, kind, type} ->
-        delimited =
-          (
-            case_return =
-              case syntax do
-                :proto2 -> quote do: {[unquote(name) | set_fields], msg_updated, new_rest}
-                :proto3 -> quote do: {[], msg_updated, new_rest}
-              end
-
-            delimited_var = quote do: delimited
-            parse_delimited = make_parse_delimited(delimited_var, type)
-
-            quote do
-              {unquote(tag), unquote(@wire_delimited), bytes} ->
-                {len, new_bytes} = Protox.Varint.decode(bytes)
-                <<delimited::binary-size(len), new_rest::binary>> = new_bytes
-                value = unquote(parse_delimited)
-
-                field =
-                  Protox.Decode.update_field(
-                    msg,
-                    unquote(name),
-                    unquote(kind),
-                    value,
-                    unquote(type)
-                  )
-
-                msg_updated = struct(msg, [field])
-                unquote(case_return)
-            end
-          )
-
-        single =
-          case type do
-            {:message, _} ->
-              []
-
-            :string ->
-              []
-
-            :bytes ->
-              []
-
-            # map
-            {x, _} when x != :enum ->
-              []
-
-            _ ->
-              parse_single = make_parse_single(type)
-
-              case_return =
-                case syntax do
-                  :proto2 -> quote do: {[unquote(name) | set_fields], msg_updated, new_rest}
-                  :proto3 -> quote do: {[], msg_updated, new_rest}
-                end
-
-              quote do
-                {unquote(tag), _, bytes} ->
-                  {value, new_rest} = unquote(parse_single)
-
-                  field =
-                    Protox.Decode.update_field(
-                      msg,
-                      unquote(name),
-                      unquote(kind),
-                      value,
-                      unquote(type)
-                    )
-
-                  msg_updated = struct(msg, [field])
-                  unquote(case_return)
-              end
-          end
+        single = make_single_case(syntax, tag, name, kind, type)
+        delimited = make_delimited_case(syntax, single, tag, name, kind, type)
 
         delimited ++ single
       end)
@@ -179,6 +109,106 @@ defmodule Protox.DefineDecoder do
         end
 
       parse_key_value(new_set_fields, new_rest, defs, new_msg)
+    end
+  end
+
+  defp make_single_case(_syntax, _tag, _name, _kind, {:message, _}) do
+    quote do: []
+  end
+
+  defp make_single_case(_syntax, _tag, _name, _kind, :string) do
+    quote do: []
+  end
+
+  defp make_single_case(_syntax, _tag, _name, _kind, :bytes) do
+    quote do: []
+  end
+
+  defp make_single_case(_syntax, _tag, _name, _kind, {x, _}) when x != :enum do
+    quote do: []
+  end
+
+  defp make_single_case(syntax, tag, name, kind, type) do
+    parse_single = make_parse_single(type)
+
+    case_return =
+      case syntax do
+        :proto2 -> quote do: {[unquote(name) | set_fields], msg_updated, new_rest}
+        :proto3 -> quote do: {[], msg_updated, new_rest}
+      end
+
+    quote do
+      {unquote(tag), _, bytes} ->
+        {value, new_rest} = unquote(parse_single)
+
+        field =
+          Protox.Decode.update_field(
+            msg,
+            unquote(name),
+            unquote(kind),
+            value,
+            unquote(type)
+          )
+
+        msg_updated = struct(msg, [field])
+        unquote(case_return)
+    end
+  end
+
+  defp make_delimited_case(syntax, single, tag, name, kind, type = {:message, _}) do
+    make_delimited_case_impl(syntax, single, tag, name, kind, type)
+  end
+
+  defp make_delimited_case(syntax, single, tag, name, kind, :bytes) do
+    make_delimited_case_impl(syntax, single, tag, name, kind, :bytes)
+  end
+
+  defp make_delimited_case(syntax, single, tag, name, kind, :string) do
+    make_delimited_case_impl(syntax, single, tag, name, kind, :string)
+  end
+
+  defp make_delimited_case(_syntax, _single, _tag, _name, {:default, _}, _) do
+    []
+  end
+
+  defp make_delimited_case(syntax, single, tag, name, kind, type) do
+    make_delimited_case_impl(syntax, single, tag, name, kind, type)
+  end
+
+  defp make_delimited_case_impl(syntax, single, tag, name, kind, type) do
+    case_return =
+      case syntax do
+        :proto2 -> quote do: {[unquote(name) | set_fields], msg_updated, new_rest}
+        :proto3 -> quote do: {[], msg_updated, new_rest}
+      end
+
+    delimited_var = quote do: delimited
+    parse_delimited = make_parse_delimited(delimited_var, type)
+
+    wire_type =
+      if single == [] do
+        quote do: _
+      else
+        quote do: unquote(@wire_delimited)
+      end
+
+    quote do
+      {unquote(tag), unquote(wire_type), bytes} ->
+        {len, new_bytes} = Protox.Varint.decode(bytes)
+        <<delimited::binary-size(len), new_rest::binary>> = new_bytes
+        value = unquote(parse_delimited)
+
+        field =
+          Protox.Decode.update_field(
+            msg,
+            unquote(name),
+            unquote(kind),
+            value,
+            unquote(type)
+          )
+
+        msg_updated = struct(msg, [field])
+        unquote(case_return)
     end
   end
 
