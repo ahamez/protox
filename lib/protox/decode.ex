@@ -61,11 +61,11 @@ defmodule Protox.Decode do
   end
 
   @spec parse_key_value([atom], binary, map, struct) :: {struct, [atom]}
-  defp parse_key_value(set_fields, <<>>, _, msg) do
+  def parse_key_value(set_fields, <<>>, _, msg) do
     {msg, set_fields}
   end
 
-  defp parse_key_value(set_fields, bytes, defs, msg) do
+  def parse_key_value(set_fields, bytes, defs, msg) do
     {tag, wire_type, rest} = parse_key(bytes)
 
     if tag == 0 do

@@ -315,8 +315,39 @@ defmodule Protox.DefineDecoder do
     quote(do: Protox.Decode.parse_repeated_double([], unquote(bytes_var)))
   end
 
-  defp make_parse_delimited(bytes_var, type) do
-    quote(do: Protox.Decode.parse_delimited(unquote(bytes_var), unquote(type)))
+  defp make_parse_delimited(bytes_var, {key_type, value_type}) do
+    nil_map_value =
+      case value_type do
+        {:message, msg_type} -> quote(do: struct(unquote(msg_type)))
+        _ -> quote(do: Protox.Default.default(unquote(value_type)))
+      end
+
+    quote do
+      alias Protox.Decode.MapEntry
+
+      defs = %{
+        1 => {:key, {:default, :dummy}, unquote(key_type)},
+        2 => {:value, {:default, :dummy}, unquote(value_type)}
+      }
+
+      # TODO: remove usage of Protox.Decode.
+      {%MapEntry{key: map_key, value: map_value}, _} =
+        Protox.Decode.parse_key_value([], unquote(bytes_var), defs, %MapEntry{})
+
+      map_key =
+        case map_key do
+          nil -> Protox.Default.default(unquote(key_type))
+          _ -> map_key
+        end
+
+      map_value =
+        case map_value do
+          nil -> unquote(nil_map_value)
+          _ -> map_value
+        end
+
+      {map_key, map_value}
+    end
   end
 
   defp make_parse_single(bytes_var, :double) do
