@@ -65,9 +65,7 @@ defmodule Protox.DefineDecoder do
 
   # No need to check for missing required fields for Protobuf 3
   defp make_decode_return(:proto3, _required_fields) do
-    quote do
-      msg
-    end
+    quote(do: msg)
   end
 
   defp make_parse_key_value(syntax, fields) do
@@ -92,6 +90,7 @@ defmodule Protox.DefineDecoder do
           {tag, wire_type, rest} ->
             {unquote(value_var), new_rest} = Protox.Decode.parse_unknown(tag, wire_type, rest)
             previous = unquote(msg_var).__struct__.unknown_fields(unquote(msg_var))
+
             unquote(field_var) =
               {unquote(msg_var).__struct__.unknown_fields_name, [unquote(value_var) | previous]}
 
@@ -100,7 +99,8 @@ defmodule Protox.DefineDecoder do
       )
 
     known_tags_case =
-      Enum.map(fields, fn {tag, _, name, kind, type} ->
+      fields
+      |> Enum.map(fn {tag, _, name, kind, type} ->
         single = make_single_case(msg_var, syntax, tag, name, kind, type)
         delimited = make_delimited_case(msg_var, syntax, single, tag, name, kind, type)
 
@@ -184,6 +184,8 @@ defmodule Protox.DefineDecoder do
     delimited_var = quote do: delimited
     parse_delimited = make_parse_delimited(delimited_var, type)
 
+    # If `single` was not generated, then we don't need the `@wire_delimited discrimant
+    # as there is only one clause for this `tag`.
     wire_type =
       if single == [] do
         quote do: _
@@ -225,9 +227,7 @@ defmodule Protox.DefineDecoder do
   end
 
   defp make_update_field(name, {:oneof, parent_field}, _type, _msg_var, value_var) do
-    quote do
-      {unquote(parent_field), {unquote(name), unquote(value_var)}}
-    end
+    quote(do: {unquote(parent_field), {unquote(name), unquote(value_var)}})
   end
 
   defp make_update_field(name, {:default, _}, {:message, _}, msg_var, value_var) do
@@ -237,9 +237,7 @@ defmodule Protox.DefineDecoder do
   end
 
   defp make_update_field(name, {:default, _}, _, _msg_var, value_var) do
-    quote do
-      {unquote(name), unquote(value_var)}
-    end
+    quote(do: {unquote(name), unquote(value_var)})
   end
 
   defp make_update_field(name, _kind, _type, msg_var, value_var) do
@@ -250,21 +248,15 @@ defmodule Protox.DefineDecoder do
   end
 
   defp make_parse_delimited(delimited_var, :bytes) do
-    quote do
-      unquote(delimited_var)
-    end
+    quote(do: unquote(delimited_var))
   end
 
   defp make_parse_delimited(delimited_var, :string) do
-    quote do
-      unquote(delimited_var)
-    end
+    quote(do: unquote(delimited_var))
   end
 
   defp make_parse_delimited(delimited_var, {:enum, mod}) do
-    quote do
-      Protox.Decode.parse_repeated_enum([], unquote(delimited_var), unquote(mod))
-    end
+    quote(do: Protox.Decode.parse_repeated_enum([], unquote(delimited_var), unquote(mod)))
   end
 
   defp make_parse_delimited(delimited_var, {:message, mod}) do
@@ -274,170 +266,114 @@ defmodule Protox.DefineDecoder do
   end
 
   defp make_parse_delimited(delimited_var, :bool) do
-    quote do
-      Protox.Decode.parse_repeated_bool([], unquote(delimited_var))
-    end
+    quote(do: Protox.Decode.parse_repeated_bool([], unquote(delimited_var)))
   end
 
   defp make_parse_delimited(delimited_var, :int32) do
-    quote do
-      Protox.Decode.parse_repeated_int32([], unquote(delimited_var))
-    end
+    quote(do: Protox.Decode.parse_repeated_int32([], unquote(delimited_var)))
   end
 
   defp make_parse_delimited(delimited_var, :uint32) do
-    quote do
-      Protox.Decode.parse_repeated_uint32([], unquote(delimited_var))
-    end
+    quote(do: Protox.Decode.parse_repeated_uint32([], unquote(delimited_var)))
   end
 
   defp make_parse_delimited(delimited_var, :sint32) do
-    quote do
-      Protox.Decode.parse_repeated_sint32([], unquote(delimited_var))
-    end
+    quote(do: Protox.Decode.parse_repeated_sint32([], unquote(delimited_var)))
   end
 
   defp make_parse_delimited(delimited_var, :int64) do
-    quote do
-      Protox.Decode.parse_repeated_int64([], unquote(delimited_var))
-    end
+    quote(do: Protox.Decode.parse_repeated_int64([], unquote(delimited_var)))
   end
 
   defp make_parse_delimited(delimited_var, :uint64) do
-    quote do
-      Protox.Decode.parse_repeated_uint64([], unquote(delimited_var))
-    end
+    quote(do: Protox.Decode.parse_repeated_uint64([], unquote(delimited_var)))
   end
 
   defp make_parse_delimited(delimited_var, :sint64) do
-    quote do
-      Protox.Decode.parse_repeated_sint64([], unquote(delimited_var))
-    end
+    quote(do: Protox.Decode.parse_repeated_sint64([], unquote(delimited_var)))
   end
 
   defp make_parse_delimited(delimited_var, :fixed32) do
-    quote do
-      Protox.Decode.parse_repeated_fixed32([], unquote(delimited_var))
-    end
+    quote(do: Protox.Decode.parse_repeated_fixed32([], unquote(delimited_var)))
   end
 
   defp make_parse_delimited(delimited_var, :fixed64) do
-    quote do
-      Protox.Decode.parse_repeated_fixed64([], unquote(delimited_var))
-    end
+    quote(do: Protox.Decode.parse_repeated_fixed64([], unquote(delimited_var)))
   end
 
   defp make_parse_delimited(delimited_var, :sfixed32) do
-    quote do
-      Protox.Decode.parse_repeated_sfixed32([], unquote(delimited_var))
-    end
+    quote(do: Protox.Decode.parse_repeated_sfixed32([], unquote(delimited_var)))
   end
 
   defp make_parse_delimited(delimited_var, :sfixed64) do
-    quote do
-      Protox.Decode.parse_repeated_sfixed64([], unquote(delimited_var))
-    end
+    quote(do: Protox.Decode.parse_repeated_sfixed64([], unquote(delimited_var)))
   end
 
   defp make_parse_delimited(delimited_var, :float) do
-    quote do
-      Protox.Decode.parse_repeated_float([], unquote(delimited_var))
-    end
+    quote(do: Protox.Decode.parse_repeated_float([], unquote(delimited_var)))
   end
 
   defp make_parse_delimited(delimited_var, :double) do
-    quote do
-      Protox.Decode.parse_repeated_double([], unquote(delimited_var))
-    end
+    quote(do: Protox.Decode.parse_repeated_double([], unquote(delimited_var)))
   end
 
   defp make_parse_delimited(delimited_var, type) do
-    quote do
-      Protox.Decode.parse_delimited(unquote(delimited_var), unquote(type))
-    end
+    quote(do: Protox.Decode.parse_delimited(unquote(delimited_var), unquote(type)))
   end
 
   defp make_parse_single(bytes_var, :double) do
-    quote do
-      Protox.Decode.parse_double(unquote(bytes_var))
-    end
+    quote(do: Protox.Decode.parse_double(unquote(bytes_var)))
   end
 
   defp make_parse_single(bytes_var, :float) do
-    quote do
-      Protox.Decode.parse_float(unquote(bytes_var))
-    end
+    quote(do: Protox.Decode.parse_float(unquote(bytes_var)))
   end
 
   defp make_parse_single(bytes_var, :sfixed64) do
-    quote do
-      Protox.Decode.parse_sfixed64(unquote(bytes_var))
-    end
+    quote(do: Protox.Decode.parse_sfixed64(unquote(bytes_var)))
   end
 
   defp make_parse_single(bytes_var, :fixed64) do
-    quote do
-      Protox.Decode.parse_fixed64(unquote(bytes_var))
-    end
+    quote(do: Protox.Decode.parse_fixed64(unquote(bytes_var)))
   end
 
   defp make_parse_single(bytes_var, :sfixed32) do
-    quote do
-      Protox.Decode.parse_sfixed32(unquote(bytes_var))
-    end
+    quote(do: Protox.Decode.parse_sfixed32(unquote(bytes_var)))
   end
 
   defp make_parse_single(bytes_var, :fixed32) do
-    quote do
-      Protox.Decode.parse_fixed32(unquote(bytes_var))
-    end
+    quote(do: Protox.Decode.parse_fixed32(unquote(bytes_var)))
   end
 
   defp make_parse_single(bytes_var, :bool) do
-    quote do
-      Protox.Decode.parse_bool(unquote(bytes_var))
-    end
+    quote(do: Protox.Decode.parse_bool(unquote(bytes_var)))
   end
 
   defp make_parse_single(bytes_var, :sint32) do
-    quote do
-      Protox.Decode.parse_sint32(unquote(bytes_var))
-    end
+    quote(do: Protox.Decode.parse_sint32(unquote(bytes_var)))
   end
 
   defp make_parse_single(bytes_var, :sint64) do
-    quote do
-      Protox.Decode.parse_sint64(unquote(bytes_var))
-    end
+    quote(do: Protox.Decode.parse_sint64(unquote(bytes_var)))
   end
 
   defp make_parse_single(bytes_var, :uint32) do
-    quote do
-      Protox.Decode.parse_uint32(unquote(bytes_var))
-    end
+    quote(do: Protox.Decode.parse_uint32(unquote(bytes_var)))
   end
 
   defp make_parse_single(bytes_var, :uint64) do
-    quote do
-      Protox.Decode.parse_uint64(unquote(bytes_var))
-    end
+    quote(do: Protox.Decode.parse_uint64(unquote(bytes_var)))
   end
 
   defp make_parse_single(bytes_var, :int32) do
-    quote do
-      Protox.Decode.parse_int32(unquote(bytes_var))
-    end
+    quote(do: Protox.Decode.parse_int32(unquote(bytes_var)))
   end
 
   defp make_parse_single(bytes_var, :int64) do
-    quote do
-      Protox.Decode.parse_int64(unquote(bytes_var))
-    end
+    quote(do: Protox.Decode.parse_int64(unquote(bytes_var)))
   end
 
   defp make_parse_single(bytes_var, {:enum, mod}) do
-    quote do
-      Protox.Decode.parse_enum(unquote(bytes_var), unquote(mod))
-    end
+    quote(do: Protox.Decode.parse_enum(unquote(bytes_var), unquote(mod)))
   end
 end
