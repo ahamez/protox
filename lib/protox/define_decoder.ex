@@ -215,6 +215,18 @@ defmodule Protox.DefineDecoder do
     end
   end
 
+  defp make_parse_delimited(delimited_var, {:enum, mod}) do
+    quote do
+      Protox.Decode.parse_repeated_enum([], unquote(delimited_var), unquote(mod))
+    end
+  end
+
+  defp make_parse_delimited(delimited_var, {:message, mod}) do
+    quote do
+      Protox.Decode.decode!(unquote(delimited_var), unquote(mod), unquote(mod).required_fields())
+    end
+  end
+
   defp make_parse_delimited(delimited_var, :bool) do
     quote do
       Protox.Decode.parse_repeated_bool([], unquote(delimited_var))

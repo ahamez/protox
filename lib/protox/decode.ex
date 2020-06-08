@@ -406,6 +406,13 @@ defmodule Protox.Decode do
     parse_repeated_bool([value != 0 | acc], rest)
   end
 
+  def parse_repeated_enum(acc, <<>>, _mod), do: Enum.reverse(acc)
+
+  def parse_repeated_enum(acc, bytes, mod) do
+    {value, rest} = parse_enum(bytes, mod)
+    parse_repeated_enum([value | acc], rest, mod)
+  end
+
   def parse_repeated_int32(acc, <<>>), do: Enum.reverse(acc)
 
   def parse_repeated_int32(acc, bytes) do
