@@ -129,7 +129,9 @@ defmodule Protox.DefineDecoder do
   end
 
   defp make_single_case(syntax, tag, name, kind, type) do
-    parse_single = make_parse_single(type)
+    bytes_var = quote do: bytes
+
+    parse_single = make_parse_single(bytes_var, type)
 
     case_return =
       case syntax do
@@ -138,7 +140,7 @@ defmodule Protox.DefineDecoder do
       end
 
     quote do
-      {unquote(tag), _, bytes} ->
+      {unquote(tag), _, unquote(bytes_var)} ->
         {value, new_rest} = unquote(parse_single)
 
         field =
@@ -296,9 +298,9 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_parse_single(:double) do
+  defp make_parse_single(bytes_var, :double) do
     quote do
-      case bytes do
+      case unquote(bytes_var) do
         <<unquote(@positive_infinity_64), rest::binary>> -> {:infinity, rest}
         <<unquote(@negative_infinity_64), rest::binary>> -> {:"-infinity", rest}
         <<_::48, 0b1111::4, _::4, _::1, 0b1111111::7, rest::binary>> -> {:nan, rest}
@@ -307,9 +309,9 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_parse_single(:float) do
+  defp make_parse_single(bytes_var, :float) do
     quote do
-      case bytes do
+      case unquote(bytes_var) do
         <<unquote(@positive_infinity_32), rest::binary>> -> {:infinity, rest}
         <<unquote(@negative_infinity_32), rest::binary>> -> {:"-infinity", rest}
         <<_::16, 1::1, _::7, _::1, 0b1111111::7, rest::binary>> -> {:nan, rest}
@@ -318,92 +320,92 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_parse_single(:sfixed64) do
+  defp make_parse_single(bytes_var, :sfixed64) do
     quote do
-      <<value::signed-little-64, rest::binary>> = bytes
+      <<value::signed-little-64, rest::binary>> = unquote(bytes_var)
       {value, rest}
     end
   end
 
-  defp make_parse_single(:fixed64) do
+  defp make_parse_single(bytes_var, :fixed64) do
     quote do
-      <<value::signed-little-64, rest::binary>> = bytes
+      <<value::signed-little-64, rest::binary>> = unquote(bytes_var)
       {value, rest}
     end
   end
 
-  defp make_parse_single(:sfixed32) do
+  defp make_parse_single(bytes_var, :sfixed32) do
     quote do
-      <<value::signed-little-32, rest::binary>> = bytes
+      <<value::signed-little-32, rest::binary>> = unquote(bytes_var)
       {value, rest}
     end
   end
 
-  defp make_parse_single(:fixed32) do
+  defp make_parse_single(bytes_var, :fixed32) do
     quote do
-      <<value::signed-little-32, rest::binary>> = bytes
+      <<value::signed-little-32, rest::binary>> = unquote(bytes_var)
       {value, rest}
     end
   end
 
-  defp make_parse_single(:bool) do
+  defp make_parse_single(bytes_var, :bool) do
     quote do
-      {value, rest} = Protox.Varint.decode(bytes)
+      {value, rest} = Protox.Varint.decode(unquote(bytes_var))
       {value != 0, rest}
     end
   end
 
-  defp make_parse_single(:sint32) do
+  defp make_parse_single(bytes_var, :sint32) do
     quote do
-      {value, rest} = Protox.Varint.decode(bytes)
+      {value, rest} = Protox.Varint.decode(unquote(bytes_var))
       <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
       {Protox.Zigzag.decode(res), rest}
     end
   end
 
-  defp make_parse_single(:sint64) do
+  defp make_parse_single(bytes_var, :sint64) do
     quote do
-      {value, rest} = Protox.Varint.decode(bytes)
+      {value, rest} = Protox.Varint.decode(unquote(bytes_var))
       <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
       {Protox.Zigzag.decode(res), rest}
     end
   end
 
-  defp make_parse_single(:uint32) do
+  defp make_parse_single(bytes_var, :uint32) do
     quote do
-      {value, rest} = Protox.Varint.decode(bytes)
+      {value, rest} = Protox.Varint.decode(unquote(bytes_var))
       <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
       {res, rest}
     end
   end
 
-  defp make_parse_single(:uint64) do
+  defp make_parse_single(bytes_var, :uint64) do
     quote do
-      {value, rest} = Protox.Varint.decode(bytes)
+      {value, rest} = Protox.Varint.decode(unquote(bytes_var))
       <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
       {res, rest}
     end
   end
 
-  defp make_parse_single(:int32) do
+  defp make_parse_single(bytes_var, :int32) do
     quote do
-      {value, rest} = Protox.Varint.decode(bytes)
+      {value, rest} = Protox.Varint.decode(unquote(bytes_var))
       <<res::signed-native-32>> = <<value::signed-native-32>>
       {res, rest}
     end
   end
 
-  defp make_parse_single(:int64) do
+  defp make_parse_single(bytes_var, :int64) do
     quote do
-      {value, rest} = Protox.Varint.decode(bytes)
+      {value, rest} = Protox.Varint.decode(unquote(bytes_var))
       <<res::signed-native-64>> = <<value::signed-native-64>>
       {res, rest}
     end
   end
 
-  defp make_parse_single({:enum, mod}) do
+  defp make_parse_single(bytes_var, {:enum, mod}) do
     quote do
-      {value, rest} = Protox.Varint.decode(bytes)
+      {value, rest} = Protox.Varint.decode(unquote(bytes_var))
       <<res::signed-native-32>> = <<value::signed-native-32>>
       {unquote(mod).decode(res), rest}
     end
