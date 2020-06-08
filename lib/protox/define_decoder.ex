@@ -261,7 +261,7 @@ defmodule Protox.DefineDecoder do
 
   defp make_parse_delimited(delimited_var, {:message, mod}) do
     quote do
-      Protox.Decode.decode!(unquote(delimited_var), unquote(mod), unquote(mod).required_fields())
+      unquote(mod).decode_meta!(unquote(delimited_var))
     end
   end
 
