@@ -101,11 +101,14 @@ defmodule Protox.DefineDecoder do
                 :proto3 -> quote do: {[], msg_updated, new_rest}
               end
 
+            delimited_var = quote do: delimited
+            parse_delimited = make_parse_delimited(delimited_var, type)
+
             quote do
               {unquote(tag), unquote(@wire_delimited), bytes} ->
                 {len, new_bytes} = Protox.Varint.decode(bytes)
                 <<delimited::binary-size(len), new_rest::binary>> = new_bytes
-                value = Protox.Decode.parse_delimited(delimited, unquote(type))
+                value = unquote(parse_delimited)
 
                 field =
                   Protox.Decode.update_field(
@@ -176,6 +179,90 @@ defmodule Protox.DefineDecoder do
         end
 
       parse_key_value(new_set_fields, new_rest, defs, new_msg)
+    end
+  end
+
+  defp make_parse_delimited(delimited_var, :bytes) do
+    quote do
+      unquote(delimited_var)
+    end
+  end
+
+  defp make_parse_delimited(delimited_var, :string) do
+    quote do
+      unquote(delimited_var)
+    end
+  end
+
+  defp make_parse_delimited(delimited_var, :bool) do
+    quote do
+      Protox.Decode.parse_repeated_varint_bool([], unquote(delimited_var))
+    end
+  end
+
+  defp make_parse_delimited(delimited_var, :int32) do
+    quote do
+      Protox.Decode.parse_repeated_varint_int32([], unquote(delimited_var))
+    end
+  end
+
+  defp make_parse_delimited(delimited_var, :uint32) do
+    quote do
+      Protox.Decode.parse_repeated_varint_uint32([], unquote(delimited_var))
+    end
+  end
+
+  defp make_parse_delimited(delimited_var, :sint32) do
+    quote do
+      Protox.Decode.parse_repeated_varint_sint32([], unquote(delimited_var))
+    end
+  end
+
+  defp make_parse_delimited(delimited_var, :int64) do
+    quote do
+      Protox.Decode.parse_repeated_varint_int64([], unquote(delimited_var))
+    end
+  end
+
+  defp make_parse_delimited(delimited_var, :uint64) do
+    quote do
+      Protox.Decode.parse_repeated_varint_uint64([], unquote(delimited_var))
+    end
+  end
+
+  defp make_parse_delimited(delimited_var, :sint64) do
+    quote do
+      Protox.Decode.parse_repeated_varint_sint64([], unquote(delimited_var))
+    end
+  end
+
+  defp make_parse_delimited(delimited_var, :fixed32) do
+    quote do
+      Protox.Decode.parse_repeated_fixed32([], unquote(delimited_var))
+    end
+  end
+
+  defp make_parse_delimited(delimited_var, :fixed64) do
+    quote do
+      Protox.Decode.parse_repeated_fixed64([], unquote(delimited_var))
+    end
+  end
+
+  defp make_parse_delimited(delimited_var, :sfixed32) do
+    quote do
+      Protox.Decode.parse_repeated_sfixed32([], unquote(delimited_var))
+    end
+  end
+
+  defp make_parse_delimited(delimited_var, :sfixed64) do
+    quote do
+      Protox.Decode.parse_repeated_sfixed64([], unquote(delimited_var))
+    end
+  end
+
+  defp make_parse_delimited(delimited_var, type) do
+    quote do
+      Protox.Decode.parse_delimited(unquote(delimited_var), unquote(type))
     end
   end
 
