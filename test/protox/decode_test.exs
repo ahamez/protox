@@ -3,53 +3,53 @@ defmodule Protox.DecodeTest do
 
   test "Sub.a" do
     bytes = <<8, 150, 1>>
-    assert Sub.decode_meta!(bytes) == %Sub{a: 150, b: ""}
+    assert Sub.decode!(bytes) == %Sub{a: 150, b: ""}
   end
 
   test "Sub.a, repeated scalar, select last" do
     bytes = <<8, 150, 1, 8, 1, 8, 150, 1, 8, 2>>
-    assert Sub.decode_meta!(bytes) == %Sub{a: 2, b: ""}
+    assert Sub.decode!(bytes) == %Sub{a: 2, b: ""}
   end
 
   test "Sub.a, negative 64 bits" do
     bytes = <<8, 234, 254, 255, 255, 255, 255, 255, 255, 255, 1>>
-    assert Sub.decode_meta!(bytes) == %Sub{a: -150, b: ""}
+    assert Sub.decode!(bytes) == %Sub{a: -150, b: ""}
   end
 
   test "Sub.a, negative 32 bits" do
     bytes = <<8, 234, 254, 255, 255, 15>>
-    assert Sub.decode_meta!(bytes) == %Sub{a: -150, b: ""}
+    assert Sub.decode!(bytes) == %Sub{a: -150, b: ""}
   end
 
   test "Sub.b" do
     bytes = <<18, 7, 116, 101, 115, 116, 105, 110, 103>>
-    assert Sub.decode_meta!(bytes) == %Sub{a: 0, b: "testing"}
+    assert Sub.decode!(bytes) == %Sub{a: 0, b: "testing"}
   end
 
   test "Sub.b, empty" do
     bytes = <<18, 0>>
-    assert Sub.decode_meta!(bytes) == %Sub{a: 0, b: ""}
+    assert Sub.decode!(bytes) == %Sub{a: 0, b: ""}
   end
 
   test "Sub.a; Sub.b" do
     bytes = <<8, 150, 1, 18, 7, 116, 101, 115, 116, 105, 110, 103>>
-    assert Sub.decode_meta!(bytes) == %Sub{a: 150, b: "testing"}
+    assert Sub.decode!(bytes) == %Sub{a: 150, b: "testing"}
   end
 
   test "Sub.a; Sub.b; Sub.z" do
     bytes = <<8, 150, 1, 18, 7, 116, 101, 115, 116, 105, 110, 103, 136, 241, 4, 157, 156, 1>>
-    assert Sub.decode_meta!(bytes) == %Sub{a: 150, b: "testing", z: -9999}
+    assert Sub.decode!(bytes) == %Sub{a: 150, b: "testing", z: -9999}
   end
 
   test "Sub.b; Sub.a" do
     bytes = <<18, 7, 116, 101, 115, 116, 105, 110, 103, 8, 150, 1>>
-    assert Sub.decode_meta!(bytes) == %Sub{a: 150, b: "testing"}
+    assert Sub.decode!(bytes) == %Sub{a: 150, b: "testing"}
   end
 
   test "Sub, unknown tag (double)" do
     bytes = <<8, 42, 25, 246, 40, 92, 143, 194, 53, 69, 64, 136, 241, 4, 83>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 42,
              b: "",
              z: -42,
@@ -59,13 +59,13 @@ defmodule Protox.DecodeTest do
 
   test "Sub, unknown tag (embedded message)" do
     bytes = <<8, 42, 34, 0, 136, 241, 4, 83>>
-    assert Sub.decode_meta!(bytes) == %Sub{a: 42, b: "", z: -42, __uf__: [{4, 2, <<>>}]}
+    assert Sub.decode!(bytes) == %Sub{a: 42, b: "", z: -42, __uf__: [{4, 2, <<>>}]}
   end
 
   test "Sub, unknown tag (string)" do
     bytes = <<8, 42, 42, 4, 121, 97, 121, 101, 136, 241, 4, 83>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 42,
              b: "",
              z: -42,
@@ -76,7 +76,7 @@ defmodule Protox.DecodeTest do
   test "Sub, unknown tag (bytes)" do
     bytes = <<8, 142, 26, 82, 4, 104, 101, 121, 33, 136, 241, 4, 19>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 3342,
              b: "",
              z: -10,
@@ -87,7 +87,7 @@ defmodule Protox.DecodeTest do
   test "Sub, unknown tag (varint)" do
     bytes = <<8, 142, 26, 82, 4, 104, 101, 121, 33, 88, 154, 5, 136, 241, 4, 19>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 3342,
              b: "",
              z: -10,
@@ -99,7 +99,7 @@ defmodule Protox.DecodeTest do
     bytes =
       <<8, 142, 26, 82, 4, 104, 101, 121, 33, 88, 154, 5, 101, 236, 81, 5, 66, 136, 241, 4, 19>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 3342,
              b: "",
              z: -10,
@@ -113,29 +113,29 @@ defmodule Protox.DecodeTest do
 
   test "Sub.c" do
     bytes = <<48, 212, 253, 255, 255, 255, 255, 255, 255, 255, 1>>
-    assert Sub.decode_meta!(bytes) == %Sub{a: 0, b: "", c: -300}
+    assert Sub.decode!(bytes) == %Sub{a: 0, b: "", c: -300}
   end
 
   test "Sub.d; Sub.e" do
     bytes = <<56, 133, 7, 64, 177, 3>>
-    assert Sub.decode_meta!(bytes) == %Sub{a: 0, b: "", c: 0, d: 901, e: 433}
+    assert Sub.decode!(bytes) == %Sub{a: 0, b: "", c: 0, d: 901, e: 433}
   end
 
   test "Sub.d, overflow values > MAX UINT32" do
     #  <<128, 128, 128, 128, 32>> == 8589934592
     bytes = <<56, 128, 128, 128, 128, 32>>
-    assert Sub.decode_meta!(bytes) == %Sub{d: 0}
+    assert Sub.decode!(bytes) == %Sub{d: 0}
   end
 
   test "Sub.f" do
     bytes = <<72, 213, 20>>
-    assert Sub.decode_meta!(bytes) == %Sub{a: 0, b: "", c: 0, d: 0, e: 0, f: -1323}
+    assert Sub.decode!(bytes) == %Sub{a: 0, b: "", c: 0, d: 0, e: 0, f: -1323}
   end
 
   test "Sub.g" do
     bytes = <<106, 16, 1, 0, 0, 0, 0, 0, 0, 0, 254, 255, 255, 255, 255, 255, 255, 255>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 0,
              b: "",
              c: 0,
@@ -153,7 +153,7 @@ defmodule Protox.DecodeTest do
       <<106, 8, 1, 0, 0, 0, 0, 0, 0, 0, 8, 150, 1, 106, 8, 254, 255, 255, 255, 255, 255, 255,
         255>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 150,
              c: 0,
              b: "",
@@ -171,7 +171,7 @@ defmodule Protox.DecodeTest do
       <<106, 8, 0, 0, 0, 0, 0, 0, 0, 0, 114, 4, 255, 255, 255, 255, 122, 16, 154, 153, 153, 153,
         153, 153, 64, 64, 0, 0, 0, 0, 0, 0, 70, 192>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 0,
              b: "",
              c: 0,
@@ -186,12 +186,12 @@ defmodule Protox.DecodeTest do
 
   test "Sub.i, infinity" do
     bytes = <<122, 8, 0, 0, 0, 0, 0, 0, 0xF0, 0x7F>>
-    assert Sub.decode_meta!(bytes) == %Sub{i: [:infinity]}
+    assert Sub.decode!(bytes) == %Sub{i: [:infinity]}
   end
 
   test "Sub.i, -infinity" do
     bytes = <<122, 8, 0, 0, 0, 0, 0, 0, 0xF0, 0xFF>>
-    assert Sub.decode_meta!(bytes) == %Sub{i: [:"-infinity"]}
+    assert Sub.decode!(bytes) == %Sub{i: [:"-infinity"]}
   end
 
   test "Sub.i, nan" do
@@ -199,13 +199,13 @@ defmodule Protox.DecodeTest do
       <<122, 24, 0x01, 0, 0, 0, 0, 0, 0xF0, 0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
         0, 0, 0, 0, 0, 0, 0xF8, 0xFF>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{i: [:nan, :nan, :nan]}
+    assert Sub.decode!(bytes) == %Sub{i: [:nan, :nan, :nan]}
   end
 
   test "Sub.h" do
     bytes = <<114, 8, 255, 255, 255, 255, 254, 255, 255, 255>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 0,
              b: "",
              c: 0,
@@ -220,13 +220,13 @@ defmodule Protox.DecodeTest do
 
   test "Sub.j, unpacked in definition" do
     bytes = <<128, 1, 1, 128, 1, 2, 128, 1, 3>>
-    assert Sub.decode_meta!(bytes) == %Sub{j: [1, 2, 3]}
+    assert Sub.decode!(bytes) == %Sub{j: [1, 2, 3]}
   end
 
   test "Sub.n" do
     bytes = <<162, 1, 4, 1, 0, 0, 1>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 0,
              b: "",
              c: 0,
@@ -243,7 +243,7 @@ defmodule Protox.DecodeTest do
   test "Sub.n (all false)" do
     bytes = <<162, 1, 4, 0, 0, 0, 0>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 0,
              b: "",
              c: 0,
@@ -260,7 +260,7 @@ defmodule Protox.DecodeTest do
   test "Sub.o " do
     bytes = <<170, 1, 3, 0, 1, 0>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 0,
              b: "",
              c: 0,
@@ -278,7 +278,7 @@ defmodule Protox.DecodeTest do
   test "Sub.o (unknown entry) " do
     bytes = <<170, 1, 4, 0, 1, 0, 2>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 0,
              b: "",
              c: 0,
@@ -296,7 +296,7 @@ defmodule Protox.DecodeTest do
   test "Sub.p" do
     bytes = <<176, 1, 1, 176, 1, 0, 176, 1, 1, 176, 1, 0>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 0,
              b: "",
              c: 0,
@@ -315,7 +315,7 @@ defmodule Protox.DecodeTest do
   test "Sub.p, not contiguous, should be concatenated" do
     bytes = <<176, 1, 1, 176, 1, 0, 8, 150, 1, 176, 1, 1, 176, 1, 0>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 150,
              c: 0,
              b: "",
@@ -339,15 +339,15 @@ defmodule Protox.DecodeTest do
 
     msg = %Sub{p: [true, false, true, false]}
 
-    assert Sub.decode_meta!(packed) == Sub.decode_meta!(unpacked)
-    assert Sub.decode_meta!(merge_1) == msg
-    assert Sub.decode_meta!(merge_2) == msg
+    assert Sub.decode!(packed) == Sub.decode!(unpacked)
+    assert Sub.decode!(merge_1) == msg
+    assert Sub.decode!(merge_2) == msg
   end
 
   test "Sub.q (unpacked in definition) " do
     bytes = <<184, 1, 0, 184, 1, 1, 184, 1, 1, 184, 1, 0>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 0,
              b: "",
              c: 0,
@@ -367,7 +367,7 @@ defmodule Protox.DecodeTest do
   test "Sub.q (unpacked in definition, with unknown values) " do
     bytes = <<184, 1, 0, 184, 1, 1, 184, 1, 2, 184, 1, 0>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 0,
              b: "",
              c: 0,
@@ -386,13 +386,13 @@ defmodule Protox.DecodeTest do
 
   test "Sub.r, negative constant" do
     bytes = <<192, 1, 255, 255, 255, 255, 255, 255, 255, 255, 255, 1>>
-    assert Sub.decode_meta!(bytes) == %Sub{r: :NEG}
+    assert Sub.decode!(bytes) == %Sub{r: :NEG}
   end
 
   test "Sub.u" do
     bytes = <<218, 1, 6, 0, 1, 2, 3, 144, 78>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 0,
              b: "",
              c: 0,
@@ -409,7 +409,7 @@ defmodule Protox.DecodeTest do
   test "Sub.w" do
     bytes = <<226, 1, 7, 0, 1, 4, 5, 160, 156, 1>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 0,
              b: "",
              c: 0,
@@ -428,7 +428,7 @@ defmodule Protox.DecodeTest do
       <<234, 1, 24, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 1, 2, 253, 255, 255, 255, 255,
         255, 255, 255, 255, 1, 144, 78>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 0,
              b: "",
              c: 0,
@@ -445,7 +445,7 @@ defmodule Protox.DecodeTest do
   test "Sub.y" do
     bytes = <<242, 1, 6, 0, 1, 2, 3, 144, 78>>
 
-    assert Sub.decode_meta!(bytes) == %Sub{
+    assert Sub.decode!(bytes) == %Sub{
              a: 0,
              b: "",
              c: 0,
@@ -462,25 +462,25 @@ defmodule Protox.DecodeTest do
   test "Sub.z, overflow values > MAX UINT32" do
     #  <<130, 128, etc. == 4294967298
     bytes = <<136, 241, 4, 130, 128, 128, 128, 16>>
-    assert Sub.decode_meta!(bytes) == %Sub{z: 1}
+    assert Sub.decode!(bytes) == %Sub{z: 1}
   end
 
   test "Sub.zz, overflow values > MAX UINT64" do
     #  <<130, 128, 128, 128, 1>> == 309485009821345068724781056
     bytes = <<144, 241, 4, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 32>>
-    assert Sub.decode_meta!(bytes) == %Sub{zz: 0}
+    assert Sub.decode!(bytes) == %Sub{zz: 0}
   end
 
   test "Msg.msg_a" do
     bytes = <<218, 1, 7, 0, 2, 3, 6, 159, 156, 1>>
-    assert Msg.decode_meta!(bytes) == %Msg{msg_a: [0, 1, -2, 3, -10_000]}
+    assert Msg.decode!(bytes) == %Msg{msg_a: [0, 1, -2, 3, -10_000]}
   end
 
   test "Msg.msg_b" do
     bytes =
       <<226, 1, 20, 0, 0, 0, 0, 1, 0, 0, 0, 254, 255, 255, 255, 3, 0, 0, 0, 240, 216, 255, 255>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{msg_b: [0, 1, -2, 3, -10_000]}
+    assert Msg.decode!(bytes) == %Msg{msg_b: [0, 1, -2, 3, -10_000]}
   end
 
   test "Msg.msg_c" do
@@ -488,13 +488,13 @@ defmodule Protox.DecodeTest do
       <<234, 1, 40, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 254, 255, 255, 255, 255, 255,
         255, 255, 3, 0, 0, 0, 0, 0, 0, 0, 240, 216, 255, 255, 255, 255, 255, 255>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{msg_c: [0, 1, -2, 3, -10_000]}
+    assert Msg.decode!(bytes) == %Msg{msg_c: [0, 1, -2, 3, -10_000]}
   end
 
   test "Msg.msg_Sub.a" do
     bytes = <<26, 3, 8, 150, 1>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :FOO,
              msg_e: false,
              msg_f: %Sub{a: 150, b: ""},
@@ -509,7 +509,7 @@ defmodule Protox.DecodeTest do
   test "Msg.msg_Sub.a; Msg.msg_Sub.b" do
     bytes = <<26, 12, 8, 150, 1, 18, 7, 116, 101, 115, 116, 105, 110, 103>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :FOO,
              msg_e: false,
              msg_f: %Sub{a: 150, b: "testing"},
@@ -524,7 +524,7 @@ defmodule Protox.DecodeTest do
   test "Msg.msg_g" do
     bytes = <<34, 6, 3, 142, 2, 158, 167, 5>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :FOO,
              msg_e: false,
              msg_f: nil,
@@ -539,7 +539,7 @@ defmodule Protox.DecodeTest do
   test "Msg.msg_g (unpacked)" do
     bytes = <<32, 1, 32, 2, 32, 3>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :FOO,
              msg_e: false,
              msg_f: nil,
@@ -556,7 +556,7 @@ defmodule Protox.DecodeTest do
       <<26, 12, 8, 150, 1, 18, 7, 116, 101, 115, 116, 105, 110, 103, 34, 6, 3, 142, 2, 158, 167,
         5>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :FOO,
              msg_e: false,
              msg_f: %Sub{a: 150, b: "testing"},
@@ -571,7 +571,7 @@ defmodule Protox.DecodeTest do
   test "Msg.msg_e" do
     bytes = <<16, 1>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :FOO,
              msg_e: true,
              msg_f: nil,
@@ -586,7 +586,7 @@ defmodule Protox.DecodeTest do
   test "Msg.msg_h" do
     bytes = <<41, 246, 40, 92, 143, 194, 181, 64, 192>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :FOO,
              msg_e: false,
              msg_f: nil,
@@ -601,7 +601,7 @@ defmodule Protox.DecodeTest do
   test "Msg.msg_i" do
     bytes = <<50, 8, 0, 0, 128, 63, 0, 0, 0, 64>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :FOO,
              msg_e: false,
              msg_f: nil,
@@ -616,7 +616,7 @@ defmodule Protox.DecodeTest do
   test "Msg.msg_i, infinity, -infinity" do
     bytes = <<50, 8, 0, 0, 0x80, 0x7F, 0, 0, 0x80, 0xFF>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :FOO,
              msg_e: false,
              msg_f: nil,
@@ -631,7 +631,7 @@ defmodule Protox.DecodeTest do
   test "Msg.msg_i, nan" do
     bytes = <<50, 12, 0x01, 0, 0x80, 0x7F, 0, 0, 0xC0, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :FOO,
              msg_e: false,
              msg_f: nil,
@@ -646,7 +646,7 @@ defmodule Protox.DecodeTest do
   test "Msg.msg_d" do
     bytes = <<8, 1>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :BAR,
              msg_e: false,
              msg_f: nil,
@@ -661,7 +661,7 @@ defmodule Protox.DecodeTest do
   test "Msg.msg_d, unknown enum entry" do
     bytes = <<8, 2>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: 2,
              msg_e: false,
              msg_f: nil,
@@ -676,7 +676,7 @@ defmodule Protox.DecodeTest do
   test "Msg.msg_j" do
     bytes = <<58, 3, 8, 146, 6, 58, 5, 18, 3, 102, 111, 111>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :FOO,
              msg_e: false,
              msg_f: nil,
@@ -691,7 +691,7 @@ defmodule Protox.DecodeTest do
   test "Msg.msg_k" do
     bytes = <<66, 7, 8, 2, 18, 3, 98, 97, 114, 66, 7, 8, 1, 18, 3, 102, 111, 111>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :FOO,
              msg_e: false,
              msg_f: nil,
@@ -706,7 +706,7 @@ defmodule Protox.DecodeTest do
   test "Msg.msg_k, with unknown data in map entry" do
     bytes = <<66, 7, 8, 2, 18, 3, 98, 97, 114, 66, 10, 8, 1, 18, 3, 102, 111, 111, 26, 1, 102>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :FOO,
              msg_e: false,
              msg_f: nil,
@@ -721,7 +721,7 @@ defmodule Protox.DecodeTest do
   test "Msg.msg_k (reversed)" do
     bytes = <<66, 7, 8, 1, 18, 3, 102, 111, 111, 66, 7, 8, 2, 18, 3, 98, 97, 114>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :FOO,
              msg_e: false,
              msg_f: nil,
@@ -736,7 +736,7 @@ defmodule Protox.DecodeTest do
   test "Msg.msg_k (reversed inside map entry)" do
     bytes = <<66, 7, 18, 3, 98, 97, 114, 8, 2, 66, 7, 8, 1, 18, 3, 102, 111, 111>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :FOO,
              msg_e: false,
              msg_f: nil,
@@ -751,19 +751,19 @@ defmodule Protox.DecodeTest do
   test "Msg.msg_k, missing key" do
     bytes = <<66, 5, 18, 3, 102, 111, 111>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{msg_k: %{0 => "foo"}}
+    assert Msg.decode!(bytes) == %Msg{msg_k: %{0 => "foo"}}
   end
 
   test "Msg.msg_k, missing value" do
     bytes = <<66, 2, 8, 1>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{msg_k: %{1 => ""}}
+    assert Msg.decode!(bytes) == %Msg{msg_k: %{1 => ""}}
   end
 
   test "Upper.msg_map, missing message value" do
     bytes = <<18, 5, 10, 3, 102, 111, 111>>
 
-    assert Upper.decode_meta!(bytes) == %Upper{msg_map: %{"foo" => %Msg{}}}
+    assert Upper.decode!(bytes) == %Upper{msg_map: %{"foo" => %Msg{}}}
   end
 
   test "Msg.msg_l" do
@@ -771,7 +771,7 @@ defmodule Protox.DecodeTest do
       <<74, 14, 10, 3, 98, 97, 114, 17, 0, 0, 0, 0, 0, 0, 240, 63, 74, 14, 10, 3, 102, 111, 111,
         17, 154, 153, 153, 153, 153, 153, 69, 64>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :FOO,
              msg_e: false,
              msg_f: nil,
@@ -787,7 +787,7 @@ defmodule Protox.DecodeTest do
   test "Msg.msg_m, empty" do
     bytes = ""
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :FOO,
              msg_e: false,
              msg_f: nil,
@@ -804,7 +804,7 @@ defmodule Protox.DecodeTest do
   test "Msg.msg_m, string" do
     bytes = <<82, 3, 98, 97, 114>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :FOO,
              msg_e: false,
              msg_f: nil,
@@ -821,7 +821,7 @@ defmodule Protox.DecodeTest do
   test "Msg.msg_m, Sub" do
     bytes = <<90, 2, 8, 42>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :FOO,
              msg_e: false,
              msg_f: nil,
@@ -838,7 +838,7 @@ defmodule Protox.DecodeTest do
   test "Msg.msg_m, several fields on the wire, keep the last one" do
     bytes = <<90, 2, 8, 42, 82, 3, 98, 97, 114, 82, 3, 98, 97, 114>>
 
-    assert Msg.decode_meta!(bytes) == %Msg{
+    assert Msg.decode!(bytes) == %Msg{
              msg_d: :FOO,
              msg_e: false,
              msg_f: nil,
@@ -855,7 +855,7 @@ defmodule Protox.DecodeTest do
   test "Upper.msg.f" do
     bytes = <<10, 4, 26, 2, 8, 42>>
 
-    assert Upper.decode_meta!(bytes) == %Upper{
+    assert Upper.decode!(bytes) == %Upper{
              msg: %Msg{
                msg_d: :FOO,
                msg_e: false,
@@ -871,7 +871,7 @@ defmodule Protox.DecodeTest do
   test "Upper.msg_map" do
     bytes = <<18, 9, 10, 3, 102, 111, 111, 18, 2, 8, 1, 18, 9, 10, 3, 98, 97, 122, 18, 2, 16, 1>>
 
-    assert Upper.decode_meta!(bytes) == %Upper{
+    assert Upper.decode!(bytes) == %Upper{
              msg: nil,
              msg_map: %{
                "foo" => %Msg{
@@ -904,12 +904,20 @@ defmodule Protox.DecodeTest do
 
   test "Upper.empty" do
     bytes = <<26, 0>>
-    assert Upper.decode_meta!(bytes) == %Upper{empty: %Empty{}}
+    assert Upper.decode!(bytes) == %Upper{empty: %Empty{}}
   end
 
   test "Empty" do
     bytes = <<>>
-    assert Empty.decode_meta!(bytes) == %Empty{}
+    assert Empty.decode!(bytes) == %Empty{}
+  end
+
+  test "Empty, unknown fields" do
+    bytes = <<8, 42, 25, 246, 40, 92, 143, 194, 53, 69, 64, 136, 241, 4, 83>>
+
+    assert Empty.decode!(bytes) == %Empty{
+             __uf__: [{10001, 0, "S"}, {3, 1, <<246, 40, 92, 143, 194, 53, 69, 64>>}, {1, 0, "*"}]
+           }
   end
 
   test "Dummy data" do
@@ -919,39 +927,39 @@ defmodule Protox.DecodeTest do
   test "Raise when required field is missing" do
     exception =
       assert_raise Protox.RequiredFieldsError, fn ->
-        Required.decode_meta!(<<>>)
+        Required.decode!(<<>>)
       end
 
     assert exception.missing_fields == [:a]
   end
 
   test "Required field" do
-    assert Required.decode_meta!(<<8, 0>>) == %Required{a: 0}
-    assert Required.decode_meta!(<<8, 1>>) == %Required{a: 1}
+    assert Required.decode!(<<8, 0>>) == %Required{a: 0}
+    assert Required.decode!(<<8, 1>>) == %Required{a: 1}
   end
 
   test "No name clash for __uf__" do
-    assert NoNameClash.decode_meta!(<<>>) == %NoNameClash{__uf__: 0}
+    assert NoNameClash.decode!(<<>>) == %NoNameClash{__uf__: 0}
   end
 
   test "Protobuf2, all fields unset" do
     bytes = <<>>
-    assert Protobuf2.decode_meta!(bytes) == %Protobuf2{a: nil, s: nil, t: nil}
+    assert Protobuf2.decode!(bytes) == %Protobuf2{a: nil, s: nil, t: nil}
   end
 
   test "Protobuf2.s" do
     bytes = <<200, 1, 2>>
-    assert Protobuf2.decode_meta!(bytes) == %Protobuf2{s: :TWO}
+    assert Protobuf2.decode!(bytes) == %Protobuf2{s: :TWO}
   end
 
   test "Protobuf2.t, optional is nil when not set" do
     bytes = <<>>
-    assert Protobuf2.decode_meta!(bytes) == %Protobuf2{t: nil}
+    assert Protobuf2.decode!(bytes) == %Protobuf2{t: nil}
   end
 
   test "Protobuf2.a, repeated scalar, select last" do
     bytes = <<8, 150, 1, 8, 1>>
-    assert Protobuf2.decode_meta!(bytes) == %Protobuf2{a: 1}
+    assert Protobuf2.decode!(bytes) == %Protobuf2{a: 1}
   end
 
   test "Required.Proto3.ProtobufInput.ValidDataOneof.MESSAGE.Merge" do
@@ -959,9 +967,9 @@ defmodule Protox.DecodeTest do
     req2 = <<130, 7, 7, 18, 5, 16, 1, 200, 5, 1>>
     req = req1 <> req2
 
-    m1 = ProtobufTestMessages.Proto3.TestAllTypesProto3.decode_meta!(req1)
-    m2 = ProtobufTestMessages.Proto3.TestAllTypesProto3.decode_meta!(req2)
-    m = ProtobufTestMessages.Proto3.TestAllTypesProto3.decode_meta!(req)
+    m1 = ProtobufTestMessages.Proto3.TestAllTypesProto3.decode!(req1)
+    m2 = ProtobufTestMessages.Proto3.TestAllTypesProto3.decode!(req2)
+    m = ProtobufTestMessages.Proto3.TestAllTypesProto3.decode!(req)
 
     # https://developers.google.com/protocol-buffers/docs/encoding#optional
     assert m == Protox.Message.merge(m1, m2)

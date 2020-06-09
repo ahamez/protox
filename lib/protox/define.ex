@@ -69,16 +69,6 @@ defmodule Protox.Define do
           unquote(encoder)
           unquote(decoder)
 
-          @spec decode!(binary) :: struct | no_return
-          def decode!(bytes) do
-            Protox.Decode.decode!(bytes, unquote(msg_name), unquote(required_fields))
-          end
-
-          @spec decode(binary) :: {:ok, struct} | {:error, any}
-          def decode(bytes) do
-            Protox.Decode.decode(bytes, unquote(msg_name), unquote(required_fields))
-          end
-
           @spec defs() :: %{
                   required(non_neg_integer) => {atom, Protox.Types.kind(), Protox.Types.type()}
                 }

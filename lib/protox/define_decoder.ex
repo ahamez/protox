@@ -11,33 +11,23 @@ defmodule Protox.DefineDecoder do
 
   # -- Private
 
-  defp make_decode(msg_name, [], _, _) do
-    quote do
-      @spec decode_meta(binary) :: {:ok, struct} | {:error, any}
-      def decode_meta(_msg), do: {:ok, struct(unquote(msg_name))}
-
-      @spec decode_meta!(binary) :: struct | no_return
-      def decode_meta!(_msg), do: struct(unquote(msg_name))
-    end
-  end
-
   defp make_decode(msg_name, fields, required_fields, syntax) do
     decode_return = make_decode_return(syntax, required_fields)
     parse_key_value = make_parse_key_value(syntax, fields)
     parse_map_entries = make_parse_map_entries(fields)
 
     quote do
-      @spec decode_meta(binary) :: {:ok, struct} | {:error, any}
-      def decode_meta(bytes) do
+      @spec decode(binary) :: {:ok, struct} | {:error, any}
+      def decode(bytes) do
         try do
-          {:ok, decode_meta!(bytes)}
+          {:ok, decode!(bytes)}
         rescue
           e -> {:error, e}
         end
       end
 
-      @spec decode_meta!(binary) :: struct | no_return
-      def decode_meta!(bytes) do
+      @spec decode!(binary) :: struct | no_return
+      def decode!(bytes) do
         {msg, set_fields} =
           parse_key_value([], bytes, unquote(msg_name).defs(), struct(unquote(msg_name)))
 
@@ -261,7 +251,7 @@ defmodule Protox.DefineDecoder do
   end
 
   defp make_parse_delimited(bytes_var, {:message, mod}) do
-    quote(do: unquote(mod).decode_meta!(unquote(bytes_var)))
+    quote(do: unquote(mod).decode!(unquote(bytes_var)))
   end
 
   defp make_parse_delimited(bytes_var, :bool) do
