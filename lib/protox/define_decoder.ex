@@ -89,10 +89,10 @@ defmodule Protox.DefineDecoder do
         quote do
           {tag, wire_type, rest} ->
             {unquote(value_var), new_rest} = Protox.Decode.parse_unknown(tag, wire_type, rest)
-            previous = unquote(msg_var).__struct__.unknown_fields(unquote(msg_var))
 
             unquote(field_var) =
-              {unquote(msg_var).__struct__.unknown_fields_name, [unquote(value_var) | previous]}
+              {unquote(msg_var).__struct__.unknown_fields_name,
+               [unquote(value_var) | unquote(msg_var).__struct__.unknown_fields(unquote(msg_var))]}
 
             unquote(case_return)
         end
@@ -205,9 +205,8 @@ defmodule Protox.DefineDecoder do
 
   defp make_update_field(name, :map, _type, msg_var, value_var) do
     quote do
-      previous = unquote(msg_var).unquote(name)
       {entry_key, entry_value} = unquote(value_var)
-      {unquote(name), Map.put(previous, entry_key, entry_value)}
+      {unquote(name), Map.put(unquote(msg_var).unquote(name), entry_key, entry_value)}
     end
   end
 
@@ -240,8 +239,7 @@ defmodule Protox.DefineDecoder do
 
   defp make_update_field(name, _kind, _type, msg_var, value_var) do
     quote do
-      previous = unquote(msg_var).unquote(name)
-      {unquote(name), previous ++ List.wrap(unquote(value_var))}
+      {unquote(name), unquote(msg_var).unquote(name) ++ List.wrap(unquote(value_var))}
     end
   end
 
