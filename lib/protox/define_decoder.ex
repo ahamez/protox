@@ -213,10 +213,8 @@ defmodule Protox.DefineDecoder do
 
   defp make_update_field(name, {:oneof, parent_field}, {:message, _}, msg_var, value_var) do
     quote do
-      name = unquote(name)
-
       case unquote(msg_var).unquote(parent_field) do
-        {^name, previous_value} ->
+        {unquote(name), previous_value} ->
           {unquote(parent_field),
            {unquote(name), Protox.Message.merge(previous_value, unquote(value_var))}}
 
