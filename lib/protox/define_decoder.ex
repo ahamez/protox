@@ -24,6 +24,7 @@ defmodule Protox.DefineDecoder do
   defp make_decode(msg_name, fields, required_fields, syntax) do
     decode_return = make_decode_return(syntax, required_fields)
     parse_key_value = make_parse_key_value(syntax, fields)
+    parse_map_entries = make_parse_map_entries(fields)
 
     quote do
       @spec decode_meta(binary) :: {:ok, struct} | {:error, any}
@@ -51,6 +52,8 @@ defmodule Protox.DefineDecoder do
       defp parse_key_value(set_fields, bytes, defs, msg) do
         unquote(parse_key_value)
       end
+
+      unquote(parse_map_entries)
     end
   end
 
@@ -80,6 +83,7 @@ defmodule Protox.DefineDecoder do
 
     unknown_tag_case =
       (
+        # No need to maintain a list of set fields for proto3
         case_return =
           case syntax do
             :proto2 -> quote do: {set_fields, unquote(field_var), new_rest}
@@ -135,6 +139,7 @@ defmodule Protox.DefineDecoder do
     parse_single = make_parse_single(bytes_var, type)
     update_field = make_update_field(name, kind, type, msg_var, value_var)
 
+    # No need to maintain a list of set fields for proto3
     case_return =
       case syntax do
         :proto2 -> quote do: {[unquote(name) | set_fields], unquote(field_var), new_rest}
@@ -196,7 +201,7 @@ defmodule Protox.DefineDecoder do
     quote do
       {unquote(tag), unquote(wire_type), unquote(bytes_var)} ->
         {len, new_bytes} = Protox.Varint.decode(unquote(bytes_var))
-        <<delimited::binary-size(len), new_rest::binary>> = new_bytes
+        <<unquote(delimited_var)::binary-size(len), new_rest::binary>> = new_bytes
         unquote(value_var) = unquote(parse_delimited)
         unquote(field_var) = unquote(update_field)
         unquote(case_return)
@@ -312,11 +317,13 @@ defmodule Protox.DefineDecoder do
   end
 
   defp make_parse_delimited(bytes_var, {key_type, value_type}) do
-    nil_map_value =
+    unset_map_value =
       case value_type do
         {:message, msg_type} -> quote(do: struct(unquote(msg_type)))
         _ -> quote(do: Protox.Default.default(unquote(value_type)))
       end
+
+    parser_fun_name = make_map_decode_fun_name(key_type, value_type)
 
     quote do
       alias Protox.Decode.MapEntry
@@ -326,19 +333,17 @@ defmodule Protox.DefineDecoder do
         2 => {:value, {:default, :dummy}, unquote(value_type)}
       }
 
-      # TODO: remove usage of Protox.Decode.
-      {%MapEntry{key: map_key, value: map_value}, _} =
-        Protox.Decode.parse_key_value([], unquote(bytes_var), defs, %MapEntry{})
+      {map_key, map_value} = unquote(parser_fun_name)({:unset, :unset}, unquote(bytes_var))
 
       map_key =
         case map_key do
-          nil -> Protox.Default.default(unquote(key_type))
+          :unset -> Protox.Default.default(unquote(key_type))
           _ -> map_key
         end
 
       map_value =
         case map_value do
-          nil -> unquote(nil_map_value)
+          :unset -> unquote(unset_map_value)
           _ -> map_value
         end
 
@@ -400,5 +405,76 @@ defmodule Protox.DefineDecoder do
 
   defp make_parse_single(bytes_var, {:enum, mod}) do
     quote(do: Protox.Decode.parse_enum(unquote(bytes_var), unquote(mod)))
+  end
+
+  defp make_parse_map_entries(fields) do
+    {maps, _} = Protox.Defs.split_maps(fields)
+
+    Enum.map(maps, fn {_, _, _, :map, {key_type, value_type}} ->
+      bytes_var = quote do: bytes
+      rest_var = quote do: rest
+      fun_name = make_map_decode_fun_name(key_type, value_type)
+
+      key_parser = make_parse_map_entry(rest_var, key_type)
+      value_parser = make_parse_map_entry(rest_var, value_type)
+
+      quote do
+        defp unquote(fun_name)(map_entry, <<>>) do
+          map_entry
+        end
+
+        defp unquote(fun_name)({entry_key, entry_value}, unquote(bytes_var)) do
+          {map_entry, unquote(rest_var)} =
+            case Protox.Decode.parse_key(unquote(bytes_var)) do
+              # key
+              {1, _, unquote(rest_var)} ->
+                {res, unquote(rest_var)} = unquote(key_parser)
+                {{res, entry_value}, unquote(rest_var)}
+
+              # value
+              {2, _, unquote(rest_var)} ->
+                {res, unquote(rest_var)} = unquote(value_parser)
+                {{entry_key, res}, unquote(rest_var)}
+
+              {tag, wire_type, unquote(rest_var)} ->
+                {_, unquote(rest_var)} =
+                  Protox.Decode.parse_unknown(tag, wire_type, unquote(rest_var))
+
+                {{entry_key, entry_value}, unquote(rest_var)}
+            end
+
+          unquote(fun_name)(map_entry, unquote(rest_var))
+        end
+      end
+    end)
+  end
+
+  defp make_map_decode_fun_name(key_type, value_type) do
+    value_name =
+      case value_type do
+        {:message, sub_msg} -> "msg_#{Atom.to_string(sub_msg)}"
+        {:enum, enum} -> "enum_#{Atom.to_string(enum)}"
+        ty -> "#{Atom.to_string(ty)}"
+      end
+
+    String.to_atom("parse_#{Atom.to_string(key_type)}_#{value_name}")
+  end
+
+  defp make_parse_map_entry(bytes_var, type) do
+    delimited_var = quote do: delimited
+
+    parse_delimited =
+      quote do
+        {len, new_rest} = Protox.Varint.decode(unquote(bytes_var))
+        <<unquote(delimited_var)::binary-size(len), new_rest::binary>> = new_rest
+        {unquote(make_parse_delimited(delimited_var, type)), new_rest}
+      end
+
+    case type do
+      :string -> parse_delimited
+      :bytes -> parse_delimited
+      {:message, _} -> parse_delimited
+      _ -> make_parse_single(bytes_var, type)
+    end
   end
 end
