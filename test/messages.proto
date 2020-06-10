@@ -27,6 +27,8 @@ message Sub {
   repeated uint64 y = 30;
   sint32 z = 10001;
   sint64 zz = 10002;
+  map<sfixed64, bytes> map1 = 12345;
+  map<sfixed64, bytes> map2 = 12346;
 }
 
 enum E {

@@ -471,6 +471,18 @@ defmodule Protox.DecodeTest do
     assert Sub.decode!(bytes) == %Sub{zz: 0}
   end
 
+  test "Sub.map1/map2" do
+    bytes =
+      <<202, 131, 6, 13, 9, 255, 255, 255, 255, 255, 255, 255, 255, 18, 2, 1, 2, 202, 131, 6, 13,
+        9, 0, 0, 0, 0, 0, 0, 0, 0, 18, 2, 3, 4, 210, 131, 6, 13, 9, 0, 0, 0, 0, 0, 0, 0, 0, 18, 2,
+        5, 6, 210, 131, 6, 13, 9, 1, 0, 0, 0, 0, 0, 0, 0, 18, 2, 7, 8>>
+
+    assert Sub.decode!(bytes) == %Sub{
+             map1: %{-1 => <<1, 2>>, 0 => <<3, 4>>},
+             map2: %{0 => <<5, 6>>, 1 => <<7, 8>>}
+           }
+  end
+
   test "Msg.msg_a" do
     bytes = <<218, 1, 7, 0, 2, 3, 6, 159, 156, 1>>
     assert Msg.decode!(bytes) == %Msg{msg_a: [0, 1, -2, 3, -10_000]}
