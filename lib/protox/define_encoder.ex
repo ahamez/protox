@@ -53,7 +53,7 @@ defmodule Protox.DefineEncoder do
 
   defp _make_encode_fun(ast, []) do
     quote do
-      unquote(ast) |> encode_unknown_fields(msg)
+      encode_unknown_fields(unquote(ast), msg)
     end
   end
 
@@ -63,7 +63,7 @@ defmodule Protox.DefineEncoder do
 
     ast =
       quote do
-        unquote(ast) |> unquote(fun_name)(msg)
+        unquote(fun_name)(unquote(ast), msg)
       end
 
     _make_encode_fun(ast, fields)
@@ -79,7 +79,7 @@ defmodule Protox.DefineEncoder do
 
     ast =
       quote do
-        unquote(ast) |> unquote(fun_name)(msg)
+        unquote(fun_name)(unquote(ast), msg)
       end
 
     make_encode_oneof_fun(ast, oneofs)
@@ -225,10 +225,10 @@ defmodule Protox.DefineEncoder do
       map = Map.fetch!(msg, unquote(name))
 
       Enum.reduce(map, acc, fn {unquote(k_var), unquote(v_var)}, acc ->
-        map_key_value_bytes = [unquote(encode_map_key_ast)] |> :binary.list_to_bin()
+        map_key_value_bytes = :binary.list_to_bin([unquote(encode_map_key_ast)])
         map_key_value_len = byte_size(map_key_value_bytes)
 
-        map_value_value_bytes = [unquote(encode_map_value_ast)] |> :binary.list_to_bin()
+        map_value_value_bytes = :binary.list_to_bin([unquote(encode_map_value_ast)])
         map_value_value_len = byte_size(map_value_value_bytes)
 
         len =
@@ -277,7 +277,7 @@ defmodule Protox.DefineEncoder do
     quote do
       {bytes, len} =
         Enum.reduce(values, {[], 0}, fn unquote(var), {acc, len} ->
-          value_bytes = [unquote(encode_value_ast)] |> :binary.list_to_bin()
+          value_bytes = :binary.list_to_bin([unquote(encode_value_ast)])
           {[acc, value_bytes], len + byte_size(value_bytes)}
         end)
 

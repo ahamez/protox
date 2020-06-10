@@ -3,8 +3,11 @@ defmodule Protox.Decode do
   # Decodes a binary into a message.
 
   use Bitwise
-  use Protox.Float
-  use Protox.WireTypes
+
+  use Protox.{
+    Float,
+    WireTypes
+  }
 
   @compile {:inline,
             parse_bool: 1,

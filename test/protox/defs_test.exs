@@ -2,6 +2,8 @@ defmodule Protox.DefsTest do
   use ExUnit.Case
 
   @defs [
+    {8, nil, :msg_k, :map, {:int32, :string}},
+    {9, nil, :msg_l, :map, {:string, :double}},
     {27, :repeated, :msg_a, :packed, :sint64},
     {28, :repeated, :msg_b, :packed, :fixed32},
     {29, :repeated, :msg_c, :packed, :sfixed64},
@@ -12,8 +14,6 @@ defmodule Protox.DefsTest do
     {5, :optional, :msg_h, {:default, 0.0}, :double},
     {6, :repeated, :msg_i, :packed, :float},
     {7, :repeated, :msg_j, :unpacked, {:message, Sub}},
-    {8, nil, :msg_k, :map, {:int32, :string}},
-    {9, nil, :msg_l, :map, {:string, :double}},
     {10, :optional, :msg_n, {:oneof, :msg_m}, :string},
     {11, :optional, :msg_o, {:oneof, :msg_m}, {:message, Sub}},
     {12, nil, :msg_p, :map, {:int32, {:enum, E}}},
@@ -35,6 +35,8 @@ defmodule Protox.DefsTest do
            ]
 
     assert fields == [
+             {8, nil, :msg_k, :map, {:int32, :string}},
+             {9, nil, :msg_l, :map, {:string, :double}},
              {27, :repeated, :msg_a, :packed, :sint64},
              {28, :repeated, :msg_b, :packed, :fixed32},
              {29, :repeated, :msg_c, :packed, :sfixed64},
@@ -45,8 +47,6 @@ defmodule Protox.DefsTest do
              {5, :optional, :msg_h, {:default, 0.0}, :double},
              {6, :repeated, :msg_i, :packed, :float},
              {7, :repeated, :msg_j, :unpacked, {:message, Sub}},
-             {8, nil, :msg_k, :map, {:int32, :string}},
-             {9, nil, :msg_l, :map, {:string, :double}},
              {12, nil, :msg_p, :map, {:int32, {:enum, E}}},
              {13, :optional, :msg_q, {:default, nil}, {:message, Protobuf2}}
            ]

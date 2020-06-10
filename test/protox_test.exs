@@ -228,8 +228,8 @@ defmodule ProtoxTest do
   end
 
   test "clear unknown fields" do
-    assert %Proto2A{__uf__: [{10, 2, <<104, 101, 121, 33>>}]}
-           |> Proto2A.clear_unknown_fields() == %Proto2A{}
+    assert Proto2A.clear_unknown_fields(%Proto2A{__uf__: [{10, 2, <<104, 101, 121, 33>>}]}) ==
+             %Proto2A{}
   end
 
   test "Can export to protoc and read its output (Sub)" do

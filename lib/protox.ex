@@ -60,7 +60,7 @@ defmodule Protox do
           [filepath]
 
         files: files ->
-          files |> Enum.map(&Path.expand/1)
+          Enum.map(files, &Path.expand/1)
       end
 
     {:ok, file_descriptor_set} = Protox.Protoc.run(files, path)

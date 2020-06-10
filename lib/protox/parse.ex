@@ -151,8 +151,10 @@ defmodule Protox.Parse do
   defp make_enum_constants(acc, []), do: acc
 
   defp make_enum_constants(acc, [descriptor | descriptors]) do
-    [{descriptor.number, String.to_atom(descriptor.name)} | acc]
-    |> make_enum_constants(descriptors)
+    make_enum_constants(
+      [{descriptor.number, String.to_atom(descriptor.name)} | acc],
+      descriptors
+    )
   end
 
   defp make_messages(acc, _, _, []), do: acc
@@ -273,7 +275,7 @@ defmodule Protox.Parse do
 
     case descriptor do
       %FieldDescriptorProto{oneof_index: index} when index != nil ->
-        parent = Enum.at(upper.oneof_decl, index).name |> String.to_atom()
+        parent = String.to_atom(Enum.at(upper.oneof_decl, index).name)
         {:oneof, parent}
 
       %FieldDescriptorProto{label: :repeated, options: %FieldOptions{packed: true}} ->

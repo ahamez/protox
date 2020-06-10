@@ -4,8 +4,11 @@ defmodule Protox.Encode do
 
   import Protox.Guards
   use Bitwise
-  use Protox.Float
-  use Protox.WireTypes
+
+  use Protox.{
+    Float,
+    WireTypes
+  }
 
   alias Protox.{
     Varint,

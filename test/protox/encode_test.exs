@@ -168,7 +168,7 @@ defmodule Protox.EncodeTest do
   end
 
   test "Sub, unknown tag (bytes)" do
-    bytes = Stream.repeatedly(fn -> <<0>> end) |> Enum.take(128) |> Enum.join()
+    bytes = fn -> <<0>> end |> Stream.repeatedly() |> Enum.take(128) |> Enum.join()
 
     assert %Sub{a: 3342, b: "", z: -10, __uf__: [{10, 2, bytes}]}
            |> Protox.Encode.encode!()

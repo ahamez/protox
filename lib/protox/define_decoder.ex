@@ -2,8 +2,10 @@ defmodule Protox.DefineDecoder do
   @moduledoc false
   # Internal. Generates the decoder of a message.
 
-  use Protox.Float
-  use Protox.WireTypes
+  use Protox.{
+    Float,
+    WireTypes
+  }
 
   def define(msg_name, fields, required_fields, syntax) do
     decode_return = make_decode_return(required_fields)
