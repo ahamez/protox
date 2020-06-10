@@ -57,8 +57,8 @@ defmodule Defs do
           {30, :repeated, :y, :packed, :uint64},
           {10_001, :optional, :z, {:default, 0}, :sint32},
           {10_002, :optional, :zz, {:default, 0}, :sint64},
-          {12345, nil, :map1, :map, {:sfixed64, :bytes}},
-          {12346, nil, :map2, :map, {:sfixed64, :bytes}}
+          {12_345, nil, :map1, :map, {:sfixed64, :bytes}},
+          {12_346, nil, :map2, :map, {:sfixed64, :bytes}}
         ]
       },
       {
