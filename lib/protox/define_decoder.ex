@@ -6,7 +6,7 @@ defmodule Protox.DefineDecoder do
   use Protox.WireTypes
 
   def define(msg_name, fields, required_fields, syntax) do
-    decode_return = make_decode_return(syntax, required_fields)
+    decode_return = make_decode_return(required_fields)
     parse_key_value = make_parse_key_value(syntax, fields)
     parse_map_entries = make_parse_map_entries(fields)
 
@@ -41,18 +41,15 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_decode_return(:proto2, required_fields) do
+  defp make_decode_return([]), do: quote(do: msg)
+
+  defp make_decode_return(required_fields) do
     quote do
       case unquote(required_fields) -- set_fields do
         [] -> msg
         missing_fields -> raise Protox.RequiredFieldsError.new(missing_fields)
       end
     end
-  end
-
-  # No need to check for missing required fields for Protobuf 3
-  defp make_decode_return(:proto3, _required_fields) do
-    quote(do: msg)
   end
 
   defp make_parse_key_value(syntax, fields) do
