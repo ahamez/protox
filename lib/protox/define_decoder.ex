@@ -176,10 +176,9 @@ defmodule Protox.DefineDecoder do
     # If `single` was not generated, then we don't need the `@wire_delimited discrimant
     # as there is only one clause for this `tag`.
     wire_type =
-      if single == [] do
-        quote do: _
-      else
-        quote do: unquote(@wire_delimited)
+      case single do
+        [] -> quote do: _
+        _ -> quote do: unquote(@wire_delimited)
       end
 
     quote do
