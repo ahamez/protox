@@ -4,7 +4,7 @@
 
 Protox is an Elixir library to work with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers) (aka protobuf), versions 2 and 3.
 
-Generally speaking, a lof of effort has been put into making sure that the library is reliable (for intance using [property based testing](https://github.com/alfert/propcheck) and by having a [100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master)). Therefore, this library passes all the tests of the conformance checker provided by Google. See [Conformance](https://github.com/ahamez/protox#conformance) section for more information.
+Generally speaking, a lof of effort has been put into making sure that the library is reliable (for instance using [property based testing](https://github.com/alfert/propcheck) and by having a [100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master)). Therefore, this library passes all the tests of the conformance checker provided by Google. See [Conformance](https://github.com/ahamez/protox#conformance) section for more information.
 
 This library is easy to use: you just point to the `*.proto` files or give the schema to the `Protox` macro, no need to generate any file! Furthermore, it provides a full-Elixir experience with protobuf messages. For instance, given the following protobuf file:
 ```proto
