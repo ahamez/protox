@@ -149,4 +149,12 @@ defmodule Protox.MessageTest do
              }
            }
   end
+
+  test "Merge with nil" do
+    m = %Msg{msg_k: %{1 => "a", 2 => "b", 100 => "c"}}
+
+    assert Protox.Message.merge(m, nil) == m
+    assert Protox.Message.merge(nil, m) == m
+    assert Protox.Message.merge(nil, nil) == nil
+  end
 end
