@@ -59,6 +59,7 @@ defmodule Protox.Define do
       fields_map = make_fields_map(fields)
       fields_by_name_map = make_fields_by_name_map(fields)
       encoder = Protox.DefineEncoder.define(fields, required_fields, syntax)
+      decoder = Protox.DefineDecoder.define(msg_name, fields, required_fields, syntax)
       default_fun = make_default_fun(fields)
 
       module_ast =
@@ -66,16 +67,7 @@ defmodule Protox.Define do
           defstruct unquote(struct_fields)
 
           unquote(encoder)
-
-          @spec decode!(binary) :: struct | no_return
-          def decode!(bytes) do
-            Protox.Decode.decode!(bytes, unquote(msg_name), unquote(required_fields))
-          end
-
-          @spec decode(binary) :: {:ok, struct} | {:error, any}
-          def decode(bytes) do
-            Protox.Decode.decode(bytes, unquote(msg_name), unquote(required_fields))
-          end
+          unquote(decoder)
 
           @spec defs() :: %{
                   required(non_neg_integer) => {atom, Protox.Types.kind(), Protox.Types.type()}

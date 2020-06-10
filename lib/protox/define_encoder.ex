@@ -19,7 +19,7 @@ defmodule Protox.DefineEncoder do
   end
 
   defp make_encode(fields, required_fields, syntax) do
-    {oneofs, fields_without_oneofs} = split_oneofs(fields)
+    {oneofs, fields_without_oneofs} = Protox.Defs.split_oneofs(fields)
 
     encode_fun = make_encode_fun(oneofs, fields_without_oneofs)
     encode_oneof_funs = make_encode_oneof_funs(oneofs)
@@ -43,20 +43,6 @@ defmodule Protox.DefineEncoder do
       unquote(encode_field_funs)
       unquote(encode_unknown_fields_fun)
     end
-  end
-
-  # Extract oneofs and regroup them by parent field.
-  defp split_oneofs(fields) do
-    {oneofs, fields} =
-      Enum.split_with(fields, fn
-        {_, _, _, {:oneof, _}, _} -> true
-        _ -> false
-      end)
-
-    {
-      oneofs |> Enum.group_by(fn {_, _, _, {:oneof, parent}, _} -> parent end) |> Map.to_list(),
-      fields
-    }
   end
 
   defp make_encode_fun(oneofs, fields) do

@@ -7,14 +7,19 @@ defmodule Protox.Message do
   Singular fields of `msg` will be overwritten, if specified in `from`, except for
   embedded messages which will be merged. Repeated fields will be concatenated.
 
-  Note that "specified" means a different thing in protobuf 2 and 3:
+  Note that "specified" has a different meaning in protobuf 2 and 3:
   - 2: if the singular field from `from` is nil, the value from `msg` is kept
   - 3: if the singular field from `from` is set to the default value, the value from `msg` is kept
   This behaviour matches the C++ reference implementation behaviour.
 
-  `msg` and `from` must be of the same type
+  - `msg` and `from` must be of the same type; or
+  - either `msg` or `from` is `nil`: the non-nil message is returned; or
+  - both are `nil`: `nil` is returned
   """
-  @spec merge(struct, struct) :: struct
+  @spec merge(struct | nil, struct | nil) :: struct | nil
+  def merge(nil, from), do: from
+  def merge(msg, nil), do: msg
+
   def merge(msg, from) do
     Map.merge(msg, from, fn name, v1, v2 ->
       if name == :__struct__ or name == msg.__struct__.unknown_fields_name() do

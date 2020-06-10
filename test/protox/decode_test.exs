@@ -471,6 +471,18 @@ defmodule Protox.DecodeTest do
     assert Sub.decode!(bytes) == %Sub{zz: 0}
   end
 
+  test "Sub.map1/map2" do
+    bytes =
+      <<202, 131, 6, 13, 9, 255, 255, 255, 255, 255, 255, 255, 255, 18, 2, 1, 2, 202, 131, 6, 13,
+        9, 0, 0, 0, 0, 0, 0, 0, 0, 18, 2, 3, 4, 210, 131, 6, 13, 9, 0, 0, 0, 0, 0, 0, 0, 0, 18, 2,
+        5, 6, 210, 131, 6, 13, 9, 1, 0, 0, 0, 0, 0, 0, 0, 18, 2, 7, 8>>
+
+    assert Sub.decode!(bytes) == %Sub{
+             map1: %{-1 => <<1, 2>>, 0 => <<3, 4>>},
+             map2: %{0 => <<5, 6>>, 1 => <<7, 8>>}
+           }
+  end
+
   test "Msg.msg_a" do
     bytes = <<218, 1, 7, 0, 2, 3, 6, 159, 156, 1>>
     assert Msg.decode!(bytes) == %Msg{msg_a: [0, 1, -2, 3, -10_000]}
@@ -703,6 +715,15 @@ defmodule Protox.DecodeTest do
            }
   end
 
+  test "Msg.msg_k, duplicate key, last one is kept" do
+    #                   1 => "foo"                         1 => "bar"
+    bytes = <<66, 7, 8, 1, 18, 3, 102, 111, 111, 66, 7, 8, 1, 18, 3, 98, 97, 114>>
+
+    assert Msg.decode!(bytes) == %Msg{
+             msg_k: %{1 => "bar"}
+           }
+  end
+
   test "Msg.msg_k, with unknown data in map entry" do
     bytes = <<66, 7, 8, 2, 18, 3, 98, 97, 114, 66, 10, 8, 1, 18, 3, 102, 111, 111, 26, 1, 102>>
 
@@ -910,6 +931,18 @@ defmodule Protox.DecodeTest do
   test "Empty" do
     bytes = <<>>
     assert Empty.decode!(bytes) == %Empty{}
+  end
+
+  test "Empty, unknown fields" do
+    bytes = <<8, 42, 25, 246, 40, 92, 143, 194, 53, 69, 64, 136, 241, 4, 83>>
+
+    assert Empty.decode!(bytes) == %Empty{
+             __uf__: [
+               {10_001, 0, "S"},
+               {3, 1, <<246, 40, 92, 143, 194, 53, 69, 64>>},
+               {1, 0, "*"}
+             ]
+           }
   end
 
   test "Dummy data" do
