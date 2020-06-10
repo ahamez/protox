@@ -59,7 +59,7 @@ defmodule Protox.DefineDecoder do
 
     tag_0_case =
       quote do
-        {0, _, _} -> raise "Illegal field with tag 0"
+        {0, _, _} -> raise %Protox.IllegalTagError{}
       end
 
     unknown_tag_case =

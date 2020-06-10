@@ -14,3 +14,11 @@ defmodule Protox.RequiredFieldsError do
     }
   end
 end
+
+defmodule Protox.IllegalTagError do
+  @moduledoc """
+  This error is thrown when decoding data with a field which tag is 0.
+  """
+
+  defexception message: "Field with illegal tag 0"
+end

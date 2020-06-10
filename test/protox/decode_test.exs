@@ -999,4 +999,10 @@ defmodule Protox.DecodeTest do
     # https://developers.google.com/protocol-buffers/docs/encoding#optional
     assert m == Protox.Message.merge(m1, m2)
   end
+
+  test "Decoding a field with tag 0 raises IllegalTagError" do
+    assert_raise Protox.IllegalTagError, fn ->
+      Msg.decode!(<<0>>)
+    end
+  end
 end
