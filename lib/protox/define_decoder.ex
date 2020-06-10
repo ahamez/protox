@@ -6,12 +6,6 @@ defmodule Protox.DefineDecoder do
   use Protox.WireTypes
 
   def define(msg_name, fields, required_fields, syntax) do
-    make_decode(msg_name, fields, required_fields, syntax)
-  end
-
-  # -- Private
-
-  defp make_decode(msg_name, fields, required_fields, syntax) do
     decode_return = make_decode_return(syntax, required_fields)
     parse_key_value = make_parse_key_value(syntax, fields)
     parse_map_entries = make_parse_map_entries(fields)
