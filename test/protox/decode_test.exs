@@ -715,6 +715,15 @@ defmodule Protox.DecodeTest do
            }
   end
 
+  test "Msg.msg_k, duplicate key, last one is kept" do
+    #                   1 => "foo"                         1 => "bar"
+    bytes = <<66, 7, 8, 1, 18, 3, 102, 111, 111, 66, 7, 8, 1, 18, 3, 98, 97, 114>>
+
+    assert Msg.decode!(bytes) == %Msg{
+             msg_k: %{1 => "bar"}
+           }
+  end
+
   test "Msg.msg_k, with unknown data in map entry" do
     bytes = <<66, 7, 8, 2, 18, 3, 98, 97, 114, 66, 10, 8, 1, 18, 3, 102, 111, 111, 26, 1, 102>>
 
