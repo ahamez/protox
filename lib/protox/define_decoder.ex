@@ -413,6 +413,13 @@ defmodule Protox.DefineDecoder do
           map_entry
         end
 
+        # https://developers.google.com/protocol-buffers/docs/proto3#backwards-compatibility
+        # Maps are equivalent to:
+        #   message MapFieldEntry {
+        #     key_type key = 1;
+        #     value_type value = 2;
+        #   }
+        # repeated MapFieldEntry map_field = N;
         defp unquote(fun_name)({entry_key, entry_value}, unquote(bytes_var)) do
           {map_entry, unquote(rest_var)} =
             case Protox.Decode.parse_key(unquote(bytes_var)) do
