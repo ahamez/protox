@@ -3,6 +3,7 @@
     behavior of encode/1
   - Raise RequiredFieldsError when encoding or decoding a Protobuf 2 message
     with unset required fields (that is, that have the value `nil`)
+  - Raise IllegalTagError when decoding a message with a tag set to 0
   - +40% speedup & -30% memory consumption when decoding thanks to macro
 
 * 0.22.0
