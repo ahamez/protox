@@ -1,12 +1,25 @@
 defmodule Protox.EncodeTest do
   use ExUnit.Case
 
-  test "empty", %{} do
+  test "Empty" do
     assert %Sub{} |> Protox.Encode.encode!() |> :binary.list_to_bin() == <<>>
   end
 
-  test "empty, with non throwing encode/1", %{} do
+  test "Empty, with non throwing encode/1" do
     assert {:ok, []} == Protox.Encode.encode(%Sub{})
+  end
+
+  test "Empty, unknown fields are encoded back" do
+    msg = %Empty{
+      __uf__: [
+        {1, 0, "*"},
+        {3, 1, <<246, 40, 92, 143, 194, 53, 69, 64>>},
+        {10_001, 0, "S"}
+      ]
+    }
+
+    assert msg |> Protox.Encode.encode!() |> :binary.list_to_bin() ==
+             <<8, 42, 25, 246, 40, 92, 143, 194, 53, 69, 64, 136, 241, 4, 83>>
   end
 
   test "Sub.a" do

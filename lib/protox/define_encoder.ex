@@ -3,22 +3,6 @@ defmodule Protox.DefineEncoder do
   # Internal. Generates the encoder of a message.
 
   def define(fields, required_fields, syntax) do
-    make_encode(fields, required_fields, syntax)
-  end
-
-  # -- Private
-
-  defp make_encode([], _, _) do
-    quote do
-      @spec encode(struct) :: {:ok, iodata}
-      def encode(_msg), do: {:ok, []}
-
-      @spec encode!(struct) :: iodata
-      def encode!(_msg), do: []
-    end
-  end
-
-  defp make_encode(fields, required_fields, syntax) do
     {oneofs, fields_without_oneofs} = Protox.Defs.split_oneofs(fields)
 
     encode_fun = make_encode_fun(oneofs, fields_without_oneofs)

@@ -5,6 +5,7 @@
     with unset required fields (that is, that have the value `nil`)
   - Raise IllegalTagError when decoding a message with a tag set to 0
   - +40% speedup & -30% memory consumption when decoding thanks to macro
+  - Fix missing encoding of unknown fields when a message hadn't any field
 
 * 0.22.0
   - O(1) encoding of oneof fields
