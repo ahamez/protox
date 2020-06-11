@@ -338,7 +338,7 @@ defmodule Protox.EncodeTest do
              <<177, 7, 0, 0, 0, 0, 0, 0, 0, 0>>
   end
 
-  test "Empty" do
+  test "Sub with all fields unset serializes to <<>>" do
     assert %Empty{} |> Protox.Encode.encode!() |> :binary.list_to_bin() == <<>>
   end
 
