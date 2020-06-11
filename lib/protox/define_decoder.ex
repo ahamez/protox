@@ -98,13 +98,13 @@ defmodule Protox.DefineDecoder do
     all_cases = tag_0_case ++ known_tags_case ++ unknown_tag_case
 
     quote do
-      {new_set_fields, field, new_rest} =
+      {new_set_fields, field, rest} =
         case Protox.Decode.parse_key(bytes) do
           unquote(all_cases)
         end
 
       msg_updated = struct(unquote(msg_var), [field])
-      parse_key_value(new_set_fields, new_rest, defs, msg_updated)
+      parse_key_value(new_set_fields, rest, defs, msg_updated)
     end
   end
 
@@ -125,13 +125,13 @@ defmodule Protox.DefineDecoder do
     # No need to maintain a list of set fields for proto3
     case_return =
       case syntax do
-        :proto2 -> quote do: {[unquote(name) | set_fields], unquote(field_var), new_rest}
-        :proto3 -> quote do: {[], unquote(field_var), new_rest}
+        :proto2 -> quote do: {[unquote(name) | set_fields], unquote(field_var), rest}
+        :proto3 -> quote do: {[], unquote(field_var), rest}
       end
 
     quote do
       {unquote(tag), _, unquote(bytes_var)} ->
-        {value, new_rest} = unquote(parse_single)
+        {value, rest} = unquote(parse_single)
         unquote(field_var) = unquote(update_field)
         unquote(case_return)
     end
@@ -165,8 +165,8 @@ defmodule Protox.DefineDecoder do
 
     case_return =
       case syntax do
-        :proto2 -> quote do: {[unquote(name) | set_fields], unquote(field_var), new_rest}
-        :proto3 -> quote do: {[], unquote(field_var), new_rest}
+        :proto2 -> quote do: {[unquote(name) | set_fields], unquote(field_var), rest}
+        :proto3 -> quote do: {[], unquote(field_var), rest}
       end
 
     delimited_var = quote do: delimited
@@ -182,8 +182,8 @@ defmodule Protox.DefineDecoder do
 
     quote do
       {unquote(tag), unquote(wire_type), unquote(bytes_var)} ->
-        {len, new_bytes} = Protox.Varint.decode(unquote(bytes_var))
-        <<unquote(delimited_var)::binary-size(len), new_rest::binary>> = new_bytes
+        {len, unquote(bytes_var)} = Protox.Varint.decode(unquote(bytes_var))
+        <<unquote(delimited_var)::binary-size(len), rest::binary>> = unquote(bytes_var)
         unquote(value_var) = unquote(parse_delimited)
         unquote(field_var) = unquote(update_field)
         unquote(case_return)
