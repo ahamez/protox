@@ -1,6 +1,13 @@
 # -------------------------------------------------------------------------------------------------#
 
-Code.compile_file("./benchmarks/protox.exs")
+with {options, _, []} <- OptionParser.parse(System.argv(), strict: [lib: :string]),
+     {:ok, lib} <- Keyword.fetch(options, :lib) do
+  Code.compile_file(lib)
+else
+  _ ->
+    IO.puts("Missing lib argument")
+    System.halt(0)
+end
 
 # -------------------------------------------------------------------------------------------------#
 

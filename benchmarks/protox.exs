@@ -1,9 +1,6 @@
-# -------------------------------------------------------------------------------------------------#
-
 defmodule Protox.Benchmarks.Run do
   def decode({mod, bytes}), do: namespace(mod).decode!(bytes)
   def encode(msg), do: Protox.Encode.encode(msg)
-
 
   def decode_name(), do: "decode_protox"
   def decode_file_name(), do: "decode_protox.benchee"
@@ -13,5 +10,3 @@ defmodule Protox.Benchmarks.Run do
 
   defp namespace(mod), do: Module.safe_concat([Protox, Benchmarks, mod])
 end
-
-# -------------------------------------------------------------------------------------------------#
