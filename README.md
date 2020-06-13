@@ -155,7 +155,7 @@ iex> msg = %Namespace.Msg{a: 42}
 
 ## Specify import path
 
-An import path can be specified using the `path:` option:
+An import path can be specified using the `path:` option that specifies the directory in which to search for import:
 
 ```elixir
 defmodule Baz do
