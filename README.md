@@ -359,7 +359,9 @@ You can alternatively launch these conformance tests with `mix test` by setting 
 
 You can launch benchmarks to see how Protox perform:
 ```
-MIX_ENV=benchmarks mix run benchmarks/run.exs
+mix run ./benchmarks/generate_payloads.exs # first-time only, generates random payloads
+mix run ./benchmarks/run.exs
+mix run ./benchmarks/load.exs
 ```
 
 # Credits

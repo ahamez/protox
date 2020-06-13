@@ -1,21 +1,17 @@
 syntax = "proto3";
 
-message YYY {
-}
-
 message Sub {
   int32 a = 1;
   string b = 2;
-  // double xxx = 3;
-  // YYY yyy = 4;
-  // string zzz = 5;
+  double xxx = 3;
+  string zzz = 5;
   int64 c = 6;
   uint32 d = 7;
   uint64 e = 8;
   sint64 f = 9;
-  // bytes bbb = 10;
-  // int32 aaa = 11;
-  // float fff = 12;
+  bytes bbb = 10;
+  int32 aaa = 11;
+  float fff = 12;
   repeated fixed64 g = 13;
   repeated sfixed32 h = 14;
   repeated double i = 15;
@@ -36,14 +32,12 @@ enum E {
   FOO = 0;
   BAR = 1;
   BAZ = 2;
-  NEG = -1;
+// :protobuf seems to not be compliant with the recommanded serialization
+// and produces many warnings
+//  NEG = -1;
 }
 
 message Msg {
-
-  repeated sint64 a = 27;
-  repeated fixed32 b = 28;
-  repeated sfixed64 c = 29;
   E d = 1;
   bool e = 2;
   Sub f = 3;
@@ -58,6 +52,9 @@ message Msg {
     Sub o = 11;
   }
   map<int32, E> p = 12;
+  repeated sint64 a = 27;
+  repeated fixed32 b = 28;
+  repeated sfixed64 c = 29;
 }
 
 message Upper {

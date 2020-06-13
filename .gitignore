@@ -15,3 +15,5 @@ erl_crash.dump
 /conformance-test-runner
 .tool-versions
 /benchmarks/output/
+/benchmarks/*.benchee
+/benchmarks/payloads.bin
