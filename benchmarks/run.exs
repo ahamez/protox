@@ -1,13 +1,24 @@
 # -------------------------------------------------------------------------------------------------#
 
-with {options, _, []} <- OptionParser.parse(System.argv(), strict: [lib: :string]),
-     {:ok, lib} <- Keyword.fetch(options, :lib) do
-  Code.compile_file(lib)
-else
-  _ ->
-    IO.puts("Missing lib argument")
-    System.halt(0)
-end
+tags =
+  with {options, _, []} <-
+         OptionParser.parse(System.argv(), strict: [lib: :string, tags: :string]),
+       {:ok, lib} <- Keyword.fetch(options, :lib) do
+    Code.compile_file(lib)
+
+    case Keyword.get(options, :tags) do
+      nil -> :all
+      tags -> tags |> String.split(",") |> Enum.map(&String.to_atom(&1))
+    end
+  else
+    _ ->
+      IO.puts("Missing lib argument")
+      System.halt(0)
+  end
+
+# -------------------------------------------------------------------------------------------------#
+
+IO.puts("Will run benchmarks: #{inspect tags}")
 
 # -------------------------------------------------------------------------------------------------#
 
@@ -19,11 +30,18 @@ end
 # -------------------------------------------------------------------------------------------------#
 
 defmodule Protox.Benchmarks.Data do
-  def inputs(path) do
+  def inputs(path, tags) do
+    filter =
+      case tags do
+        :all -> fn _ -> true end
+        tags -> fn {size, _payloads} -> size in tags end
+      end
+
     decode =
       path
       |> File.read!()
       |> :erlang.binary_to_term()
+      |> Enum.filter(&filter.(&1))
       |> Enum.into(%{}, fn {size, payloads} ->
         payloads =
           Enum.map(payloads, fn {mod, bytes} ->
@@ -37,6 +55,7 @@ defmodule Protox.Benchmarks.Data do
       path
       |> File.read!()
       |> :erlang.binary_to_term()
+      |> Enum.filter(&filter.(&1))
       |> Enum.into(%{}, fn {size, payloads} ->
         payloads =
           Enum.map(payloads, fn {mod, bytes} ->
@@ -52,7 +71,7 @@ end
 
 # -------------------------------------------------------------------------------------------------#
 
-{decode_inputs, encode_inputs} = Protox.Benchmarks.Data.inputs("./benchmarks/payloads.bin")
+{decode_inputs, encode_inputs} = Protox.Benchmarks.Data.inputs("./benchmarks/payloads.bin", tags)
 
 # -------------------------------------------------------------------------------------------------#
 
