@@ -22,10 +22,8 @@ defmodule Protox.Define do
       decode_constants_funs = make_decode_enum_constants(constants)
       constants_typespec = make_constants_typespec(constants)
 
-      quote do
-        defmodule unquote(enum_name) do
-          @moduledoc false
-
+      module_ast =
+        quote do
           unquote(default_fun)
 
           @spec encode(atom) :: integer
@@ -38,6 +36,15 @@ defmodule Protox.Define do
 
           @spec constants() :: unquote(constants_typespec)
           def constants(), do: unquote(constants)
+        end
+
+      debug_fun = make_debug_fun(module_ast)
+
+      quote do
+        defmodule unquote(enum_name) do
+          @moduledoc false
+          unquote(module_ast)
+          unquote(debug_fun)
         end
       end
     end
