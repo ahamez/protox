@@ -4,9 +4,9 @@
 
 Protox is an Elixir library to work with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers) (aka protobuf), versions 2 and 3.
 
-Generally speaking, a lof of effort has been put into making sure that the library is reliable (for instance using [property based testing](https://github.com/alfert/propcheck) and by having a [100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master)). Therefore, this library passes all the tests of the conformance checker provided by Google. See [Conformance](https://github.com/ahamez/protox#conformance) section for more information.
+Generally speaking, a lof of effort has been put into making sure that the library is reliable (for instance using [property based testing](https://github.com/alfert/propcheck) and by having a [100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master)). Therefore, this library passes all the tests of the conformance checker provided by Google. See [Conformance](#conformance) section for more information.
 
-This library is easy to use: you just point to the `*.proto` files or give the schema to the `Protox` macro, no need to generate any file! Furthermore, it provides a full-Elixir experience with protobuf messages. For instance, given the following protobuf file:
+This library is easy to use: you just point to the `*.proto` files or give the schema to the `Protox` macro, no need to generate any file! Furthermore, it provides a full-blown Elixir experience with protobuf messages. For instance, given the following protobuf `msg.proto` file:
 ```proto
 syntax = "proto3";
 
@@ -16,19 +16,15 @@ message Msg{
 }
 ```
 
-You can interact with `Msg` as if it were a native Elixir structure (note how the map `b` is translated into an [Elixir Map](https://hexdocs.pm/elixir/Map.html)):
+You can interact with `Msg` as if it were a native Elixir structure. For example, note how the map `b` is translated into an [Elixir Map](https://hexdocs.pm/elixir/Map.html):
 
 ```elixir
 iex> %Msg{a: 42, b: %{1 => "a map entry"}}
-iex> Protox.Encode.encode!(msg)
-iex> Protox.Encode.decode!(<<...>>)
 ```
-
 
 ## Prerequisites
 
 Protox uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`. This dependency is only required at compile-time. You can download it [here](https://github.com/google/protobuf) or you can install with your favorite package manager (`brew install protobuf`, `apt install protobuf-compiler`, etc.).
-
 
 ## Installation
 
@@ -91,19 +87,21 @@ Here's how to create and encode a new message:
 
 ```elixir
 iex> msg = %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}}
-iex> Protox.Encode.encode!(msg)
+iex> {:ok, iodata} = Protox.Encode.encode(msg)
 ```
-
-As you can see, you can interact with protobuf messages as if they were native Elixir structures!
+Or, with throwing style:
+```elixir
+iex> iodata = Protox.Encode.encode!(msg)
+```
 
 Note that `Protox.Encode.encode!/1` returns an [IO data](https://hexdocs.pm/elixir/IO.html#module-use-cases-for-io-data), not a binary, for efficiency reasons. Such  IO data can be used
 directly with [files](https://hexdocs.pm/elixir/IO.html#binwrite/2) or sockets write operations, and therefore you don't need to transform them:
 ```elixir
+iex> {:ok, iodata} = Protox.Encode.encode(%Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}})
+[[[], <<18>>, <<4>>, "\b", <<1>>, <<18>>, <<0>>], "\b", <<3>>]
+
 iex> {:ok, file} = File.open("msg.bin", [:write])
 {:ok, #PID<0.1023.0>}
-
-iex> iodata = Protox.Encode.encode!(%Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}})
-[[[], <<18>>, <<4>>, "\b", <<1>>, <<18>>, <<0>>], "\b", <<3>>]
 
 iex> IO.binwrite(file, iodata)
 :ok
@@ -121,14 +119,12 @@ iex> %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}} |> Protox.Encode.encode!() |> :binary
 Here's how to decode a message from a binary:
 
 ```elixir
-iex> Fiz.Foo.decode(<<8, 3, 18, 4, 8, 1, 18, 0>>)
-{:ok,
- %Fiz.Foo{__uf__: [], a: 3,
-  b: %{1 => %Fiz.Baz{__uf__: []}}}}
+iex> {:ok, msg} = Fiz.Foo.decode(<<8, 3, 18, 4, 8, 1, 18, 0>>)
 ```
-
-The `__uf__` field is explained in the section [Unknown fields](https://github.com/ahamez/protox#unknown-fields).
-
+Or, with throwing style:
+```elixir
+iex> msg = Fiz.Foo.decode!(<<8, 3, 18, 4, 8, 1, 18, 0>>)
+```
 
 ## Prepend namespaces
 
@@ -175,9 +171,9 @@ It corresponds to the `-I` option of `protoc`.
 
 ## Unknown fields
 
-[Unknown fields](https://developers.google.com/protocol-buffers/docs/proto3#unknowns) are fields that are present on the wire but which do not correspond to an entry in the protobuf definition. Typically, it occurs when the sender has a newer version of the protobuf definition, it makes possible to have backward compatibility.
+[Unknown fields](https://developers.google.com/protocol-buffers/docs/proto3#unknown_fields) are fields that are present on the wire but which do not correspond to an entry in the protobuf definition. Typically, it occurs when the sender has a newer version of the protobuf definition. It makes possible to have backward compatibility as the receiver with an old version of the protobuf definition will still be able to decode old fields.
 
-When unknown fields are encountered when decoding, they are kept in the decoded message. It's possible to access them with the function `unknown_fields/1` defined with the message.
+When unknown fields are encountered at decoding time, they are kept in the decoded message. It's possible to access them with the function `unknown_fields/1` defined with the message.
 
 ```elixir
 iex> msg = Msg.decode!(<<8, 42, 42, 4, 121, 97, 121, 101, 136, 241, 4, 83>>)
@@ -187,9 +183,7 @@ iex> Msg.unknown_fields(msg)
 [{5, 2, <<121, 97, 121, 101>>}]
 ```
 
-You must always use `unknown_fields/1` as the name of the field (e.g. `__uf__`) is generated at compile-time to avoid collision with the actual fields of the Protobuf message.
-
-This function returns a list of tuples `{tag, wire_type, bytes}`.
+You must always use `unknown_fields/1` as the name of the field (e.g. `__uf__`) is generated at compile-time to avoid collision with the actual fields of the Protobuf message. This function returns a list of tuples `{tag, wire_type, bytes}`. For more information, please see [protobuf encoding guide](https://developers.google.com/protocol-buffers/docs/encoding).
 
 When you encode a message that contains unknown fields, they will be reencoded in the serialized output.
 
@@ -198,7 +192,6 @@ When you encode a message that contains unknown fields, they will be reencoded i
 * Protobuf 3 JSON mapping
 * Groups ([deprecated in protobuf](https://developers.google.com/protocol-buffers/docs/proto#groups))
 * All [options](https://developers.google.com/protocol-buffers/docs/proto3#options) other than `packed` and `default` are ignored as they concern other languages implementation details.
-
 
 ## Implementation choices
 
@@ -355,7 +348,7 @@ You can alternatively launch these conformance tests with `mix test` by setting 
    PROTOBUF_CONFORMANCE_RUNNER=./protobuf-3.12.1/conformance/conformance-test-runner MIX_ENV=test mix test --include conformance
    ```
 
-# Benchmarks
+## Benchmarks
 
 You can launch benchmarks to see how Protox perform:
 ```
@@ -364,6 +357,6 @@ mix run ./benchmarks/run.exs --lib=./benchmarks/protox.exs
 mix run ./benchmarks/load.exs
 ```
 
-# Credits
+## Credits
 
 Both [gpb](https://github.com/tomas-abrahamsson/gpb) and [exprotobuf](https://github.com/bitwalker/exprotobuf) were very useful in understanding how to implement Protocol Buffers.
