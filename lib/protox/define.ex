@@ -129,7 +129,7 @@ defmodule Protox.Define do
     spec =
       quote do
         @spec default(atom) ::
-                {:ok, boolean | integer | String.t() | binary | float} | {:error, any}
+                {:ok, boolean | integer | String.t() | binary | float} | {:error, atom}
       end
 
     match_all =
