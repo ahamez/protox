@@ -24,7 +24,9 @@ iex> %Msg{a: 42, b: %{1 => "a map entry"}}
 
 ## Prerequisites
 
-Protox uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`. This dependency is only required at compile-time. You can download it [here](https://github.com/google/protobuf) or you can install with your favorite package manager (`brew install protobuf`, `apt install protobuf-compiler`, etc.).
+Protox uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`. You can download it [here](https://github.com/google/protobuf) or you can install with your favorite package manager (`brew install protobuf`, `apt install protobuf-compiler`, etc.).
+
+*This dependency is only required at compile-time*.
 
 ## Installation
 
@@ -143,7 +145,7 @@ defmodule Bar do
 end
 ```
 
-In this example, the module `Namespace.Msg` is generated.
+In this example, the module `Namespace.Msg` is generated:
 
 ```elixir
 iex> msg = %Namespace.Msg{a: 42}
@@ -292,6 +294,10 @@ When you encode a message that contains unknown fields, they will be reencoded i
     iex> msg = %CamelMessage{}
     %CamelMessage{__uf__: [], non_camel_field: 0}
     ```
+
+## Generated code reference
+
+The detailed reference of the generated code is available [here](documentation/reference.md).
 
 ## Types mapping
 

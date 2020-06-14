@@ -2,7 +2,6 @@ defmodule Protox do
   @moduledoc ~S'''
   Use this module to generate the Elixir modules from a set of protobuf definitions:
 
-
       defmodule Foo do
         @external_resource "./defs/foo.proto"
         @external_resource "./defs/bar.proto"
@@ -34,6 +33,8 @@ defmodule Protox do
   The generated modules respect the package declaration. For instance, in the above example,
   both the `Fiz.Baz` and `Fiz.Foo` modules will be generated.
 
+
+  See https://github.com/ahamez/protox/blob/master/README.md for detailed instructions.
   '''
 
   defmacro __using__(args) do
