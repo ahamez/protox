@@ -32,39 +32,29 @@ defmodule Protox.DefineEncoder do
   defp make_encode_fun(oneofs, fields) do
     ast = quote do: []
     ast = make_encode_oneof_fun(ast, oneofs)
-    _make_encode_fun(ast, fields)
+    make_encode_fun_field(ast, fields)
   end
 
-  defp _make_encode_fun(ast, []) do
-    quote do
-      encode_unknown_fields(unquote(ast), msg)
-    end
+  defp make_encode_fun_field(ast, []) do
+    quote do: unquote(ast) |> encode_unknown_fields(msg)
   end
 
-  defp _make_encode_fun(ast, [field | fields]) do
+  defp make_encode_fun_field(ast, [field | fields]) do
     {_, _, name, _, _} = field
     fun_name = String.to_atom("encode_#{name}")
 
-    ast =
-      quote do
-        unquote(fun_name)(unquote(ast), msg)
-      end
+    ast = quote do: unquote(ast) |> unquote(fun_name)(msg)
 
-    _make_encode_fun(ast, fields)
+    make_encode_fun_field(ast, fields)
   end
 
-  defp make_encode_oneof_fun(ast, []) do
-    ast
-  end
+  defp make_encode_oneof_fun(ast, []), do: ast
 
   defp make_encode_oneof_fun(ast, [oneof | oneofs]) do
     {parent_name, _} = oneof
     fun_name = String.to_atom("encode_#{parent_name}")
 
-    ast =
-      quote do
-        unquote(fun_name)(unquote(ast), msg)
-      end
+    ast = quote do: unquote(ast) |> unquote(fun_name)(msg)
 
     make_encode_oneof_fun(ast, oneofs)
   end
