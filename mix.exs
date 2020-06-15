@@ -30,8 +30,9 @@ defmodule Protox.Mixfile do
 
   defp deps do
     [
-      {:benchee, "~> 1.0"},
-      {:benchee_html, "~> 1.0"},
+      {:benchee, "~> 1.0", only: [:dev]},
+      {:benchee_html, "~> 1.0", only: [:dev]},
+      {:benchee_markdown, "~> 0.2", only: [:dev]},
       {:credo, "~> 1.4", only: [:dev]},
       {:dialyxir, "~> 1.0", only: [:test, :dev], runtime: false},
       {:excoveralls, "~> 0.13", only: :test},
