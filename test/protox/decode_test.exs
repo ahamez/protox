@@ -945,17 +945,9 @@ defmodule Protox.DecodeTest do
            }
   end
 
-  test "Dummy data" do
-    assert {:error, _} = Empty.decode(<<1, 2, 3>>)
-  end
-
-  test "Raise when required field is missing" do
-    exception =
-      assert_raise Protox.RequiredFieldsError, fn ->
-        Required.decode!(<<>>)
-      end
-
-    assert exception.missing_fields == [:a]
+  test "Error when required field is missing" do
+    assert {:error, {:missing_fields, fs}} = Required.decode(<<>>)
+    assert fs == [:a]
   end
 
   test "Required field" do
@@ -1000,9 +992,35 @@ defmodule Protox.DecodeTest do
     assert m == Protox.Message.merge(m1, m2)
   end
 
-  test "Decoding a field with tag 0 raises IllegalTagError" do
+  test "Decoding! a field with tag 0 raises IllegalTagError" do
     assert_raise Protox.IllegalTagError, fn ->
       Msg.decode!(<<0>>)
     end
+  end
+
+  test "Decoding a field with tag 0 returns an error" do
+    assert {:error, :illegal_tag} = Empty.decode(<<0>>)
+  end
+
+  test "Decode dummy varint data returns an error" do
+    assert {:error, {:varint, _}} = Empty.decode(<<255, 255, 255, 255>>)
+  end
+
+  test "Decode! dummy varint data raises DecodingError" do
+    exception =
+      assert_raise Protox.DecodingError, fn ->
+        Empty.decode!(<<255, 255, 255, 255>>)
+      end
+
+    assert exception.reason == :varint
+  end
+
+  test "Raise when required field is missing" do
+    exception =
+      assert_raise Protox.RequiredFieldsError, fn ->
+        Required.decode!(<<>>)
+      end
+
+    assert exception.missing_fields == [:a]
   end
 end

@@ -24,4 +24,8 @@ defmodule Protox.Varint do
       rest
     )
   end
+
+  defp do_decode(_result, _shift, binary) do
+    raise Protox.DecodingError.new(:varint, binary)
+  end
 end

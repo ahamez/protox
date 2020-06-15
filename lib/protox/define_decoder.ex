@@ -18,6 +18,9 @@ defmodule Protox.DefineDecoder do
         try do
           {:ok, decode!(bytes)}
         rescue
+          Protox.IllegalTagError -> {:error, :illegal_tag}
+          e in Protox.RequiredFieldsError -> {:error, {:missing_fields, e.missing_fields}}
+          e in Protox.DecodingError -> {:error, {e.reason, e.binary}}
           e -> {:error, e}
         end
       end

@@ -22,3 +22,21 @@ defmodule Protox.IllegalTagError do
 
   defexception message: "Field with illegal tag 0"
 end
+
+defmodule Protox.DecodingError do
+  @moduledoc """
+  This error is thrown when a data could not be decoded.
+  """
+
+  defexception message: "Could not decode data",
+               binary: <<>>,
+               reason: nil
+
+  def new(reason, binary) do
+    %__MODULE__{
+      message: "Could not decode data #{inspect(binary)}",
+      binary: binary,
+      reason: reason
+    }
+  end
+end
