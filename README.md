@@ -34,7 +34,7 @@ Add `:protox` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
-  [{:protox, "~> 0.22.0"}]
+  [{:protox, "~> 0.23.0"}]
 end
 ```
 

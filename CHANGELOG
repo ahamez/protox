@@ -1,4 +1,4 @@
-* xxx
+* 0.23.0
   - [Breaking change] encode/1 returns a tuple, use encode!/1 to get the old
     behavior of encode/1
   - Raise RequiredFieldsError when encoding or decoding a Protobuf 2 message
