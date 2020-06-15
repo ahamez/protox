@@ -20,21 +20,20 @@ defmodule Protox.Define do
       default_fun = make_enum_default(constants)
       encode_constants_funs = make_encode_enum_constants(constants)
       decode_constants_funs = make_decode_enum_constants(constants)
-      constants_typespec = make_constants_typespec(constants)
 
       module_ast =
         quote do
           unquote(default_fun)
 
-          @spec encode(atom) :: integer
+          @spec encode(atom) :: integer | atom
           unquote(encode_constants_funs)
           def encode(x), do: x
 
-          @spec decode(integer) :: atom
+          @spec decode(integer) :: atom | integer
           unquote(decode_constants_funs)
           def decode(x), do: x
 
-          @spec constants() :: unquote(constants_typespec)
+          @spec constants() :: [{integer, atom}]
           def constants(), do: unquote(constants)
         end
 
@@ -48,12 +47,6 @@ defmodule Protox.Define do
         end
       end
     end
-  end
-
-  defp make_constants_typespec(constants) do
-    lhs = Enum.reduce(constants, fn {x, _}, acc -> quote do: unquote(acc) | unquote(x) end)
-    rhs = Enum.reduce(constants, fn {_, y}, acc -> quote do: unquote(acc) | unquote(y) end)
-    quote do: [{unquote(lhs), unquote(rhs)}]
   end
 
   # credo:disable-for-next-line Credo.Check.Refactor.CyclomaticComplexity
