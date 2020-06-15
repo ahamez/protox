@@ -36,6 +36,7 @@ defmodule Protox.DefineEncoder do
   end
 
   defp make_encode_fun_field(ast, []) do
+    # credo:disable-for-next-line Credo.Check.Readability.SinglePipe
     quote do: unquote(ast) |> encode_unknown_fields(msg)
   end
 
@@ -43,6 +44,7 @@ defmodule Protox.DefineEncoder do
     {_, _, name, _, _} = field
     fun_name = String.to_atom("encode_#{name}")
 
+    # credo:disable-for-next-line Credo.Check.Readability.SinglePipe
     ast = quote do: unquote(ast) |> unquote(fun_name)(msg)
 
     make_encode_fun_field(ast, fields)
@@ -54,6 +56,7 @@ defmodule Protox.DefineEncoder do
     {parent_name, _} = oneof
     fun_name = String.to_atom("encode_#{parent_name}")
 
+    # credo:disable-for-next-line Credo.Check.Readability.SinglePipe
     ast = quote do: unquote(ast) |> unquote(fun_name)(msg)
 
     make_encode_oneof_fun(ast, oneofs)

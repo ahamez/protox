@@ -9,6 +9,11 @@ defmodule Protox.Decode do
     WireTypes
   }
 
+  alias Protox.{
+    Varint,
+    Zigzag
+  }
+
   @compile {:inline,
             parse_bool: 1,
             parse_sint32: 1,
@@ -24,11 +29,6 @@ defmodule Protox.Decode do
             parse_sfixed32: 1,
             parse_fixed64: 1,
             parse_sfixed64: 1}
-
-  alias Protox.{
-    Varint,
-    Zigzag
-  }
 
   # Get the key's tag and wire type.
   @spec parse_key(binary) :: {non_neg_integer, non_neg_integer, binary}

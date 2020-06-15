@@ -33,7 +33,6 @@ defmodule Protox do
   The generated modules respect the package declaration. For instance, in the above example,
   both the `Fiz.Baz` and `Fiz.Foo` modules will be generated.
 
-
   See https://github.com/ahamez/protox/blob/master/README.md for detailed instructions.
   '''
 
