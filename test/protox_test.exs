@@ -259,12 +259,7 @@ defmodule ProtoxTest do
     runner = System.get_env("PROTOBUF_CONFORMANCE_RUNNER")
     assert runner != nil, "PROTOBUF_CONFORMANCE_RUNNER not set"
 
-    ExUnit.CaptureIO.capture_io(fn ->
-      assert Mix.Tasks.Protox.Conformance.run(["--runner=#{runner}"]) == :ok,
-             "Can't launch conformance test, please verify the conformance runner presence (#{
-               runner
-             })"
-    end)
+    Mix.Tasks.Protox.Conformance.run(["--runner=#{runner}"])
 
     # protobuf conformance runner produces this file only when some tests have failed
     refute File.exists?("./failing_tests.txt"),
