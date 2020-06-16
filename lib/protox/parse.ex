@@ -209,7 +209,7 @@ defmodule Protox.Parse do
       case map_entry(upper, msg_name, descriptor) do
         nil ->
           type = get_type(descriptor)
-          kind = get_kind(syntax, upper, descriptor, type)
+          kind = get_kind(syntax, upper, descriptor)
           {descriptor.label, kind, type}
 
         map_type ->
@@ -270,7 +270,7 @@ defmodule Protox.Parse do
     |> Enum.map(&Macro.camelize(&1))
   end
 
-  defp get_kind(syntax, upper, descriptor, type) do
+  defp get_kind(syntax, upper, descriptor) do
     import Protox.Guards
 
     case descriptor do
@@ -284,8 +284,9 @@ defmodule Protox.Parse do
       %FieldDescriptorProto{label: :repeated, options: %FieldOptions{packed: false}} ->
         :unpacked
 
-      %FieldDescriptorProto{label: :repeated} ->
-        case {syntax, type} do
+      %FieldDescriptorProto{label: :repeated, type: field_type} ->
+        case {syntax, field_type} do
+          {:proto3, :enum} -> :packed
           {:proto3, ty} when is_primitive(ty) -> :packed
           _ -> :unpacked
         end
