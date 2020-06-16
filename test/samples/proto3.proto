@@ -39,6 +39,9 @@ message Proto3 {
   }
 
   NestedEnum nested_enum = 9999;
+
+  repeated int32 repeated_int32_packed = 200 [packed = true];
+  repeated int32 repeated_int32_unpacked = 201 [packed = false];
 }
 
 message EmptyProto3 {

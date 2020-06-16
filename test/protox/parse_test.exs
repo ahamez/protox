@@ -93,6 +93,13 @@ defmodule Protox.ParseTest do
               {:enum, Proto2A.NestedEnum}}
   end
 
+  test "Parse Proto3, packed and unpacked fields", %{messages: messages} do
+    fs = fields(messages, Abc.Def.Proto3)
+
+    assert field(fs, 200) == {:repeated, :repeated_int32_packed, :packed, :int32}
+    assert field(fs, 201) == {:repeated, :repeated_int32_unpacked, :unpacked, :int32}
+  end
+
   defp field(fields, tag) do
     fields
     |> Enum.find(&(elem(&1, 0) == tag))

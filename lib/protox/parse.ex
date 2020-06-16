@@ -281,6 +281,9 @@ defmodule Protox.Parse do
       %FieldDescriptorProto{label: :repeated, options: %FieldOptions{packed: true}} ->
         :packed
 
+      %FieldDescriptorProto{label: :repeated, options: %FieldOptions{packed: false}} ->
+        :unpacked
+
       %FieldDescriptorProto{label: :repeated} ->
         case {syntax, type} do
           {:proto3, ty} when is_primitive(ty) -> :packed

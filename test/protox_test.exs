@@ -168,7 +168,9 @@ defmodule ProtoxTest do
              134 => {:oneof_2_int32, {:oneof, :oneof_2}, :int32},
              135 =>
                {:oneof_2_nested_enum, {:oneof, :oneof_2}, {:enum, Abc.Def.Proto3.NestedEnum}},
-             9999 => {:nested_enum, {:default, :FOO}, {:enum, Abc.Def.Proto3.NestedEnum}}
+             9999 => {:nested_enum, {:default, :FOO}, {:enum, Abc.Def.Proto3.NestedEnum}},
+             200 => {:repeated_int32_packed, :packed, :int32},
+             201 => {:repeated_int32_unpacked, :unpacked, :int32}
            }
   end
 
@@ -221,7 +223,9 @@ defmodule ProtoxTest do
                {:oneof_2_nested_enum, {:oneof, :oneof_2},
                 {:enum, Namespace.Abc.Def.Proto3.NestedEnum}},
              9999 =>
-               {:nested_enum, {:default, :FOO}, {:enum, Namespace.Abc.Def.Proto3.NestedEnum}}
+               {:nested_enum, {:default, :FOO}, {:enum, Namespace.Abc.Def.Proto3.NestedEnum}},
+             200 => {:repeated_int32_packed, :packed, :int32},
+             201 => {:repeated_int32_unpacked, :unpacked, :int32}
            }
   end
 
