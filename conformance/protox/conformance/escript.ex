@@ -5,6 +5,13 @@ defmodule Protox.Conformance.Escript do
   # It reads a conformance test request on its standard input and outputs
   # the test results on the standard output.
 
+  use Protox,
+    files: [
+      "./conformance/protox/conformance/conformance.proto",
+      "./conformance/protox/conformance/test_messages_proto2.proto",
+      "./conformance/protox/conformance/test_messages_proto3.proto"
+    ]
+
   def main(_args) do
     run()
   end
@@ -35,7 +42,7 @@ defmodule Protox.Conformance.Escript do
         :stdio
         |> IO.binread(len)
         |> dump_data(log_file)
-        |> Protox.Conformance.ConformanceRequest.decode()
+        |> Conformance.ConformanceRequest.decode()
         |> handle_request(log_file)
         |> make_message_bytes()
         |> output(log_file)
@@ -47,7 +54,7 @@ defmodule Protox.Conformance.Escript do
   defp handle_request(
          {
            :ok,
-           req = %Protox.Conformance.ConformanceRequest{
+           req = %Conformance.ConformanceRequest{
              requested_output_format: :PROTOBUF,
              payload: {:protobuf_payload, _}
            }
@@ -56,7 +63,7 @@ defmodule Protox.Conformance.Escript do
        ) do
     IO.binwrite(log_file, "Will parse protobuf\n")
 
-    if Protox.Conformance.ConformanceRequest.unknown_fields(req) != [] do
+    if Conformance.ConformanceRequest.unknown_fields(req) != [] do
       IO.binwrite(log_file, "Warning, request contains unknown fields\n")
     end
 
@@ -67,16 +74,16 @@ defmodule Protox.Conformance.Escript do
     proto_type =
       case req.message_type do
         "protobuf_test_messages.proto3.TestAllTypesProto3" ->
-          Protox.ProtobufTestMessages.Proto3.TestAllTypesProto3
+          ProtobufTestMessages.Proto3.TestAllTypesProto3
 
         "protobuf_test_messages.proto2.TestAllTypesProto2" ->
-          Protox.ProtobufTestMessages.Proto2.TestAllTypesProto2
+          ProtobufTestMessages.Proto2.TestAllTypesProto2
 
         "conformance.FailureSet" ->
-          Protox.Conformance.FailureSet
+          Conformance.FailureSet
 
         "" ->
-          Protox.ProtobufTestMessages.Proto3.TestAllTypesProto3
+          ProtobufTestMessages.Proto3.TestAllTypesProto3
       end
 
     case proto_type.decode(payload) do
@@ -85,12 +92,12 @@ defmodule Protox.Conformance.Escript do
         IO.binwrite(log_file, "Message: #{inspect(msg, limit: :infinity)}\n")
         encoded_payload = msg |> Protox.Encode.encode!() |> :binary.list_to_bin()
         IO.binwrite(log_file, "Encoded payload: #{inspect(encoded_payload, limit: :infinity)}\n")
-        %Protox.Conformance.ConformanceResponse{result: {:protobuf_payload, encoded_payload}}
+        %Conformance.ConformanceResponse{result: {:protobuf_payload, encoded_payload}}
 
       {:error, reason} ->
         IO.binwrite(log_file, "Parse error: #{inspect(reason)}\n")
 
-        %Protox.Conformance.ConformanceResponse{
+        %Conformance.ConformanceResponse{
           result: {:parse_error, "Parse error: #{inspect(reason)}"}
         }
     end
@@ -115,20 +122,20 @@ defmodule Protox.Conformance.Escript do
         {:PROTOBUF, {:text_payload, _}} ->
           "text output"
 
-        {:TEXT, _} ->
+        {:TEXT_FORMAT, _} ->
           "text output"
       end
 
     IO.binwrite(log_file, "SKIPPED\n")
     IO.binwrite(log_file, "Reason: #{inspect(skip_reason)}\n")
     IO.binwrite(log_file, "#{inspect(req)}\n")
-    %Protox.Conformance.ConformanceResponse{result: {:skipped, "SKIPPED"}}
+    %Conformance.ConformanceResponse{result: {:skipped, "SKIPPED"}}
   end
 
   defp handle_request({:error, reason}, log_file) do
     IO.binwrite(log_file, "ConformanceRequest parse error: #{inspect(reason)}\n")
 
-    %Protox.Conformance.ConformanceResponse{
+    %Conformance.ConformanceResponse{
       result: {:parse_error, "Parse error: #{inspect(reason)}"}
     }
   end
