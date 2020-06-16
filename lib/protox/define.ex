@@ -52,6 +52,7 @@ defmodule Protox.Define do
   # credo:disable-for-next-line Credo.Check.Refactor.CyclomaticComplexity
   defp define_messages(messages) do
     for {msg_name, syntax, fields} <- messages do
+      fields = Enum.sort(fields, &(elem(&1, 0) < elem(&2, 0)))
       unknown_fields = make_unknown_fields(:__uf__, fields)
       struct_fields = make_struct_fields(fields, unknown_fields, syntax)
       required_fields = make_required_fields(fields)
