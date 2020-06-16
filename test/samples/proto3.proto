@@ -1,6 +1,5 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
 import "proto2.proto";
 
 package abc.def;
@@ -30,7 +29,7 @@ message Proto3 {
     Proto2A oneof_1_proto2a = 7;
   }
 
-  map<string, google.protobuf.Timestamp> map_string_timestamp = 8;
+  map<string, Proto2A> map_string_proto2a = 8;
   bytes bytes = 9;
   map<int64, NestedEnum> map_int64_nested_enum = 10;
 

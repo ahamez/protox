@@ -162,7 +162,7 @@ defmodule ProtoxTest do
              5 => {:oneof_1_double, {:oneof, :oneof_1}, :double},
              6 => {:oneof_1_foreign_enum, {:oneof, :oneof_1}, {:enum, Abc.Def.ForeignEnum}},
              7 => {:oneof_1_proto2a, {:oneof, :oneof_1}, {:message, Proto2A}},
-             8 => {:map_string_timestamp, :map, {:string, {:message, Google.Protobuf.Timestamp}}},
+             8 => {:map_string_proto2a, :map, {:string, {:message, Proto2A}}},
              9 => {:bytes, {:default, ""}, :bytes},
              10 => {:map_int64_nested_enum, :map, {:int64, {:enum, Abc.Def.Proto3.NestedEnum}}},
              134 => {:oneof_2_int32, {:oneof, :oneof_2}, :int32},
@@ -211,9 +211,7 @@ defmodule ProtoxTest do
              6 =>
                {:oneof_1_foreign_enum, {:oneof, :oneof_1}, {:enum, Namespace.Abc.Def.ForeignEnum}},
              7 => {:oneof_1_proto2a, {:oneof, :oneof_1}, {:message, Namespace.Proto2A}},
-             8 =>
-               {:map_string_timestamp, :map,
-                {:string, {:message, Namespace.Google.Protobuf.Timestamp}}},
+             8 => {:map_string_proto2a, :map, {:string, {:message, Namespace.Proto2A}}},
              9 => {:bytes, {:default, ""}, :bytes},
              10 =>
                {:map_int64_nested_enum, :map,

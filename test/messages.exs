@@ -115,20 +115,18 @@ defmodule Defs do
         ]
       },
       {
-        ProtobufTestMessages.Proto3.NestedMessage,
+        NestedMessage,
         :proto3,
         [
           {1, :none, :a, {:default, 0}, :int32},
-          {2, :none, :corecursive, {:default, nil},
-           {:message, ProtobufTestMessages.Proto3.TestAllTypesProto3}}
+          {2, :none, :corecursive, {:default, nil}, {:message, TestAllTypesProto3}}
         ]
       },
       {
-        ProtobufTestMessages.Proto3.TestAllTypesProto3,
+        TestAllTypesProto3,
         :proto3,
         [
-          {112, :none, :oneof_nested_message, {:oneof, :oneof_field},
-           {:message, ProtobufTestMessages.Proto3.NestedMessage}}
+          {112, :none, :oneof_nested_message, {:oneof, :oneof_field}, {:message, NestedMessage}}
         ]
       },
       {

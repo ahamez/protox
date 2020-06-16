@@ -30,8 +30,7 @@ defmodule Protox.ParseTest do
 
     assert field(fs, 7) == {:optional, :oneof_1_proto2a, {:oneof, :oneof_1}, {:message, Proto2A}}
 
-    assert field(fs, 8) ==
-             {nil, :map_string_timestamp, :map, {:string, {:message, Google.Protobuf.Timestamp}}}
+    assert field(fs, 8) == {nil, :map_string_proto2a, :map, {:string, {:message, Proto2A}}}
 
     assert field(fs, 9) == {:optional, :bytes, {:default, <<>>}, :bytes}
 
