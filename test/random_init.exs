@@ -209,6 +209,9 @@ defmodule Protox.RandomInit do
     list(oneof(e.constants() |> Map.new() |> Map.values()))
   end
 
+  defp get_gen(:unpacked, :string), do: list(utf8())
+  defp get_gen(:unpacked, :bytes), do: list(binary())
+
   defp get_gen(:unpacked, {:message, sub_msg}) do
     list(generate_fields(sub_msg))
   end
