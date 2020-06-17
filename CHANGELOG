@@ -1,3 +1,7 @@
+* 0.23.1
+  - Fix parse of [packed=false] option (the serialization was still correct,
+    but not in compliance with Protobuf conformance checker recommandations)
+
 * 0.23.0
   - [Breaking change] encode/1 returns a tuple, use encode!/1 to get the old
     behavior of encode/1
