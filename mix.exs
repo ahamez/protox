@@ -16,7 +16,8 @@ defmodule Protox.Mixfile do
       source_url: "https://github.com/ahamez/protox",
       description: description(),
       package: package(),
-      dialyzer: [plt_file: {:no_warn, "priv/plts/dialyzer.plt"}]
+      dialyzer: [plt_file: {:no_warn, "priv/plts/dialyzer.plt"}],
+      docs: docs()
     ]
   end
 
@@ -64,6 +65,13 @@ defmodule Protox.Mixfile do
       maintainers: ["Alexandre Hamez"],
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/ahamez/protox"}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      extras: ["README.md"]
     ]
   end
 end
