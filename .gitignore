@@ -14,6 +14,6 @@ erl_crash.dump
 /priv/plts/*.plt.hash
 /conformance-test-runner
 .tool-versions
-/benchmarks/output/
+/benchmarks/benchmarks/
 /benchmarks/*.benchee
 /benchmarks/payloads.bin
