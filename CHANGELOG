@@ -1,3 +1,6 @@
+* 0.24.0
+  - Usage of @external_resource is no longer necessary
+
 * 0.23.1
   - Fix parse of [packed=false] option (the serialization was still correct,
     but not in compliance with Protobuf conformance checker recommandations)
