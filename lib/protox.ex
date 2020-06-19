@@ -3,10 +3,6 @@ defmodule Protox do
   Use this module to generate the Elixir modules from a set of protobuf definitions:
 
       defmodule Foo do
-        @external_resource "./defs/foo.proto"
-        @external_resource "./defs/bar.proto"
-        @external_resource "./defs/baz/fiz.proto"
-
         use Protox, files: [
           "./defs/foo.proto",
           "./defs/bar.proto",
@@ -66,6 +62,13 @@ defmodule Protox do
     {:ok, file_descriptor_set} = Protox.Protoc.run(files, path)
     {enums, messages} = Protox.Parse.parse(file_descriptor_set, namespace)
 
-    Protox.Define.define(enums, messages)
+    quote do
+      unquote(make_external_resources(files))
+      unquote(Protox.Define.define(enums, messages))
+    end
+  end
+
+  defp make_external_resources(files) do
+    Enum.map(files, fn file -> quote(do: @external_resource(unquote(file))) end)
   end
 end

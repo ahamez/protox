@@ -69,10 +69,6 @@ Here's how to generate the modules from a set of files:
 
 ```elixir
 defmodule Foo do
-  @external_resource "./defs/foo.proto"
-  @external_resource "./defs/bar.proto"
-  @external_resource "./defs/baz/fiz.proto"
-
   use Protox, files: [
     "./defs/foo.proto",
     "./defs/bar.proto",
@@ -157,9 +153,6 @@ An import path can be specified using the `path:` option that specifies the dire
 
 ```elixir
 defmodule Baz do
-  @external_resource "./defs/prefix/foo.proto"
-  @external_resource "./defs/prefix/bar/bar.proto"
-
   use Protox,
     files: [
       "./defs/prefix/foo.proto",

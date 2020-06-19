@@ -19,7 +19,6 @@ tags =
 # ----------------------------------------------------------------------------------------------- #
 
 defmodule Protox.Benchmarks do
-  @external_resource "./benchmarks/benchmarks.proto"
   use Protox, files: ["./benchmarks/benchmarks.proto"], namespace: Protox.Benchmarks
 end
 
