@@ -33,7 +33,7 @@ defmodule Protox.Mixfile do
       {:benchee, "~> 1.0", only: [:dev]},
       {:benchee_html, "~> 1.0", only: [:dev]},
       {:benchee_markdown, "~> 0.2", only: [:dev]},
-      {:credo, "~> 1.4", only: [:dev]},
+      {:credo, "~> 1.4", only: [:test, :dev]},
       {:dialyxir, "~> 1.0", only: [:test, :dev], runtime: false},
       {:excoveralls, "~> 0.13", only: :test},
       {:ex_doc, "~> 0.22", only: [:dev]},

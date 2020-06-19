@@ -21,6 +21,7 @@ env:
   - MIX_ENV=test PROTOBUF_CONFORMANCE_RUNNER=./conformance/conformance-test-runner LD_LIBRARY_PATH=./conformance/.libs
 script:
   - mix dialyzer
+  - mix credo
   - mix coveralls.travis --include conformance
 after_script:
   - MIX_ENV=docs mix deps.get
