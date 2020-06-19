@@ -11,6 +11,11 @@ matrix:
       otp_release: 22.0
     - elixir: 1.10
       otp_release: 22.0
+      script:
+        - mix format --check-formatted
+        - mix dialyzer
+        - mix credo
+        - mix coveralls.travis --include conformance
 before_script:
   - wget https://github.com/protocolbuffers/protobuf/releases/download/v3.12.0/protoc-3.12.0-linux-x86_64.zip
   - unzip -d protoc protoc-3.12.0-linux-x86_64.zip
