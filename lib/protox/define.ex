@@ -49,7 +49,6 @@ defmodule Protox.Define do
     end
   end
 
-  # credo:disable-for-next-line Credo.Check.Refactor.CyclomaticComplexity
   defp define_messages(messages) do
     for {msg_name, syntax, fields} <- messages do
       fields = Enum.sort(fields, &(elem(&1, 0) < elem(&2, 0)))
