@@ -11,6 +11,8 @@ matrix:
       otp_release: 22.0
     - elixir: 1.10
       otp_release: 22.0
+    - elixir: 1.10
+      otp_release: 23.0
       script:
         - mix format --check-formatted
         - mix dialyzer
