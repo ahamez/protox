@@ -288,21 +288,6 @@ defmodule Protox.EncodeTest do
              <<50, 12, 0, 0, 0x80, 0x7F, 0, 0, 0x80, 0xFF, 0, 1, 129, 255>>
   end
 
-  test "Msg.msg_i, nan" do
-    bytes = <<50, 12, 0x01, 0, 0x80, 0x7F, 0, 0, 0xC0, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F>>
-
-    assert Msg.decode!(bytes) == %Msg{
-             msg_d: :FOO,
-             msg_e: false,
-             msg_f: nil,
-             msg_g: [],
-             msg_h: 0.0,
-             msg_i: [:nan, :nan, :nan],
-             msg_j: [],
-             msg_k: %{}
-           }
-  end
-
   test "Msg.msg_j" do
     assert %Msg{msg_j: [%Sub{a: 42}, %Sub{b: "foo"}]}
            |> Protox.Encode.encode!()
