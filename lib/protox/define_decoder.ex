@@ -449,6 +449,11 @@ defmodule Protox.DefineDecoder do
         ty -> "#{Atom.to_string(ty)}"
       end
 
+    value_name =
+      value_name
+      |> Macro.underscore()
+      |> String.replace("/", "_")
+
     String.to_atom("parse_#{Atom.to_string(key_type)}_#{value_name}")
   end
 
