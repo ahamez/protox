@@ -269,7 +269,7 @@ defmodule Protox.DefineEncoder do
 
     quote do
       Enum.reduce(values, [], fn unquote(var), acc ->
-        bytes = [acc, unquote(key), unquote(encode_value_ast)]
+        [acc, unquote(key), unquote(encode_value_ast)]
       end)
     end
   end

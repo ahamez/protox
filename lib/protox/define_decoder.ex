@@ -311,13 +311,6 @@ defmodule Protox.DefineDecoder do
     parser_fun_name = make_map_decode_fun_name(key_type, value_type)
 
     quote do
-      alias Protox.Decode.MapEntry
-
-      defs = %{
-        1 => {:key, {:default, :dummy}, unquote(key_type)},
-        2 => {:value, {:default, :dummy}, unquote(value_type)}
-      }
-
       {map_key, map_value} = unquote(parser_fun_name)({:unset, :unset}, unquote(bytes_var))
 
       map_key =
