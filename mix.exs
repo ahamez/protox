@@ -4,8 +4,8 @@ defmodule Protox.Mixfile do
   def project do
     [
       app: :protox,
-      version: "0.24.0",
-      elixir: "~> 1.6",
+      version: "0.25.0",
+      elixir: "~> 1.7",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
