@@ -7,9 +7,11 @@ defmodule Protox.DefineDecoder do
     WireTypes
   }
 
-  def define(msg_name, fields, required_fields, syntax) do
-    decode_return = make_decode_return(required_fields)
-    parse_key_value = make_parse_key_value(syntax, fields)
+  def define(msg_name, fields, required_fields) do
+    set_fields_var = quote do: set_fields
+
+    decode_fun = make_decode_fun(required_fields, msg_name, set_fields_var)
+    parse_key_value_fun = make_parse_key_value_fun(required_fields, fields, set_fields_var)
     parse_map_entries = make_parse_map_entries(fields)
 
     quote do
@@ -26,38 +28,53 @@ defmodule Protox.DefineDecoder do
       end
 
       @spec decode!(binary) :: struct | no_return
-      def decode!(bytes) do
-        {msg, set_fields} =
-          parse_key_value([], bytes, unquote(msg_name).defs(), struct(unquote(msg_name)))
+      unquote(decode_fun)
 
-        unquote(decode_return)
-      end
-
-      @spec parse_key_value([atom], binary, map, struct) :: {struct, [atom]}
-      defp parse_key_value(set_fields, <<>>, _, msg) do
-        {msg, set_fields}
-      end
-
-      defp parse_key_value(set_fields, bytes, defs, msg) do
-        unquote(parse_key_value)
-      end
+      @spec parse_key_value([atom], binary, struct) :: {struct, [atom]}
+      unquote(parse_key_value_fun)
 
       unquote(parse_map_entries)
     end
   end
 
-  defp make_decode_return([]), do: quote(do: msg)
-
-  defp make_decode_return(required_fields) do
+  defp make_decode_fun([], msg_name, _set_fields_var) do
     quote do
-      case unquote(required_fields) -- set_fields do
-        [] -> msg
-        missing_fields -> raise Protox.RequiredFieldsError.new(missing_fields)
+      def decode!(bytes) do
+        {msg, _} = parse_key_value([], bytes, struct(unquote(msg_name)))
+        msg
       end
     end
   end
 
-  defp make_parse_key_value(syntax, fields) do
+  defp make_decode_fun(required_fields, msg_name, set_fields_var) do
+    quote do
+      def decode!(bytes) do
+        {msg, unquote(set_fields_var)} = parse_key_value([], bytes, struct(unquote(msg_name)))
+
+        case unquote(required_fields) -- unquote(set_fields_var) do
+          [] -> msg
+          missing_fields -> raise Protox.RequiredFieldsError.new(missing_fields)
+        end
+      end
+    end
+  end
+
+  defp make_parse_key_value_fun(required_fields, fields, set_fields_var) do
+    keep_set_fields = required_fields != []
+    parse_key_value = make_parse_key_value(keep_set_fields, fields, set_fields_var)
+
+    quote do
+      defp parse_key_value(unquote(set_fields_var), <<>>, msg) do
+        {msg, unquote(set_fields_var)}
+      end
+
+      defp parse_key_value(unquote(set_fields_var), bytes, msg) do
+        unquote(parse_key_value)
+      end
+    end
+  end
+
+  defp make_parse_key_value(keep_set_fields, fields, set_fields_var) do
     msg_var = quote do: msg
     field_var = quote do: field
     value_var = quote do: value
@@ -69,11 +86,11 @@ defmodule Protox.DefineDecoder do
 
     unknown_tag_case =
       (
-        # No need to maintain a list of set fields for proto3
+        # No need to maintain a list of set fields when the list of required fields is empty
         case_return =
-          case syntax do
-            :proto2 -> quote do: {set_fields, unquote(field_var), new_rest}
-            :proto3 -> quote do: {[], unquote(field_var), new_rest}
+          case keep_set_fields do
+            true -> quote do: {unquote(set_fields_var), unquote(field_var), new_rest}
+            false -> quote do: {[], unquote(field_var), new_rest}
           end
 
         quote do
@@ -91,8 +108,9 @@ defmodule Protox.DefineDecoder do
     known_tags_case =
       fields
       |> Enum.map(fn {tag, _, name, kind, type} ->
-        single = make_single_case(msg_var, syntax, tag, name, kind, type)
-        delimited = make_delimited_case(msg_var, syntax, single, tag, name, kind, type)
+        single = make_single_case(msg_var, keep_set_fields, tag, name, kind, type)
+
+        delimited = make_delimited_case(msg_var, keep_set_fields, single, tag, name, kind, type)
 
         delimited ++ single
       end)
@@ -107,18 +125,24 @@ defmodule Protox.DefineDecoder do
         end
 
       msg_updated = struct(unquote(msg_var), [field])
-      parse_key_value(new_set_fields, rest, defs, msg_updated)
+      parse_key_value(new_set_fields, rest, msg_updated)
     end
   end
 
-  defp make_single_case(_msg_var, _syntax, _tag, _name, _kind, {:message, _}), do: quote(do: [])
-  defp make_single_case(_msg_var, _syntax, _tag, _name, _kind, :string), do: quote(do: [])
-  defp make_single_case(_msg_var, _syntax, _tag, _name, _kind, :bytes), do: quote(do: [])
-
-  defp make_single_case(_msg_var, _syntax, _tag, _name, _kind, {x, _}) when x != :enum,
+  defp make_single_case(_msg_var, _keep_set_fields, _tag, _name, _kind, {:message, _}),
     do: quote(do: [])
 
-  defp make_single_case(msg_var, syntax, tag, name, kind, type) do
+  defp make_single_case(_msg_var, _keep_set_fields, _tag, _name, _kind, :string),
+    do: quote(do: [])
+
+  defp make_single_case(_msg_var, _keep_set_fields, _tag, _name, _kind, :bytes),
+    do: quote(do: [])
+
+  defp make_single_case(_msg_var, _keep_set_fields, _tag, _name, _kind, {x, _})
+       when x != :enum,
+       do: quote(do: [])
+
+  defp make_single_case(msg_var, keep_set_fields, tag, name, kind, type) do
     bytes_var = quote do: bytes
     field_var = quote do: field
     value_var = quote do: value
@@ -127,9 +151,9 @@ defmodule Protox.DefineDecoder do
 
     # No need to maintain a list of set fields for proto3
     case_return =
-      case syntax do
-        :proto2 -> quote do: {[unquote(name) | set_fields], unquote(field_var), rest}
-        :proto3 -> quote do: {[], unquote(field_var), rest}
+      case keep_set_fields do
+        true -> quote do: {[unquote(name) | set_fields], unquote(field_var), rest}
+        false -> quote do: {[], unquote(field_var), rest}
       end
 
     quote do
@@ -140,36 +164,44 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_delimited_case(msg_var, syntax, single, tag, name, kind, type = {:message, _}) do
-    make_delimited_case_impl(msg_var, syntax, single, tag, name, kind, type)
+  defp make_delimited_case(
+         msg_var,
+         keep_set_fields,
+         single,
+         tag,
+         name,
+         kind,
+         type = {:message, _}
+       ) do
+    make_delimited_case_impl(msg_var, keep_set_fields, single, tag, name, kind, type)
   end
 
-  defp make_delimited_case(msg_var, syntax, single, tag, name, kind, :bytes) do
-    make_delimited_case_impl(msg_var, syntax, single, tag, name, kind, :bytes)
+  defp make_delimited_case(msg_var, keep_set_fields, single, tag, name, kind, :bytes) do
+    make_delimited_case_impl(msg_var, keep_set_fields, single, tag, name, kind, :bytes)
   end
 
-  defp make_delimited_case(msg_var, syntax, single, tag, name, kind, :string) do
-    make_delimited_case_impl(msg_var, syntax, single, tag, name, kind, :string)
+  defp make_delimited_case(msg_var, keep_set_fields, single, tag, name, kind, :string) do
+    make_delimited_case_impl(msg_var, keep_set_fields, single, tag, name, kind, :string)
   end
 
-  defp make_delimited_case(_msg_var, _syntax, _single, _tag, _name, {:default, _}, _) do
+  defp make_delimited_case(_msg_var, _keep_set_fields, _single, _tag, _name, {:default, _}, _) do
     []
   end
 
-  defp make_delimited_case(msg_var, syntax, single, tag, name, kind, type) do
-    make_delimited_case_impl(msg_var, syntax, single, tag, name, kind, type)
+  defp make_delimited_case(msg_var, keep_set_fields, single, tag, name, kind, type) do
+    make_delimited_case_impl(msg_var, keep_set_fields, single, tag, name, kind, type)
   end
 
-  defp make_delimited_case_impl(msg_var, syntax, single, tag, name, kind, type) do
+  defp make_delimited_case_impl(msg_var, keep_set_fields, single, tag, name, kind, type) do
     bytes_var = quote do: bytes
     field_var = quote do: field
     value_var = quote do: value
     update_field = make_update_field(name, kind, type, msg_var, value_var)
 
     case_return =
-      case syntax do
-        :proto2 -> quote do: {[unquote(name) | set_fields], unquote(field_var), rest}
-        :proto3 -> quote do: {[], unquote(field_var), rest}
+      case keep_set_fields do
+        true -> quote do: {[unquote(name) | set_fields], unquote(field_var), rest}
+        false -> quote do: {[], unquote(field_var), rest}
       end
 
     delimited_var = quote do: delimited

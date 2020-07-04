@@ -11,7 +11,7 @@ defmodule Protox.DefineMessage do
       fields_map = make_fields_map(fields)
       fields_by_name_map = make_fields_by_name_map(fields)
       encoder = Protox.DefineEncoder.define(fields, required_fields, syntax)
-      decoder = Protox.DefineDecoder.define(msg_name, fields, required_fields, syntax)
+      decoder = Protox.DefineDecoder.define(msg_name, fields, required_fields)
       default_fun = make_default_fun(fields)
 
       module_ast =
