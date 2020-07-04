@@ -27,10 +27,8 @@ defmodule Protox.DefineDecoder do
         end
       end
 
-      @spec decode!(binary) :: struct | no_return
       unquote(decode_fun)
 
-      @spec parse_key_value([atom], binary, struct) :: {struct, [atom]}
       unquote(parse_key_value_fun)
 
       unquote(parse_map_entries)
@@ -39,15 +37,16 @@ defmodule Protox.DefineDecoder do
 
   defp make_decode_fun([], msg_name, _set_fields_var) do
     quote do
+      @spec decode!(binary) :: struct | no_return
       def decode!(bytes) do
-        {msg, _} = parse_key_value([], bytes, struct(unquote(msg_name)))
-        msg
+        parse_key_value(bytes, struct(unquote(msg_name)))
       end
     end
   end
 
   defp make_decode_fun(required_fields, msg_name, set_fields_var) do
     quote do
+      @spec decode!(binary) :: struct | no_return
       def decode!(bytes) do
         {msg, unquote(set_fields_var)} = parse_key_value([], bytes, struct(unquote(msg_name)))
 
@@ -63,13 +62,23 @@ defmodule Protox.DefineDecoder do
     keep_set_fields = required_fields != []
     parse_key_value = make_parse_key_value(keep_set_fields, fields, set_fields_var)
 
-    quote do
-      defp parse_key_value(unquote(set_fields_var), <<>>, msg) do
-        {msg, unquote(set_fields_var)}
-      end
+    if keep_set_fields do
+      quote do
+        @spec parse_key_value([atom], binary, struct) :: {struct, [atom]}
+        defp parse_key_value(unquote(set_fields_var), <<>>, msg) do
+          {msg, unquote(set_fields_var)}
+        end
 
-      defp parse_key_value(unquote(set_fields_var), bytes, msg) do
-        unquote(parse_key_value)
+        defp parse_key_value(unquote(set_fields_var), bytes, msg) do
+          unquote(parse_key_value)
+        end
+      end
+    else
+      quote do
+        @spec parse_key_value(binary, struct) :: struct
+        defp parse_key_value(<<>>, msg), do: msg
+
+        defp parse_key_value(bytes, msg), do: unquote(parse_key_value)
       end
     end
   end
@@ -90,7 +99,7 @@ defmodule Protox.DefineDecoder do
         case_return =
           case keep_set_fields do
             true -> quote do: {unquote(set_fields_var), unquote(field_var), new_rest}
-            false -> quote do: {[], unquote(field_var), new_rest}
+            false -> quote do: {unquote(field_var), new_rest}
           end
 
         quote do
@@ -109,7 +118,6 @@ defmodule Protox.DefineDecoder do
       fields
       |> Enum.map(fn {tag, _, name, kind, type} ->
         single = make_single_case(msg_var, keep_set_fields, tag, name, kind, type)
-
         delimited = make_delimited_case(msg_var, keep_set_fields, single, tag, name, kind, type)
 
         delimited ++ single
@@ -118,14 +126,26 @@ defmodule Protox.DefineDecoder do
 
     all_cases = tag_0_case ++ known_tags_case ++ unknown_tag_case
 
-    quote do
-      {new_set_fields, field, rest} =
-        case Protox.Decode.parse_key(bytes) do
-          unquote(all_cases)
-        end
+    if keep_set_fields do
+      quote do
+        {new_set_fields, field, rest} =
+          case Protox.Decode.parse_key(bytes) do
+            unquote(all_cases)
+          end
 
-      msg_updated = struct(unquote(msg_var), [field])
-      parse_key_value(new_set_fields, rest, msg_updated)
+        msg_updated = struct(unquote(msg_var), [field])
+        parse_key_value(new_set_fields, rest, msg_updated)
+      end
+    else
+      quote do
+        {field, rest} =
+          case Protox.Decode.parse_key(bytes) do
+            unquote(all_cases)
+          end
+
+        msg_updated = struct(unquote(msg_var), [field])
+        parse_key_value(rest, msg_updated)
+      end
     end
   end
 
@@ -153,7 +173,7 @@ defmodule Protox.DefineDecoder do
     case_return =
       case keep_set_fields do
         true -> quote do: {[unquote(name) | set_fields], unquote(field_var), rest}
-        false -> quote do: {[], unquote(field_var), rest}
+        false -> quote do: {unquote(field_var), rest}
       end
 
     quote do
@@ -201,7 +221,7 @@ defmodule Protox.DefineDecoder do
     case_return =
       case keep_set_fields do
         true -> quote do: {[unquote(name) | set_fields], unquote(field_var), rest}
-        false -> quote do: {[], unquote(field_var), rest}
+        false -> quote do: {unquote(field_var), rest}
       end
 
     delimited_var = quote do: delimited
