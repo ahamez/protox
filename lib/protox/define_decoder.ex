@@ -440,7 +440,8 @@ defmodule Protox.DefineDecoder do
   defp make_parse_map_entries(fields) do
     {maps, _} = Protox.Defs.split_maps(fields)
 
-    Enum.map(maps, fn {_, _, _, :map, {key_type, value_type}} ->
+    maps
+    |> Enum.map(fn {_, _, _, :map, {key_type, value_type}} ->
       bytes_var = quote do: bytes
       rest_var = quote do: rest
       fun_name = make_map_decode_fun_name(key_type, value_type)
@@ -448,42 +449,49 @@ defmodule Protox.DefineDecoder do
       key_parser = make_parse_map_entry(rest_var, key_type)
       value_parser = make_parse_map_entry(rest_var, value_type)
 
-      quote do
-        defp unquote(fun_name)(map_entry, <<>>) do
-          map_entry
+      code =
+        quote do
+          defp unquote(fun_name)(map_entry, <<>>) do
+            map_entry
+          end
+
+          # https://developers.google.com/protocol-buffers/docs/proto3#backwards-compatibility
+          # Maps are equivalent to:
+          #   message MapFieldEntry {
+          #     key_type key = 1;
+          #     value_type value = 2;
+          #   }
+          # repeated MapFieldEntry map_field = N;
+          #
+          defp unquote(fun_name)({entry_key, entry_value}, unquote(bytes_var)) do
+            {map_entry, unquote(rest_var)} =
+              case Protox.Decode.parse_key(unquote(bytes_var)) do
+                # key
+                {1, _, unquote(rest_var)} ->
+                  {res, unquote(rest_var)} = unquote(key_parser)
+                  {{res, entry_value}, unquote(rest_var)}
+
+                # value
+                {2, _, unquote(rest_var)} ->
+                  {res, unquote(rest_var)} = unquote(value_parser)
+                  {{entry_key, res}, unquote(rest_var)}
+
+                {tag, wire_type, unquote(rest_var)} ->
+                  {_, unquote(rest_var)} =
+                    Protox.Decode.parse_unknown(tag, wire_type, unquote(rest_var))
+
+                  {{entry_key, entry_value}, unquote(rest_var)}
+              end
+
+            unquote(fun_name)(map_entry, unquote(rest_var))
+          end
         end
 
-        # https://developers.google.com/protocol-buffers/docs/proto3#backwards-compatibility
-        # Maps are equivalent to:
-        #   message MapFieldEntry {
-        #     key_type key = 1;
-        #     value_type value = 2;
-        #   }
-        # repeated MapFieldEntry map_field = N;
-        defp unquote(fun_name)({entry_key, entry_value}, unquote(bytes_var)) do
-          {map_entry, unquote(rest_var)} =
-            case Protox.Decode.parse_key(unquote(bytes_var)) do
-              # key
-              {1, _, unquote(rest_var)} ->
-                {res, unquote(rest_var)} = unquote(key_parser)
-                {{res, entry_value}, unquote(rest_var)}
-
-              # value
-              {2, _, unquote(rest_var)} ->
-                {res, unquote(rest_var)} = unquote(value_parser)
-                {{entry_key, res}, unquote(rest_var)}
-
-              {tag, wire_type, unquote(rest_var)} ->
-                {_, unquote(rest_var)} =
-                  Protox.Decode.parse_unknown(tag, wire_type, unquote(rest_var))
-
-                {{entry_key, entry_value}, unquote(rest_var)}
-            end
-
-          unquote(fun_name)(map_entry, unquote(rest_var))
-        end
-      end
+      {fun_name, code}
     end)
+    |> Enum.sort(fn {lhs_fun_name, _}, {rhs_fun_name, _} -> lhs_fun_name < rhs_fun_name end)
+    |> Enum.dedup_by(fn {fun_name, _} -> fun_name end)
+    |> Enum.map(fn {_, code} -> code end)
   end
 
   defp make_map_decode_fun_name(key_type, value_type) do
