@@ -256,6 +256,17 @@ defmodule ProtoxTest do
     assert msg == msg |> Camel.encode!() |> :binary.list_to_bin() |> Camel.decode!()
   end
 
+  test "Generate code" do
+    file = Path.join(__DIR__, "./samples/prefix/bar/bar.proto")
+    str = Protox.generate_code([file], "./test/samples")
+
+    tmp_dir = System.tmp_dir!()
+    tmp_file = Path.join(tmp_dir, "generated_code.ex")
+    File.write!(tmp_file, str)
+
+    assert Code.compile_file(tmp_file) != []
+  end
+
   @tag conformance: true
   test "Launch conformance" do
     {:ok, _} = File.rm_rf("./failing_tests.txt")

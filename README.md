@@ -6,7 +6,9 @@ Protox is an Elixir library to work with [Google's Protocol Buffers](https://dev
 
 Generally speaking, a lot of efforts have been put into making sure that the library is reliable (for instance using [property based testing](https://github.com/alfert/propcheck) and by having a [100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master)). Therefore, this library passes all the tests of the conformance checker provided by Google. See [Conformance](#conformance) section for more information.
 
-This library is easy to use: you just point to the `*.proto` files or give the schema to the `Protox` macro, no need to generate any file! Furthermore, it provides a full-blown Elixir experience with protobuf messages. For instance, given the following protobuf `msg.proto` file:
+This library is easy to use: you just point to the `*.proto` files or give the schema to the `Protox` macro, no need to generate any file! However, should you need to generate files, a mix task is available (see [Files generation](#files-generation)).
+
+This library also provides a full-blown Elixir experience with protobuf messages. For instance, given the following protobuf `msg.proto` file:
 ```proto
 syntax = "proto3";
 
@@ -291,6 +293,18 @@ When you encode a message that contains unknown fields, they will be reencoded i
 ## Generated code reference
 
 The detailed reference of the generated code is available [here](documentation/reference.md).
+
+## Files generation
+
+It's also possible to generate a file that will contain all code corresponding to the protobuf messages:
+
+```shell
+MIX_ENV=prod mix protox.generate --output-path=/path/to/message.ex --include-path=. test/messages.proto test/samples/proto2.proto
+```
+
+The `--include-path` option is the same as the option described in section [Specify import path](#specify-import-path).
+
+The generated file will be usable in any project as long as protox is declared in the dependancies (the generated file is not a standalone, it still needs function from the protox runtime).
 
 ## Types mapping
 

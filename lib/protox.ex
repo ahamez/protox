@@ -68,6 +68,27 @@ defmodule Protox do
     end
   end
 
+  def generate_code(files, include_path \\ nil) do
+    path =
+      case include_path do
+        nil -> nil
+        _ -> Path.expand(include_path)
+      end
+
+    {:ok, file_descriptor_set} =
+      files
+      |> Enum.map(&Path.expand/1)
+      |> Protox.Protoc.run(path)
+
+    {enums, messages} = Protox.Parse.parse(file_descriptor_set, nil)
+
+    code = quote do: unquote(Protox.Define.define(enums, messages))
+
+    code_str = Macro.to_string(code)
+
+    ["#", " credo:disable-for-this-file\n", code_str]
+  end
+
   defp make_external_resources(files) do
     Enum.map(files, fn file -> quote(do: @external_resource(unquote(file))) end)
   end

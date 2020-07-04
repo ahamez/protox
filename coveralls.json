@@ -1,6 +1,7 @@
 {
   "skip_files": [
     "conformance",
-    "benchmarks"
+    "benchmarks",
+    "generate.ex"
   ]
 }
