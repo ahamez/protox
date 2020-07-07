@@ -71,6 +71,12 @@ IO.puts("Will run benchmarks: #{inspect(tags)}")
 
 # ----------------------------------------------------------------------------------------------- #
 
+{head, 0} = System.cmd("git", ["symbolic-ref", "--short", "HEAD"])
+{hash, 0} = System.cmd("git", ["rev-parse", "--short", "HEAD"])
+tag = "#{String.trim(head)}-#{String.trim(hash)}"
+
+# ----------------------------------------------------------------------------------------------- #
+
 Benchee.run(
   %{
     Protox.Benchmarks.Run.decode_name() => fn input ->
@@ -81,7 +87,7 @@ Benchee.run(
   formatters: [
     Benchee.Formatters.Console
   ],
-  save: [path: Path.join(["./benchmarks", Protox.Benchmarks.Run.decode_file_name()])],
+  save: [path: Path.join(["./benchmarks", "#{tag}_#{Protox.Benchmarks.Run.decode_file_name()}"])],
   time: 10,
   memory_time: 2
 )
@@ -98,7 +104,7 @@ Benchee.run(
   formatters: [
     Benchee.Formatters.Console
   ],
-  save: [path: Path.join(["./benchmarks", Protox.Benchmarks.Run.encode_file_name()])],
+  save: [path: Path.join(["./benchmarks", "#{tag}_#{Protox.Benchmarks.Run.encode_file_name()}"])],
   time: 10,
   memory_time: 2
 )

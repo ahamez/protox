@@ -4,7 +4,7 @@ Benchee.run(
     {Benchee.Formatters.HTML, file: "./benchmarks/output/decode.html"},
     {Benchee.Formatters.Markdown, file: "./benchmarks/output/decode.md"}
   ],
-  load: ["./benchmarks/decode*.benchee"]
+  load: ["./benchmarks/*decode*.benchee"]
 )
 
 Benchee.run(
@@ -13,5 +13,5 @@ Benchee.run(
     {Benchee.Formatters.HTML, file: "./benchmarks/output/encode.html"},
     {Benchee.Formatters.Markdown, file: "./benchmarks/output/encode.md"}
   ],
-  load: ["./benchmarks/encode*.benchee"]
+  load: ["./benchmarks/*encode*.benchee"]
 )
