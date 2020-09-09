@@ -341,7 +341,7 @@ Here's how to launch the conformance test:
 * Get conformance-test-runner [sources](https://github.com/protocolbuffers/protobuf/archive/v3.13.0.tar.gz).
 * Compile conformance-test-runner ([macOS and Linux only](https://github.com/protocolbuffers/protobuf/tree/master/conformance#portability)):
   `tar xf v3.13.0.tar.gz && cd protobuf-3.13.0 && ./autogen.sh && ./configure && make -j && cd conformance && make -j`.
-* `mix protox.conformance --runner=/path/to/protobuf-3.13.0/conformance/conformance-test-runner`
+* Run `mix protox.conformance --runner=/path/to/protobuf-3.13.0/conformance/conformance-test-runner`.
   A report will be generated in a directory `conformance_report`.
   If everything's fine, the following text should be displayed:
 
