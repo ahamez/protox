@@ -18,10 +18,10 @@ matrix:
         - mix coveralls.travis --include conformance
         - MIX_ENV=prod mix compile --warnings-as-errors
 before_script:
-  - wget https://github.com/protocolbuffers/protobuf/releases/download/v3.12.3/protoc-3.12.3-linux-x86_64.zip
-  - unzip -d protoc protoc-3.12.3-linux-x86_64.zip
+  - wget https://github.com/protocolbuffers/protobuf/releases/download/v3.13.0/protoc-3.13.0-linux-x86_64.zip
+  - unzip -d protoc protoc-3.13.0-linux-x86_64.zip
   - export PATH=$PWD/protoc/bin/:$PATH
-  - wget https://github.com/ahamez/protox/releases/download/0.20.0/conformance-linux-x86_64.zip
+  - wget https://github.com/ahamez/protox/releases/download/0.25.0/conformance-linux-x86_64.zip
   - unzip conformance-linux-x86_64.zip
 env:
   - MIX_ENV=test PROTOBUF_CONFORMANCE_RUNNER=./conformance/conformance-test-runner LD_LIBRARY_PATH=./conformance/.libs
