@@ -17,3 +17,4 @@ erl_crash.dump
 /benchmarks/benchmarks/
 /benchmarks/*.benchee
 /benchmarks/payloads.bin
+/benchmarks/output
