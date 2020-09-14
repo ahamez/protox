@@ -1,0 +1,15 @@
+# Instructions to compile a Linux x86_64 conformance-test-runner needed by Travis CI
+# TODO Convert this in a Dockerfile
+
+docker run -ti ubuntu:xenial /bin/bash
+
+apt install gcc g++ wget zip libtool autoconf automake make
+wget https://github.com/protocolbuffers/protobuf/archive/v3.13.0.tar.gz
+tar xf v3.13.0.tar.gz && cd protobuf-3.13.0 && ./autogen.sh && ./configure && make -j 2 && cd conformance && make -j 2
+mkdir /conformance
+cp ./conformance-test-runner /conformance/
+cp /protobuf-3.13.0/src/.libs/libprotobuf.so.24.0.0 /conformance/.libs/libprotobuf.so.24
+cd /
+zip -r conformance-linux-x86_64.zip conformance
+
+docker cp CONTAINER_ID:/conformance-linux-x86_64.zip .
