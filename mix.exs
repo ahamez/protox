@@ -38,6 +38,7 @@ defmodule Protox.Mixfile do
       {:dialyxir, "~> 1.0", only: [:test, :dev], runtime: false},
       {:excoveralls, "~> 0.13", only: :test},
       {:ex_doc, "~> 0.22", only: [:dev]},
+      {:git_hooks, "~> 0.5", only: [:test, :dev], runtime: false},
       {:inch_ex, "~> 2.0.0", only: :docs},
       {:propcheck, "~> 1.2", only: [:test, :dev]}
     ]
