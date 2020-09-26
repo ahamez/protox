@@ -946,7 +946,7 @@ defmodule Protox.DecodeTest do
   end
 
   test "Error when required field is missing" do
-    assert {:error, {:missing_fields, fs}} = Required.decode(<<>>)
+    assert {:error, %Protox.RequiredFieldsError{missing_fields: fs}} = Required.decode(<<>>)
     assert fs == [:a]
   end
 
@@ -999,11 +999,11 @@ defmodule Protox.DecodeTest do
   end
 
   test "Decoding a field with tag 0 returns an error" do
-    assert {:error, :illegal_tag} = Empty.decode(<<0>>)
+    assert {:error, %Protox.IllegalTagError{}} = Empty.decode(<<0>>)
   end
 
   test "Decode dummy varint data returns an error" do
-    assert {:error, {:varint, _}} = Empty.decode(<<255, 255, 255, 255>>)
+    assert {:error, %Protox.DecodingError{reason: :varint}} = Empty.decode(<<255, 255, 255, 255>>)
   end
 
   test "Decode! dummy varint data raises DecodingError" do
