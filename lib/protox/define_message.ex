@@ -64,8 +64,7 @@ defmodule Protox.DefineMessage do
   defp make_default_fun(fields) do
     spec =
       quote do
-        @spec default(atom) ::
-                {:ok, boolean | integer | String.t() | binary | float} | {:error, atom}
+        @spec default(atom) :: {:ok, boolean | integer | String.t() | float} | {:error, atom}
       end
 
     match_all =
