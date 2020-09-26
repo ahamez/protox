@@ -26,7 +26,7 @@ iex> %Msg{a: 42, b: %{1 => "a map entry"}}
 
 ## Prerequisites
 
-Protox uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`. You can download it [here](https://github.com/google/protobuf) or you can install with your favorite package manager (`brew install protobuf`, `apt install protobuf-compiler`, etc.).
+Protox uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`. You can download it [here](https://github.com/google/protobuf) or you can install it with your favorite package manager (`brew install protobuf`, `apt install protobuf-compiler`, etc.).
 
 *This dependency is only required at compile-time*.
 
