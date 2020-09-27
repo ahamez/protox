@@ -1,3 +1,6 @@
+* 1.0.0
+  - Use Protox exceptions as errors codes
+
 * 0.25.0
   - Add mix task to generate files
   - Bump to Elixir 1.7 as minimal supported version
