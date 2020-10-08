@@ -26,7 +26,12 @@ defmodule Protox.Mixfile do
   defp elixirc_paths(_), do: ["lib", "conformance", "benchmarks"]
 
   def application do
-    [extra_applications: [:mix]]
+    [
+      extra_applications: [
+        :crypto,
+        :mix
+      ]
+    ]
   end
 
   defp deps do
