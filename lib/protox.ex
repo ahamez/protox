@@ -118,7 +118,8 @@ defmodule Protox do
   defp generate_file_content(code),
     do: ["#", " credo:disable-for-this-file\n", Macro.to_string(code)]
 
-  def generate_file(%FileContent{name: file_name, content: content}), do: File.write!(file_name, content)
+  def generate_file(%FileContent{name: file_name, content: content}),
+    do: File.write!(file_name, content)
 
   defp make_external_resources(files) do
     Enum.map(files, fn file -> quote(do: @external_resource(unquote(file))) end)
