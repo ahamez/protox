@@ -68,7 +68,10 @@ defmodule Protox do
     end
   end
 
-  defmodule FileContent, do: defstruct([:name, :content])
+  defmodule FileContent do
+    @moduledoc false
+    defstruct([:name, :content])
+  end
 
   def generate_module_code(files, output_path, multiple_files, include_path \\ nil)
       when is_list(files) and is_binary(output_path) and is_boolean(multiple_files) do
