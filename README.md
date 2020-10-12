@@ -306,6 +306,15 @@ The `--include-path` option is the same as the option described in section [Spec
 
 The generated file will be usable in any project as long as protox is declared in the dependancies (the generated file is not a standalone, it still needs function from the protox runtime).
 
+If you have large protobuf files, you can use the `--multiple-files` option to speed up real computation time of the generated files:
+
+```shell
+mkdir generated
+MIX_ENV=prod mix protox.generate --output-path=generated --include-path=. test/messages.proto test/samples/proto2.proto --multiple-files
+```
+
+Doing so, Elixir will be able to parallelize your app file compilations.
+
 ## Types mapping
 
 The following table shows how Protobuf types are mapped to Elixir's ones.

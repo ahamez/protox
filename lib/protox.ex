@@ -68,7 +68,10 @@ defmodule Protox do
     end
   end
 
-  def generate_code(files, include_path \\ nil) do
+  defmodule FileContent, do: defstruct([:name, :content])
+
+  def generate_module_code(files, output_path, multiple_files, include_path \\ nil)
+      when is_list(files) and is_binary(output_path) and is_boolean(multiple_files) do
     path =
       case include_path do
         nil -> nil
@@ -84,10 +87,38 @@ defmodule Protox do
 
     code = quote do: unquote(Protox.Define.define(enums, messages))
 
-    code_str = Macro.to_string(code)
-
-    ["#", " credo:disable-for-this-file\n", code_str]
+    if multiple_files do
+      multiple_file_content(output_path, code)
+    else
+      single_file_content(output_path, code)
+    end
   end
+
+  defp single_file_content(output_path, code) do
+    [
+      %FileContent{
+        name: output_path,
+        content: generate_file_content(code)
+      }
+    ]
+  end
+
+  defp multiple_file_content(output_path, code) do
+    Enum.map(code, fn {:defmodule, _, [module_name | _]} = module_code ->
+      snake_module_name =
+        module_name |> to_string() |> String.replace(".", "") |> Macro.underscore()
+
+      %FileContent{
+        name: Path.join(output_path, snake_module_name <> ".ex"),
+        content: generate_file_content(module_code)
+      }
+    end)
+  end
+
+  defp generate_file_content(code),
+    do: ["#", " credo:disable-for-this-file\n", Macro.to_string(code)]
+
+  def generate_file(%FileContent{name: file_name, content: content}), do: File.write!(file_name, content)
 
   defp make_external_resources(files) do
     Enum.map(files, fn file -> quote(do: @external_resource(unquote(file))) end)
