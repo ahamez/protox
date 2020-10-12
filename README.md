@@ -310,7 +310,7 @@ If you have large protobuf files, you can use the `--multiple-files` option to s
 
 ```shell
 mkdir generated
-MIX_ENV=prod mix protox.generate --output-path=generated --include-path=. test/messages.proto test/samples/proto2.proto --multiple-files
+MIX_ENV=prod mix protox.generate --multiple-files --output-path=generated --include-path=. test/messages.proto test/samples/proto2.proto
 ```
 
 Doing so, Elixir will be able to parallelize your app file compilations.
