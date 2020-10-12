@@ -73,12 +73,12 @@ defmodule Protox do
     defstruct([:name, :content])
   end
 
-  def generate_module_code(files, output_path, multiple_files, include_path \\ nil)
+  def generate_module_code(files, output_path, multiple_files, include_path_or_nil)
       when is_list(files) and is_binary(output_path) and is_boolean(multiple_files) do
     path =
-      case include_path do
+      case include_path_or_nil do
         nil -> nil
-        _ -> Path.expand(include_path)
+        _ -> Path.expand(include_path_or_nil)
       end
 
     {:ok, file_descriptor_set} =
