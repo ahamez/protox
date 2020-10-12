@@ -15,11 +15,15 @@ defmodule Mix.Tasks.Protox.Generate do
          multiple_files <- Keyword.get(options, :multiple_files, false) do
       files
       |> Protox.generate_module_code(output_path, multiple_files, include_path)
-      |> Enum.each(&Protox.generate_file/1)
+      |> Enum.each(&generate_file/1)
     else
       err ->
         IO.puts("Failed to generate code: #{inspect(err)}")
         :error
     end
+  end
+
+  defp generate_file(%Protox.FileContent{name: file_name, content: content}) do
+    File.write!(file_name, content)
   end
 end
