@@ -36,15 +36,15 @@ defmodule Protox.Mixfile do
 
   defp deps do
     [
-      {:benchee, "~> 1.0", only: [:dev]},
-      {:benchee_html, "~> 1.0", only: [:dev]},
-      {:benchee_markdown, "~> 0.2", only: [:dev]},
-      {:credo, "~> 1.4", only: [:test, :dev]},
+      {:benchee, "~> 1.0", only: [:dev], runtime: false},
+      {:benchee_html, "~> 1.0", only: [:dev], runtime: false},
+      {:benchee_markdown, "~> 0.2", only: [:dev], runtime: false},
+      {:credo, "~> 1.4", only: [:test, :dev], runtime: false},
       {:dialyxir, "~> 1.0", only: [:test, :dev], runtime: false},
-      {:excoveralls, "~> 0.13", only: :test},
-      {:ex_doc, "~> 0.22", only: [:dev]},
+      {:excoveralls, "~> 0.13", only: [:test], runtime: false},
+      {:ex_doc, "~> 0.22", only: [:dev], runtime: false},
       {:git_hooks, "~> 0.5", only: [:test, :dev], runtime: false},
-      {:inch_ex, "~> 2.0.0", only: :docs},
+      {:inch_ex, "~> 2.0.0", only: [:docs], runtime: false},
       {:propcheck, "~> 1.2", only: [:test, :dev]}
     ]
   end
