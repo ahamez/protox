@@ -77,7 +77,7 @@ defmodule Protox.Mixfile do
   defp docs do
     [
       main: "readme",
-      extras: ["README.md"]
+      extras: ["README.md", "documentation/reference.md"]
     ]
   end
 end

@@ -51,14 +51,14 @@ Get the syntax of the protobuf message: `:proto2` or `:proto3`.
 defs()
 ```
 Get the underlying definition of a protobuf message, mostly used for internal usage.
-See [Types]("#types") section to get a description of `Protox.Types.kind` and `Protox.Types.type`.
+See [Types]("documentation/reference.md#types") section to get a description of `Protox.Types.kind` and `Protox.Types.type`.
 
 ```elixir
 @spec %{required(atom) => {non_neg_integer, Protox.Types.kind(), Protox.Types.type()}}
 defs_by_name()
 ```
 Get the underlying definition of a protobuf message, mostly used for internal usage.
-See [Types]("#types") section to get a description of `Protox.Types.kind` and `Protox.Types.type`.
+See [Types]("documentation/reference.md#types") section to get a description of `Protox.Types.kind` and `Protox.Types.type`.
 
 ### Default values
 
@@ -82,7 +82,7 @@ Remove all unknown fields of `msg`.
 unknown_fields(msg)
 ```
 Get the unknown fields that may have been encountered when decoding data.
-See [Types]("#types") section to get a description of `Protox.Types.tag`.
+See [Types]("documentation/reference.md#types") section to get a description of `Protox.Types.tag`.
 
 ```elixir
 @spec unknown_fields_name() :: atom
