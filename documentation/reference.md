@@ -125,10 +125,16 @@ Get the list of all the constants of the enum that correponds to the module on w
 
 ## Types
 
-Types `Protox.Types.tag`, `Protox.Types.kind` and `Protox.Types.type` are defined as follows:
+Types `Protox.Types.tag`, `Protox.Types.kind` and `Protox.Types.type` are defined as follows
+(see [here](https://developers.google.com/protocol-buffers/docs/encoding#structure) for more details):
 
 ```elixir
-@type tag :: 0 | 1 | 2 | 5
+@type wire_varint :: 0
+@type wire_64bits :: 1
+@type wire_delimited :: 2
+@type wire_32bits :: 5
+
+@type tag :: wire_varint | wire_64bits | wire_delimited | wire_32bits
 @type kind :: {:default, any} | :packed | :unpacked | :map | {:oneof, atom}
 @type map_key_type ::
         :int32
