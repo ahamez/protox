@@ -1,6 +1,10 @@
 defmodule Protox.Encode do
-  @moduledoc false
-  # Internal. Functions to encode types.
+  @moduledoc """
+  This module contains the functions necessary to encode protobuf messages and various types.
+
+  Protox users will want to use encode/1 and encode!/1 that take a protobuf message stored
+  in a struct and that return an IO data that can be written to a file or a socket.
+  """
 
   import Protox.Guards
   use Bitwise

@@ -1,6 +1,9 @@
 defmodule Protox.Types do
-  @moduledoc false
+  @moduledoc """
+  This module describes types that define a protobuf message.
 
+  See https://developers.google.com/protocol-buffers/docs/encoding#structure.
+  """
   @type tag :: 0 | 1 | 2 | 5
   @type kind :: {:default, any} | :packed | :unpacked | :map | {:oneof, atom}
   @type map_key_type ::
