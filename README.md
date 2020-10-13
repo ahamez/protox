@@ -94,7 +94,13 @@ Or, with throwing style:
 iex> iodata = Protox.Encode.encode!(msg)
 ```
 
-Note that `Protox.Encode.encode/1` returns an [IO data](https://hexdocs.pm/elixir/IO.html#module-use-cases-for-io-data), not a binary, for efficiency reasons. Such  IO data can be used
+It's also possible to call `encode/1` and `encode!/1` directly on the generated structures:
+
+```elixir
+iex> {:ok, iodata} = Fiz.Foo.encode(msg)
+```
+
+Note that `encode/1` returns an [IO data](https://hexdocs.pm/elixir/IO.html#module-use-cases-for-io-data), not a binary, for efficiency reasons. Such  IO data can be used
 directly with [files](https://hexdocs.pm/elixir/IO.html#binwrite/2) or sockets write operations, and therefore you don't need to transform them:
 ```elixir
 iex> {:ok, iodata} = Protox.Encode.encode(%Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}})
