@@ -1,5 +1,7 @@
 # Generated code reference
 
+This documentation lists the functions generated with each Elixir structure associated to a protobuf [message]("documentation/reference.md#messages") or [enum]("documentation/reference.md#enums").
+
 ## Messages
 
 ### Encode
@@ -75,7 +77,7 @@ Get the default value of a structure field. Note that for Protobuf 3, the defaul
 @spec clear_unknown_fields(struct) :: struct
 clear_unknown_fields(msg)
 ```
-Remove all unknown fields of `msg`.
+Returns a copy of `msg` with all unknown fields removed.
 
 ```elixir
 @spec unknown_fields(struct) :: [{non_neg_integer, Protox.Types.tag(), binary}]
@@ -88,7 +90,7 @@ See [Types]("documentation/reference.md#types") section to get a description of 
 @spec unknown_fields_name() :: atom
 unknown_fields_name(msg)
 ```
-Get the name of the field that stored the potential unknown fields.
+Get the name of the field that stores unknown fields.
 
 
 ```elixir
