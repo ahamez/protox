@@ -1,6 +1,6 @@
 # Generated code reference
 
-This documentation lists the functions generated with each Elixir structure associated to a protobuf [message]("documentation/reference.md#messages") or [enum]("documentation/reference.md#enums").
+This documentation lists the functions generated with each Elixir structure associated to a protobuf [message](documentation/reference.md#messages) or [enum](documentation/reference.md#enums).
 
 ## Messages
 
@@ -53,14 +53,14 @@ Get the syntax of the protobuf message: `:proto2` or `:proto3`.
 defs()
 ```
 Get the underlying definition of a protobuf message, mostly used for internal usage.
-See [Types]("documentation/reference.md#types") section to get a description of `Protox.Types.kind` and `Protox.Types.type`.
+See [Types](documentation/reference.md#types) section to get a description of `Protox.Types.kind` and `Protox.Types.type`.
 
 ```elixir
 @spec %{required(atom) => {non_neg_integer, Protox.Types.kind(), Protox.Types.type()}}
 defs_by_name()
 ```
 Get the underlying definition of a protobuf message, mostly used for internal usage.
-See [Types]("documentation/reference.md#types") section to get a description of `Protox.Types.kind` and `Protox.Types.type`.
+See [Types](documentation/reference.md#types) section to get a description of `Protox.Types.kind` and `Protox.Types.type`.
 
 ### Default values
 
@@ -84,7 +84,7 @@ Returns a copy of `msg` with all unknown fields removed.
 unknown_fields(msg)
 ```
 Get the unknown fields that may have been encountered when decoding data.
-See [Types]("documentation/reference.md#types") section to get a description of `Protox.Types.tag`.
+See [Types](documentation/reference.md#types) section to get a description of `Protox.Types.tag`.
 
 ```elixir
 @spec unknown_fields_name() :: atom
