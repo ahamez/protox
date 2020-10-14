@@ -2,6 +2,7 @@ defmodule Protox.PropertiesTest do
   use ExUnit.Case
   use PropCheck
 
+  @tag :properties
   property "Upper" do
     forall {msg, encoded, encoded_bin, decoded} <- generate(Upper) do
       is_list(encoded) and is_binary(encoded_bin) and decoded == msg

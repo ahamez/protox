@@ -11,6 +11,7 @@ defmodule Protox.ZigzagTest do
     assert Protox.Zigzag.encode(-2_147_483_648) == 4_294_967_295
   end
 
+  @tag :properties
   property "Zigzag encode" do
     forall value <- integer() do
       Protox.Zigzag.encode(value) >= 0
@@ -26,6 +27,7 @@ defmodule Protox.ZigzagTest do
     assert Protox.Zigzag.decode(4_294_967_295) == -2_147_483_648
   end
 
+  @tag :properties
   property "Zigzag decode" do
     forall value <- range(0, 4_294_967_295) do
       decoded = Protox.Zigzag.decode(value)

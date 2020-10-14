@@ -296,7 +296,7 @@ defmodule ProtoxTest do
     assert Code.compile_file(bar_tmp_file) != []
   end
 
-  @tag conformance: true
+  @tag :conformance
   test "Launch conformance" do
     {:ok, _} = File.rm_rf("./failing_tests.txt")
 

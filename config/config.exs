@@ -16,7 +16,7 @@ if Mix.env() != :prod do
         tasks: [
           {:cmd, "mix credo"},
           {:cmd, "mix dialyzer"},
-          {:cmd, "mix test"}
+          {:cmd, "mix test --exclude properties"}
         ]
       ]
     ]

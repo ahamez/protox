@@ -17,6 +17,7 @@ defmodule Protox.VarintTest do
     assert Protox.Varint.decode(<<185, 224, 0>>) == {12_345, <<>>}
   end
 
+  @tag :properties
   test "Symmetric" do
     forall value <- integer() do
       encoded = value |> Protox.Varint.encode() |> :binary.list_to_bin()
