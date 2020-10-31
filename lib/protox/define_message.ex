@@ -1,7 +1,7 @@
 defmodule Protox.DefineMessage do
   @moduledoc false
 
-  def define(messages) do
+  def define(messages, opts \\ []) do
     for {msg_name, syntax, fields} <- messages do
       fields = Enum.sort(fields, &(elem(&1, 0) < elem(&2, 0)))
       unknown_fields = make_unknown_fields(:__uf__, fields)
@@ -11,7 +11,7 @@ defmodule Protox.DefineMessage do
       fields_map = make_fields_map(fields)
       fields_by_name_map = make_fields_by_name_map(fields)
       encoder = Protox.DefineEncoder.define(fields, required_fields, syntax)
-      decoder = Protox.DefineDecoder.define(msg_name, fields, required_fields)
+      decoder = Protox.DefineDecoder.define(msg_name, fields, required_fields, opts)
       default_fun = make_default_fun(fields)
 
       module_ast =

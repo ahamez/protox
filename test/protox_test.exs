@@ -83,6 +83,19 @@ defmodule ProtoxTest do
     }
     """
 
+  use Protox,
+    schema: """
+    syntax = "proto3";
+
+    message Sub {
+      int32 a = 1;
+      string b = 2;
+      sint32 z = 10001;
+    }
+    """,
+    namespace: NoUf,
+    keep_unknown_fields: false
+
   setup_all do
     {
       :ok,
@@ -231,9 +244,14 @@ defmodule ProtoxTest do
            }
   end
 
-  test "clear unknown fields" do
+  test "Clear unknown fields" do
     assert Proto2A.clear_unknown_fields(%Proto2A{__uf__: [{10, 2, <<104, 101, 121, 33>>}]}) ==
              %Proto2A{}
+  end
+
+  test "Don't keep unknown fields when asked not to" do
+    bytes = <<8, 42, 25, 246, 40, 92, 143, 194, 53, 69, 64, 136, 241, 4, 83>>
+    assert NoUf.Sub.decode!(bytes) == %NoUf.Sub{a: 42, b: "", z: -42}
   end
 
   test "Can export to protoc and read its output (Sub)" do

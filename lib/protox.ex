@@ -32,44 +32,44 @@ defmodule Protox do
   See https://github.com/ahamez/protox/blob/master/README.md for detailed instructions.
   '''
 
-  defmacro __using__(args) do
-    {args, _} = Code.eval_quoted(args)
+  defmacro __using__(opts) do
+    {opts, _} = Code.eval_quoted(opts)
 
-    {namespace, args} = get_namespace(args)
-    {path, args} = get_path(args)
-    {files, _args} = get_files(args)
+    {namespace, opts} = get_namespace(opts)
+    {path, opts} = get_path(opts)
+    {files, opts} = get_files(opts)
 
     {:ok, file_descriptor_set} = Protox.Protoc.run(files, path)
     {enums, messages} = Protox.Parse.parse(file_descriptor_set, namespace)
 
     quote do
       unquote(make_external_resources(files))
-      unquote(Protox.Define.define(enums, messages))
+      unquote(Protox.Define.define(enums, messages, opts))
     end
   end
 
-  defp get_namespace(args) do
-    Keyword.pop(args, :namespace)
+  defp get_namespace(opts) do
+    Keyword.pop(opts, :namespace)
   end
 
-  defp get_path(args) do
-    case Keyword.pop(args, :path) do
-      {nil, args} -> {nil, args}
-      {p, args} -> {Path.expand(p), args}
+  defp get_path(opts) do
+    case Keyword.pop(opts, :path) do
+      {nil, opts} -> {nil, opts}
+      {p, opts} -> {Path.expand(p), opts}
     end
   end
 
-  defp get_files(args) do
-    case Keyword.pop(args, :schema) do
-      {<<text::binary>>, args} ->
+  defp get_files(opts) do
+    case Keyword.pop(opts, :schema) do
+      {<<text::binary>>, opts} ->
         filename = "#{Base.encode16(:crypto.hash(:sha, text))}.proto"
         filepath = [Mix.Project.build_path(), filename] |> Path.join() |> Path.expand()
         File.write!(filepath, text)
-        {[filepath], args}
+        {[filepath], opts}
 
-      {nil, args} ->
-        {files, args} = Keyword.pop(args, :files)
-        {Enum.map(files, &Path.expand/1), args}
+      {nil, opts} ->
+        {files, opts} = Keyword.pop(opts, :files)
+        {Enum.map(files, &Path.expand/1), opts}
     end
   end
 
