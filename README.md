@@ -310,7 +310,7 @@ MIX_ENV=prod mix protox.generate --output-path=/path/to/message.ex --include-pat
 
 The `--include-path` option is the same as the option described in section [Specify import path](#specify-import-path).
 
-The generated file will be usable in any project as long as protox is declared in the dependancies (the generated file is not a standalone, it still needs functions from the protox runtime).
+The generated file will be usable in any project as long as protox is declared in the dependencies (the generated file still needs functions from the protox runtime).
 
 If you have large protobuf files, you can use the `--multiple-files` option to generate one file per module.
 
