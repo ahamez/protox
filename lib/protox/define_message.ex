@@ -2,15 +2,18 @@ defmodule Protox.DefineMessage do
   @moduledoc false
 
   def define(messages, opts \\ []) do
+    {keep_unknown_fields, _opts} = Keyword.pop(opts, :keep_unknown_fields, true)
+
     for {msg_name, syntax, fields} <- messages do
       fields = Enum.sort(fields, &(elem(&1, 0) < elem(&2, 0)))
       unknown_fields = make_unknown_fields(:__uf__, fields)
-      struct_fields = make_struct_fields(fields, unknown_fields, syntax)
+      unknown_fields_funs = make_unknown_fields_funs(keep_unknown_fields, unknown_fields)
+      struct_fields = make_struct_fields(fields, syntax, unknown_fields, keep_unknown_fields)
       required_fields = make_required_fields(fields)
       required_fields_typesecs = make_required_fields_typespec(required_fields)
       fields_map = make_fields_map(fields)
       fields_by_name_map = make_fields_by_name_map(fields)
-      encoder = Protox.DefineEncoder.define(fields, required_fields, syntax)
+      encoder = Protox.DefineEncoder.define(fields, required_fields, syntax, opts)
       decoder = Protox.DefineDecoder.define(msg_name, fields, required_fields, opts)
       default_fun = make_default_fun(fields)
 
@@ -31,17 +34,10 @@ defmodule Protox.DefineMessage do
                 }
           def defs_by_name(), do: unquote(fields_by_name_map)
 
+          unquote(unknown_fields_funs)
+
           @spec required_fields() :: unquote(required_fields_typesecs)
           def required_fields(), do: unquote(required_fields)
-
-          @spec unknown_fields(struct) :: [{non_neg_integer, Protox.Types.tag(), binary}]
-          def unknown_fields(msg), do: msg.unquote(unknown_fields)
-
-          @spec unknown_fields_name() :: unquote(unknown_fields)
-          def unknown_fields_name(), do: unquote(unknown_fields)
-
-          @spec clear_unknown_fields(struct) :: struct
-          def clear_unknown_fields(msg), do: struct!(msg, [{unknown_fields_name(), []}])
 
           @spec syntax() :: atom
           def syntax(), do: unquote(syntax)
@@ -58,6 +54,24 @@ defmodule Protox.DefineMessage do
           unquote(debug_fun)
         end
       end
+    end
+  end
+
+  defp make_unknown_fields_funs(_keep_unknown_fields = true, unknown_fields) do
+    quote do
+      @spec unknown_fields(struct) :: [{non_neg_integer, Protox.Types.tag(), binary}]
+      def unknown_fields(msg), do: msg.unquote(unknown_fields)
+
+      @spec unknown_fields_name() :: unquote(unknown_fields)
+      def unknown_fields_name(), do: unquote(unknown_fields)
+
+      @spec clear_unknown_fields(struct) :: struct
+      def clear_unknown_fields(msg), do: struct!(msg, [{unknown_fields_name(), []}])
+    end
+  end
+
+  defp make_unknown_fields_funs(_keep_unknown_fields = false, _unknown_fields) do
+    quote do
     end
   end
 
@@ -106,7 +120,7 @@ defmodule Protox.DefineMessage do
   end
 
   # Generate fields of the struct which is created for a message.
-  defp make_struct_fields(fields, unknown_fields, syntax) do
+  defp make_struct_fields(fields, syntax, unknown_fields, keep_unknown_fields) do
     struct_fields =
       for {_, _, name, kind, _} <- fields do
         case kind do
@@ -117,7 +131,13 @@ defmodule Protox.DefineMessage do
           {:default, _} when syntax == :proto2 -> {name, nil}
           {:default, default_value} when syntax == :proto3 -> {name, default_value}
         end
-      end ++ [{unknown_fields, []}]
+      end
+
+    struct_fields =
+      case keep_unknown_fields do
+        true -> struct_fields ++ [{unknown_fields, []}]
+        false -> struct_fields
+      end
 
     Enum.uniq(struct_fields)
   end

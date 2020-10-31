@@ -2,13 +2,15 @@ defmodule Protox.DefineEncoder do
   @moduledoc false
   # Internal. Generates the encoder of a message.
 
-  def define(fields, required_fields, syntax) do
+  def define(fields, required_fields, syntax, opts \\ []) do
+    {keep_unknown_fields, _opts} = Keyword.pop(opts, :keep_unknown_fields, true)
+
     {oneofs, fields_without_oneofs} = Protox.Defs.split_oneofs(fields)
 
-    encode_fun = make_encode_fun(oneofs, fields_without_oneofs)
+    encode_fun = make_encode_fun(oneofs, fields_without_oneofs, keep_unknown_fields)
     encode_oneof_funs = make_encode_oneof_funs(oneofs)
     encode_field_funs = make_encode_field_funs(fields, required_fields, syntax)
-    encode_unknown_fields_fun = make_encode_unknown_fields_fun()
+    encode_unknown_fields_fun = make_encode_unknown_fields_fun(keep_unknown_fields)
 
     quote do
       @spec encode(struct) :: {:ok, iodata} | {:error, any}
@@ -29,25 +31,30 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_fun(oneofs, fields) do
+  defp make_encode_fun(oneofs, fields, keep_unknown_fields) do
     ast = quote do: []
     ast = make_encode_oneof_fun(ast, oneofs)
-    make_encode_fun_field(ast, fields)
+    make_encode_fun_field(ast, fields, keep_unknown_fields)
   end
 
-  defp make_encode_fun_field(ast, []) do
+  defp make_encode_fun_field(ast, [], _keep_unknown_fields = true) do
     # credo:disable-for-next-line Credo.Check.Readability.SinglePipe
     quote do: unquote(ast) |> encode_unknown_fields(msg)
   end
 
-  defp make_encode_fun_field(ast, [field | fields]) do
+  defp make_encode_fun_field(ast, [], _keep_unknown_fields = false) do
+    # credo:disable-for-next-line Credo.Check.Readability.SinglePipe
+    quote do: unquote(ast)
+  end
+
+  defp make_encode_fun_field(ast, [field | fields], keep_unknown_fields) do
     {_, _, name, _, _} = field
     fun_name = String.to_atom("encode_#{name}")
 
     # credo:disable-for-next-line Credo.Check.Readability.SinglePipe
     ast = quote do: unquote(ast) |> unquote(fun_name)(msg)
 
-    make_encode_fun_field(ast, fields)
+    make_encode_fun_field(ast, fields, keep_unknown_fields)
   end
 
   defp make_encode_oneof_fun(ast, []), do: ast
@@ -224,7 +231,7 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_unknown_fields_fun() do
+  defp make_encode_unknown_fields_fun(_keep_unknown_fields = true) do
     quote do
       defp encode_unknown_fields(acc, msg) do
         Enum.reduce(msg.__struct__.unknown_fields(msg), acc, fn {tag, wire_type, bytes}, acc ->
@@ -244,6 +251,11 @@ defmodule Protox.DefineEncoder do
           end
         end)
       end
+    end
+  end
+
+  defp make_encode_unknown_fields_fun(_keep_unknown_fields = false) do
+    quote do
     end
   end
 

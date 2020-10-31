@@ -251,7 +251,9 @@ defmodule ProtoxTest do
 
   test "Don't keep unknown fields when asked not to" do
     bytes = <<8, 42, 25, 246, 40, 92, 143, 194, 53, 69, 64, 136, 241, 4, 83>>
-    assert NoUf.Sub.decode!(bytes) == %NoUf.Sub{a: 42, b: "", z: -42}
+    msg = NoUf.Sub.decode!(bytes)
+    assert msg == %NoUf.Sub{a: 42, b: "", z: -42}
+    assert Map.get(msg, :__uf__) == nil
   end
 
   test "Can export to protoc and read its output (Sub)" do
