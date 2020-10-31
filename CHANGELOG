@@ -1,3 +1,6 @@
+* 1.2
+  - Add keep_unknown_fields option to configure support of unknown fields
+
 * 1.1.1
   - Fix documentation links
 
