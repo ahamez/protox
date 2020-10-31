@@ -190,6 +190,23 @@ You must always use `unknown_fields/1` as the name of the field (e.g. `__uf__`) 
 
 When you encode a message that contains unknown fields, they will be reencoded in the serialized output.
 
+Finally, you can deactivate the support of unknown fields by setting the `:keep_unknown_fields` option to `false`:
+```elixir
+defmodule Baz do
+  use Protox,
+    schema: """
+    syntax = "proto3";
+
+    message Sub {
+      int32 a = 1;
+      string b = 2;
+    }
+    """,
+    keep_unknown_fields: false
+end
+```
+Note that protox will still correctly parse unknown fields, they just won't be added to the structure and you won't be able to access them.
+
 ## Unsupported features
 
 * Protobuf 3 JSON mapping
