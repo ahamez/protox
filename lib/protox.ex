@@ -35,29 +35,9 @@ defmodule Protox do
   defmacro __using__(args) do
     {args, _} = Code.eval_quoted(args)
 
-    namespace =
-      case Keyword.get(args, :namespace) do
-        nil -> nil
-        n -> n
-      end
-
-    path =
-      case Keyword.get(args, :path) do
-        nil -> nil
-        p -> Path.expand(p)
-      end
-
-    files =
-      case Keyword.drop(args, [:namespace, :path]) do
-        schema: <<text::binary>> ->
-          filename = "#{__CALLER__.module}_#{:sha |> :crypto.hash(text) |> Base.encode16()}.proto"
-          filepath = [Mix.Project.build_path(), filename] |> Path.join() |> Path.expand()
-          File.write!(filepath, text)
-          [filepath]
-
-        files: files ->
-          Enum.map(files, &Path.expand/1)
-      end
+    {namespace, args} = get_namespace(args)
+    {path, args} = get_path(args)
+    {files, _args} = get_files(args)
 
     {:ok, file_descriptor_set} = Protox.Protoc.run(files, path)
     {enums, messages} = Protox.Parse.parse(file_descriptor_set, namespace)
@@ -65,6 +45,31 @@ defmodule Protox do
     quote do
       unquote(make_external_resources(files))
       unquote(Protox.Define.define(enums, messages))
+    end
+  end
+
+  defp get_namespace(args) do
+    Keyword.pop(args, :namespace)
+  end
+
+  defp get_path(args) do
+    case Keyword.pop(args, :path) do
+      {nil, args} -> {nil, args}
+      {p, args} -> {Path.expand(p), args}
+    end
+  end
+
+  defp get_files(args) do
+    case Keyword.pop(args, :schema) do
+      {<<text::binary>>, args} ->
+        filename = "#{Base.encode16(:crypto.hash(:sha, text))}.proto"
+        filepath = [Mix.Project.build_path(), filename] |> Path.join() |> Path.expand()
+        File.write!(filepath, text)
+        {[filepath], args}
+
+      {nil, args} ->
+        {files, args} = Keyword.pop(args, :files)
+        {Enum.map(files, &Path.expand/1), args}
     end
   end
 
