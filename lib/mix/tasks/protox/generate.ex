@@ -6,15 +6,21 @@ defmodule Mix.Tasks.Protox.Generate do
   @impl Mix.Task
   @spec run(any) :: any
   def run(args) do
-    with {options, files, []} <-
+    with {opts, files, []} <-
            OptionParser.parse(args,
-             strict: [output_path: :string, include_path: :string, multiple_files: :boolean]
+             strict: [
+               output_path: :string,
+               include_path: :string,
+               multiple_files: :boolean,
+               keep_unknown_fields: :boolean
+             ]
            ),
-         {:ok, output_path} <- Keyword.fetch(options, :output_path),
-         include_path <- Keyword.get(options, :include_path),
-         multiple_files <- Keyword.get(options, :multiple_files, false) do
+         {:ok, output_path} <- Keyword.fetch(opts, :output_path) do
+      {include_path, opts} = Keyword.pop(opts, :include_path)
+      {multiple_files, opts} = Keyword.pop(opts, :multiple_files, false)
+
       files
-      |> Protox.generate_module_code(output_path, multiple_files, include_path)
+      |> Protox.generate_module_code(output_path, multiple_files, include_path, opts)
       |> Enum.each(&generate_file/1)
     else
       err ->
