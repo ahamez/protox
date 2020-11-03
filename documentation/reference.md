@@ -73,6 +73,8 @@ Get the default value of a structure field. Note that for Protobuf 3, the defaul
 
 ### Unknown fields
 
+_Note_: these functions are not available when the option `:keep_unknown_fields` is set to `false`.
+
 ```elixir
 @spec clear_unknown_fields(struct) :: struct
 clear_unknown_fields(msg)

@@ -186,7 +186,7 @@ iex> Msg.unknown_fields(msg)
 [{5, 2, <<121, 97, 121, 101>>}]
 ```
 
-You must always use `unknown_fields/1` as the name of the field (e.g. `__uf__`) is generated at compile-time to avoid collision with the actual fields of the Protobuf message. This function returns a list of tuples `{tag, wire_type, bytes}`. For more information, please see [protobuf encoding guide](https://developers.google.com/protocol-buffers/docs/encoding).
+You must always use `unknown_fields/1` as the name of the field (e.g. `__uf__` in the above example) is generated at compile-time to avoid collision with the actual fields of the Protobuf message. This function returns a list of tuples `{tag, wire_type, bytes}`. For more information, please see [protobuf encoding guide](https://developers.google.com/protocol-buffers/docs/encoding).
 
 When you encode a message that contains unknown fields, they will be reencoded in the serialized output.
 
@@ -337,6 +337,8 @@ MIX_ENV=prod mix protox.generate --multiple-files --output-path=generated --incl
 ```
 
 Doing so, Elixir will be able to parallelize the compilation of generated modules.
+
+Finally, you can pass the option `--keep-unknown-fields=false` to remove support of unknown fields. See [this section](#unknown-fields) for more information.
 
 ## Types mapping
 
