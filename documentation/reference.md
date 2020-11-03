@@ -92,11 +92,13 @@ unknown_fields_name(msg)
 ```
 Get the name of the field that stores unknown fields.
 
+### Required fields
 
 ```elixir
 @spec required_fields() :: [atom]
 required_fields()
 ```
+Get the list of required fields.
 
 ## Enums
 
