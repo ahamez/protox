@@ -209,7 +209,7 @@ Note that protox will still correctly parse unknown fields, they just won't be a
 
 ## Unsupported features
 
-* Protobuf 3 JSON mapping
+* Protobuf 3 [JSON mapping](https://developers.google.com/protocol-buffers/docs/proto3#json)
 * Groups ([deprecated in protobuf](https://developers.google.com/protocol-buffers/docs/proto#groups))
 * All [options](https://developers.google.com/protocol-buffers/docs/proto3#options) other than `packed` and `default` are ignored as they concern other languages implementation details.
 
