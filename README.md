@@ -1,6 +1,6 @@
 # Protox
 
-[![Build Status](https://travis-ci.org/ahamez/protox.svg?branch=master)](https://travis-ci.org/ahamez/protox) [![Coverage Status](https://coveralls.io/repos/github/ahamez/protox/badge.svg?branch=master)](https://coveralls.io/github/ahamez/protox?branch=master) [![Hex.pm Version](http://img.shields.io/hexpm/v/protox.svg)](https://hex.pm/packages/protox) [![Inline docs](https://inch-ci.org/github/ahamez/protox.svg)](https://inch-ci.org/github/ahamez/protox)
+[![Build Status](https://travis-ci.org/ahamez/protox.svg?branch=master)](https://travis-ci.org/ahamez/protox) [![Coverage Status](https://coveralls.io/repos/github/ahamez/protox/badge.svg?branch=master)](https://coveralls.io/github/ahamez/protox?branch=master) [![Hex.pm Version](http://img.shields.io/hexpm/v/protox.svg)](https://hex.pm/packages/protox)
 
 Protox is an Elixir library to work with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers) (aka protobuf), versions 2 and 3.
 
