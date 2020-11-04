@@ -1,4 +1,7 @@
-* 1.2
+* 1.2.1
+  - Add --keep-unknown-fields option to configure support of unknown fields when generating files
+
+* 1.2.0
   - Add keep_unknown_fields option to configure support of unknown fields
 
 * 1.1.1
