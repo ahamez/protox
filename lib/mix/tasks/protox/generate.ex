@@ -1,5 +1,20 @@
 defmodule Mix.Tasks.Protox.Generate do
-  @moduledoc false
+  @moduledoc """
+  Generate Elixir code from Protobuf definitions
+
+  Example:
+  mix protox.generate --output-path=lib/message.ex --include-path=. message.proto
+
+  The generated file will be usable in any project as long as protox is declared
+  in the dependencies (the generated file still needs functions from the protox runtime).
+
+  If you have large protobuf files, you can use the --multiple-files option to generate
+  one file per module.
+
+  Finally, you can pass the option --keep-unknown-fields=false to remove support of
+  unknown fields.
+  """
+  @shortdoc "Generate Elixir code from Protobuf definitions"
 
   use Mix.Task
 
