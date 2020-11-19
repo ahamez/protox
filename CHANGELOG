@@ -1,3 +1,6 @@
+* 1.2.2
+  - Enable listing of task protox.generate via mix help.
+
 * 1.2.1
   - Add --keep-unknown-fields option to configure support of unknown fields when generating files
 
