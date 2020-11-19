@@ -1,6 +1,8 @@
 defmodule Protox.DecodeTest do
   use ExUnit.Case
 
+  Code.require_file("test/messages.exs")
+
   test "Sub.a" do
     bytes = <<8, 150, 1>>
     assert Sub.decode!(bytes) == %Sub{a: 150, b: ""}

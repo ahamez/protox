@@ -1,6 +1,8 @@
 defmodule Protox.EncodeTest do
   use ExUnit.Case
 
+  Code.require_file("test/messages.exs")
+
   test "Empty" do
     assert %Sub{} |> Protox.Encode.encode!() |> :binary.list_to_bin() == <<>>
   end
