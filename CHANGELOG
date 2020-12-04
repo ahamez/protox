@@ -1,3 +1,6 @@
+* 1.2.3
+  - Update documentation to better explain the package directive usage
+
 * 1.2.2
   - Enable listing of task protox.generate via mix help.
 
