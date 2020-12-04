@@ -24,6 +24,26 @@ You can interact with `Msg` as if it were a native Elixir structure. For example
 iex> %Msg{a: 42, b: %{1 => "a map entry"}}
 ```
 
+## Table of contents
+
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Usage with a textual description](#usage-with-a-textual-description)
+- [Usage with files](#usage-with-files)
+- [Encode](#encode)
+- [Decode](#decode)
+- [Packages and namespaces](#packages-and--namespaces)
+- [Specify import path](#specify-import-path)
+- [Unknown fields](#unknown-fields)
+- [Unsupported features](#unsupported-features)
+- [Implementation choices](#implementation-choices)
+- [Generated code reference](#generated-code-reference)
+- [Files generation](#files-generation)
+- [Types mapping](#types-mapping)
+- [Conformance](#conformance)
+- [Benchmarks](#benchmarks)
+- [Credits](#credits)
+
 ## Prerequisites
 
 Protox uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`. You can download it [here](https://github.com/google/protobuf) or you can install it with your favorite package manager (`brew install protobuf`, `apt install protobuf-compiler`, etc.).
