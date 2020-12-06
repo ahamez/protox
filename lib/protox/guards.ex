@@ -28,10 +28,6 @@ defmodule Protox.Guards do
     quote do: unquote(type) in unquote(@primitive_fixed64)
   end
 
-  defmacro is_primitive_fixed(type) do
-    quote do: unquote(type) in unquote(@primitive_fixed)
-  end
-
   defmacro is_delimited(type) do
     quote do
       unquote(type) == :string or unquote(type) == :bytes or unquote(type) == Protox.Message
