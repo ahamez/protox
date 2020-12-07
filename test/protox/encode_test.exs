@@ -379,7 +379,7 @@ defmodule Protox.EncodeTest do
 
   test "Raise when required field is missing" do
     exception =
-      assert_raise Protox.RequiredFieldsError, fn ->
+      assert_raise Protox.RequiredFieldsError, "Some required fields are not set: [:a]", fn ->
         Protox.Encode.encode!(%Required{})
       end
 

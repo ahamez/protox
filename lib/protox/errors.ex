@@ -4,7 +4,7 @@ defmodule Protox.RequiredFieldsError do
   with unset required fields (that is, that have the value `nil`).
   """
 
-  defexception message: "Some required fields are not set",
+  defexception message: "",
                missing_fields: []
 
   def new(missing_fields) do
@@ -28,7 +28,7 @@ defmodule Protox.DecodingError do
   This error is thrown when a data could not be decoded.
   """
 
-  defexception message: "Could not decode data",
+  defexception message: "",
                binary: <<>>,
                reason: nil
 

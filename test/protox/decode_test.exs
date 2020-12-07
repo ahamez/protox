@@ -995,7 +995,7 @@ defmodule Protox.DecodeTest do
   end
 
   test "Decoding! a field with tag 0 raises IllegalTagError" do
-    assert_raise Protox.IllegalTagError, fn ->
+    assert_raise Protox.IllegalTagError, "Field with illegal tag 0", fn ->
       Msg.decode!(<<0>>)
     end
   end
@@ -1010,7 +1010,7 @@ defmodule Protox.DecodeTest do
 
   test "Decode! dummy varint data raises DecodingError" do
     exception =
-      assert_raise Protox.DecodingError, fn ->
+      assert_raise Protox.DecodingError, ~r/^Could not decode data/, fn ->
         Empty.decode!(<<255, 255, 255, 255>>)
       end
 
@@ -1019,7 +1019,7 @@ defmodule Protox.DecodeTest do
 
   test "Raise when required field is missing" do
     exception =
-      assert_raise Protox.RequiredFieldsError, fn ->
+      assert_raise Protox.RequiredFieldsError, "Some required fields are not set: [:a]", fn ->
         Required.decode!(<<>>)
       end
 
