@@ -123,8 +123,12 @@ defmodule Protox do
     end)
   end
 
-  defp generate_file_content(code),
-    do: ["#", " credo:disable-for-this-file\n", Macro.to_string(code)]
+  defp generate_file_content(code) do
+    [
+      "# credo:disable-for-this-file\n",
+      code |> Macro.to_string() |> Code.format_string!()
+    ]
+  end
 
   defp make_external_resources(files) do
     Enum.map(files, fn file -> quote(do: @external_resource(unquote(file))) end)
