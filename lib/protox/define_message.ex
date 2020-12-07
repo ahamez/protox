@@ -95,7 +95,7 @@ defmodule Protox.DefineMessage do
           end
       end)
 
-    [spec, ast, match_all]
+    List.flatten([spec, ast, match_all])
   end
 
   # Make sure the name chosen for the struct fields that stores the unknow fields
