@@ -13,17 +13,7 @@ defmodule Protox.DefineEncoder do
     encode_unknown_fields_fun = make_encode_unknown_fields_fun(keep_unknown_fields)
 
     quote do
-      @spec encode(struct) :: {:ok, iodata} | {:error, any}
-      def encode(msg) do
-        try do
-          {:ok, encode!(msg)}
-        rescue
-          e -> {:error, e}
-        end
-      end
-
-      @spec encode!(struct) :: iodata | no_return
-      def encode!(msg), do: unquote(encode_fun)
+      unquote(encode_fun)
 
       unquote(encode_oneof_funs)
       unquote(encode_field_funs)
@@ -34,7 +24,35 @@ defmodule Protox.DefineEncoder do
   defp make_encode_fun(oneofs, fields, keep_unknown_fields) do
     ast = quote do: []
     ast = make_encode_oneof_fun(ast, oneofs)
-    make_encode_fun_field(ast, fields, keep_unknown_fields)
+    ast = make_encode_fun_field(ast, fields, keep_unknown_fields)
+
+    case ast do
+      [] ->
+        quote do
+          @spec encode(struct) :: {:ok, iodata}
+          def encode(msg) do
+            {:ok, encode!(msg)}
+          end
+
+          @spec encode!(struct) :: iodata
+          def encode!(_msg), do: []
+        end
+
+      _ ->
+        quote do
+          @spec encode(struct) :: {:ok, iodata} | {:error, any}
+          def encode(msg) do
+            try do
+              {:ok, encode!(msg)}
+            rescue
+              e -> {:error, e}
+            end
+          end
+
+          @spec encode!(struct) :: iodata | no_return
+          def encode!(msg), do: unquote(ast)
+        end
+    end
   end
 
   defp make_encode_fun_field(ast, [], _keep_unknown_fields = true) do

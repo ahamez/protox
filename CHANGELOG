@@ -1,6 +1,7 @@
 * 1.2.4
   - Fix warning when compiling generated code (thanks to https://github.com/xinz)
   - Format generated code
+  - Fix warning about unused variable in generated code when encoding an empty struct
 
 * 1.2.3
   - Update documentation to better explain the package directive usage
