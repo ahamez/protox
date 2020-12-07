@@ -124,9 +124,18 @@ defmodule Protox do
   end
 
   defp generate_file_content(code) do
+    code_str = Macro.to_string(code)
+
+    formatted_code =
+      try do
+        Code.format_string!(code_str)
+      rescue
+        _ -> code_str
+      end
+
     [
       "# credo:disable-for-this-file\n",
-      code |> Macro.to_string() |> Code.format_string!()
+      formatted_code
     ]
   end
 
