@@ -255,8 +255,7 @@ defmodule Protox.DefineEncoder do
   end
 
   defp make_encode_unknown_fields_fun(_keep_unknown_fields = false) do
-    quote do
-    end
+    nil
   end
 
   defp make_encode_packed_body(type) do

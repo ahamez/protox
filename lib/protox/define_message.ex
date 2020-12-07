@@ -71,8 +71,7 @@ defmodule Protox.DefineMessage do
   end
 
   defp make_unknown_fields_funs(_keep_unknown_fields = false, _unknown_fields) do
-    quote do
-    end
+    nil
   end
 
   defp make_default_fun(fields) do
