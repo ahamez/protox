@@ -45,13 +45,10 @@ defmodule Protox.DefineMessage do
           unquote(default_fun)
         end
 
-      debug_fun = Protox.Debug.make_debug_fun(module_ast)
-
       quote do
         defmodule unquote(msg_name) do
           @moduledoc false
           unquote(module_ast)
-          unquote(debug_fun)
         end
       end
     end

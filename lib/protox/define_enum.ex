@@ -23,13 +23,10 @@ defmodule Protox.DefineEnum do
           def constants(), do: unquote(constants)
         end
 
-      debug_fun = Protox.Debug.make_debug_fun(module_ast)
-
       quote do
         defmodule unquote(enum_name) do
           @moduledoc false
           unquote(module_ast)
-          unquote(debug_fun)
         end
       end
     end
