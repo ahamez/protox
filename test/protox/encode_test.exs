@@ -115,8 +115,7 @@ defmodule Protox.EncodeTest do
   test "Sub.n (all false)" do
     assert %Sub{n: [false, false, false, false]}
            |> Protox.Encode.encode!()
-           |> :binary.list_to_bin() ==
-             <<162, 1, 4, 0, 0, 0, 0>>
+           |> :binary.list_to_bin() == <<162, 1, 4, 0, 0, 0, 0>>
   end
 
   test "Sub.o " do
@@ -293,8 +292,7 @@ defmodule Protox.EncodeTest do
   test "Msg.msg_j" do
     assert %Msg{msg_j: [%Sub{a: 42}, %Sub{b: "foo"}]}
            |> Protox.Encode.encode!()
-           |> :binary.list_to_bin() ==
-             <<58, 2, 8, 42, 58, 5, 18, 3, 102, 111, 111>>
+           |> :binary.list_to_bin() == <<58, 2, 8, 42, 58, 5, 18, 3, 102, 111, 111>>
   end
 
   test "Msg.msg_k" do
@@ -334,8 +332,7 @@ defmodule Protox.EncodeTest do
   test "Msg.msg_oneof_double" do
     assert %Msg{msg_oneof_field: {:msg_oneof_double, 0}}
            |> Protox.Encode.encode!()
-           |> :binary.list_to_bin() ==
-             <<177, 7, 0, 0, 0, 0, 0, 0, 0, 0>>
+           |> :binary.list_to_bin() == <<177, 7, 0, 0, 0, 0, 0, 0, 0, 0>>
   end
 
   test "Sub with all fields unset serializes to <<>>" do
