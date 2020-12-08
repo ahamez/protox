@@ -1,0 +1,55 @@
+name: Elixir CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
+    strategy:
+      matrix:
+        otp: ['22.3']
+        elixir: ['1.7.4', '1.8.2', '1.9.4', '1.10.4', '1.11.2']
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install protoc and conformance-test-runner
+      run: |
+        wget https://github.com/protocolbuffers/protobuf/releases/download/v3.14.0/protoc-3.14.0-linux-x86_64.zip
+        unzip -d protoc protoc-3.14.0-linux-x86_64.zip
+        echo "${PWD}/protoc/bin" >> $GITHUB_PATH
+        wget https://github.com/ahamez/protox/releases/download/1.2.1/conformance-linux-x86_64.zip
+        unzip conformance-linux-x86_64.zip
+    - name: Set up Elixir
+      uses: actions/setup-elixir@v1
+      with:
+        elixir-version: ${{matrix.elixir}}
+        otp-version: ${{matrix.otp}}
+    - name: Restore dependencies cache
+      uses: actions/cache@v2
+      with:
+        path: deps
+        key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
+    - name: Restore PLT cache
+      uses: actions/cache@v2
+      with:
+        path: priv/plts
+        key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
+    - name: Install dependencies
+      run: |
+        mix local.rebar --force
+        mix local.hex --force
+        mix deps.get
+    - name: Run tests
+      run: MIX_ENV=test PROTOBUF_CONFORMANCE_RUNNER=./conformance/conformance-test-runner LD_LIBRARY_PATH=./conformance/.libs mix test --include conformance
+    - name: Check formatting
+      run: mix format --check-formatted
+    - name: Credo
+      run: mix credo
+    - name: Dialyzer
+      run: mix dialyzer
