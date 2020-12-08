@@ -8,7 +8,7 @@ apt install gcc g++ wget zip libtool autoconf automake make
 wget https://github.com/protocolbuffers/protobuf/archive/v3.14.0.tar.gz
 tar xf v3.14.0.tar.gz && cd protobuf-3.14.0 && ./autogen.sh && ./configure && make && cd conformance && make
 mkdir -p /conformance/.libs
-cp ./conformance-test-runner /conformance/
+cp ./.libs/conformance-test-runner /conformance/
 cp /protobuf-3.14.0/src/.libs/libprotobuf.so.25.0.0 /conformance/.libs/libprotobuf.so.25
 cd /
 zip -r conformance-linux-x86_64.zip conformance
