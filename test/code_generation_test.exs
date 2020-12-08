@@ -47,22 +47,6 @@ defmodule Protox.CodeGenerationTest do
     assert credo_exit_status == 0
   end
 
-  test "Generate single file, with unknown fields" do
-    launch("single_with_unknown_fields.ex", [])
-  end
-
-  test "Generate single file, without unknown fields" do
-    launch("single_without_unknown_fields.ex", ["--keep-unknown-fields=false"])
-  end
-
-  test "Generate multiple files, with unknown fields" do
-    launch(".", ["--multiple-files"])
-  end
-
-  test "Generate multiple files, without unknown fields" do
-    launch(".", ["--multiple-files", "--keep-unknown-fields=false"])
-  end
-
   test "Mix task generates a file that can be compiled" do
     tmp_dir = System.tmp_dir!()
     tmp_file = Path.join(tmp_dir, "file.ex")
