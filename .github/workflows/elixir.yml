@@ -13,7 +13,7 @@ jobs:
     name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
     strategy:
       matrix:
-        otp: ['22.3', '23.1']
+        otp: ['22.3']
         elixir: ['1.7.4', '1.8.2', '1.9.4', '1.10.4', '1.11.2']
 
     steps:
@@ -30,9 +30,10 @@ jobs:
         key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
     - name: Restore dialyzer cache
       uses: actions/cache@v2
+      id: plt-cache
       with:
         path: priv/plts
-        key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-plt-${{ hashFiles('priv/plts/dialyzer.plt') }}
+        key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-plt-${{ hashFiles('**/mix.lock') }}
     - name: Install dependencies
       run: |
         mix local.rebar --force
