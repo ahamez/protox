@@ -20,10 +20,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install protoc
-      run: |
-        wget https://github.com/protocolbuffers/protobuf/releases/download/v3.14.0/protoc-3.14.0-linux-x86_64.zip
-        unzip -d protoc protoc-3.14.0-linux-x86_64.zip
-        echo "./protoc/bin" >> $GITHUB_PATH
+      run: sudo apt-get install protobuf-compiler
+#      run: |
+#        wget https://github.com/protocolbuffers/protobuf/releases/download/v3.14.0/protoc-3.14.0-linux-x86_64.zip
+#        unzip -d protoc protoc-3.14.0-linux-x86_64.zip
+#        echo "./protoc/bin" >> $GITHUB_PATH
     - name: Set up Elixir
       uses: actions/setup-elixir@v1
       with:
