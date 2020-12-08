@@ -46,11 +46,7 @@ jobs:
         mix local.hex --force
         mix deps.get
     - name: Run tests
-      run: |
-        echo ${PWD}
-        ls
-        ls /
-        MIX_ENV=test PROTOBUF_CONFORMANCE_RUNNER=./conformance/conformance-test-runner LD_LIBRARY_PATH=./conformance/.libs mix test --include conformance
+      run: MIX_ENV=test PROTOBUF_CONFORMANCE_RUNNER=./conformance/conformance-test-runner LD_LIBRARY_PATH=./conformance/.libs mix test --include conformance
     - name: Check formatting
       run: mix format --check-formatted
     - name: Credo
