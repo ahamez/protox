@@ -14,7 +14,8 @@ jobs:
     strategy:
       matrix:
         otp: ['22.3']
-        elixir: ['1.7.4', '1.8.2', '1.9.4', '1.10.4', '1.11.2']
+        #elixir: ['1.7.4', '1.8.2', '1.9.4', '1.10.4', '1.11.2']
+        elixir: ['1.11.2']
 
     steps:
     - uses: actions/checkout@v2
@@ -33,12 +34,6 @@ jobs:
       with:
         path: deps
         key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
-    - name: Restore dialyzer cache
-      uses: actions/cache@v2
-      id: plt-cache
-      with:
-        path: priv/plts
-        key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-plt-${{ hashFiles('**/mix.lock') }}
     - name: Install dependencies
       run: |
         mix local.rebar --force
@@ -47,9 +42,7 @@ jobs:
     - name: Run tests
       run: mix test
     - name: Check formatting
-      if: ${{ matrix.elixir }} == '1.11.2'
       run: mix format --check-formatted
     - name: Credo
-      if: ${{ matrix.elixir }} == '1.11.2'
       run: mix credo
 
