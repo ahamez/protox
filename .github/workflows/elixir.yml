@@ -35,6 +35,11 @@ jobs:
       with:
         path: deps
         key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
+    - name: Restore PLT cache
+      uses: actions/cache@v2
+      with:
+        path: priv/plts
+        key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
     - name: Install dependencies
       run: |
         mix local.rebar --force
@@ -45,5 +50,6 @@ jobs:
     - name: Check formatting
       run: mix format --check-formatted
     - name: Credo
-      run: MIV_ENV=test mix credo
-
+      run: mix credo
+    - name: Dialyzer
+      run: mix dialyzer
