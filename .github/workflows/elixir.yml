@@ -14,8 +14,7 @@ jobs:
     strategy:
       matrix:
         otp: ['22.3']
-        #elixir: ['1.7.4', '1.8.2', '1.9.4', '1.10.4', '1.11.2']
-        elixir: ['1.11.2']
+        elixir: ['1.7.4', '1.8.2', '1.9.4', '1.10.4', '1.11.2']
 
     steps:
     - uses: actions/checkout@v2
@@ -46,5 +45,5 @@ jobs:
     - name: Check formatting
       run: mix format --check-formatted
     - name: Credo
-      run: mix credo
+      run: MIV_ENV=test mix credo
 
