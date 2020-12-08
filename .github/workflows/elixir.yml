@@ -18,6 +18,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Install protoc
+      run: sudo apt-get install protoc
     - name: Set up Elixir
       uses: actions/setup-elixir@v1
       with:
