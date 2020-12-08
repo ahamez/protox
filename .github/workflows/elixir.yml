@@ -39,6 +39,11 @@ jobs:
         mix local.rebar --force
         mix local.hex --force
         mix deps.get
+    - name: Try to run protoc
+      run: |
+        echo $PATH
+        echo $GITHUB_PATH
+        protoc
     - name: Run tests
       run: |
         echo $PATH
