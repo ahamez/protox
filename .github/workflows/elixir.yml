@@ -48,7 +48,7 @@ jobs:
       run: mix test
     - name: Check formatting
       if: ${{ matrix.elixir }} == '1.11.2'
-      run: mix format --check
+      run: mix format --check-formatted
     - name: Credo
       if: ${{ matrix.elixir }} == '1.11.2'
       run: mix credo
