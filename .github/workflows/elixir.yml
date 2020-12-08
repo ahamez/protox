@@ -40,7 +40,10 @@ jobs:
         mix local.hex --force
         mix deps.get
     - name: Run tests
-      run: mix test
+      run: |
+        echo $PATH
+        echo $GITHUB_PATH
+        MIX_ENV=test mix test
     - name: Check formatting
       run: mix format --check-formatted
     - name: Credo
