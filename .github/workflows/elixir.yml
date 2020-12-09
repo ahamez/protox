@@ -48,7 +48,7 @@ jobs:
       id: compile-conformance-test-runner
       with:
         path: conformance-bin
-        key: ${{ runner.os }}-${{ env.PROTOBUF_VERSION }}
+        key: ${{ runner.os }}-protobuf-${{ env.PROTOBUF_VERSION }}
     
     - name: Compile conformance-test-runner
       if: steps.compile-conformance-test-runner.outputs.cache-hit != 'true'
