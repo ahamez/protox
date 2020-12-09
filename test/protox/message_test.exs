@@ -1,7 +1,8 @@
 defmodule Protox.MessageTest do
-  use ExUnit.Case
-
   Code.require_file("test/messages.exs")
+
+  use ExUnit.Case
+  doctest Protox.Message
 
   test "Protobuf 2, replace only set scalar fields" do
     r1 = %Protobuf2{a: 0, s: :ONE}

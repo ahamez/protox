@@ -1,35 +1,37 @@
 defmodule Protox do
   @moduledoc ~S'''
-  Use this module to generate the Elixir modules from a set of protobuf definitions:
+  Use this module to generate the Elixir modules corresponding to a set of protobuf definitions.
 
+  ## Examples
+  From a set of files:
       defmodule Foo do
-        use Protox, files: [
-          "./defs/foo.proto",
-          "./defs/bar.proto",
-          "./defs/baz/fiz.proto",
-        ]
+        use Protox,
+          files: [
+            "./defs/foo.proto",
+            "./defs/bar.proto",
+            "./defs/baz/fiz.proto",
+          ]
       end
 
-  It's also possible to directly give a schema:
-
+  From a string:
       defmodule Bar do
-        use Protox, schema: """
+        use Protox,
+          schema: """
           syntax = "proto3";
-          package fiz;
 
-            message Baz {
-            }
+          message Baz {
+          }
 
-            message Foo {
-              map<int32, Baz> b = 2;
-            }
+          message Foo {
+            map<int32, Baz> b = 2;
+          }
           """
       end
 
   The generated modules respect the package declaration. For instance, in the above example,
   both the `Fiz.Baz` and `Fiz.Foo` modules will be generated.
 
-  See https://github.com/ahamez/protox/blob/master/README.md for detailed instructions.
+  See [README](readme.html) for detailed instructions.
   '''
 
   defmacro __using__(opts) do

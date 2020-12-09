@@ -8,6 +8,13 @@ defmodule Protox.Default do
 
   @doc """
   Returns the default value of a Protocol Buffer type specified with an atom.
+
+  ## Examples
+      iex> Protox.Default.default(:bool)
+      false
+
+      iex> Protox.Default.default(:string)
+      ""
   """
   @spec default(atom | {atom, atom}) :: false | integer | float | binary | nil | atom
   def default(:bool), do: false

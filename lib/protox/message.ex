@@ -9,12 +9,20 @@ defmodule Protox.Message do
 
   Note that "specified" has a different meaning in protobuf 2 and 3:
   - 2: if the singular field from `from` is nil, the value from `msg` is kept
-  - 3: if the singular field from `from` is set to the default value, the value from `msg` is kept
-  This behaviour matches the C++ reference implementation behaviour.
+  - 3: if the singular field from `from` is set to the default value, the value from `msg` is
+  kept. This behaviour matches the C++ reference implementation behaviour.
 
   - `msg` and `from` must be of the same type; or
   - either `msg` or `from` is `nil`: the non-nil message is returned; or
   - both are `nil`: `nil` is returned
+
+  # Example
+      iex> r1 = %Protobuf2{a: 0, s: :ONE}
+      iex> r2 = %Protobuf2{a: nil, s: :TWO}
+      iex> Protox.Message.merge(r1, r2)
+      %Protobuf2{a: 0, s: :TWO}
+      iex> Protox.Message.merge(r2, r1)
+      %Protobuf2{a: 0, s: :ONE}
   """
   @spec merge(struct | nil, struct | nil) :: struct | nil
   def merge(nil, from), do: from

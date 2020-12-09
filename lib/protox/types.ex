@@ -5,13 +5,29 @@ defmodule Protox.Types do
   See https://developers.google.com/protocol-buffers/docs/encoding#structure.
   """
 
+  @typedoc """
+  Variable length integer.
+  """
   @type wire_varint :: 0
+
+  @typedoc """
+  64 bits scalar.
+  """
   @type wire_64bits :: 1
+
+  @typedoc """
+  Repeated field.
+  """
   @type wire_delimited :: 2
+
+  @typedoc """
+  32 bits scalar.
+  """
   @type wire_32bits :: 5
 
   @typedoc """
-  The wire type of a field: it tells how a field is encoded (scalar, repeated, etc.).
+  The wire type of a field: it tells how a field is encoded (32 or 64 bits scalar, repeated or
+  variable-length integer).
   """
   @type tag :: wire_varint | wire_64bits | wire_delimited | wire_32bits
 

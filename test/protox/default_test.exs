@@ -1,5 +1,6 @@
 defmodule Protox.DefaultTest do
   use ExUnit.Case
+  doctest Protox.Default
 
   use Protox,
     schema: """
