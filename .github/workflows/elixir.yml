@@ -83,7 +83,11 @@ jobs:
       env:
         PROTOBUF_CONFORMANCE_RUNNER: conformance-bin/conformance-test-runner
         LD_LIBRARY_PATH: conformance-bin/.libs
-      run: LD_LIBRARY_PATH= mix coveralls.github --include conformance
+      run: |
+        tree conformance-bin
+        ls -l conformance-bin
+        ls -l conformance-bin/.libs
+        LD_LIBRARY_PATH= mix coveralls.github --include conformance
     
     - name: Check formatting
       run: mix format --check-formatted
