@@ -56,6 +56,7 @@ jobs:
         mix deps.get
     
     - name: Compile prod with warnings as errors
+      # Will be fast as protox is the only thing to compile when MIX_ENV=prod
       run: MIX_ENV=prod mix compile --warnings-as-errors
     
     - name: Run tests
