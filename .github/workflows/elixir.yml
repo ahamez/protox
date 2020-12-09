@@ -3,6 +3,7 @@ name: Elixir CI
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   MIX_ENV: test
+  PROTOBUF_VERSION: 3.14.0
 
 on:
   push:
@@ -22,14 +23,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-
-    - name: Install protoc and conformance-test-runner
-      run: |
-        wget https://github.com/protocolbuffers/protobuf/releases/download/v3.14.0/protoc-3.14.0-linux-x86_64.zip
-        unzip -d protoc protoc-3.14.0-linux-x86_64.zip
-        echo "${PWD}/protoc/bin" >> $GITHUB_PATH
-        wget https://github.com/ahamez/protox/releases/download/1.2.1/conformance-linux-x86_64.zip
-        unzip conformance-linux-x86_64.zip
     
     - name: Set up Elixir
       uses: actions/setup-elixir@v1
@@ -48,7 +41,33 @@ jobs:
       with:
         path: priv/plts
         key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
+
+    - name: Restore conformance-test-runner
+      uses: actions/cache@v2
+      with:
+        path: conformance
+        key: ${{ runner.os }}-${{ PROTOBUF_VERSION }}
     
+    - name: Compile conformance-test-runner
+      run: |
+        wget https://github.com/protocolbuffers/protobuf/archive/v${{ PROTOBUF_VERSION }}.tar.gz
+        tar xf v${{ PROTOBUF_VERSION }}.tar.gz
+        cd protobuf-${{ PROTOBUF_VERSION }}
+        ./autogen.sh
+        ./configure --disable-maintainer-mode --disable-dependency-tracking --disable-static
+        make
+        cd conformance
+        make
+        cd ..
+        mkdir -p ../conformance/.libs
+        cp ./conformance/.libs/conformance-test-runner ../../conformance/
+        cp ./src/.libs/libprotobuf.so.25.0.0 ../conformance/.libs/libprotobuf.so.25
+
+    - name: Install protoc and conformance-test-runner
+      run: |
+        wget https://github.com/protocolbuffers/protobuf/releases/download/v3.14.0/protoc-3.14.0-linux-x86_64.zip
+        unzip -d protoc protoc-3.14.0-linux-x86_64.zip
+
     - name: Install dependencies
       run: |
         mix local.rebar --force
