@@ -46,7 +46,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: conformance
-        key: ${{ runner.os }}-${{ PROTOBUF_VERSION }}
+        key: ${{ runner.os }}-${{ env.PROTOBUF_VERSION }}
     
     - name: Compile conformance-test-runner
       run: |
