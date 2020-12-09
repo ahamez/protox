@@ -63,10 +63,11 @@ jobs:
         cp ./conformance/.libs/conformance-test-runner ../conformance-bin
         cp ./src/.libs/libprotobuf.so.${{ env.PROTOBUF_LIB_VERSION }}.0.0 ../conformance-bin/.libs/libprotobuf.so.${{ env.PROTOBUF_LIB_VERSION }}
 
-    - name: Install protoc and conformance-test-runner
+    - name: Install protoc
       run: |
         wget https://github.com/protocolbuffers/protobuf/releases/download/v3.14.0/protoc-3.14.0-linux-x86_64.zip
         unzip -d protoc protoc-3.14.0-linux-x86_64.zip
+        echo "${PWD}/protoc/bin" >> $GITHUB_PATH
 
     - name: Install dependencies
       run: |
