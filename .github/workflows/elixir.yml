@@ -2,6 +2,7 @@ name: Elixir CI
 
 env:
   PROTOBUF_VERSION: '3.14.0'
+  PROTOBUF_LIB_VERSION: '25'
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   MIX_ENV: test
 
@@ -44,11 +45,13 @@ jobs:
 
     - name: Restore conformance-test-runner
       uses: actions/cache@v2
+      id: compile-conformance-test-runner
       with:
         path: /conformance
         key: ${{ runner.os }}-${{ env.PROTOBUF_VERSION }}
     
     - name: Compile conformance-test-runner
+      if: steps.compile-conformance-test-runner.outputs.cache-hit != 'true'
       run: |
         wget https://github.com/protocolbuffers/protobuf/archive/v${{ env.PROTOBUF_VERSION }}.tar.gz
         tar xf v${{ env.PROTOBUF_VERSION }}.tar.gz
@@ -61,7 +64,7 @@ jobs:
         cd ..
         mkdir -p /conformance/.libs
         cp ./conformance/.libs/conformance-test-runner /conformance/
-        cp ./src/.libs/libprotobuf.so.25.0.0 /conformance/.libs/libprotobuf.so.25
+        cp ./src/.libs/libprotobuf.so.${{ env.PROTOBUF_LIB_VERSION }}.0.0 /conformance/.libs/libprotobuf.so.${{ env.PROTOBUF_LIB_VERSION }}
 
     - name: Install protoc and conformance-test-runner
       run: |
