@@ -50,9 +50,9 @@ jobs:
     
     - name: Compile conformance-test-runner
       run: |
-        wget https://github.com/protocolbuffers/protobuf/archive/v${{ PROTOBUF_VERSION }}.tar.gz
-        tar xf v${{ PROTOBUF_VERSION }}.tar.gz
-        cd protobuf-${{ PROTOBUF_VERSION }}
+        wget https://github.com/protocolbuffers/protobuf/archive/v${{ env.PROTOBUF_VERSION }}.tar.gz
+        tar xf v${{ env.PROTOBUF_VERSION }}.tar.gz
+        cd protobuf-${{ env.PROTOBUF_VERSION }}
         ./autogen.sh
         ./configure --disable-maintainer-mode --disable-dependency-tracking --disable-static
         make
