@@ -2,13 +2,14 @@
 
 ![Elixir CI](https://github.com/ahamez/protox/workflows/Elixir%20CI/badge.svg) [![Coverage Status](https://coveralls.io/repos/github/ahamez/protox/badge.svg?branch=master)](https://coveralls.io/github/ahamez/protox?branch=master) [![Hex.pm Version](http://img.shields.io/hexpm/v/protox.svg)](https://hex.pm/packages/protox)
 
-Protox is an Elixir library to work with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers) (aka protobuf), versions 2 and 3.
+`Protox` is an Elixir library to work with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers) (aka *protobuf*), versions 2 and 3.
 
-Generally speaking, a lot of efforts have been put into making sure that the library is reliable (for instance using [property based testing](https://github.com/alfert/propcheck) and by having a [100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master)). Therefore, this library passes all the tests of the conformance checker provided by Google. See [Conformance](#conformance) section for more information.
+The primary objective of `protox` is **reliability**: it uses [property based testing](https://github.com/alfert/propcheck) and has a [near 100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master). Also, using [mutation testing](https://en.wikipedia.org/wiki/Mutation_testing) with the invaluable help of [Muzak pro](https://devonestes.com/muzak), the quality of the `protox` test suite has been validated.
+Therefore, `protox` passes all the tests of the conformance checker provided by Google. See [Conformance](#conformance) section for more information.
 
 This library is easy to use: you just point to the `*.proto` files or give the schema to the `Protox` macro, no need to generate any file! However, should you need to generate files, a mix task is available (see [Files generation](#files-generation)).
 
-This library also provides a full-blown Elixir experience with protobuf messages. For instance, given the following protobuf `msg.proto` file:
+`Protox` provides a full-blown Elixir experience with protobuf messages. For instance, given the following protobuf `msg.proto` file:
 ```proto
 syntax = "proto3";
 
@@ -18,10 +19,14 @@ message Msg{
 }
 ```
 
-You can interact with `Msg` as if it were a native Elixir structure. For example, note how the map `b` is translated into an [Elixir Map](https://hexdocs.pm/elixir/Map.html):
+You can interact with `Msg` as if it were a native Elixir structure. For example, note how the map `b` is translated into a [map](https://hexdocs.pm/elixir/Map.html):
 
 ```elixir
-iex> %Msg{a: 42, b: %{1 => "a map entry"}}
+iex> msg = %Msg{a: 42, b: %{1 => "a map entry"}}
+iex> {:ok, iodata} = Protox.Encode.encode(msg) # or Msg.encode(msg)
+...
+iex> binary = # read binary from a socket, a file, etc.
+iex> {:ok, msg} = Msg.decode(binary)
 ```
 
 ## Table of contents
