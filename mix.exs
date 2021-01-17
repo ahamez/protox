@@ -69,7 +69,8 @@ defmodule Protox.Mixfile do
       files: ["lib", "mix.exs", "README*", "LICENSE"],
       maintainers: ["Alexandre Hamez"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/ahamez/protox"}
+      links: %{"GitHub" => "https://github.com/ahamez/protox"},
+      exclude_patterns: [".DS_Store"]
     ]
   end
 
