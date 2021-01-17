@@ -80,7 +80,14 @@ defmodule Protox do
     defstruct([:name, :content])
   end
 
-  def generate_module_code(files, output_path, multiple_files, include_path_or_nil, opts \\ [])
+  def generate_module_code(
+        files,
+        output_path,
+        multiple_files,
+        include_path_or_nil,
+        namespace_or_nil \\ nil,
+        opts \\ []
+      )
       when is_list(files) and is_binary(output_path) and is_boolean(multiple_files) do
     path =
       case include_path_or_nil do
@@ -93,7 +100,7 @@ defmodule Protox do
       |> Enum.map(&Path.expand/1)
       |> Protox.Protoc.run(path)
 
-    {enums, messages} = Protox.Parse.parse(file_descriptor_set, nil)
+    {enums, messages} = Protox.Parse.parse(file_descriptor_set, namespace_or_nil)
 
     code = quote do: unquote(Protox.Define.define(enums, messages, opts))
 

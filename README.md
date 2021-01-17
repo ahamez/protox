@@ -31,23 +31,27 @@ iex> {:ok, msg} = Msg.decode(binary)
 
 ## Table of contents
 
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Usage with a textual description](#usage-with-a-textual-description)
-- [Usage with files](#usage-with-files)
-- [Encode](#encode)
-- [Decode](#decode)
-- [Packages and namespaces](#packages-and--namespaces)
-- [Specify import path](#specify-import-path)
-- [Unknown fields](#unknown-fields)
-- [Unsupported features](#unsupported-features)
-- [Implementation choices](#implementation-choices)
-- [Generated code reference](#generated-code-reference)
-- [Files generation](#files-generation)
-- [Types mapping](#types-mapping)
-- [Conformance](#conformance)
-- [Benchmarks](#benchmarks)
-- [Credits](#credits)
+- [Protox](#protox)
+  - [Table of contents](#table-of-contents)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Usage with a textual description](#usage-with-a-textual-description)
+  - [Usage with files](#usage-with-files)
+  - [Encode](#encode)
+  - [Decode](#decode)
+  - [Packages and  namespaces](#packages-and--namespaces)
+    - [Packages](#packages)
+    - [Prepend namespaces](#prepend-namespaces)
+  - [Specify import path](#specify-import-path)
+  - [Unknown fields](#unknown-fields)
+  - [Unsupported features](#unsupported-features)
+  - [Implementation choices](#implementation-choices)
+  - [Generated code reference](#generated-code-reference)
+  - [Files generation](#files-generation)
+  - [Types mapping](#types-mapping)
+  - [Conformance](#conformance)
+  - [Benchmarks](#benchmarks)
+  - [Credits](#credits)
 
 ## Prerequisites
 
@@ -382,6 +386,8 @@ MIX_ENV=prod mix protox.generate --multiple-files --output-path=generated --incl
 ```
 
 Doing so, Elixir will be able to parallelize the compilation of generated modules.
+
+It is also possible to prepend a namespace to all generated modules using the `--namespace` option. More information is available in section [Prepend namespaces](#prepend-namespaces).
 
 Finally, you can pass the option `--keep-unknown-fields=false` to remove support of unknown fields. See [this section](#unknown-fields) for more information.
 

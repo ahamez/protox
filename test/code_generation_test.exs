@@ -63,6 +63,14 @@ defmodule Protox.CodeGenerationTest do
     launch(".", ["--multiple-files", "--keep-unknown-fields=false"])
   end
 
+  test "Generate single file, with namespace" do
+    launch("single_with_namespace.ex", ["--namespace=Namespace"])
+  end
+
+  test "Generate multiple files, with namespace" do
+    launch(".", ["--multiple-files", "--namespace=Namespace"])
+  end
+
   test "Mix task generates a file that can be compiled" do
     tmp_dir = System.tmp_dir!()
     tmp_file = Path.join(tmp_dir, "file.ex")

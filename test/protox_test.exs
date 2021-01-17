@@ -296,6 +296,29 @@ defmodule ProtoxTest do
     assert Code.compile_file(tmp_file) != []
   end
 
+  test "Generate code in a single file with namespace" do
+    file = Path.join(__DIR__, "./samples/prefix/bar/bar.proto")
+    generated_file_name = "generated_code.ex"
+
+    assert [%Protox.FileContent{name: ^generated_file_name, content: content}] =
+             Protox.generate_module_code(
+               [file],
+               generated_file_name,
+               false,
+               "./test/samples",
+               "Namespace"
+             )
+
+    tmp_dir = System.tmp_dir!()
+    tmp_file = Path.join(tmp_dir, generated_file_name)
+    File.write!(tmp_file, content)
+
+    # To avoid warning conflicts with other tests compiling code
+    Code.compiler_options(ignore_module_conflict: true)
+
+    assert Code.compile_file(tmp_file) != []
+  end
+
   test "Generate code in multiple files" do
     file = Path.join(__DIR__, "./samples/prefix/bar/bar.proto")
     generated_path_name = "generated_code"
@@ -304,6 +327,42 @@ defmodule ProtoxTest do
              %Protox.FileContent{name: "generated_code/elixir_bar.ex", content: bar_content},
              %Protox.FileContent{name: "generated_code/elixir_foo.ex", content: foo_content}
            ] = Protox.generate_module_code([file], generated_path_name, true, "./test/samples")
+
+    tmp_dir = System.tmp_dir!()
+    bar_tmp_file = Path.join(tmp_dir, "bar.ex")
+    foo_tmp_file = Path.join(tmp_dir, "foo.ex")
+    File.write!(bar_tmp_file, bar_content)
+    File.write!(foo_tmp_file, foo_content)
+
+    # To avoid warning conflicts with other tests compiling code
+    Code.compiler_options(ignore_module_conflict: true)
+
+    # The order is important here to avoid compilation warnings
+    assert Code.compile_file(foo_tmp_file) != []
+    assert Code.compile_file(bar_tmp_file) != []
+  end
+
+  test "Generate code in multiple files with namespace" do
+    file = Path.join(__DIR__, "./samples/prefix/bar/bar.proto")
+    generated_path_name = "generated_code"
+
+    assert [
+             %Protox.FileContent{
+               name: "generated_code/elixir_namespace_bar.ex",
+               content: bar_content
+             },
+             %Protox.FileContent{
+               name: "generated_code/elixir_namespace_foo.ex",
+               content: foo_content
+             }
+           ] =
+             Protox.generate_module_code(
+               [file],
+               generated_path_name,
+               true,
+               "./test/samples",
+               "Namespace"
+             )
 
     tmp_dir = System.tmp_dir!()
     bar_tmp_file = Path.join(tmp_dir, "bar.ex")
