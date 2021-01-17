@@ -8,6 +8,8 @@ defmodule Mix.Tasks.Protox.Generate do
   The generated file will be usable in any project as long as protox is declared
   in the dependencies (the generated file still needs functions from the protox runtime).
 
+  You can use the `--namespace` option to prepend a namespace to all generated modules.
+
   If you have large protobuf files, you can use the `--multiple-files` option to generate
   one file per module.
 
@@ -26,16 +28,18 @@ defmodule Mix.Tasks.Protox.Generate do
              strict: [
                output_path: :string,
                include_path: :string,
+               namespace: :string,
                multiple_files: :boolean,
                keep_unknown_fields: :boolean
              ]
            ),
          {:ok, output_path} <- Keyword.fetch(opts, :output_path) do
       {include_path, opts} = Keyword.pop(opts, :include_path)
+      {namespace, opts} = Keyword.pop(opts, :namespace)
       {multiple_files, opts} = Keyword.pop(opts, :multiple_files, false)
 
       files
-      |> Protox.generate_module_code(output_path, multiple_files, include_path, opts)
+      |> Protox.generate_module_code(output_path, multiple_files, include_path, namespace, opts)
       |> Enum.each(&generate_file/1)
     else
       err ->
