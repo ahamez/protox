@@ -39,7 +39,13 @@ defmodule Mix.Tasks.Protox.Generate do
       {multiple_files, opts} = Keyword.pop(opts, :multiple_files, false)
 
       files
-      |> Protox.generate_module_code(output_path, multiple_files, include_path, namespace, opts)
+      |> Protox.generate_module_code(
+        Path.expand(output_path),
+        multiple_files,
+        include_path,
+        namespace,
+        opts
+      )
       |> Enum.each(&generate_file/1)
     else
       err ->
