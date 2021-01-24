@@ -29,6 +29,8 @@ iex> binary = # read binary from a socket, a file, etc.
 iex> {:ok, msg} = Msg.decode(binary)
 ```
 
+You can find [here](https://github.com/ahamez/protox/blob/master/test/example_test.exs) a more involved example with most types.
+
 ## Table of contents
 
 - [Protox](#protox)
