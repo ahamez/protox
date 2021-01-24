@@ -1,3 +1,6 @@
+* 1.3.1
+  - Fix table of types mapping in documentation
+
 * 1.3.0
   - Allow namespaces through protox.generate (thanks to https://github.com/sdrew)
   - Expand output path when generating files
