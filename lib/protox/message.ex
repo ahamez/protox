@@ -50,7 +50,7 @@ defmodule Protox.Message do
         v1 ++ v2
 
       {_, {:default, _}, {:message, _}} ->
-        merge_message(v1, v2)
+        merge(v1, v2)
 
       {_, {:default, _}, _} ->
         {:ok, default} = msg.__struct__.default(name)
@@ -66,10 +66,6 @@ defmodule Protox.Message do
         Map.merge(v1, v2)
     end
   end
-
-  defp merge_message(nil, v2), do: v2
-  defp merge_message(v1, nil), do: v1
-  defp merge_message(v1, v2), do: merge(v1, v2)
 
   defp merge_scalar(:proto2, v1, nil, _default), do: v1
   defp merge_scalar(:proto3, v1, v2, default) when v2 == default, do: v1
