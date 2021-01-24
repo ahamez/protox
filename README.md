@@ -48,8 +48,8 @@ iex> {:ok, msg} = Msg.decode(binary)
   - [Implementation choices](#implementation-choices)
   - [Generated code reference](#generated-code-reference)
   - [Files generation](#files-generation)
-  - [Types mapping](#types-mapping)
   - [Conformance](#conformance)
+  - [Types mapping](#types-mapping)
   - [Benchmarks](#benchmarks)
   - [Credits](#credits)
 
@@ -391,32 +391,6 @@ It is also possible to prepend a namespace to all generated modules using the `-
 
 Finally, you can pass the option `--keep-unknown-fields=false` to remove support of unknown fields. See [this section](#unknown-fields) for more information.
 
-## Types mapping
-
-The following table shows how Protobuf types are mapped to Elixir's ones.
-
-Protobuf   | Elixir
------------|--------------
-int32      | integer()
-int64      | integer()
-uint32     | integer()
-uint64     | integer()
-sint32     | integer()
-sint64     | integer()
-fixed32    | integer()
-fixed64    | integer()
-sfixed32   | integer()
-sfixed64   | integer()
-float      | float() \| :infinity \| :'-infinity' \| :nan
-double     | float() \| :infinity \| :'-infinity' \| :nan
-bool       | boolean()
-string     | String.t()
-bytes      | binary()
-map        | %{}
-oneof      | {:field, value}
-enum       | atom() \| integer()
-message    | struct()
-
 ## Conformance
 
 The protox library has been thoroughly tested using the [conformance checker provided by Google](https://github.com/protocolbuffers/protobuf/tree/master/conformance). Note that only the binary part is tested as protox supports only this format. For instance, JSON tests are skipped.
@@ -445,6 +419,33 @@ You can alternatively launch these conformance tests with `mix test` by setting 
    ```
    PROTOBUF_CONFORMANCE_RUNNER=./protobuf-3.14.0/conformance/conformance-test-runner MIX_ENV=test mix test --include conformance
    ```
+
+## Types mapping
+
+The following table shows how Protobuf types are mapped to Elixir's ones.
+
+Protobuf   | Elixir
+---------- | -------------
+`int32`    | `integer()`
+`int64`    | `integer()`
+`uint32`   | `integer()`
+`uint64`   | `integer()`
+`sint32`   | `integer()`
+`sint64`   | `integer()`
+`fixed32`  | `integer()`
+`fixed64`  | `integer()`
+`sfixed32` | `integer()`
+`sfixed64` | `integer()`
+`float`    | `float() \| :infinity \| :'-infinity' \| :nan`
+`double`   | `float() \| :infinity \| :'-infinity' \| :nan`
+`bool`     | `boolean()`
+`string`   | `String.t()`
+`bytes`    | `binary()`
+`repeated` | `list(value_type)` where `value_type` is the type of the repeated field
+`map`      | `map()`
+`oneof`    | `{atom(), value_type}` where `atom()` is the type of the set field and where `value_type` is the type of the set field
+`enum`     | `atom() \| integer()`
+`message`  | `struct()`
 
 ## Benchmarks
 
