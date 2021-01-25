@@ -60,7 +60,7 @@ defmodule Protox.Message do
         merge_oneof(v1, v2, defs)
 
       {_, :map, {_, {:message, _}}} ->
-        Map.merge(v1, v2, fn _k, w1, w2 -> merge(w1, w2) end)
+        Map.merge(v1, v2, fn _key, w1, w2 -> merge(w1, w2) end)
 
       {_, :map, _} ->
         Map.merge(v1, v2)
