@@ -71,9 +71,6 @@ defmodule Protox.Message do
   defp merge_scalar(:proto3, v1, v2, default) when v2 == default, do: v1
   defp merge_scalar(_syntax, _v1, v2, _default), do: v2
 
-  defp merge_oneof(nil, v2, _defs), do: v2
-  defp merge_oneof(v1, nil, _defs), do: v1
-
   defp merge_oneof({v1_field, v1_value}, v2 = {v2_field, v2_value}, defs)
        when v1_field == v2_field do
     case {defs[v1_field], defs[v2_field]} do
@@ -85,5 +82,6 @@ defmodule Protox.Message do
     end
   end
 
+  defp merge_oneof(v1, nil, _defs), do: v1
   defp merge_oneof(_v1, v2, _defs), do: v2
 end
