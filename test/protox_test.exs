@@ -390,7 +390,7 @@ defmodule ProtoxTest do
     # {:ok, _} here just means that the runner could be launched, not that the conformance
     # test performed correctly. We'll check the absence of the "failing_tests.txt" file
     # to verify this.
-    assert {:ok, _} = Mix.Tasks.Protox.Conformance.run(["--runner=#{runner}"])
+    assert {:ok, _} = Mix.Tasks.Protox.Conformance.run(["--runner=#{runner}", "--quiet"])
 
     # protobuf conformance runner produces this file only when some tests have failed
     refute File.exists?("./failing_tests.txt"),
