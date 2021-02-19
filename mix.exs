@@ -16,7 +16,7 @@ defmodule Protox.Mixfile do
       source_url: "https://github.com/ahamez/protox",
       description: description(),
       package: package(),
-      dialyzer: [plt_file: {:no_warn, "priv/plts/dialyzer.plt"}],
+      dialyzer: [plt_local_path: "priv/plts"],
       docs: docs()
     ]
   end
