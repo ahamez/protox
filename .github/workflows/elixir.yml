@@ -28,19 +28,19 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    
+
     - name: Set up Elixir
       uses: actions/setup-elixir@v1
       with:
         elixir-version: ${{matrix.elixir}}
         otp-version: ${{matrix.otp}}
-    
+
     - name: Restore dependencies cache
       uses: actions/cache@v2
       with:
         path: deps
         key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
-    
+
     - name: Restore PLT cache
       uses: actions/cache@v2
       with:
@@ -53,7 +53,7 @@ jobs:
       with:
         path: conformance-bin
         key: ${{ runner.os }}-protobuf-${{ env.PROTOBUF_VERSION }}
-    
+
     - name: Compile conformance-test-runner
       if: steps.compile-conformance-test-runner.outputs.cache-hit != 'true'
       run: |
@@ -78,22 +78,22 @@ jobs:
         mix local.rebar --force
         mix local.hex --force
         mix deps.get
-    
+
     - name: Compile prod with warnings as errors
       # Will be fast as protox is the only thing to compile when MIX_ENV=prod
       run: MIX_ENV=prod mix compile --warnings-as-errors
-    
+
     - name: Run tests
       env:
         PROTOBUF_CONFORMANCE_RUNNER: conformance-bin/conformance-test-runner
         LD_LIBRARY_PATH: conformance-bin/.libs
       run: mix coveralls.github --include conformance
-    
+
     - name: Check formatting
       run: mix format --check-formatted
-    
+
     - name: Credo
       run: mix credo
-    
+
     - name: Dialyzer
       run: mix dialyzer
