@@ -57,9 +57,11 @@ You can find [here](https://github.com/ahamez/protox/blob/master/test/example_te
 
 ## Prerequisites
 
-Protox uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`. You can download it [here](https://github.com/google/protobuf) or you can install it with your favorite package manager (`brew install protobuf`, `apt install protobuf-compiler`, etc.).
+- Elixir >= 1.7
+- protoc >= 3.0
+  Protox uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`. You can download it [here](https://github.com/google/protobuf) or you can install it with your favorite package manager (`brew install protobuf`, `apt install protobuf-compiler`, etc.).
+  *This dependency is only required at compile-time*.
 
-*This dependency is only required at compile-time*.
 
 ## Installation
 
