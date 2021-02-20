@@ -1,8 +1,9 @@
 name: Elixir CI
 
 env:
-  PROTOBUF_VERSION: '3.14.0'
-  PROTOBUF_LIB_VERSION: '25'
+  PROTOBUF_VERSION: '3.15.1'
+  PROTOBUF_LIB_VERSION_MAJOR: '26'
+  PROTOBUF_LIB_VERSION_MINOR: '0.1'
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   MIX_ENV: test
 
@@ -65,12 +66,12 @@ jobs:
         cd conformance && make
         cd ..
         cp ./conformance/.libs/conformance-test-runner ../conformance-bin
-        cp ./src/.libs/libprotobuf.so.${{ env.PROTOBUF_LIB_VERSION }}.0.0 ../conformance-bin/.libs/libprotobuf.so.${{ env.PROTOBUF_LIB_VERSION }}
+        cp ./src/.libs/libprotobuf.so.${{ env.PROTOBUF_LIB_VERSION_MAJOR }}.${{ env.PROTOBUF_LIB_VERSION_MINOR }} ../conformance-bin/.libs/libprotobuf.so.${{ env.PROTOBUF_LIB_VERSION_MAJOR }}
 
     - name: Install protoc
       run: |
-        wget https://github.com/protocolbuffers/protobuf/releases/download/v3.14.0/protoc-3.14.0-linux-x86_64.zip
-        unzip -d protoc protoc-3.14.0-linux-x86_64.zip
+        wget https://github.com/protocolbuffers/protobuf/releases/download/v3.15.1/protoc-3.15.1-linux-x86_64.zip
+        unzip -d protoc protoc-3.15.1-linux-x86_64.zip
         echo "${PWD}/protoc/bin" >> $GITHUB_PATH
 
     - name: Install dependencies
