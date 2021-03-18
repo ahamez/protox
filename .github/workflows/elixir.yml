@@ -24,8 +24,10 @@ jobs:
         otp: ['22.3']
         elixir: ['1.8.2', '1.9.4', '1.10.4', '1.11.2']
         include:
-          - elixir: 1.11.2
-            otp: 23.2
+          - pair:
+              elixir: 1.11.3
+              otp: 23.2.5
+            check_deps: check_deps
 
     steps:
     - uses: actions/checkout@v2
@@ -95,6 +97,7 @@ jobs:
 
     - name: Check dependencies
       run: mix deps.unlock --check-unused
+      if: ${{ matrix.check_deps }}
 
     - name: Credo
       run: mix credo
