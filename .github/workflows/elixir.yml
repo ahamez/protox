@@ -118,3 +118,4 @@ jobs:
 
     - name: Dialyzer
       run: mix dialyzer
+      if: ${{ matrix.dialyzer }}
