@@ -23,12 +23,12 @@ jobs:
       matrix:
         include:
           - pair:
-              elixir: 1.8.2
-              otp: 22.3
+              elixir: 1.5.3
+              otp: 19.3.6.13
           - pair:
               elixir: 1.11.3
               otp: 23.2.5
-            check_deps: check_deps
+            lint: lint
 
     steps:
     - uses: actions/checkout@v2
