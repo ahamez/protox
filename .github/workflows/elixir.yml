@@ -21,11 +21,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        otp: ['22.3']
-        elixir: ['1.8.2', '1.9.4', '1.10.4', '1.11.2']
         include:
-          - elixir: 1.11.2
-            otp: 23.2
+          - pair:
+              elixir: 1.7.4
+              otp: 22.3
+          - pair:
+              elixir: 1.8.2
+              otp: 22.3
+            dialyzer: true
+          - pair:
+              elixir: 1.9.4
+              otp: 22.3
+            dialyzer: true
+          - pair:
+              elixir: 1.10.4
+              otp: 22.3              
+            dialyzer: true
+          - pair:
+              elixir: 1.11.4
+              otp: 23.2.5
+            check_deps: true
+            dialyzer: true
 
     steps:
     - uses: actions/checkout@v2
@@ -33,8 +49,8 @@ jobs:
     - name: Set up Elixir
       uses: erlef/setup-elixir@v1
       with:
-        elixir-version: ${{matrix.elixir}}
-        otp-version: ${{matrix.otp}}
+        elixir-version: ${{matrix.pair.elixir}}
+        otp-version: ${{matrix.pair.otp}}
 
     - name: Restore dependencies cache
       uses: actions/cache@v2
@@ -93,8 +109,13 @@ jobs:
     - name: Check formatting
       run: mix format --check-formatted
 
+    - name: Check dependencies
+      run: mix deps.unlock --check-unused
+      if: ${{ matrix.check_deps }}
+
     - name: Credo
       run: mix credo
 
     - name: Dialyzer
       run: mix dialyzer
+      if: ${{ matrix.dialyzer }}
