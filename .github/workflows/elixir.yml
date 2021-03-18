@@ -28,7 +28,7 @@ jobs:
           - pair:
               elixir: 1.11.3
               otp: 23.2.5
-            lint: lint
+            check_deps: check_deps
 
     steps:
     - uses: actions/checkout@v2
@@ -36,8 +36,8 @@ jobs:
     - name: Set up Elixir
       uses: erlef/setup-elixir@v1
       with:
-        elixir-version: ${{matrix.elixir}}
-        otp-version: ${{matrix.otp}}
+        elixir-version: ${{matrix.pair.elixir}}
+        otp-version: ${{matrix.pair.otp}}
 
     - name: Restore dependencies cache
       uses: actions/cache@v2
