@@ -93,6 +93,9 @@ jobs:
     - name: Check formatting
       run: mix format --check-formatted
 
+    - name: Check dependencies
+      run: mix deps.unlock --check-unused
+
     - name: Credo
       run: mix credo
 
