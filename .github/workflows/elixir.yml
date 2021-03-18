@@ -28,16 +28,20 @@ jobs:
           - pair:
               elixir: 1.8.2
               otp: 22.3
+            dialyzer: true
           - pair:
               elixir: 1.9.4
               otp: 22.3
+            dialyzer: true
           - pair:
               elixir: 1.10.4
               otp: 22.3              
+            dialyzer: true
           - pair:
               elixir: 1.11.4
               otp: 23.2.5
-            check_deps: check_deps
+            check_deps: true
+            dialyzer: true
 
     steps:
     - uses: actions/checkout@v2
