@@ -3,6 +3,8 @@ defmodule Protox.Parse do
   # Creates definitions from a protobuf encoded description (Protox.Google.Protobuf.FileDescriptorSet)
   # of a set of .proto files. This description is produced by `protoc`.
 
+  alias Protox.Field
+
   alias Protox.Google.Protobuf.{
     FieldDescriptorProto,
     FieldOptions,
@@ -216,7 +218,13 @@ defmodule Protox.Parse do
           {nil, :map, map_type}
       end
 
-    field = {descriptor.number, label, String.to_atom(descriptor.name), kind, type}
+    field = %Field{
+      tag: descriptor.number,
+      label: label,
+      name: String.to_atom(descriptor.name),
+      kind: kind,
+      type: type
+    }
 
     {
       enums,

@@ -1,11 +1,12 @@
 defmodule Protox.DefineMessage do
   @moduledoc false
+  alias Protox.Field
 
   def define(messages, opts \\ []) do
     {keep_unknown_fields, _opts} = Keyword.pop(opts, :keep_unknown_fields, true)
 
     for {msg_name, syntax, fields} <- messages do
-      fields = Enum.sort(fields, &(elem(&1, 0) < elem(&2, 0)))
+      fields = Enum.sort(fields, &(&1.tag < &2.tag))
       unknown_fields = make_unknown_fields(:__uf__, fields)
       unknown_fields_funs = make_unknown_fields_funs(keep_unknown_fields, unknown_fields)
       struct_fields = make_struct_fields(fields, syntax, unknown_fields, keep_unknown_fields)
@@ -101,7 +102,7 @@ defmodule Protox.DefineMessage do
   # Make sure the name chosen for the struct fields that stores the unknow fields
   # of the protobuf message doesn't collide with already existing names.
   defp make_unknown_fields(name, fields) do
-    name_in_fields = Enum.find(fields, fn {_, _, n, _, _} -> n == name end)
+    name_in_fields = Enum.find(fields, fn %Field{name: n} -> n == name end)
 
     if name_in_fields do
       # Append a '_' while there's a collision
@@ -118,7 +119,7 @@ defmodule Protox.DefineMessage do
   # Generate fields of the struct which is created for a message.
   defp make_struct_fields(fields, syntax, unknown_fields, keep_unknown_fields) do
     struct_fields =
-      for {_, label, name, kind, _} <- fields do
+      for %Field{label: label, name: name, kind: kind} <- fields do
         case kind do
           :map -> {name, Macro.escape(%{})}
           {:oneof, parent} -> make_oneof_field(label, name, parent)
@@ -143,7 +144,7 @@ defmodule Protox.DefineMessage do
 
   # Get the list of fields that are marked as `required`.
   defp make_required_fields(fields) do
-    for {_, :required, name, _, _} <- fields, do: name
+    for %Field{label: :required, name: name} <- fields, do: name
   end
 
   defp make_required_fields_typespec([]) do
@@ -165,7 +166,7 @@ defmodule Protox.DefineMessage do
   # Generate a map used to store a message's definitions.
   defp make_fields_map(fields) do
     fields
-    |> Enum.reduce(%{}, fn {tag, _, name, kind, type}, acc ->
+    |> Enum.reduce(%{}, fn %Field{tag: tag, name: name, kind: kind, type: type}, acc ->
       Map.put(acc, tag, {name, kind, make_type_field(kind, type)})
     end)
     |> Macro.escape()
@@ -173,7 +174,7 @@ defmodule Protox.DefineMessage do
 
   defp make_fields_by_name_map(fields) do
     fields
-    |> Enum.reduce(%{}, fn {tag, _, name, kind, type}, acc ->
+    |> Enum.reduce(%{}, fn %Field{tag: tag, name: name, kind: kind, type: type}, acc ->
       Map.put(acc, name, {tag, kind, make_type_field(kind, type)})
     end)
     |> Macro.escape()
