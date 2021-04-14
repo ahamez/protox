@@ -320,7 +320,7 @@ Note that protox will still correctly parse unknown fields, they just won't be a
         ```
         It means that if you need to know if a field has been set by the sender, you just have to test if its value is `nil` or not.
 
-    * For Protobuf 3, unset optional fields are mapped to their default values, as mandated by the [Protobuf spec](https://developers.google.com/protocol-buffers/docs/proto3#default):
+    * For Protobuf 3, unset fields are mapped to their [default values](https://developers.google.com/protocol-buffers/docs/proto3#default). However, if you use the `optional` keyword, then unset fields will be mapped to `nil`:
         ```elixir
         defmodule Bar do
           use Protox,
@@ -329,6 +329,7 @@ Note that protox will still correctly parse unknown fields, they just won't be a
 
             message Foo {
               int32 a = 1;
+              optional int32 b = 2;
             }
           """
         end
@@ -339,6 +340,11 @@ Note that protox will still correctly parse unknown fields, they just won't be a
         iex> %Foo{}.a
         0
 
+        iex> Foo.default(:b)
+        {:error, :no_default_value}
+
+        iex> %Foo{}.b
+        nil
         ```
 
 * Messages and enums names: names are converted using the [`Macro.camelize/1`](https://hexdocs.pm/elixir/Macro.html#camelize/1) function.

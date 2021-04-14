@@ -11,7 +11,11 @@ defmodule Protox.Defs do
       end)
 
     {
-      oneofs |> Enum.group_by(fn {_, _, _, {:oneof, parent}, _} -> parent end) |> Map.to_list(),
+      oneofs
+      |> Enum.group_by(fn {_, label, name, {:oneof, parent}, _} ->
+        oneof_groupby(label, name, parent)
+      end)
+      |> Map.to_list(),
       fields
     }
   end
@@ -22,4 +26,7 @@ defmodule Protox.Defs do
       _ -> false
     end)
   end
+
+  defp oneof_groupby(:proto3_optional, name, _parent), do: name
+  defp oneof_groupby(_, _, parent), do: parent
 end

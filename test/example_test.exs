@@ -21,6 +21,9 @@ defmodule ExampleTest do
         FooOrBar g = 7;
         repeated int32 h = 8;
         map<string, int32> i = 9;
+        optional bool j = 10;
+        optional bool k = 11;
+        optional bool l = 12;
       }
 
       message Envelope {
@@ -45,7 +48,9 @@ defmodule ExampleTest do
            f: true,
            g: :FOO,
            h: [1, 2, 3],
-           i: %{"foo" => 42, "bar" => 33}
+           i: %{"foo" => 42, "bar" => 33},
+           k: false,
+           l: true
          }}
     }
 
@@ -55,7 +60,9 @@ defmodule ExampleTest do
     }
 
     encoded_sub_msg = sub_msg |> Envelope.encode!() |> :binary.list_to_bin()
-    assert Envelope.decode!(encoded_sub_msg) == sub_msg
+    decoded_sub_msg = Envelope.decode!(encoded_sub_msg)
+    assert decoded_sub_msg == sub_msg
+    assert %{envelope: {:sub_msg, %SubMsg{j: nil, k: false, l: true}}} = decoded_sub_msg
 
     encoded_str = str |> Envelope.encode!() |> :binary.list_to_bin()
     assert Envelope.decode!(encoded_str) == str

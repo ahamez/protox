@@ -210,7 +210,7 @@ defmodule Protox.Parse do
         nil ->
           type = get_type(descriptor)
           kind = get_kind(syntax, upper, descriptor)
-          {descriptor.label, kind, type}
+          {field_label(descriptor), kind, type}
 
         map_type ->
           {nil, :map, map_type}
@@ -223,6 +223,9 @@ defmodule Protox.Parse do
       Map.update!(msgs, msg_name, fn {syntax, fields} -> {syntax, [field | fields]} end)
     }
   end
+
+  defp field_label(%{proto3_optional: true}), do: :proto3_optional
+  defp field_label(%{label: label}), do: label
 
   defp map_entry(nil, _, _), do: nil
 
