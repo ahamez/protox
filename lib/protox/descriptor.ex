@@ -106,7 +106,8 @@ defmodule Protox.Descriptor do
           {2, :none, :extendee, {:default, nil}, :string},
           {7, :none, :default_value, {:default, nil}, :string},
           {9, :none, :oneof_index, {:default, nil}, :int32},
-          {8, :none, :options, {:default, nil}, {:message, Protox.Google.Protobuf.FieldOptions}}
+          {8, :none, :options, {:default, nil}, {:message, Protox.Google.Protobuf.FieldOptions}},
+          {17, :none, :proto3_optional, {:default, false}, :bool}
         ]
       },
       {

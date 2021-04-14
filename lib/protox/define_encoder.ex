@@ -87,6 +87,12 @@ defmodule Protox.DefineEncoder do
     make_encode_oneof_fun(ast, oneofs)
   end
 
+  defp parent_name(_, [{_, :proto3_optional, _, {_, name}, _}]), do: name
+  defp parent_name(name, _), do: name
+
+  defp parent_data_key(_, [{_, :proto3_optional, child_name, _, _}]), do: child_name
+  defp parent_data_key(parent_name, _), do: parent_name
+
   defp make_encode_oneof_funs(oneofs) do
     for {parent_name, children} <- oneofs do
       nil_case =
@@ -106,11 +112,13 @@ defmodule Protox.DefineEncoder do
            end)
            |> List.flatten())
 
+      parent_name = parent_name(parent_name, children)
       encode_parent_fun_name = String.to_atom("encode_#{parent_name}")
+      parent_data_key = parent_data_key(parent_name, children)
 
       quote do
         defp unquote(encode_parent_fun_name)(acc, msg) do
-          case msg.unquote(parent_name) do
+          case msg.unquote(parent_data_key) do
             unquote(children_case_ast)
           end
         end
@@ -119,10 +127,10 @@ defmodule Protox.DefineEncoder do
   end
 
   defp make_encode_field_funs(fields, required_fields, syntax) do
-    for {tag, _, name, kind, type} <- fields do
+    for {_, _, name, _, _} = field <- fields do
       required = name in required_fields
       fun_name = String.to_atom("encode_#{name}")
-      fun_ast = make_encode_field_body(kind, tag, name, type, required, syntax)
+      fun_ast = make_encode_field_body(field, required, syntax)
 
       quote do
         defp unquote(fun_name)(acc, msg), do: unquote(fun_ast)
@@ -130,7 +138,7 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_field_body({:default, default}, tag, name, type, required, syntax) do
+  defp make_encode_field_body({tag, _, name, {:default, default}, type}, required, syntax) do
     key = Protox.Encode.make_key_bytes(tag, type)
     var = quote do: field_value
     encode_value_ast = get_encode_value_body(type, var)
@@ -170,20 +178,41 @@ defmodule Protox.DefineEncoder do
   end
 
   # Generate the AST to encode child `_child_name` of oneof `parent_field`
-  defp make_encode_field_body({:oneof, parent_field}, tag, _child_name, type, _required, _syntax) do
+  defp make_encode_field_body(
+         {tag, label, child_name, {:oneof, parent_field}, type},
+         _required,
+         _syntax
+       ) do
     key = Protox.Encode.make_key_bytes(tag, type)
     var = quote do: field_value
     encode_value_ast = get_encode_value_body(type, var)
 
-    # The dispatch on the correct child is performed by the parent encoding function,
-    # this is why we don't check if the child is set.
-    quote do
-      {_, unquote(var)} = msg.unquote(parent_field)
-      [acc, unquote(key), unquote(encode_value_ast)]
+    case label do
+      :proto3_optional ->
+        quote do
+          case msg.unquote(child_name) do
+            {_, unquote(var)} ->
+              [acc, unquote(key), unquote(encode_value_ast)]
+
+            unquote(var) when not is_nil(unquote(var)) ->
+              [acc, unquote(key), unquote(encode_value_ast)]
+
+            _ ->
+              [acc]
+          end
+        end
+
+      _ ->
+        # The dispatch on the correct child is performed by the parent encoding function,
+        # this is why we don't check if the child is set.
+        quote do
+          {_, unquote(var)} = msg.unquote(parent_field)
+          [acc, unquote(key), unquote(encode_value_ast)]
+        end
     end
   end
 
-  defp make_encode_field_body(:packed, tag, name, type, _required, _syntax) do
+  defp make_encode_field_body({tag, _label, name, :packed, type}, _required, _syntax) do
     key = Protox.Encode.make_key_bytes(tag, :packed)
     encode_packed_ast = make_encode_packed_body(type)
 
@@ -195,7 +224,7 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_field_body(:unpacked, tag, name, type, _required, _syntax) do
+  defp make_encode_field_body({tag, _label, name, :unpacked, type}, _required, _syntax) do
     encode_repeated_ast = make_encode_repeated_body(tag, type)
 
     quote do
@@ -206,7 +235,7 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_field_body(:map, tag, name, type, _required, _syntax) do
+  defp make_encode_field_body({tag, _label, name, :map, type}, _required, _syntax) do
     # Each key/value entry of a map has the same layout as a message.
     # https://developers.google.com/protocol-buffers/docs/proto3#backwards-compatibility
 

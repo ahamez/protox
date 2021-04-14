@@ -118,10 +118,10 @@ defmodule Protox.DefineMessage do
   # Generate fields of the struct which is created for a message.
   defp make_struct_fields(fields, syntax, unknown_fields, keep_unknown_fields) do
     struct_fields =
-      for {_, _, name, kind, _} <- fields do
+      for {_, label, name, kind, _} <- fields do
         case kind do
           :map -> {name, Macro.escape(%{})}
-          {:oneof, parent} -> {parent, nil}
+          {:oneof, parent} -> make_oneof_field(label, name, parent)
           :packed -> {name, []}
           :unpacked -> {name, []}
           {:default, _} when syntax == :proto2 -> {name, nil}
@@ -137,6 +137,9 @@ defmodule Protox.DefineMessage do
 
     Enum.uniq(struct_fields)
   end
+
+  defp make_oneof_field(:proto3_optional, name, _), do: {name, nil}
+  defp make_oneof_field(_, _, parent), do: {parent, nil}
 
   # Get the list of fields that are marked as `required`.
   defp make_required_fields(fields) do
