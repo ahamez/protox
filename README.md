@@ -320,7 +320,7 @@ Note that protox will still correctly parse unknown fields, they just won't be a
         ```
         It means that if you need to know if a field has been set by the sender, you just have to test if its value is `nil` or not.
 
-    * For Protobuf 3, unset fields are mapped to their [default values](https://developers.google.com/protocol-buffers/docs/proto3#default). However, if you use the `optional` keyword, then unset fields will be mapped to `nil`:
+    * For Protobuf 3, unset fields are mapped to their [default values](https://developers.google.com/protocol-buffers/docs/proto3#default). However, if you use the `optional` keyword (available in protoc version 3.15 and higher), then unset fields will be mapped to `nil`:
         ```elixir
         defmodule Bar do
           use Protox,
