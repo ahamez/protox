@@ -19,7 +19,7 @@ message Msg{
 }
 ```
 
-You can interact with `Msg` as if it were a native Elixir structure. For example, note how the map `b` is translated into a [map](https://hexdocs.pm/elixir/Map.html):
+You can interact with `Msg` as if it were a native Elixir structure. For example, note how the protobuf map `b` is translated into an Elixir [map](https://hexdocs.pm/elixir/Map.html):
 
 ```elixir
 iex> msg = %Msg{a: 42, b: %{1 => "a map entry"}}
