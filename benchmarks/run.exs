@@ -73,7 +73,15 @@ IO.puts("Will run benchmarks: #{inspect(tags)}")
 
 {head, 0} = System.cmd("git", ["symbolic-ref", "--short", "HEAD"])
 {hash, 0} = System.cmd("git", ["rev-parse", "--short", "HEAD"])
-tag = "#{String.trim(head)}-#{String.trim(hash)}"
+elixir_version = System.version()
+
+erlang_version =
+  [:code.root_dir(), "releases", :erlang.system_info(:otp_release), "OTP_VERSION"]
+  |> Path.join()
+  |> File.read!()
+  |> String.trim()
+
+tag = "#{elixir_version}-#{erlang_version}-#{String.trim(head)}-#{String.trim(hash)}"
 
 # ----------------------------------------------------------------------------------------------- #
 
@@ -87,7 +95,10 @@ Benchee.run(
   formatters: [
     Benchee.Formatters.Console
   ],
-  save: [path: Path.join(["./benchmarks", "#{tag}_#{Protox.Benchmarks.Run.decode_file_name()}"])],
+  save: [
+    path: Path.join(["./benchmarks", "#{tag}_#{Protox.Benchmarks.Run.decode_file_name()}"]),
+    tag: "#{tag}"
+  ],
   time: 10,
   memory_time: 2
 )
@@ -104,7 +115,10 @@ Benchee.run(
   formatters: [
     Benchee.Formatters.Console
   ],
-  save: [path: Path.join(["./benchmarks", "#{tag}_#{Protox.Benchmarks.Run.encode_file_name()}"])],
+  save: [
+    path: Path.join(["./benchmarks", "#{tag}_#{Protox.Benchmarks.Run.encode_file_name()}"]),
+    tag: "#{tag}"
+  ],
   time: 10,
   memory_time: 2
 )
