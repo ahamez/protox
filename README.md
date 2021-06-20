@@ -407,27 +407,27 @@ The protox library has been thoroughly tested using the [conformance checker pro
 
 Here's how to launch the conformance test:
 
-* Get conformance-test-runner [sources](https://github.com/protocolbuffers/protobuf/archive/v3.15.1.tar.gz).
+* Get conformance-test-runner [sources](https://github.com/protocolbuffers/protobuf/archive/v3.17.3.tar.gz).
 * Compile conformance-test-runner ([macOS and Linux only](https://github.com/protocolbuffers/protobuf/tree/master/conformance#portability)):
-  `tar xf v3.15.1.tar.gz && cd protobuf-3.15.1 && ./autogen.sh && ./configure && make -j && cd conformance && make -j`.
-* Run `mix protox.conformance --runner=/path/to/protobuf-3.15.1/conformance/conformance-test-runner`.
+  `tar xf v3.17.3.tar.gz && cd protobuf-3.17.3 && ./autogen.sh && ./configure && make -j && cd conformance && make -j`.
+* Run `mix protox.conformance --runner=/path/to/protobuf-3.17.3/conformance/conformance-test-runner`.
   A report will be generated in a directory `conformance_report`.
   If everything's fine, the following text should be displayed:
 
   ```
   CONFORMANCE TEST BEGIN ====================================
 
-  CONFORMANCE SUITE PASSED: 1302 successes, 711 skipped, 0 expected failures, 0 unexpected failures.
+  CONFORMANCE SUITE PASSED: 1302 successes, 715 skipped, 0 expected failures, 0 unexpected failures.
 
 
   CONFORMANCE TEST BEGIN ====================================
 
-  CONFORMANCE SUITE PASSED: 0 successes, 119 skipped, 0 expected failures, 0 unexpected failures.
+  CONFORMANCE SUITE PASSED: 0 successes, 120 skipped, 0 expected failures, 0 unexpected failures.
   ```
 
 You can alternatively launch these conformance tests with `mix test` by setting the `PROTOBUF_CONFORMANCE_RUNNER` environment variable and including the `conformance` tag:
    ```
-   PROTOBUF_CONFORMANCE_RUNNER=./protobuf-3.15.1/conformance/conformance-test-runner MIX_ENV=test mix test --include conformance
+   PROTOBUF_CONFORMANCE_RUNNER=./protobuf-3.17.3/conformance/conformance-test-runner MIX_ENV=test mix test --include conformance
    ```
 
 ## Types mapping
