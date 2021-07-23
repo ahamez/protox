@@ -5,19 +5,22 @@ defmodule Protox.Protoc do
     do_run([proto_file], ["-I", "#{proto_file |> Path.dirname() |> Path.expand()}"])
   end
 
-  def run([proto_file], path) do
-    do_run([proto_file], ["-I", path])
+  def run([proto_file], paths) do
+    do_run([proto_file], paths_to_protoc_args(paths))
   end
 
   def run(proto_files, nil) do
     do_run(proto_files, ["-I", "#{common_directory_path(proto_files)}"])
   end
 
-  def run(proto_files, path) do
-    do_run(proto_files, ["-I", path])
+  def run(proto_files, paths) do
+    do_run(proto_files, paths_to_protoc_args(paths))
   end
 
   # -- Private
+  defp paths_to_protoc_args(paths) do
+    paths |> Enum.map(&["-I", &1]) |> Enum.concat()
+  end
 
   defp do_run(proto_files, args) do
     outfile_name = "protox_#{random_string()}"

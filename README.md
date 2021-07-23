@@ -210,7 +210,7 @@ It's useful to make the generated code appear as being part of your code structu
 
 ## Specify import path
 
-An import path can be specified using the `path:` option that specifies the directory in which to search for import:
+An import path can be specified using the `path:` or `paths:` option that specifies the directory/ies in which to search for import:
 
 ```elixir
 defmodule Baz do
@@ -220,6 +220,23 @@ defmodule Baz do
       "./defs/prefix/bar/bar.proto",
     ],
     path: "./defs"
+end
+```
+
+or if multiple search paths are needed:
+
+```elixir
+defmodule Baz do
+  use Protox,
+    files: [
+      "./defs1/prefix/foo.proto",
+      "./defs1/prefix/bar.proto",
+      "./defs2/prefix/baz/baz.proto"
+    ],
+    paths: [
+      "./defs1",
+      "./defs2"
+    ]
 end
 ```
 
@@ -384,7 +401,7 @@ It's also possible to generate a file that will contain all code corresponding t
 MIX_ENV=prod mix protox.generate --output-path=/path/to/message.ex --include-path=. test/messages.proto test/samples/proto2.proto
 ```
 
-The `--include-path` option is the same as the option described in section [Specify import path](#specify-import-path).
+The `--include-path` option is the same as the option described in section [Specify import path](#specify-import-path). If multiple include paths are needed, simply add more `--include-path` options.
 
 The generated file will be usable in any project as long as protox is declared in the dependencies (the generated file still needs functions from the protox runtime).
 
