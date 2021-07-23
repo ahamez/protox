@@ -27,14 +27,14 @@ defmodule Mix.Tasks.Protox.Generate do
            OptionParser.parse(args,
              strict: [
                output_path: :string,
-               include_path: :string,
+               include_path: :keep,
                namespace: :string,
                multiple_files: :boolean,
                keep_unknown_fields: :boolean
              ]
            ),
          {:ok, output_path} <- Keyword.fetch(opts, :output_path) do
-      {include_path, opts} = Keyword.pop(opts, :include_path)
+      {include_paths, opts} = Keyword.pop(opts, :include_path)
       {namespace, opts} = Keyword.pop(opts, :namespace)
       {multiple_files, opts} = Keyword.pop(opts, :multiple_files, false)
 
@@ -42,7 +42,7 @@ defmodule Mix.Tasks.Protox.Generate do
       |> Protox.generate_module_code(
         Path.expand(output_path),
         multiple_files,
-        include_path,
+        include_paths,
         namespace,
         opts
       )

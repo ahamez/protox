@@ -38,10 +38,10 @@ defmodule Protox do
     {opts, _} = Code.eval_quoted(opts)
 
     {namespace, opts} = get_namespace(opts)
-    {path, opts} = get_path(opts)
+    {paths, opts} = get_paths(opts)
     {files, opts} = get_files(opts)
 
-    {:ok, file_descriptor_set} = Protox.Protoc.run(files, path)
+    {:ok, file_descriptor_set} = Protox.Protoc.run(files, paths)
     {enums, messages} = Protox.Parse.parse(file_descriptor_set, namespace)
 
     quote do
@@ -54,10 +54,17 @@ defmodule Protox do
     Keyword.pop(opts, :namespace)
   end
 
+  defp get_paths(opts) do
+    case Keyword.pop(opts, :paths) do
+      {nil, opts} -> get_path(opts)
+      {ps, opts} -> {Enum.map(ps, &Path.expand/1), opts}
+    end
+  end
+
   defp get_path(opts) do
     case Keyword.pop(opts, :path) do
       {nil, opts} -> {nil, opts}
-      {p, opts} -> {Path.expand(p), opts}
+      {p, opts} -> {[Path.expand(p)], opts}
     end
   end
 
@@ -84,21 +91,21 @@ defmodule Protox do
         files,
         output_path,
         multiple_files,
-        include_path_or_nil,
+        include_paths_or_nil,
         namespace_or_nil \\ nil,
         opts \\ []
       )
       when is_list(files) and is_binary(output_path) and is_boolean(multiple_files) do
-    path =
-      case include_path_or_nil do
+    paths =
+      case include_paths_or_nil do
         nil -> nil
-        _ -> Path.expand(include_path_or_nil)
+        _ -> Enum.map(include_paths_or_nil, &Path.expand/1)
       end
 
     {:ok, file_descriptor_set} =
       files
       |> Enum.map(&Path.expand/1)
-      |> Protox.Protoc.run(path)
+      |> Protox.Protoc.run(paths)
 
     {enums, messages} = Protox.Parse.parse(file_descriptor_set, namespace_or_nil)
 
