@@ -69,7 +69,7 @@ Add `:protox` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
-  [{:protox, "~> 1.4"}]
+  [{:protox, "~> 1.5"}]
 end
 ```
 
@@ -210,7 +210,7 @@ It's useful to make the generated code appear as being part of your code structu
 
 ## Specify import path
 
-An import path can be specified using the `path:` or `paths:` option that specifies the directory/ies in which to search for import:
+An import path can be specified using the `path:` or `paths:` options that respectively specify the directory or directories in which to search for imports:
 
 ```elixir
 defmodule Baz do
@@ -223,7 +223,7 @@ defmodule Baz do
 end
 ```
 
-or if multiple search paths are needed:
+If multiple search paths are needed:
 
 ```elixir
 defmodule Baz do

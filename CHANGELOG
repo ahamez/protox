@@ -1,3 +1,6 @@
+# 1.5.0
+  - Allow multiple import paths (thanks to https://github.com/cheng81)
+
 * 1.4.0
   - Add support of proto3 optional fields (thanks to https://github.com/sneako)
 
