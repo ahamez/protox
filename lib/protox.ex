@@ -91,15 +91,15 @@ defmodule Protox do
         files,
         output_path,
         multiple_files,
-        include_paths_or_nil,
+        include_paths,
         namespace_or_nil \\ nil,
         opts \\ []
       )
       when is_list(files) and is_binary(output_path) and is_boolean(multiple_files) do
     paths =
-      case include_paths_or_nil do
-        nil -> nil
-        _ -> Enum.map(include_paths_or_nil, &Path.expand/1)
+      case include_paths do
+        [] -> nil
+        _ -> Enum.map(include_paths, &Path.expand/1)
       end
 
     {:ok, file_descriptor_set} =
