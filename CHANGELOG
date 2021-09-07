@@ -1,3 +1,6 @@
+# 1.5.1
+  - Fix handling of multiple import paths (thanks to https://github.com/zolakeith)
+
 # 1.5.0
   - Allow multiple import paths (thanks to https://github.com/cheng81)
 
