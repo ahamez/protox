@@ -34,7 +34,7 @@ defmodule Mix.Tasks.Protox.Generate do
              ]
            ),
          {:ok, output_path} <- Keyword.fetch(opts, :output_path) do
-      {include_paths, opts} = Keyword.pop(opts, :include_path)
+      {include_paths, opts} = Keyword.pop_values(opts, :include_path)
       {namespace, opts} = Keyword.pop(opts, :namespace)
       {multiple_files, opts} = Keyword.pop(opts, :multiple_files, false)
 
