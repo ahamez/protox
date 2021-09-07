@@ -34,7 +34,7 @@ defmodule Mix.Tasks.Protox.Generate do
              ]
            ),
          {:ok, output_path} <- Keyword.fetch(opts, :output_path) do
-      {include_paths, opts} = Keyword.pop_values(opts, :include_path)
+      {include_paths, opts} = pop_values(opts, :include_path)
       {namespace, opts} = Keyword.pop(opts, :namespace)
       {multiple_files, opts} = Keyword.pop(opts, :multiple_files, false)
 
@@ -56,5 +56,16 @@ defmodule Mix.Tasks.Protox.Generate do
 
   defp generate_file(%Protox.FileContent{name: file_name, content: content}) do
     File.write!(file_name, content)
+  end
+
+  # Custom implementation as Keyword.pop_values/2 is only available since Elixir 1.10
+  defp pop_values(opts, key) do
+    {values, new_opts} =
+      Enum.reduce(opts, {[], []}, fn
+        {^key, value}, {values, new_opts} -> {[value | values], new_opts}
+        {key, value}, {values, new_opts} -> {values, [{key, value} | new_opts]}
+      end)
+
+    {Enum.reverse(values), Enum.reverse(new_opts)}
   end
 end
