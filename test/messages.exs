@@ -23,9 +23,21 @@ defmodule Defs do
         Protobuf2,
         :proto2,
         [
-          {1, :optional, :a, {:default, 0}, :uint64},
-          {25, :optional, :s, {:default, :TWO}, {:enum, F}},
-          {26, :optional, :t, {:default, :ONE}, {:enum, F}}
+          %Protox.Field{tag: 1, label: :optional, name: :a, kind: {:default, 0}, type: :uint64},
+          %Protox.Field{
+            tag: 25,
+            label: :optional,
+            name: :s,
+            kind: {:default, :TWO},
+            type: {:enum, F}
+          },
+          %Protox.Field{
+            tag: 26,
+            label: :optional,
+            name: :t,
+            kind: {:default, :ONE},
+            type: {:enum, F}
+          }
         ]
       },
       {
@@ -33,65 +45,191 @@ defmodule Defs do
         :proto3,
         [
           # tag     label    name     kind           type
-          {1, :optional, :a, {:default, 0}, :int32},
-          {2, :optional, :b, {:default, ""}, :string},
-          {6, :optional, :c, {:default, 0}, :int64},
-          {7, :optional, :d, {:default, 0}, :uint32},
-          {8, :optional, :e, {:default, 0}, :uint64},
-          {9, :optional, :f, {:default, 0}, :sint64},
-          {13, :repeated, :g, :packed, :fixed64},
-          {14, :repeated, :h, :packed, :sfixed32},
-          {15, :repeated, :i, :packed, :double},
-          {16, :repeated, :j, :unpacked, :int32},
-          {17, :optional, :k, {:default, 0}, :fixed32},
-          {18, :optional, :l, {:default, 0}, :sfixed64},
-          {19, :optional, :m, {:default, <<>>}, :bytes},
-          {20, :repeated, :n, :packed, :bool},
-          {21, :repeated, :o, :packed, {:enum, E}},
-          {22, :repeated, :p, :unpacked, :bool},
-          {23, :repeated, :q, :unpacked, {:enum, E}},
-          {24, :optional, :r, {:default, :FOO}, {:enum, E}},
-          {27, :repeated, :u, :packed, :uint32},
-          {28, :repeated, :w, :packed, :sint32},
-          {29, :repeated, :x, :packed, :int64},
-          {30, :repeated, :y, :packed, :uint64},
-          {10_001, :optional, :z, {:default, 0}, :sint32},
-          {10_002, :optional, :zz, {:default, 0}, :sint64},
-          {12_345, nil, :map1, :map, {:sfixed64, :bytes}},
-          {12_346, nil, :map2, :map, {:sfixed64, :bytes}}
+          %Protox.Field{tag: 1, label: :optional, name: :a, kind: {:default, 0}, type: :int32},
+          %Protox.Field{tag: 2, label: :optional, name: :b, kind: {:default, ""}, type: :string},
+          %Protox.Field{tag: 6, label: :optional, name: :c, kind: {:default, 0}, type: :int64},
+          %Protox.Field{tag: 7, label: :optional, name: :d, kind: {:default, 0}, type: :uint32},
+          %Protox.Field{tag: 8, label: :optional, name: :e, kind: {:default, 0}, type: :uint64},
+          %Protox.Field{tag: 9, label: :optional, name: :f, kind: {:default, 0}, type: :sint64},
+          %Protox.Field{tag: 13, label: :repeated, name: :g, kind: :packed, type: :fixed64},
+          %Protox.Field{tag: 14, label: :repeated, name: :h, kind: :packed, type: :sfixed32},
+          %Protox.Field{tag: 15, label: :repeated, name: :i, kind: :packed, type: :double},
+          %Protox.Field{tag: 16, label: :repeated, name: :j, kind: :unpacked, type: :int32},
+          %Protox.Field{tag: 17, label: :optional, name: :k, kind: {:default, 0}, type: :fixed32},
+          %Protox.Field{
+            tag: 18,
+            label: :optional,
+            name: :l,
+            kind: {:default, 0},
+            type: :sfixed64
+          },
+          %Protox.Field{
+            tag: 19,
+            label: :optional,
+            name: :m,
+            kind: {:default, <<>>},
+            type: :bytes
+          },
+          %Protox.Field{tag: 20, label: :repeated, name: :n, kind: :packed, type: :bool},
+          %Protox.Field{tag: 21, label: :repeated, name: :o, kind: :packed, type: {:enum, E}},
+          %Protox.Field{tag: 22, label: :repeated, name: :p, kind: :unpacked, type: :bool},
+          %Protox.Field{tag: 23, label: :repeated, name: :q, kind: :unpacked, type: {:enum, E}},
+          %Protox.Field{
+            tag: 24,
+            label: :optional,
+            name: :r,
+            kind: {:default, :FOO},
+            type: {:enum, E}
+          },
+          %Protox.Field{tag: 27, label: :repeated, name: :u, kind: :packed, type: :uint32},
+          %Protox.Field{tag: 28, label: :repeated, name: :w, kind: :packed, type: :sint32},
+          %Protox.Field{tag: 29, label: :repeated, name: :x, kind: :packed, type: :int64},
+          %Protox.Field{tag: 30, label: :repeated, name: :y, kind: :packed, type: :uint64},
+          %Protox.Field{
+            tag: 10_001,
+            label: :optional,
+            name: :z,
+            kind: {:default, 0},
+            type: :sint32
+          },
+          %Protox.Field{
+            tag: 10_002,
+            label: :optional,
+            name: :zz,
+            kind: {:default, 0},
+            type: :sint64
+          },
+          %Protox.Field{
+            tag: 12_345,
+            label: nil,
+            name: :map1,
+            kind: :map,
+            type: {:sfixed64, :bytes}
+          },
+          %Protox.Field{
+            tag: 12_346,
+            label: nil,
+            name: :map2,
+            kind: :map,
+            type: {:sfixed64, :bytes}
+          }
         ]
       },
       {
         Msg,
         :proto3,
         [
-          {27, :repeated, :msg_a, :packed, :sint64},
-          {28, :repeated, :msg_b, :packed, :fixed32},
-          {29, :repeated, :msg_c, :packed, :sfixed64},
-          {1, :optional, :msg_d, {:default, :FOO}, {:enum, E}},
-          {2, :optional, :msg_e, {:default, false}, :bool},
-          {3, :optional, :msg_f, {:default, nil}, {:message, Sub}},
-          {4, :repeated, :msg_g, :packed, :int32},
-          {5, :optional, :msg_h, {:default, 0.0}, :double},
-          {6, :repeated, :msg_i, :packed, :float},
-          {7, :repeated, :msg_j, :unpacked, {:message, Sub}},
-          {8, nil, :msg_k, :map, {:int32, :string}},
-          {9, nil, :msg_l, :map, {:string, :double}},
-          {10, :optional, :msg_n, {:oneof, :msg_m}, :string},
-          {11, :optional, :msg_o, {:oneof, :msg_m}, {:message, Sub}},
-          {12, nil, :msg_p, :map, {:int32, {:enum, E}}},
-          {13, :optional, :msg_q, {:default, nil}, {:message, Protobuf2}},
-          {118, :optional, :msg_oneof_double, {:oneof, :msg_oneof_field}, :double}
+          %Protox.Field{tag: 27, label: :repeated, name: :msg_a, kind: :packed, type: :sint64},
+          %Protox.Field{tag: 28, label: :repeated, name: :msg_b, kind: :packed, type: :fixed32},
+          %Protox.Field{tag: 29, label: :repeated, name: :msg_c, kind: :packed, type: :sfixed64},
+          %Protox.Field{
+            tag: 1,
+            label: :optional,
+            name: :msg_d,
+            kind: {:default, :FOO},
+            type: {:enum, E}
+          },
+          %Protox.Field{
+            tag: 2,
+            label: :optional,
+            name: :msg_e,
+            kind: {:default, false},
+            type: :bool
+          },
+          %Protox.Field{
+            tag: 3,
+            label: :optional,
+            name: :msg_f,
+            kind: {:default, nil},
+            type: {:message, Sub}
+          },
+          %Protox.Field{tag: 4, label: :repeated, name: :msg_g, kind: :packed, type: :int32},
+          %Protox.Field{
+            tag: 5,
+            label: :optional,
+            name: :msg_h,
+            kind: {:default, 0.0},
+            type: :double
+          },
+          %Protox.Field{tag: 6, label: :repeated, name: :msg_i, kind: :packed, type: :float},
+          %Protox.Field{
+            tag: 7,
+            label: :repeated,
+            name: :msg_j,
+            kind: :unpacked,
+            type: {:message, Sub}
+          },
+          %Protox.Field{tag: 8, label: nil, name: :msg_k, kind: :map, type: {:int32, :string}},
+          %Protox.Field{tag: 9, label: nil, name: :msg_l, kind: :map, type: {:string, :double}},
+          %Protox.Field{
+            tag: 10,
+            label: :optional,
+            name: :msg_n,
+            kind: {:oneof, :msg_m},
+            type: :string
+          },
+          %Protox.Field{
+            tag: 11,
+            label: :optional,
+            name: :msg_o,
+            kind: {:oneof, :msg_m},
+            type: {:message, Sub}
+          },
+          %Protox.Field{
+            tag: 12,
+            label: nil,
+            name: :msg_p,
+            kind: :map,
+            type: {:int32, {:enum, E}}
+          },
+          %Protox.Field{
+            tag: 13,
+            label: :optional,
+            name: :msg_q,
+            kind: {:default, nil},
+            type: {:message, Protobuf2}
+          },
+          %Protox.Field{
+            tag: 118,
+            label: :optional,
+            name: :msg_oneof_double,
+            kind: {:oneof, :msg_oneof_field},
+            type: :double
+          }
         ]
       },
       {
         Upper,
         :proto3,
         [
-          {1, :optional, :msg, {:default, nil}, {:message, Msg}},
-          {2, nil, :msg_map, :map, {:string, {:message, Msg}}},
-          {3, :optional, :empty, {:default, nil}, {:message, Empty}},
-          {4, :optional, :req, {:default, nil}, {:message, Required}}
+          %Protox.Field{
+            tag: 1,
+            label: :optional,
+            name: :msg,
+            kind: {:default, nil},
+            type: {:message, Msg}
+          },
+          %Protox.Field{
+            tag: 2,
+            label: nil,
+            name: :msg_map,
+            kind: :map,
+            type: {:string, {:message, Msg}}
+          },
+          %Protox.Field{
+            tag: 3,
+            label: :optional,
+            name: :empty,
+            kind: {:default, nil},
+            type: {:message, Empty}
+          },
+          %Protox.Field{
+            tag: 4,
+            label: :optional,
+            name: :req,
+            kind: {:default, nil},
+            type: {:message, Required}
+          }
         ]
       },
       {
@@ -103,38 +241,56 @@ defmodule Defs do
         Required,
         :proto2,
         [
-          {1, :required, :a, {:default, 0}, :int32},
-          {2, :optional, :b, {:default, 0}, :int32}
+          %Protox.Field{tag: 1, label: :required, name: :a, kind: {:default, 0}, type: :int32},
+          %Protox.Field{tag: 2, label: :optional, name: :b, kind: {:default, 0}, type: :int32}
         ]
       },
       {
         NoNameClash,
         :proto3,
         [
-          {1, :optional, :__uf__, {:default, 0}, :int32}
+          %Protox.Field{
+            tag: 1,
+            label: :optional,
+            name: :__uf__,
+            kind: {:default, 0},
+            type: :int32
+          }
         ]
       },
       {
         NestedMessage,
         :proto3,
         [
-          {1, :none, :a, {:default, 0}, :int32},
-          {2, :none, :corecursive, {:default, nil}, {:message, TestAllTypesProto3}}
+          %Protox.Field{tag: 1, label: :none, name: :a, kind: {:default, 0}, type: :int32},
+          %Protox.Field{
+            tag: 2,
+            label: :none,
+            name: :corecursive,
+            kind: {:default, nil},
+            type: {:message, TestAllTypesProto3}
+          }
         ]
       },
       {
         TestAllTypesProto3,
         :proto3,
         [
-          {112, :none, :oneof_nested_message, {:oneof, :oneof_field}, {:message, NestedMessage}}
+          %Protox.Field{
+            tag: 112,
+            label: :none,
+            name: :oneof_nested_message,
+            kind: {:oneof, :oneof_field},
+            type: {:message, NestedMessage}
+          }
         ]
       },
       {
         FloatPrecision,
         :proto3,
         [
-          {1, :optional, :a, {:default, 0.0}, :double},
-          {2, :optional, :b, {:default, 0.0}, :float}
+          %Protox.Field{tag: 1, label: :optional, name: :a, kind: {:default, 0.0}, type: :double},
+          %Protox.Field{tag: 2, label: :optional, name: :b, kind: {:default, 0.0}, type: :float}
         ]
       }
     ]

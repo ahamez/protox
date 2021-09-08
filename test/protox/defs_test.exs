@@ -1,81 +1,88 @@
 defmodule Protox.DefsTest do
   use ExUnit.Case
 
+  alias Protox.Field
+
   @defs [
-    {8, nil, :msg_k, :map, {:int32, :string}},
-    {9, nil, :msg_l, :map, {:string, :double}},
-    {27, :repeated, :msg_a, :packed, :sint64},
-    {28, :repeated, :msg_b, :packed, :fixed32},
-    {29, :repeated, :msg_c, :packed, :sfixed64},
-    {1, :optional, :msg_d, {:default, :FOO}, {:enum, E}},
-    {2, :optional, :msg_e, {:default, false}, :bool},
-    {3, :optional, :msg_f, {:default, nil}, {:message, Sub}},
-    {4, :repeated, :msg_g, :packed, :int32},
-    {5, :optional, :msg_h, {:default, 0.0}, :double},
-    {6, :repeated, :msg_i, :packed, :float},
-    {7, :repeated, :msg_j, :unpacked, {:message, Sub}},
-    {10, :optional, :msg_n, {:oneof, :msg_m}, :string},
-    {11, :optional, :msg_o, {:oneof, :msg_m}, {:message, Sub}},
-    {12, nil, :msg_p, :map, {:int32, {:enum, E}}},
-    {13, :optional, :msg_q, {:default, nil}, {:message, Protobuf2}},
-    {118, :optional, :msg_oneof_double, {:oneof, :msg_oneof_field}, :double}
+    %Field{tag: 8, label: nil, name: :msg_k, kind: :map, type: {:int32, :string}},
+    %Field{tag: 9, label: nil, name: :msg_l, kind: :map, type: {:string, :double}},
+    %Field{tag: 27, label: :repeated, name: :msg_a, kind: :packed, type: :sint64},
+    %Field{tag: 28, label: :repeated, name: :msg_b, kind: :packed, type: :fixed32},
+    %Field{tag: 29, label: :repeated, name: :msg_c, kind: :packed, type: :sfixed64},
+    %Field{tag: 1, label: :optional, name: :msg_d, kind: {:default, :FOO}, type: {:enum, E}},
+    %Field{tag: 2, label: :optional, name: :msg_e, kind: {:default, false}, type: :bool},
+    %Field{tag: 3, label: :optional, name: :msg_f, kind: {:default, nil}, type: {:message, Sub}},
+    %Field{tag: 4, label: :repeated, name: :msg_g, kind: :packed, type: :int32},
+    %Field{tag: 5, label: :optional, name: :msg_h, kind: {:default, 0.0}, type: :double},
+    %Field{tag: 6, label: :repeated, name: :msg_i, kind: :packed, type: :float},
+    %Field{tag: 7, label: :repeated, name: :msg_j, kind: :unpacked, type: {:message, Sub}},
+    %Field{tag: 10, label: :optional, name: :msg_n, kind: {:oneof, :msg_m}, type: :string},
+    %Field{
+      tag: 11,
+      label: :optional,
+      name: :msg_o,
+      kind: {:oneof, :msg_m},
+      type: {:message, Sub}
+    },
+    %Field{tag: 12, label: nil, name: :msg_p, kind: :map, type: {:int32, {:enum, E}}},
+    %Field{
+      tag: 13,
+      label: :optional,
+      name: :msg_q,
+      kind: {:default, nil},
+      type: {:message, Protobuf2}
+    },
+    %Field{
+      tag: 118,
+      label: :optional,
+      name: :msg_oneof_double,
+      kind: {:oneof, :msg_oneof_field},
+      type: :double
+    }
   ]
 
   test "split_oneofs" do
-    {oneofs, fields} = Protox.Defs.split_oneofs(@defs)
+    {oneofs_fields, other_fields} = Protox.Defs.split_oneofs(@defs)
 
-    assert oneofs == [
+    assert oneofs_fields == [
              msg_m: [
-               {10, :optional, :msg_n, {:oneof, :msg_m}, :string},
-               {11, :optional, :msg_o, {:oneof, :msg_m}, {:message, Sub}}
+               %Field{
+                 tag: 10,
+                 label: :optional,
+                 name: :msg_n,
+                 kind: {:oneof, :msg_m},
+                 type: :string
+               },
+               %Field{
+                 tag: 11,
+                 label: :optional,
+                 name: :msg_o,
+                 kind: {:oneof, :msg_m},
+                 type: {:message, Sub}
+               }
              ],
              msg_oneof_field: [
-               {118, :optional, :msg_oneof_double, {:oneof, :msg_oneof_field}, :double}
+               %Field{
+                 tag: 118,
+                 label: :optional,
+                 name: :msg_oneof_double,
+                 kind: {:oneof, :msg_oneof_field},
+                 type: :double
+               }
              ]
            ]
 
-    assert fields == [
-             {8, nil, :msg_k, :map, {:int32, :string}},
-             {9, nil, :msg_l, :map, {:string, :double}},
-             {27, :repeated, :msg_a, :packed, :sint64},
-             {28, :repeated, :msg_b, :packed, :fixed32},
-             {29, :repeated, :msg_c, :packed, :sfixed64},
-             {1, :optional, :msg_d, {:default, :FOO}, {:enum, E}},
-             {2, :optional, :msg_e, {:default, false}, :bool},
-             {3, :optional, :msg_f, {:default, nil}, {:message, Sub}},
-             {4, :repeated, :msg_g, :packed, :int32},
-             {5, :optional, :msg_h, {:default, 0.0}, :double},
-             {6, :repeated, :msg_i, :packed, :float},
-             {7, :repeated, :msg_j, :unpacked, {:message, Sub}},
-             {12, nil, :msg_p, :map, {:int32, {:enum, E}}},
-             {13, :optional, :msg_q, {:default, nil}, {:message, Protobuf2}}
-           ]
+    other_fields_tags = [8, 9, 27, 28, 29, 1, 2, 3, 4, 5, 6, 7, 12, 13]
+    Enum.each(other_fields, fn %Field{} = field -> assert field.tag in other_fields_tags end)
   end
 
   test "split_maps" do
-    {maps, fields} = Protox.Defs.split_maps(@defs)
+    {maps_fields, other_fields} = Protox.Defs.split_maps(@defs)
 
-    assert maps == [
-             {8, nil, :msg_k, :map, {:int32, :string}},
-             {9, nil, :msg_l, :map, {:string, :double}},
-             {12, nil, :msg_p, :map, {:int32, {:enum, E}}}
-           ]
+    maps_fields_tags = [8, 9, 12]
+    other_fields_tags = [27, 28, 29, 1, 2, 3, 4, 5, 6, 7, 10, 11, 13, 118]
 
-    assert fields == [
-             {27, :repeated, :msg_a, :packed, :sint64},
-             {28, :repeated, :msg_b, :packed, :fixed32},
-             {29, :repeated, :msg_c, :packed, :sfixed64},
-             {1, :optional, :msg_d, {:default, :FOO}, {:enum, E}},
-             {2, :optional, :msg_e, {:default, false}, :bool},
-             {3, :optional, :msg_f, {:default, nil}, {:message, Sub}},
-             {4, :repeated, :msg_g, :packed, :int32},
-             {5, :optional, :msg_h, {:default, 0.0}, :double},
-             {6, :repeated, :msg_i, :packed, :float},
-             {7, :repeated, :msg_j, :unpacked, {:message, Sub}},
-             {10, :optional, :msg_n, {:oneof, :msg_m}, :string},
-             {11, :optional, :msg_o, {:oneof, :msg_m}, {:message, Sub}},
-             {13, :optional, :msg_q, {:default, nil}, {:message, Protobuf2}},
-             {118, :optional, :msg_oneof_double, {:oneof, :msg_oneof_field}, :double}
-           ]
+    Enum.each(maps_fields, fn %Field{} = field -> assert field.tag in maps_fields_tags end)
+    Enum.each(other_fields, fn %Field{} = field -> assert field.tag in other_fields_tags end)
   end
 end

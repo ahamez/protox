@@ -3,6 +3,8 @@ defmodule Protox.Parse do
   # Creates definitions from a protobuf encoded description (Protox.Google.Protobuf.FileDescriptorSet)
   # of a set of .proto files. This description is produced by `protoc`.
 
+  require Protox.Descriptor
+
   alias Protox.Field
 
   alias Protox.Google.Protobuf.{
@@ -32,10 +34,12 @@ defmodule Protox.Parse do
           syntax,
           Enum.map(
             fields,
-            &(&1
+            fn %Field{} = field ->
+              field
               |> resolve_types(enums, messages)
               |> default_value(enums)
-              |> concat_names(namespace))
+              |> concat_names(namespace)
+            end
           )
         }
       end
@@ -51,55 +55,59 @@ defmodule Protox.Parse do
     {processsed_enums, processed_messages}
   end
 
-  defp resolve_types({tag, label, name, kind, {:to_resolve, tname}}, enums, _) do
+  defp resolve_types(%Field{type: {:to_resolve, tname}} = field, enums, _) do
     if Map.has_key?(enums, tname) do
-      {tag, label, name, kind, {:enum, tname}}
+      %Field{field | type: {:enum, tname}}
     else
-      {tag, label, name, kind, {:message, tname}}
+      %Field{field | type: {:message, tname}}
     end
   end
 
-  defp resolve_types({tag, label, name, :map, {key_type, {:to_resolve, tname}}}, enums, _) do
+  defp resolve_types(%Field{kind: :map, type: {key_type, {:to_resolve, tname}}} = field, enums, _) do
     if Map.has_key?(enums, tname) do
-      {tag, label, name, :map, {key_type, {:enum, tname}}}
+      %Field{field | type: {key_type, {:enum, tname}}}
     else
-      {tag, label, name, :map, {key_type, {:message, tname}}}
+      %Field{field | type: {key_type, {:message, tname}}}
     end
   end
 
-  defp resolve_types(field, _, _) do
+  defp resolve_types(%Field{} = field, _, _) do
     field
   end
 
-  defp default_value({tag, label, name, {:default, :default_to_resolve}, {:enum, ename}}, enums) do
+  defp default_value(
+         %Field{kind: {:default, :default_to_resolve}, type: {:enum, ename}} = field,
+         enums
+       ) do
     # proto2: the first entry is always the default value
     # proto3: the entry with value 0 is the default value, and protoc mandates the first entry
     # to have the value 0
     [{_, first_is_default} | _] = Map.fetch!(enums, ename)
-    {tag, label, name, {:default, first_is_default}, {:enum, ename}}
+
+    %Field{field | kind: {:default, first_is_default}, type: {:enum, ename}}
   end
 
-  defp default_value(field, _) do
+  defp default_value(%Field{} = field, _) do
     field
   end
 
-  defp concat_names({tag, label, name, kind, {:enum, ename}}, namespace) do
-    {tag, label, name, kind, {:enum, Module.concat([namespace | ename])}}
+  defp concat_names(%Field{type: {:enum, ename}} = field, namespace) do
+    %Field{field | type: {:enum, Module.concat([namespace | ename])}}
   end
 
-  defp concat_names({tag, label, name, kind, {:message, mname}}, namespace) do
-    {tag, label, name, kind, {:message, Module.concat([namespace | mname])}}
+  defp concat_names(%Field{type: {:message, mname}} = field, namespace) do
+    %Field{field | type: {:message, Module.concat([namespace | mname])}}
   end
 
-  defp concat_names({tag, label, name, :map, {key_type, {:message, mname}}}, namespace) do
-    {tag, label, name, :map, {key_type, {:message, Module.concat([namespace | mname])}}}
+  defp concat_names(%Field{kind: :map, type: {key_type, {:message, mname}}} = field, namespace) do
+    %Field{field | type: {key_type, {:message, Module.concat([namespace | mname])}}}
   end
 
-  defp concat_names({tag, label, name, :map, {key_type, {:enum, ename}}}, namespace) do
-    {tag, label, name, :map, {key_type, {:enum, Module.concat([namespace | ename])}}}
+  defp concat_names(%Field{type: {key_type, {:enum, ename}}} = field, namespace) do
+    %Field{field | type: {key_type, {:enum, Module.concat([namespace | ename])}}}
   end
 
-  defp concat_names(field, _) do
+  defp concat_names(%Field{} = field, _) do
     field
   end
 

@@ -1,5 +1,6 @@
 defmodule Protox.DefineMessage do
   @moduledoc false
+
   alias Protox.Field
 
   def define(messages, opts \\ []) do
@@ -7,6 +8,7 @@ defmodule Protox.DefineMessage do
 
     for {msg_name, syntax, fields} <- messages do
       fields = Enum.sort(fields, &(&1.tag < &2.tag))
+
       unknown_fields = make_unknown_fields(:__uf__, fields)
       unknown_fields_funs = make_unknown_fields_funs(keep_unknown_fields, unknown_fields)
       struct_fields = make_struct_fields(fields, syntax, unknown_fields, keep_unknown_fields)
@@ -85,12 +87,12 @@ defmodule Protox.DefineMessage do
 
     ast =
       Enum.map(fields, fn
-        {_, _, name, {:default, default}, _} ->
+        %Field{name: name, kind: {:default, default}} ->
           quote do
             def default(unquote(name)), do: {:ok, unquote(default)}
           end
 
-        {_, _, name, _, _} ->
+        %Field{name: name} ->
           quote do
             def default(unquote(name)), do: {:error, :no_default_value}
           end

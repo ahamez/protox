@@ -2,6 +2,8 @@ defmodule Protox.DefineDecoder do
   @moduledoc false
   # Internal. Generates the decoder of a message.
 
+  alias Protox.Field
+
   use Protox.{
     Float,
     WireTypes
@@ -142,7 +144,7 @@ defmodule Protox.DefineDecoder do
     # Fragment to parse known fields.
     known_tags_case =
       fields
-      |> Enum.map(fn field ->
+      |> Enum.map(fn %Field{} = field ->
         single = make_single_case(msg_var, keep_set_fields, field)
         delimited = make_delimited_case(msg_var, keep_set_fields, single, field)
 
@@ -175,35 +177,35 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_single_case(_msg_var, _keep_set_fields, {_tag, _label, _name, _kind, {:message, _}}),
+  defp make_single_case(_msg_var, _keep_set_fields, %Field{type: {:message, _}}),
     do: quote(do: [])
 
-  defp make_single_case(_msg_var, _keep_set_fields, {_tag, _label, _name, _kind, :string}),
+  defp make_single_case(_msg_var, _keep_set_fields, %Field{type: :string}),
     do: quote(do: [])
 
-  defp make_single_case(_msg_var, _keep_set_fields, {_tag, _label, _name, _kind, :bytes}),
+  defp make_single_case(_msg_var, _keep_set_fields, %Field{type: :bytes}),
     do: quote(do: [])
 
-  defp make_single_case(_msg_var, _keep_set_fields, {_tag, _label, _name, _kind, {x, _}})
+  defp make_single_case(_msg_var, _keep_set_fields, %Field{type: {x, _}})
        when x != :enum,
        do: quote(do: [])
 
-  defp make_single_case(msg_var, keep_set_fields, field = {tag, _label, name, _kind, type}) do
+  defp make_single_case(msg_var, keep_set_fields, %Field{} = field) do
     bytes_var = quote do: bytes
     field_var = quote do: field
     value_var = quote do: value
-    parse_single = make_parse_single(bytes_var, type)
+    parse_single = make_parse_single(bytes_var, field.type)
     update_field = make_update_field(field, msg_var, value_var)
 
     # No need to maintain a list of set fields for proto3
     case_return =
       case keep_set_fields do
-        true -> quote do: {[unquote(name) | set_fields], [unquote(field_var)], rest}
+        true -> quote do: {[unquote(field.name) | set_fields], [unquote(field_var)], rest}
         false -> quote do: {[unquote(field_var)], rest}
       end
 
     quote do
-      {unquote(tag), _, unquote(bytes_var)} ->
+      {unquote(field.tag), _, unquote(bytes_var)} ->
         {value, rest} = unquote(parse_single)
         unquote(field_var) = unquote(update_field)
         unquote(case_return)
@@ -214,22 +216,16 @@ defmodule Protox.DefineDecoder do
          msg_var,
          keep_set_fields,
          single,
-         field = {
-           _tag,
-           _label,
-           _name,
-           _kind,
-           {:message, _}
-         }
+         field = %Field{type: {:message, _}}
        ) do
     make_delimited_case_impl(msg_var, keep_set_fields, single, field)
   end
 
-  defp make_delimited_case(msg_var, keep_set_fields, single, field = {_, _, _, _, :bytes}) do
+  defp make_delimited_case(msg_var, keep_set_fields, single, %Field{type: :bytes} = field) do
     make_delimited_case_impl(msg_var, keep_set_fields, single, field)
   end
 
-  defp make_delimited_case(msg_var, keep_set_fields, single, field = {_, _, _, _, :string}) do
+  defp make_delimited_case(msg_var, keep_set_fields, single, %Field{type: :string} = field) do
     make_delimited_case_impl(msg_var, keep_set_fields, single, field)
   end
 
@@ -237,12 +233,12 @@ defmodule Protox.DefineDecoder do
          _msg_var,
          _keep_set_fields,
          _single,
-         {_tag, _label, _name, {:default, _}, _}
+         %Field{kind: {:default, _}}
        ) do
     []
   end
 
-  defp make_delimited_case(msg_var, keep_set_fields, single, field) do
+  defp make_delimited_case(msg_var, keep_set_fields, single, %Field{} = field) do
     make_delimited_case_impl(msg_var, keep_set_fields, single, field)
   end
 
@@ -250,7 +246,7 @@ defmodule Protox.DefineDecoder do
          msg_var,
          keep_set_fields,
          single,
-         field = {tag, _label, name, _kind, type}
+         field = %Field{tag: tag, name: name, type: type}
        ) do
     bytes_var = quote do: bytes
     field_var = quote do: field
@@ -284,49 +280,60 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_update_field({_, _, name, :map, _}, msg_var, value_var) do
+  defp make_update_field(%Field{kind: :map} = field, msg_var, value_var) do
     quote do
       {entry_key, entry_value} = unquote(value_var)
-      {unquote(name), Map.put(unquote(msg_var).unquote(name), entry_key, entry_value)}
+      {unquote(field.name), Map.put(unquote(msg_var).unquote(field.name), entry_key, entry_value)}
     end
   end
 
-  defp make_update_field({_, _, name, {:oneof, parent_field}, {:message, _}}, msg_var, value_var) do
+  defp make_update_field(
+         %Field{kind: {:oneof, parent_field}, type: {:message, _}} = field,
+         msg_var,
+         value_var
+       ) do
     quote do
       case unquote(msg_var).unquote(parent_field) do
-        {unquote(name), previous_value} ->
+        {unquote(field.name), previous_value} ->
           {unquote(parent_field),
-           {unquote(name), Protox.Message.merge(previous_value, unquote(value_var))}}
+           {unquote(field.name), Protox.Message.merge(previous_value, unquote(value_var))}}
 
         _ ->
-          {unquote(parent_field), {unquote(name), unquote(value_var)}}
+          {unquote(parent_field), {unquote(field.name), unquote(value_var)}}
       end
     end
   end
 
-  defp make_update_field({_, label, name, {:oneof, parent_field}, _}, _msg_var, value_var) do
-    case label do
+  defp make_update_field(%Field{kind: {:oneof, parent_field}} = field, _msg_var, value_var) do
+    case field.label do
       :proto3_optional ->
-        quote(do: {unquote(name), unquote(value_var)})
+        quote(do: {unquote(field.name), unquote(value_var)})
 
       _ ->
-        quote(do: {unquote(parent_field), {unquote(name), unquote(value_var)}})
+        quote(do: {unquote(parent_field), {unquote(field.name), unquote(value_var)}})
     end
   end
 
-  defp make_update_field({_, _, name, {:default, _}, {:message, _}}, msg_var, value_var) do
+  defp make_update_field(
+         %Field{kind: {:default, _}, type: {:message, _}} = field,
+         msg_var,
+         value_var
+       ) do
     quote do
-      {unquote(name), Protox.Message.merge(unquote(msg_var).unquote(name), unquote(value_var))}
+      {
+        unquote(field.name),
+        Protox.Message.merge(unquote(msg_var).unquote(field.name), unquote(value_var))
+      }
     end
   end
 
-  defp make_update_field({_, _, name, {:default, _}, _}, _msg_var, value_var) do
-    quote(do: {unquote(name), unquote(value_var)})
+  defp make_update_field(%Field{kind: {:default, _}} = field, _msg_var, value_var) do
+    quote(do: {unquote(field.name), unquote(value_var)})
   end
 
-  defp make_update_field({_, _, name, _kind, _type}, msg_var, value_var) do
+  defp make_update_field(%Field{} = field, msg_var, value_var) do
     quote do
-      {unquote(name), unquote(msg_var).unquote(name) ++ List.wrap(unquote(value_var))}
+      {unquote(field.name), unquote(msg_var).unquote(field.name) ++ List.wrap(unquote(value_var))}
     end
   end
 
@@ -486,7 +493,10 @@ defmodule Protox.DefineDecoder do
     {maps, _} = Protox.Defs.split_maps(fields)
 
     maps
-    |> Enum.map(fn {_, _, _, :map, {key_type, value_type}} ->
+    |> Enum.map(fn %Field{kind: :map} = field ->
+      key_type = elem(field.type, 0)
+      value_type = elem(field.type, 1)
+
       bytes_var = quote do: bytes
       rest_var = quote do: rest
       fun_name = make_map_decode_fun_name(key_type, value_type)
