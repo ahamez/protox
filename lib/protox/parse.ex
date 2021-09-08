@@ -13,23 +13,23 @@ defmodule Protox.Parse do
   }
 
   @spec parse(binary, atom | nil) :: {[...], [...]}
-  def parse(file_descriptor_set, namespace \\ nil) do
+  def parse(file_descriptor_set, namespace_or_nil \\ nil) do
     {:ok, descriptor} = FileDescriptorSet.decode(file_descriptor_set)
 
     # enums, messages
     {%{}, %{}}
     |> parse_files(descriptor.file)
-    |> post_process(namespace)
+    |> post_process(namespace_or_nil)
   end
 
   # -- Private
 
   # canonization: camelization, fqdn, prepend with namespace
-  defp post_process({enums, messages}, namespace) do
+  defp post_process({enums, messages}, namespace_or_nil) do
     processed_messages =
       for {mname, {syntax, fields}} <- messages, into: [] do
         {
-          Module.concat([namespace | Enum.map(mname, &Macro.camelize(&1))]),
+          Module.concat([namespace_or_nil | Enum.map(mname, &Macro.camelize(&1))]),
           syntax,
           Enum.map(
             fields,
@@ -37,7 +37,7 @@ defmodule Protox.Parse do
               field
               |> resolve_types(enums)
               |> default_value(enums)
-              |> concat_names(namespace)
+              |> concat_names(namespace_or_nil)
             end
           )
         }
@@ -46,7 +46,7 @@ defmodule Protox.Parse do
     processsed_enums =
       for {ename, constants} <- enums, into: [] do
         {
-          Module.concat([namespace | Enum.map(ename, &Macro.camelize(&1))]),
+          Module.concat([namespace_or_nil | Enum.map(ename, &Macro.camelize(&1))]),
           constants
         }
       end
@@ -86,20 +86,23 @@ defmodule Protox.Parse do
 
   defp default_value(%Field{} = field, _enums), do: field
 
-  defp concat_names(%Field{type: {:enum, ename}} = field, namespace) do
-    %Field{field | type: {:enum, Module.concat([namespace | ename])}}
+  defp concat_names(%Field{type: {:enum, ename}} = field, namespace_or_nil) do
+    %Field{field | type: {:enum, Module.concat([namespace_or_nil | ename])}}
   end
 
-  defp concat_names(%Field{type: {:message, mname}} = field, namespace) do
-    %Field{field | type: {:message, Module.concat([namespace | mname])}}
+  defp concat_names(%Field{type: {:message, mname}} = field, namespace_or_nil) do
+    %Field{field | type: {:message, Module.concat([namespace_or_nil | mname])}}
   end
 
-  defp concat_names(%Field{kind: :map, type: {key_type, {:message, mname}}} = field, namespace) do
-    %Field{field | type: {key_type, {:message, Module.concat([namespace | mname])}}}
+  defp concat_names(
+         %Field{kind: :map, type: {key_type, {:message, mname}}} = field,
+         namespace_or_nil
+       ) do
+    %Field{field | type: {key_type, {:message, Module.concat([namespace_or_nil | mname])}}}
   end
 
-  defp concat_names(%Field{type: {key_type, {:enum, ename}}} = field, namespace) do
-    %Field{field | type: {key_type, {:enum, Module.concat([namespace | ename])}}}
+  defp concat_names(%Field{type: {key_type, {:enum, ename}}} = field, namespace_or_nil) do
+    %Field{field | type: {key_type, {:enum, Module.concat([namespace_or_nil | ename])}}}
   end
 
   defp concat_names(%Field{} = field, _), do: field
