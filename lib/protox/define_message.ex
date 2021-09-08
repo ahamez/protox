@@ -57,7 +57,7 @@ defmodule Protox.DefineMessage do
     end
   end
 
-  defp make_unknown_fields_funs(_keep_unknown_fields = true, unknown_fields) do
+  defp make_unknown_fields_funs(true = _keep_unknown_fields, unknown_fields) do
     quote do
       @spec unknown_fields(struct) :: [{non_neg_integer, Protox.Types.tag(), binary}]
       def unknown_fields(msg), do: msg.unquote(unknown_fields)
@@ -70,7 +70,7 @@ defmodule Protox.DefineMessage do
     end
   end
 
-  defp make_unknown_fields_funs(_keep_unknown_fields = false, _unknown_fields) do
+  defp make_unknown_fields_funs(false = _keep_unknown_fields, _unknown_fields) do
     []
   end
 

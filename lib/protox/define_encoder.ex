@@ -57,12 +57,12 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_fun_field(ast, [], _keep_unknown_fields = true) do
+  defp make_encode_fun_field(ast, [], true = _keep_unknown_fields) do
     # credo:disable-for-next-line Credo.Check.Readability.SinglePipe
     quote do: unquote(ast) |> encode_unknown_fields(msg)
   end
 
-  defp make_encode_fun_field(ast, [], _keep_unknown_fields = false) do
+  defp make_encode_fun_field(ast, [], false = _keep_unknown_fields) do
     # credo:disable-for-next-line Credo.Check.Readability.SinglePipe
     quote do: unquote(ast)
   end
@@ -279,7 +279,7 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_unknown_fields_fun(_keep_unknown_fields = true) do
+  defp make_encode_unknown_fields_fun(true = _keep_unknown_fields) do
     quote do
       defp encode_unknown_fields(acc, msg) do
         Enum.reduce(msg.__struct__.unknown_fields(msg), acc, fn {tag, wire_type, bytes}, acc ->
@@ -302,7 +302,7 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_unknown_fields_fun(_keep_unknown_fields = false) do
+  defp make_encode_unknown_fields_fun(false = _keep_unknown_fields) do
     []
   end
 
