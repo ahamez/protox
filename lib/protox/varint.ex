@@ -1,5 +1,6 @@
 defmodule Protox.Varint do
   @moduledoc false
+  # Internal. Implement LEB128 compression.
 
   use Bitwise
 

@@ -1,5 +1,6 @@
 defmodule Protox.Field do
   @moduledoc false
+  # Internal. Describe a field of a message.
 
   @type t() :: %__MODULE__{
           tag: number(),

@@ -1,6 +1,6 @@
 defmodule Protox.Defs do
   @moduledoc false
-  # Internal. Helpers to work with defs().
+  # Internal. Helpers to work with list of fields.
 
   alias Protox.Field
 

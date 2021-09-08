@@ -1,6 +1,6 @@
 defmodule Protox.Guards do
   @moduledoc false
-  # Provides macros to be used as guards when checking types is needed.
+  # Internal. Provides macros to be used as guards when checking types is needed.
 
   @primitive_fixed32 [:fixed32, :sfixed32, :float]
   @primitive_fixed64 [:fixed64, :sfixed64, :double]

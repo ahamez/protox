@@ -1,5 +1,8 @@
 defmodule Protox.WireTypes do
   @moduledoc false
+  # Internal.
+  # Describe messages fields types.
+  # See https://developers.google.com/protocol-buffers/docs/encoding#structure.
 
   defmacro __using__(_) do
     quote do

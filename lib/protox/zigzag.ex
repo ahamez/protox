@@ -1,5 +1,6 @@
 defmodule Protox.Zigzag do
   @moduledoc false
+  # Internal. Map integers to positive integers as LEB128 can only work on the latters.
 
   use Bitwise
 
