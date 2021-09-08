@@ -70,7 +70,7 @@ defmodule Protox.Parse do
     end
   end
 
-  defp resolve_types(%Field{} = field, _, _), do: field
+  defp resolve_types(%Field{} = field, _enums, _), do: field
 
   defp default_value(
          %Field{kind: {:default, :default_to_resolve}, type: {:enum, ename}} = field,
@@ -84,7 +84,7 @@ defmodule Protox.Parse do
     %Field{field | kind: {:default, first_is_default}, type: {:enum, ename}}
   end
 
-  defp default_value(%Field{} = field, _), do: field
+  defp default_value(%Field{} = field, _enums), do: field
 
   defp concat_names(%Field{type: {:enum, ename}} = field, namespace) do
     %Field{field | type: {:enum, Module.concat([namespace | ename])}}
@@ -160,7 +160,7 @@ defmodule Protox.Parse do
     )
   end
 
-  defp make_messages(acc, _, _, []), do: acc
+  defp make_messages(acc, _syntax, _prefix, []), do: acc
 
   defp make_messages(acc, syntax, prefix, [descriptor | descriptors]) do
     acc
@@ -191,7 +191,7 @@ defmodule Protox.Parse do
     }
   end
 
-  defp add_extensions(acc, _, _, {_, []}), do: acc
+  defp add_extensions(acc, _upper, _prefix, {_syntax, []}), do: acc
 
   defp add_extensions(acc, upper, prefix, {syntax, [field | fields]}) do
     acc
@@ -199,7 +199,7 @@ defmodule Protox.Parse do
     |> add_extensions(upper, prefix, {syntax, fields})
   end
 
-  defp add_fields(acc, _, _, {_, []}), do: acc
+  defp add_fields(acc, _upper, _msg_name, {_syntax, []}), do: acc
 
   defp add_fields(acc, upper, msg_name, {syntax, [field | fields]}) do
     acc
