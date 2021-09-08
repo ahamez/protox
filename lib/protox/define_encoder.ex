@@ -76,16 +76,13 @@ defmodule Protox.DefineEncoder do
     make_encode_fun_field(ast, fields, keep_unknown_fields)
   end
 
-  defp make_encode_oneof_fun(ast, []), do: ast
+  defp make_encode_oneof_fun(ast, oneofs) do
+    Enum.reduce(oneofs, ast, fn {parent_name, _children}, ast_acc ->
+      fun_name = String.to_atom("encode_#{parent_name}")
 
-  defp make_encode_oneof_fun(ast, [oneof | oneofs]) do
-    {parent_name, _children} = oneof
-    fun_name = String.to_atom("encode_#{parent_name}")
-
-    # credo:disable-for-next-line Credo.Check.Readability.SinglePipe
-    ast = quote do: unquote(ast) |> unquote(fun_name)(msg)
-
-    make_encode_oneof_fun(ast, oneofs)
+      # credo:disable-for-next-line Credo.Check.Readability.SinglePipe
+      quote do: unquote(ast_acc) |> unquote(fun_name)(msg)
+    end)
   end
 
   defp parent_name(_, [%Protox.Field{label: :proto3_optional, kind: {_, name}}]), do: name
