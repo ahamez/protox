@@ -42,7 +42,7 @@ defmodule Protox do
     {files, opts} = get_files(opts)
 
     {:ok, file_descriptor_set} = Protox.Protoc.run(files, paths)
-    {enums, messages} = Protox.Parse.parse(file_descriptor_set, namespace)
+    %{enums: enums, messages: messages} = Protox.Parse.parse(file_descriptor_set, namespace)
 
     quote do
       unquote(make_external_resources(files))
@@ -107,7 +107,8 @@ defmodule Protox do
       |> Enum.map(&Path.expand/1)
       |> Protox.Protoc.run(paths)
 
-    {enums, messages} = Protox.Parse.parse(file_descriptor_set, namespace_or_nil)
+    %{enums: enums, messages: messages} =
+      Protox.Parse.parse(file_descriptor_set, namespace_or_nil)
 
     code = quote do: unquote(Protox.Define.define(enums, messages, opts))
 

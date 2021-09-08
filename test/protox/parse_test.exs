@@ -3,7 +3,7 @@ defmodule Protox.ParseTest do
 
   setup_all do
     data = File.read!("./test/samples/file_descriptor_set.bin")
-    {enums, messages} = Protox.Parse.parse(data)
+    %{enums: enums, messages: messages} = Protox.Parse.parse(data)
 
     {:ok, enums: enums, messages: messages}
   end

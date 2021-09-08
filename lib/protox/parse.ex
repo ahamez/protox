@@ -12,12 +12,11 @@ defmodule Protox.Parse do
     FileDescriptorSet
   }
 
-  @spec parse(binary, atom | nil) :: {[...], [...]}
+  @spec parse(binary, atom | nil) :: map()
   def parse(file_descriptor_set, namespace_or_nil \\ nil) do
     {:ok, descriptor} = FileDescriptorSet.decode(file_descriptor_set)
 
-    # enums, messages
-    {%{}, %{}}
+    %{enums: %{}, messages: %{}}
     |> parse_files(descriptor.file)
     |> post_process(namespace_or_nil)
   end
@@ -25,9 +24,9 @@ defmodule Protox.Parse do
   # -- Private
 
   # canonization: camelization, fqdn, prepend with namespace
-  defp post_process({enums, messages}, namespace_or_nil) do
+  defp post_process(acc, namespace_or_nil) do
     processed_messages =
-      for {mname, {syntax, fields}} <- messages, into: [] do
+      for {mname, {syntax, fields}} <- acc.messages, into: [] do
         {
           Module.concat([namespace_or_nil | Enum.map(mname, &Macro.camelize(&1))]),
           syntax,
@@ -35,8 +34,8 @@ defmodule Protox.Parse do
             fields,
             fn %Field{} = field ->
               field
-              |> resolve_types(enums)
-              |> default_value(enums)
+              |> resolve_types(acc.enums)
+              |> default_value(acc.enums)
               |> concat_names(namespace_or_nil)
             end
           )
@@ -44,14 +43,14 @@ defmodule Protox.Parse do
       end
 
     processsed_enums =
-      for {ename, constants} <- enums, into: [] do
+      for {ename, constants} <- acc.enums, into: [] do
         {
           Module.concat([namespace_or_nil | Enum.map(ename, &Macro.camelize(&1))]),
           constants
         }
       end
 
-    {processsed_enums, processed_messages}
+    %{enums: processsed_enums, messages: processed_messages}
   end
 
   defp resolve_types(%Field{type: {:to_resolve, tname}} = field, enums) do
@@ -143,14 +142,15 @@ defmodule Protox.Parse do
     |> make_enums(prefix, descriptors)
   end
 
-  defp make_enum({enums, msgs}, prefix, descriptor) do
-    {
-      Map.put(
-        enums,
-        prefix ++ [descriptor.name],
-        [] |> make_enum_constants(descriptor.value) |> Enum.reverse()
-      ),
-      msgs
+  defp make_enum(acc, prefix, descriptor) do
+    %{
+      acc
+      | enums:
+          Map.put(
+            acc.enums,
+            prefix ++ [descriptor.name],
+            [] |> make_enum_constants(descriptor.value) |> Enum.reverse()
+          )
     }
   end
 
@@ -188,11 +188,8 @@ defmodule Protox.Parse do
     |> add_fields(descriptor, name, {syntax, descriptor.extension})
   end
 
-  defp add_message({enums, msgs}, syntax, name) do
-    {
-      enums,
-      Map.put_new(msgs, name, {syntax, []})
-    }
+  defp add_message(acc, syntax, name) do
+    %{acc | messages: Map.put_new(acc.messages, name, {syntax, []})}
   end
 
   defp add_extensions(acc, _upper, _prefix, {_syntax, []}), do: acc
@@ -211,7 +208,7 @@ defmodule Protox.Parse do
     |> add_fields(upper, msg_name, {syntax, fields})
   end
 
-  defp add_field({enums, msgs}, syntax, upper, msg_name, descriptor) do
+  defp add_field(acc, syntax, upper, msg_name, descriptor) do
     {label, kind, type} =
       case map_entry(upper, msg_name, descriptor) do
         nil ->
@@ -231,9 +228,12 @@ defmodule Protox.Parse do
       type: type
     }
 
-    {
-      enums,
-      Map.update!(msgs, msg_name, fn {syntax, fields} -> {syntax, [field | fields]} end)
+    %{
+      acc
+      | messages:
+          Map.update!(acc.messages, msg_name, fn {syntax, fields} ->
+            {syntax, [field | fields]}
+          end)
     }
   end
 
