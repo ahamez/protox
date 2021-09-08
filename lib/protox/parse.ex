@@ -3,8 +3,6 @@ defmodule Protox.Parse do
   # Creates definitions from a protobuf encoded description (Protox.Google.Protobuf.FileDescriptorSet)
   # of a set of .proto files. This description is produced by `protoc`.
 
-  require Protox.Descriptor
-
   alias Protox.Field
 
   alias Protox.Google.Protobuf.{
