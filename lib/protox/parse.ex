@@ -7,9 +7,11 @@ defmodule Protox.Parse do
   alias Protox.Field
 
   alias Protox.Google.Protobuf.{
+    DescriptorProto,
     FieldDescriptorProto,
     FieldOptions,
-    FileDescriptorSet
+    FileDescriptorSet,
+    MessageOptions
   }
 
   @spec parse(binary, atom | nil) :: map()
@@ -171,8 +173,10 @@ defmodule Protox.Parse do
     |> make_messages(syntax, prefix, descriptors)
   end
 
-  defp make_message(acc, _syntax, _prefix, descriptor)
-       when descriptor.options != nil and descriptor.options.map_entry do
+  defp make_message(acc, _syntax, _prefix, %DescriptorProto{
+         options: %MessageOptions{map_entry: map_entry}
+       })
+       when map_entry do
     # This case has already been handled in the upper message with add_maps.
     acc
   end
