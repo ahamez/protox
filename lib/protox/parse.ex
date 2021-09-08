@@ -35,7 +35,7 @@ defmodule Protox.Parse do
             fields,
             fn %Field{} = field ->
               field
-              |> resolve_types(enums, messages)
+              |> resolve_types(enums)
               |> default_value(enums)
               |> concat_names(namespace)
             end
@@ -54,7 +54,7 @@ defmodule Protox.Parse do
     {processsed_enums, processed_messages}
   end
 
-  defp resolve_types(%Field{type: {:to_resolve, tname}} = field, enums, _) do
+  defp resolve_types(%Field{type: {:to_resolve, tname}} = field, enums) do
     if Map.has_key?(enums, tname) do
       %Field{field | type: {:enum, tname}}
     else
@@ -62,7 +62,7 @@ defmodule Protox.Parse do
     end
   end
 
-  defp resolve_types(%Field{kind: :map, type: {key_type, {:to_resolve, tname}}} = field, enums, _) do
+  defp resolve_types(%Field{kind: :map, type: {key_type, {:to_resolve, tname}}} = field, enums) do
     if Map.has_key?(enums, tname) do
       %Field{field | type: {key_type, {:enum, tname}}}
     else
@@ -70,7 +70,7 @@ defmodule Protox.Parse do
     end
   end
 
-  defp resolve_types(%Field{} = field, _enums, _), do: field
+  defp resolve_types(%Field{} = field, _enums), do: field
 
   defp default_value(
          %Field{kind: {:default, :default_to_resolve}, type: {:enum, ename}} = field,
