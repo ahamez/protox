@@ -70,9 +70,7 @@ defmodule Protox.Parse do
     end
   end
 
-  defp resolve_types(%Field{} = field, _, _) do
-    field
-  end
+  defp resolve_types(%Field{} = field, _, _), do: field
 
   defp default_value(
          %Field{kind: {:default, :default_to_resolve}, type: {:enum, ename}} = field,
@@ -86,9 +84,7 @@ defmodule Protox.Parse do
     %Field{field | kind: {:default, first_is_default}, type: {:enum, ename}}
   end
 
-  defp default_value(%Field{} = field, _) do
-    field
-  end
+  defp default_value(%Field{} = field, _), do: field
 
   defp concat_names(%Field{type: {:enum, ename}} = field, namespace) do
     %Field{field | type: {:enum, Module.concat([namespace | ename])}}
@@ -106,9 +102,7 @@ defmodule Protox.Parse do
     %Field{field | type: {key_type, {:enum, Module.concat([namespace | ename])}}}
   end
 
-  defp concat_names(%Field{} = field, _) do
-    field
-  end
+  defp concat_names(%Field{} = field, _), do: field
 
   defp parse_files(acc, []), do: acc
 
@@ -279,7 +273,7 @@ defmodule Protox.Parse do
   end
 
   defp fully_qualified_name(name) do
-    # first element is "."
+    # Make sure first element is always ".".
     true = String.starts_with?(name, ".")
 
     name
@@ -321,9 +315,7 @@ defmodule Protox.Parse do
     {:to_resolve, fully_qualified_name(tyname)}
   end
 
-  defp get_type(descriptor) do
-    descriptor.type
-  end
+  defp get_type(descriptor), do: descriptor.type
 
   defp get_default_value(%FieldDescriptorProto{type: :enum, default_value: nil}) do
     :default_to_resolve
@@ -333,9 +325,7 @@ defmodule Protox.Parse do
     String.to_atom(f.default_value)
   end
 
-  defp get_default_value(%FieldDescriptorProto{type: :message}) do
-    nil
-  end
+  defp get_default_value(%FieldDescriptorProto{type: :message}), do: nil
 
   defp get_default_value(%FieldDescriptorProto{type: ty, default_value: nil}) do
     Protox.Default.default(ty)
@@ -348,13 +338,9 @@ defmodule Protox.Parse do
     end
   end
 
-  defp get_default_value(%FieldDescriptorProto{type: :string} = f) do
-    f.default_value
-  end
+  defp get_default_value(%FieldDescriptorProto{type: :string} = f), do: f.default_value
 
-  defp get_default_value(%FieldDescriptorProto{type: :bytes} = f) do
-    f.default_value
-  end
+  defp get_default_value(%FieldDescriptorProto{type: :bytes} = f), do: f.default_value
 
   defp get_default_value(%FieldDescriptorProto{type: :double} = f) do
     f.default_value |> Float.parse() |> elem(0)
