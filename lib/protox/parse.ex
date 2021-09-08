@@ -287,30 +287,42 @@ defmodule Protox.Parse do
     |> Enum.map(&Macro.camelize(&1))
   end
 
-  defp get_kind(syntax, upper, descriptor) do
-    import Protox.Guards
+  import Protox.Guards
 
-    case descriptor do
-      %FieldDescriptorProto{oneof_index: index} when index != nil ->
-        parent = String.to_atom(Enum.at(upper.oneof_decl, index).name)
-        {:oneof, parent}
+  defp get_kind(_syntax, upper, %FieldDescriptorProto{oneof_index: index}) when index != nil do
+    parent = String.to_atom(Enum.at(upper.oneof_decl, index).name)
 
-      %FieldDescriptorProto{label: :repeated, options: %FieldOptions{packed: true}} ->
-        :packed
+    {:oneof, parent}
+  end
 
-      %FieldDescriptorProto{label: :repeated, options: %FieldOptions{packed: false}} ->
-        :unpacked
+  defp get_kind(_syntax, _upper, %FieldDescriptorProto{
+         label: :repeated,
+         options: %FieldOptions{packed: true}
+       }) do
+    :packed
+  end
 
-      %FieldDescriptorProto{label: :repeated, type: field_type} ->
-        case {syntax, field_type} do
-          {:proto3, :enum} -> :packed
-          {:proto3, ty} when is_primitive(ty) -> :packed
-          _ -> :unpacked
-        end
+  defp get_kind(_syntax, _upper, %FieldDescriptorProto{
+         label: :repeated,
+         options: %FieldOptions{packed: false}
+       }) do
+    :unpacked
+  end
 
-      %FieldDescriptorProto{label: label} when label == :optional or label == :required ->
-        {:default, get_default_value(descriptor)}
-    end
+  defp get_kind(:proto3, _upper, %FieldDescriptorProto{label: :repeated, type: :enum}) do
+    :packed
+  end
+
+  defp get_kind(:proto3, _upper, %FieldDescriptorProto{label: :repeated, type: ty})
+       when is_primitive(ty) do
+    :packed
+  end
+
+  defp get_kind(_syntax, _upper, %FieldDescriptorProto{label: :repeated}), do: :unpacked
+
+  defp get_kind(_syntax, _upper, %FieldDescriptorProto{label: label} = descriptor)
+       when label == :optional or label == :required do
+    {:default, get_default_value(descriptor)}
   end
 
   defp get_type(%FieldDescriptorProto{type_name: tyname}) when tyname != nil do
@@ -335,15 +347,10 @@ defmodule Protox.Parse do
     Protox.Default.default(ty)
   end
 
-  defp get_default_value(%FieldDescriptorProto{type: :bool} = f) do
-    case f.default_value do
-      "true" -> true
-      "false" -> false
-    end
-  end
+  defp get_default_value(%FieldDescriptorProto{type: :bool, default_value: "true"}), do: true
+  defp get_default_value(%FieldDescriptorProto{type: :bool, default_value: "false"}), do: false
 
   defp get_default_value(%FieldDescriptorProto{type: :string} = f), do: f.default_value
-
   defp get_default_value(%FieldDescriptorProto{type: :bytes} = f), do: f.default_value
 
   defp get_default_value(%FieldDescriptorProto{type: :double} = f) do
