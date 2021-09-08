@@ -283,7 +283,7 @@ defmodule Protox.Parse do
 
     name
     |> String.split(".")
-    |> tl
+    |> tl()
     |> Enum.map(&Macro.camelize(&1))
   end
 
@@ -313,8 +313,7 @@ defmodule Protox.Parse do
     end
   end
 
-  defp get_type(%FieldDescriptorProto{type_name: tyname})
-       when tyname != nil do
+  defp get_type(%FieldDescriptorProto{type_name: tyname}) when tyname != nil do
     # Documentation in descriptor.proto says that it's possible that `type_name` is set, but not
     # `type`. The type will be resolved in a post-process pass.
     {:to_resolve, fully_qualified_name(tyname)}
