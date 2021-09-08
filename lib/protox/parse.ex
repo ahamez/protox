@@ -330,7 +330,7 @@ defmodule Protox.Parse do
     :default_to_resolve
   end
 
-  defp get_default_value(f = %FieldDescriptorProto{type: :enum}) do
+  defp get_default_value(%FieldDescriptorProto{type: :enum} = f) do
     String.to_atom(f.default_value)
   end
 
@@ -342,26 +342,26 @@ defmodule Protox.Parse do
     Protox.Default.default(ty)
   end
 
-  defp get_default_value(f = %FieldDescriptorProto{type: :bool}) do
+  defp get_default_value(%FieldDescriptorProto{type: :bool} = f) do
     case f.default_value do
       "true" -> true
       "false" -> false
     end
   end
 
-  defp get_default_value(f = %FieldDescriptorProto{type: :string}) do
+  defp get_default_value(%FieldDescriptorProto{type: :string} = f) do
     f.default_value
   end
 
-  defp get_default_value(f = %FieldDescriptorProto{type: :bytes}) do
+  defp get_default_value(%FieldDescriptorProto{type: :bytes} = f) do
     f.default_value
   end
 
-  defp get_default_value(f = %FieldDescriptorProto{type: :double}) do
+  defp get_default_value(%FieldDescriptorProto{type: :double} = f) do
     f.default_value |> Float.parse() |> elem(0)
   end
 
-  defp get_default_value(f = %FieldDescriptorProto{type: :float}) do
+  defp get_default_value(%FieldDescriptorProto{type: :float} = f) do
     f.default_value |> Float.parse() |> elem(0)
   end
 

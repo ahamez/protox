@@ -129,7 +129,7 @@ defmodule Protox.RandomInit do
     acc
   end
 
-  defp do_generate(acc, xs = [{_field, {_name, {:oneof, oneof_name}, _ty}} | _]) do
+  defp do_generate(acc, [{_field, {_name, {:oneof, oneof_name}, _ty}} | _] = xs) do
     {oneof_list, xs} =
       Enum.split_with(xs, fn {_field, x} ->
         case x do

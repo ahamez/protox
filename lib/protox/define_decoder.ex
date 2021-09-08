@@ -216,7 +216,7 @@ defmodule Protox.DefineDecoder do
          msg_var,
          keep_set_fields,
          single,
-         field = %Field{type: {:message, _}}
+         %Field{type: {:message, _}} = field
        ) do
     make_delimited_case_impl(msg_var, keep_set_fields, single, field)
   end
@@ -242,12 +242,7 @@ defmodule Protox.DefineDecoder do
     make_delimited_case_impl(msg_var, keep_set_fields, single, field)
   end
 
-  defp make_delimited_case_impl(
-         msg_var,
-         keep_set_fields,
-         single,
-         field = %Field{tag: tag, name: name, type: type}
-       ) do
+  defp make_delimited_case_impl(msg_var, keep_set_fields, single, %Field{} = field) do
     bytes_var = quote do: bytes
     field_var = quote do: field
     value_var = quote do: value
@@ -255,12 +250,12 @@ defmodule Protox.DefineDecoder do
 
     case_return =
       case keep_set_fields do
-        true -> quote do: {[unquote(name) | set_fields], [unquote(field_var)], rest}
+        true -> quote do: {[unquote(field.name) | set_fields], [unquote(field_var)], rest}
         false -> quote do: {[unquote(field_var)], rest}
       end
 
     delimited_var = quote do: delimited
-    parse_delimited = make_parse_delimited(delimited_var, type)
+    parse_delimited = make_parse_delimited(delimited_var, field.type)
 
     # If `single` was not generated, then we don't need the `@wire_delimited discrimant
     # as there is only one clause for this `tag`.
@@ -271,7 +266,7 @@ defmodule Protox.DefineDecoder do
       end
 
     quote do
-      {unquote(tag), unquote(wire_type), unquote(bytes_var)} ->
+      {unquote(field.tag), unquote(wire_type), unquote(bytes_var)} ->
         {len, unquote(bytes_var)} = Protox.Varint.decode(unquote(bytes_var))
         <<unquote(delimited_var)::binary-size(len), rest::binary>> = unquote(bytes_var)
         unquote(value_var) = unquote(parse_delimited)
