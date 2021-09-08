@@ -101,9 +101,10 @@ defmodule Protox.ParseTest do
   end
 
   defp field(fields, tag) do
-    fields
-    |> Enum.find(&(elem(&1, 0) == tag))
-    |> Tuple.delete_at(0)
+    %Protox.Field{label: label, name: name, kind: kind, type: type} =
+      Enum.find(fields, &match?(%Protox.Field{tag: ^tag}, &1))
+
+    {label, name, kind, type}
   end
 
   def syntax(messages, name) do
@@ -113,6 +114,7 @@ defmodule Protox.ParseTest do
 
   defp fields(messages, name) do
     {_, _, fs} = Enum.find(messages, fn {n, _, _} -> n == name end)
+
     fs
   end
 end

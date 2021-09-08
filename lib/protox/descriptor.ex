@@ -3,8 +3,6 @@ defmodule Protox.Descriptor do
   # Transcription of descriptor.proto.
   # https://raw.githubusercontent.com/google/protobuf/master/src/google/protobuf/descriptor.proto
 
-  alias Protox.Field
-
   use Protox.Define,
     enums: [
       {
@@ -44,7 +42,7 @@ defmodule Protox.Descriptor do
         Protox.Google.Protobuf.FileDescriptorSet,
         :proto3,
         [
-          %Field{
+          %Protox.Field{
             tag: 1,
             label: :repeated,
             name: :file,
@@ -58,38 +56,44 @@ defmodule Protox.Descriptor do
         :proto3,
         [
           # Ignored: 3, 6, 8, 9, 10, 11
-          %Field{tag: 1, label: :none, name: :name, kind: {:default, ""}, type: :string},
-          %Field{tag: 2, label: :none, name: :package, kind: {:default, ""}, type: :string},
-          %Field{
+          %Protox.Field{tag: 1, label: :none, name: :name, kind: {:default, ""}, type: :string},
+          %Protox.Field{
+            tag: 2,
+            label: :none,
+            name: :package,
+            kind: {:default, ""},
+            type: :string
+          },
+          %Protox.Field{
             tag: 4,
             label: :repeated,
             name: :message_type,
             kind: :unpacked,
             type: {:message, Protox.Google.Protobuf.DescriptorProto}
           },
-          %Field{
+          %Protox.Field{
             tag: 5,
             label: :repeated,
             name: :enum_type,
             kind: :unpacked,
             type: {:message, Protox.Google.Protobuf.EnumDescriptorProto}
           },
-          %Field{
+          %Protox.Field{
             tag: 7,
             label: :repeated,
             name: :extension,
             kind: :unpacked,
             type: {:message, Protox.Google.Protobuf.FieldDescriptorProto}
           },
-          %Field{tag: 12, label: :none, name: :syntax, kind: {:default, ""}, type: :string}
+          %Protox.Field{tag: 12, label: :none, name: :syntax, kind: {:default, ""}, type: :string}
         ]
       },
       {
         Protox.Google.Protobuf.DescriptorProto.ExtensionRange,
         :proto3,
         [
-          %Field{tag: 1, label: :none, name: :start, kind: {:default, 0}, type: :int32},
-          %Field{tag: 2, label: :none, name: :end, kind: {:default, 0}, type: :int32}
+          %Protox.Field{tag: 1, label: :none, name: :start, kind: {:default, 0}, type: :int32},
+          %Protox.Field{tag: 2, label: :none, name: :end, kind: {:default, 0}, type: :int32}
         ]
       },
       # Protox.Google.Protobuf.DescriptorProto.ReservedRange ignored
@@ -98,50 +102,50 @@ defmodule Protox.Descriptor do
         :proto3,
         [
           # Ignored: 9, 10
-          %Field{tag: 1, label: :none, name: :name, kind: {:default, nil}, type: :string},
-          %Field{
+          %Protox.Field{tag: 1, label: :none, name: :name, kind: {:default, nil}, type: :string},
+          %Protox.Field{
             tag: 2,
             label: :repeated,
             name: :field,
             kind: :unpacked,
             type: {:message, Protox.Google.Protobuf.FieldDescriptorProto}
           },
-          %Field{
+          %Protox.Field{
             tag: 6,
             label: :repeated,
             name: :extension,
             kind: :unpacked,
             type: {:message, Protox.Google.Protobuf.FieldDescriptorProto}
           },
-          %Field{
+          %Protox.Field{
             tag: 3,
             label: :repeated,
             name: :nested_type,
             kind: :unpacked,
             type: {:message, Protox.Google.Protobuf.DescriptorProto}
           },
-          %Field{
+          %Protox.Field{
             tag: 4,
             label: :repeated,
             name: :enum_type,
             kind: :unpacked,
             type: {:message, Protox.Google.Protobuf.EnumDescriptorProto}
           },
-          %Field{
+          %Protox.Field{
             tag: 5,
             label: :repeated,
             name: :extension_range,
             kind: :unpacked,
             type: {:message, Protox.Google.Protobuf.DescriptorProto.ExtensionRange}
           },
-          %Field{
+          %Protox.Field{
             tag: 8,
             label: :repeated,
             name: :oneof_decl,
             kind: :unpacked,
             type: {:message, Protox.Google.Protobuf.OneofDescriptorProto}
           },
-          %Field{
+          %Protox.Field{
             tag: 7,
             label: :none,
             name: :options,
@@ -155,46 +159,58 @@ defmodule Protox.Descriptor do
         :proto3,
         [
           # Ignored: 10
-          %Field{tag: 1, label: :none, name: :name, kind: {:default, nil}, type: :string},
-          %Field{tag: 3, label: :none, name: :tag, kind: {:default, nil}, type: :int32},
-          %Field{
+          %Protox.Field{tag: 1, label: :none, name: :name, kind: {:default, nil}, type: :string},
+          %Protox.Field{tag: 3, label: :none, name: :number, kind: {:default, nil}, type: :int32},
+          %Protox.Field{
             tag: 4,
             label: :none,
             name: :label,
             kind: {:default, nil},
             type: {:enum, Protox.Google.Protobuf.FieldDescriptorProto.Label}
           },
-          %Field{
+          %Protox.Field{
             tag: 5,
             label: :none,
             name: :type,
             kind: {:default, nil},
             type: {:enum, Protox.Google.Protobuf.FieldDescriptorProto.Type}
           },
-          %Field{tag: 6, label: :none, name: :type_name, kind: {:default, nil}, type: :string},
-          %Field{tag: 2, label: :none, name: :extendee, kind: {:default, nil}, type: :string},
-          %Field{
+          %Protox.Field{
+            tag: 6,
+            label: :none,
+            name: :type_name,
+            kind: {:default, nil},
+            type: :string
+          },
+          %Protox.Field{
+            tag: 2,
+            label: :none,
+            name: :extendee,
+            kind: {:default, nil},
+            type: :string
+          },
+          %Protox.Field{
             tag: 7,
             label: :none,
             name: :default_value,
             kind: {:default, nil},
             type: :string
           },
-          %Field{
+          %Protox.Field{
             tag: 9,
             label: :none,
             name: :oneof_index,
             kind: {:default, nil},
             type: :int32
           },
-          %Field{
+          %Protox.Field{
             tag: 8,
             label: :none,
             name: :options,
             kind: {:default, nil},
             type: {:message, Protox.Google.Protobuf.FieldOptions}
           },
-          %Field{
+          %Protox.Field{
             tag: 17,
             label: :none,
             name: :proto3_optional,
@@ -208,7 +224,7 @@ defmodule Protox.Descriptor do
         :proto3,
         [
           # Ignored: 2
-          %Field{tag: 1, label: :none, name: :name, kind: {:default, nil}, type: :string}
+          %Protox.Field{tag: 1, label: :none, name: :name, kind: {:default, nil}, type: :string}
         ]
       },
       {
@@ -216,8 +232,8 @@ defmodule Protox.Descriptor do
         :proto3,
         [
           # Ignored: 3
-          %Field{tag: 1, label: :none, name: :name, kind: {:default, nil}, type: :string},
-          %Field{
+          %Protox.Field{tag: 1, label: :none, name: :name, kind: {:default, nil}, type: :string},
+          %Protox.Field{
             tag: 2,
             label: :repeated,
             name: :value,
@@ -231,8 +247,8 @@ defmodule Protox.Descriptor do
         :proto3,
         [
           # Ignored: 3
-          %Field{tag: 1, label: :none, name: :name, kind: {:default, nil}, type: :string},
-          %Field{tag: 2, label: :none, name: :tag, kind: {:default, nil}, type: :int32}
+          %Protox.Field{tag: 1, label: :none, name: :name, kind: {:default, nil}, type: :string},
+          %Protox.Field{tag: 2, label: :none, name: :number, kind: {:default, nil}, type: :int32}
         ]
       },
       # ServiceDescriptorProto ignored
@@ -243,14 +259,20 @@ defmodule Protox.Descriptor do
         :proto3,
         [
           # 1, 2, 999 ignored
-          %Field{
+          %Protox.Field{
             tag: 3,
             label: :none,
             name: :deprecated,
             kind: {:default, false},
             type: :bool
           },
-          %Field{tag: 7, label: :none, name: :map_entry, kind: {:default, false}, type: :bool}
+          %Protox.Field{
+            tag: 7,
+            label: :none,
+            name: :map_entry,
+            kind: {:default, false},
+            type: :bool
+          }
         ]
       },
       {
@@ -258,8 +280,14 @@ defmodule Protox.Descriptor do
         :proto3,
         [
           # 1, 6, 5, 10, 999 ignored
-          %Field{tag: 2, label: :none, name: :packed, kind: {:default, nil}, type: :bool},
-          %Field{tag: 3, label: :none, name: :deprecated, kind: {:default, false}, type: :bool}
+          %Protox.Field{tag: 2, label: :none, name: :packed, kind: {:default, nil}, type: :bool},
+          %Protox.Field{
+            tag: 3,
+            label: :none,
+            name: :deprecated,
+            kind: {:default, false},
+            type: :bool
+          }
         ]
       }
       # OneofOptions ignored
