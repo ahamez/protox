@@ -2,14 +2,83 @@ defmodule Protox.CodeGenerationTest do
   use ExUnit.Case
 
   setup_all _context do
-    {_, 0} = System.cmd("mix", ["do", "deps.get,", "deps.compile"], cd: "code_generation")
+    tmp_dir = System.tmp_dir!()
+    code_generation_path = "#{tmp_dir}/code_generation"
 
-    :ok
+    # Remove possible leftoverss
+    File.rm_rf!(code_generation_path)
+
+    {_, 0} = System.cmd("mix", ["new", "code_generation"], cd: tmp_dir)
+    File.write!("#{code_generation_path}/mix.exs", mix_exs())
+
+    {_, 0} = System.cmd("mix", ["do", "deps.get,", "deps.compile"], cd: code_generation_path)
+
+    on_exit(fn -> File.rm_rf!(code_generation_path) end)
+
+    {:ok, %{code_generation_path: code_generation_path, protox_path: File.cwd!()}}
   end
 
-  defp launch(output, args) do
-    File.rm_rf!("./code_generation/lib/output")
-    File.mkdir_p!("./code_generation/lib/output")
+  test "Generate single file, with unknown fields", %{
+    code_generation_path: path,
+    protox_path: protox_path
+  } do
+    launch(path, protox_path, "single_with_unknown_fields.ex", [])
+  end
+
+  test "Generate single file, without unknown fields", %{
+    code_generation_path: path,
+    protox_path: protox_path
+  } do
+    launch(path, protox_path, "single_without_unknown_fields.ex", ["--keep-unknown-fields=false"])
+  end
+
+  test "Generate multiple files, with unknown fields", %{
+    code_generation_path: path,
+    protox_path: protox_path
+  } do
+    launch(path, protox_path, ".", ["--multiple-files"])
+  end
+
+  test "Generate multiple files, without unknown fields", %{
+    code_generation_path: path,
+    protox_path: protox_path
+  } do
+    launch(path, protox_path, ".", ["--multiple-files", "--keep-unknown-fields=false"])
+  end
+
+  test "Generate single file, with namespace", %{
+    code_generation_path: path,
+    protox_path: protox_path
+  } do
+    launch(path, protox_path, "single_with_namespace.ex", ["--namespace=Namespace"])
+  end
+
+  test "Generate multiple files, with namespace", %{
+    code_generation_path: path,
+    protox_path: protox_path
+  } do
+    launch(path, protox_path, ".", ["--multiple-files", "--namespace=Namespace"])
+  end
+
+  test "Mix task generates a file that can be compiled", %{
+    protox_path: protox_path
+  } do
+    tmp_dir = System.tmp_dir!()
+    tmp_file = Path.join(tmp_dir, "file.ex")
+
+    Mix.Tasks.Protox.Generate.run([
+      "--output-path=#{tmp_file}",
+      "#{protox_path}/test/samples/proto3.proto"
+    ])
+
+    assert length(Code.compile_file(tmp_file)) > 0
+
+    File.rm!(tmp_file)
+  end
+
+  defp launch(code_generation_path, protox_path, output, args) do
+    File.rm_rf!("#{code_generation_path}/lib/output")
+    File.mkdir_p!("#{code_generation_path}/lib/output")
 
     {_, generation_exit_status} =
       System.cmd(
@@ -17,9 +86,9 @@ defmodule Protox.CodeGenerationTest do
         [
           "protox.generate",
           "--output-path=./lib/output/#{output}",
-          "../test/samples/proto3.proto"
+          "#{protox_path}/test/samples/proto3.proto"
         ] ++ args,
-        cd: "code_generation"
+        cd: code_generation_path
       )
 
     assert generation_exit_status == 0
@@ -30,7 +99,7 @@ defmodule Protox.CodeGenerationTest do
         [
           "compile"
         ],
-        cd: "code_generation"
+        cd: code_generation_path
       )
 
     assert compilation_exit_status == 0
@@ -41,47 +110,41 @@ defmodule Protox.CodeGenerationTest do
         [
           "credo"
         ],
-        cd: "code_generation"
+        cd: code_generation_path
       )
 
     assert credo_exit_status == 0
   end
 
-  test "Generate single file, with unknown fields" do
-    launch("single_with_unknown_fields.ex", [])
-  end
+  defp mix_exs() do
+    """
+    defmodule CodeGeneration.MixProject do
+      use Mix.Project
 
-  test "Generate single file, without unknown fields" do
-    launch("single_without_unknown_fields.ex", ["--keep-unknown-fields=false"])
-  end
+      def project do
+        [
+          app: :code_generation,
+          version: "0.1.0",
+          elixir: "~> #{System.version()}",
+          start_permanent: Mix.env() == :prod,
+          deps: deps()
+        ]
+      end
 
-  test "Generate multiple files, with unknown fields" do
-    launch(".", ["--multiple-files"])
-  end
+      def application do
+        [
+          extra_applications: [:logger]
+        ]
+      end
 
-  test "Generate multiple files, without unknown fields" do
-    launch(".", ["--multiple-files", "--keep-unknown-fields=false"])
-  end
-
-  test "Generate single file, with namespace" do
-    launch("single_with_namespace.ex", ["--namespace=Namespace"])
-  end
-
-  test "Generate multiple files, with namespace" do
-    launch(".", ["--multiple-files", "--namespace=Namespace"])
-  end
-
-  test "Mix task generates a file that can be compiled" do
-    tmp_dir = System.tmp_dir!()
-    tmp_file = Path.join(tmp_dir, "file.ex")
-
-    Mix.Tasks.Protox.Generate.run([
-      "--output-path=#{tmp_file}",
-      "./test/samples/proto3.proto"
-    ])
-
-    assert length(Code.compile_file(tmp_file)) > 0
-
-    File.rm!(tmp_file)
+      defp deps do
+        [
+          {:protox, path: "#{File.cwd!()}"},
+          {:dialyxir, "~> 1.0", only: [:test, :dev], runtime: false},
+          {:credo, "~> 1.4", only: [:test, :dev], runtime: false}
+        ]
+      end
+    end
+    """
   end
 end
