@@ -171,20 +171,21 @@ defmodule Protox.Parse do
     |> make_messages(syntax, prefix, descriptors)
   end
 
-  defp make_message(acc, syntax, prefix, descriptor) do
-    if descriptor.options != nil and descriptor.options.map_entry do
-      # This case has already been handled in the upper message with add_maps.
-      acc
-    else
-      name = prefix ++ [descriptor.name]
+  defp make_message(acc, _syntax, _prefix, descriptor)
+       when descriptor.options != nil and descriptor.options.map_entry do
+    # This case has already been handled in the upper message with add_maps.
+    acc
+  end
 
-      acc
-      |> add_message(syntax, name)
-      |> make_messages(syntax, name, descriptor.nested_type)
-      |> make_enums(name, descriptor.enum_type)
-      |> add_fields(descriptor, name, {syntax, descriptor.field})
-      |> add_fields(descriptor, name, {syntax, descriptor.extension})
-    end
+  defp make_message(acc, syntax, prefix, descriptor) do
+    name = prefix ++ [descriptor.name]
+
+    acc
+    |> add_message(syntax, name)
+    |> make_messages(syntax, name, descriptor.nested_type)
+    |> make_enums(name, descriptor.enum_type)
+    |> add_fields(descriptor, name, {syntax, descriptor.field})
+    |> add_fields(descriptor, name, {syntax, descriptor.extension})
   end
 
   defp add_message({enums, msgs}, syntax, name) do
