@@ -236,41 +236,42 @@ defmodule Protox.Parse do
   defp field_label(%{proto3_optional: true}), do: :proto3_optional
   defp field_label(%{label: label}), do: label
 
-  defp map_entry(nil, _, _), do: nil
+  defp map_entry(nil, _prefix, _descriptor), do: nil
 
-  defp map_entry(upper, prefix, descriptor) do
-    if descriptor.label == :repeated and descriptor.type == :message do
-      # Might be a map. Now find a nested type of upper that is the corresponding entry.
+  defp map_entry(
+         upper,
+         prefix,
+         %FieldDescriptorProto{label: :repeated, type: :message} = descriptor
+       ) do
+    # Might be a map. Now find a nested type of upper that is the corresponding entry.
+    res =
+      Enum.find(upper.nested_type, fn m ->
+        if m.options != nil and m.options.map_entry do
+          m_name = prefix ++ [m.name]
+          t_name = fully_qualified_name(descriptor.type_name)
 
-      res =
-        Enum.find(upper.nested_type, fn m ->
-          if m.options != nil and m.options.map_entry do
-            m_name = prefix ++ [m.name]
-            t_name = fully_qualified_name(descriptor.type_name)
+          # Test if the generated name of the MapEntry message is the same as the one
+          # referenced by the actual map field.
+          m_name == t_name
+        else
+          false
+        end
+      end)
 
-            # Test if the generated name of the MapEntry message is the same as the one
-            # referenced by the actual map field.
-            m_name == t_name
-          else
-            false
-          end
-        end)
+    case res do
+      nil ->
+        nil
 
-      case res do
-        nil ->
-          nil
+      m ->
+        key_type = Enum.find(m.field, &(&1.name == "key")).type
+        value_type_field = Enum.find(m.field, &(&1.name == "value"))
+        value_type = get_type(value_type_field)
 
-        m ->
-          key_type = Enum.find(m.field, &(&1.name == "key")).type
-          value_type_field = Enum.find(m.field, &(&1.name == "value"))
-          value_type = get_type(value_type_field)
-
-          {key_type, value_type}
-      end
-    else
-      nil
+        {key_type, value_type}
     end
   end
+
+  defp map_entry(_upper, _prefix, _descriptor), do: nil
 
   defp fully_qualified_name(name) do
     # Make sure first element is always ".".
