@@ -108,12 +108,10 @@ defmodule Protox.Parse do
 
   defp concat_names(%Field{} = field, _), do: field
 
-  defp parse_files(acc, []), do: acc
-
-  defp parse_files(acc, [descriptor | descriptors]) do
-    acc
-    |> parse_file(descriptor)
-    |> parse_files(descriptors)
+  defp parse_files(acc, descriptors) do
+    Enum.reduce(descriptors, acc, fn descriptor, acc ->
+      parse_file(acc, descriptor)
+    end)
   end
 
   defp parse_file(acc, descriptor) do
@@ -133,27 +131,20 @@ defmodule Protox.Parse do
     acc
     |> make_enums(prefix, descriptor.enum_type)
     |> make_messages(syntax, prefix, descriptor.message_type)
-    |> add_extensions(nil, prefix, {syntax, descriptor.extension})
+    |> add_extensions(nil, syntax, descriptor.extension)
   end
 
-  defp make_enums(acc, _, []), do: acc
-
-  defp make_enums(acc, prefix, [descriptor | descriptors]) do
-    acc
-    |> make_enum(prefix, descriptor)
-    |> make_enums(prefix, descriptors)
+  defp make_enums(acc, prefix, descriptors) do
+    Enum.reduce(descriptors, acc, fn descriptor, acc ->
+      make_enum(acc, prefix, descriptor)
+    end)
   end
 
   defp make_enum(acc, prefix, descriptor) do
-    %{
-      acc
-      | enums:
-          Map.put(
-            acc.enums,
-            prefix ++ [descriptor.name],
-            [] |> make_enum_constants(descriptor.value) |> Enum.reverse()
-          )
-    }
+    enum_name = prefix ++ [descriptor.name]
+    enum_constants = [] |> make_enum_constants(descriptor.value) |> Enum.reverse()
+
+    %{acc | enums: Map.put(acc.enums, enum_name, enum_constants)}
   end
 
   defp make_enum_constants(acc, []), do: acc
@@ -165,12 +156,10 @@ defmodule Protox.Parse do
     )
   end
 
-  defp make_messages(acc, _syntax, _prefix, []), do: acc
-
-  defp make_messages(acc, syntax, prefix, [descriptor | descriptors]) do
-    acc
-    |> make_message(syntax, prefix, descriptor)
-    |> make_messages(syntax, prefix, descriptors)
+  defp make_messages(acc, syntax, prefix, descriptors) do
+    Enum.reduce(descriptors, acc, fn descriptor, acc ->
+      make_message(acc, syntax, prefix, descriptor)
+    end)
   end
 
   defp make_message(acc, _syntax, _prefix, %DescriptorProto{
@@ -188,28 +177,24 @@ defmodule Protox.Parse do
     |> add_message(syntax, name)
     |> make_messages(syntax, name, descriptor.nested_type)
     |> make_enums(name, descriptor.enum_type)
-    |> add_fields(descriptor, name, {syntax, descriptor.field})
-    |> add_fields(descriptor, name, {syntax, descriptor.extension})
+    |> add_fields(descriptor, name, syntax, descriptor.field)
+    |> add_fields(descriptor, name, syntax, descriptor.extension)
   end
 
   defp add_message(acc, syntax, name) do
     %{acc | messages: Map.put_new(acc.messages, name, {syntax, []})}
   end
 
-  defp add_extensions(acc, _upper, _prefix, {_syntax, []}), do: acc
-
-  defp add_extensions(acc, upper, prefix, {syntax, [field | fields]}) do
-    acc
-    |> add_field(syntax, upper, fully_qualified_name(field.extendee), field)
-    |> add_extensions(upper, prefix, {syntax, fields})
+  defp add_extensions(acc, upper, syntax, fields) do
+    Enum.reduce(fields, acc, fn field, acc ->
+      add_field(acc, syntax, upper, fully_qualified_name(field.extendee), field)
+    end)
   end
 
-  defp add_fields(acc, _upper, _msg_name, {_syntax, []}), do: acc
-
-  defp add_fields(acc, upper, msg_name, {syntax, [field | fields]}) do
-    acc
-    |> add_field(syntax, upper, msg_name, field)
-    |> add_fields(upper, msg_name, {syntax, fields})
+  defp add_fields(acc, upper, msg_name, syntax, fields) do
+    Enum.reduce(fields, acc, fn field, acc ->
+      add_field(acc, syntax, upper, msg_name, field)
+    end)
   end
 
   defp add_field(acc, syntax, upper, msg_name, descriptor) do
@@ -232,13 +217,12 @@ defmodule Protox.Parse do
       type: type
     }
 
-    %{
-      acc
-      | messages:
-          Map.update!(acc.messages, msg_name, fn {syntax, fields} ->
-            {syntax, [field | fields]}
-          end)
-    }
+    new_messages =
+      Map.update!(acc.messages, msg_name, fn {syntax, fields} ->
+        {syntax, [field | fields]}
+      end)
+
+    %{acc | messages: new_messages}
   end
 
   defp field_label(%{proto3_optional: true}), do: :proto3_optional
