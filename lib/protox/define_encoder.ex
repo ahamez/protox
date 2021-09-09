@@ -143,7 +143,7 @@ defmodule Protox.DefineEncoder do
          vars
        ) do
     key = make_key_bytes(field.tag, field.type)
-    var = quote do: field_value
+    var = quote do: unquote(vars.msg).unquote(field.name)
     encode_value_ast = get_encode_value_body(field.type, var)
 
     case syntax do
@@ -152,13 +152,11 @@ defmodule Protox.DefineEncoder do
           quote do
             case unquote(vars.msg).unquote(field.name) do
               nil -> raise Protox.RequiredFieldsError.new([unquote(field.name)])
-              unquote(var) -> [unquote(vars.acc), unquote(key), unquote(encode_value_ast)]
+              _ -> [unquote(vars.acc), unquote(key), unquote(encode_value_ast)]
             end
           end
         else
           quote do
-            unquote(var) = unquote(vars.msg).unquote(field.name)
-
             case unquote(var) do
               nil -> unquote(vars.acc)
               _ -> [unquote(vars.acc), unquote(key), unquote(encode_value_ast)]
@@ -168,8 +166,6 @@ defmodule Protox.DefineEncoder do
 
       :proto3 ->
         quote do
-          unquote(var) = unquote(vars.msg).unquote(field.name)
-
           # Use == rather than pattern match for float comparison
           if unquote(var) == unquote(default) do
             unquote(vars.acc)
