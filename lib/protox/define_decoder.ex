@@ -10,16 +10,35 @@ defmodule Protox.DefineDecoder do
   }
 
   def define(msg_name, fields, required_fields, opts \\ []) do
-    set_fields_var = quote do: set_fields
+    vars = %{
+      set_fields: quote(do: set_fields)
+    }
 
-    {keep_unknown_fields, _opts} = Keyword.pop(opts, :keep_unknown_fields, true)
+    # The public function to decode the binary protobuf.
+    decode_fun = make_decode_fun(required_fields, msg_name, vars)
 
-    decode_fun = make_decode_fun(required_fields, msg_name, set_fields_var)
-
+    # The function that decoded the binary protobuf and possibly dispatches to other decoding
+    # functions.
     parse_key_value_fun =
-      make_parse_key_value_fun(required_fields, fields, set_fields_var, keep_unknown_fields)
+      make_parse_key_value_fun(
+        required_fields,
+        fields,
+        vars,
+        Keyword.get(opts, :keep_unknown_fields, true)
+      )
 
-    parse_map_entries = make_parse_map_entries(fields)
+    # The functions that decode maps.
+    parse_map_entries = make_parse_map_entries_funs(fields)
+
+    quote do
+      unquote(decode_fun)
+      unquote(parse_key_value_fun)
+      unquote(parse_map_entries)
+    end
+  end
+
+  defp make_decode_fun(required_fields, msg_name, vars) do
+    decode_bang_fun = make_decode_bang_fun(required_fields, msg_name, vars)
 
     quote do
       @spec decode(binary) :: {:ok, struct} | {:error, any}
@@ -31,15 +50,11 @@ defmodule Protox.DefineDecoder do
         end
       end
 
-      unquote(decode_fun)
-
-      unquote(parse_key_value_fun)
-
-      unquote(parse_map_entries)
+      unquote(decode_bang_fun)
     end
   end
 
-  defp make_decode_fun([], msg_name, _set_fields_var) do
+  defp make_decode_bang_fun([], msg_name, _vars) do
     quote do
       @spec decode!(binary) :: struct | no_return
       def decode!(bytes) do
@@ -48,13 +63,13 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_decode_fun(required_fields, msg_name, set_fields_var) do
+  defp make_decode_bang_fun(required_fields, msg_name, vars) do
     quote do
       @spec decode!(binary) :: struct | no_return
       def decode!(bytes) do
-        {msg, unquote(set_fields_var)} = parse_key_value([], bytes, struct(unquote(msg_name)))
+        {msg, unquote(vars.set_fields)} = parse_key_value([], bytes, struct(unquote(msg_name)))
 
-        case unquote(required_fields) -- unquote(set_fields_var) do
+        case unquote(required_fields) -- unquote(vars.set_fields) do
           [] -> msg
           missing_fields -> raise Protox.RequiredFieldsError.new(missing_fields)
         end
@@ -62,21 +77,21 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_parse_key_value_fun(required_fields, fields, set_fields_var, keep_unknown_fields) do
+  defp make_parse_key_value_fun(required_fields, fields, vars, keep_unknown_fields) do
     keep_set_fields = required_fields != []
 
-    parse_key_value =
-      make_parse_key_value(keep_set_fields, fields, set_fields_var, keep_unknown_fields)
+    parse_key_value_body =
+      make_parse_key_value_body(keep_set_fields, fields, vars, keep_unknown_fields)
 
     if keep_set_fields do
       quote do
         @spec parse_key_value([atom], binary, struct) :: {struct, [atom]}
-        defp parse_key_value(unquote(set_fields_var), <<>>, msg) do
-          {msg, unquote(set_fields_var)}
+        defp parse_key_value(unquote(vars.set_fields), <<>>, msg) do
+          {msg, unquote(vars.set_fields)}
         end
 
-        defp parse_key_value(unquote(set_fields_var), bytes, msg) do
-          unquote(parse_key_value)
+        defp parse_key_value(unquote(vars.set_fields), bytes, msg) do
+          unquote(parse_key_value_body)
         end
       end
     else
@@ -84,130 +99,151 @@ defmodule Protox.DefineDecoder do
         @spec parse_key_value(binary, struct) :: struct
         defp parse_key_value(<<>>, msg), do: msg
 
-        defp parse_key_value(bytes, msg), do: unquote(parse_key_value)
+        defp parse_key_value(bytes, msg), do: unquote(parse_key_value_body)
       end
     end
   end
 
-  defp make_parse_key_value(keep_set_fields, fields, set_fields_var, keep_unknown_fields) do
-    msg_var = quote do: msg
-    field_var = quote do: field
-    value_var = quote do: value
+  defp make_parse_key_value_body(keep_set_fields, fields, vars, keep_unknown_fields) do
+    vars =
+      Map.merge(vars, %{
+        msg: quote(do: msg),
+        field: quote(do: field),
+        value: quote(do: value)
+      })
 
-    tag_0_case =
-      quote do
-        {0, _, _} -> raise %Protox.IllegalTagError{}
-      end
+    # Fragment to handle the (invalid) field with tag 0.
+    tag_0_case = make_parse_key_value_tag_0()
 
     # Fragment to parse unknown fields. Those are identified with an unknown tag.
-    unknown_tag_case =
-      case keep_unknown_fields do
-        true ->
-          # No need to maintain a list of set fields when the list of required fields is empty
-          case_return =
-            case keep_set_fields do
-              true -> quote do: {unquote(set_fields_var), [unquote(field_var)], rest}
-              false -> quote do: {[unquote(field_var)], rest}
-            end
-
-          quote do
-            {tag, wire_type, rest} ->
-              {unquote(value_var), rest} = Protox.Decode.parse_unknown(tag, wire_type, rest)
-
-              unquote(field_var) =
-                {unquote(msg_var).__struct__.unknown_fields_name,
-                 [
-                   unquote(value_var)
-                   | unquote(msg_var).__struct__.unknown_fields(unquote(msg_var))
-                 ]}
-
-              unquote(case_return)
-          end
-
-        false ->
-          # No need to maintain a list of set fields when the list of required fields is empty
-          case_return =
-            case keep_set_fields do
-              # [] -> no fields to update as we don't want to keep unknown fields
-              true -> quote do: {unquote(set_fields_var), [], rest}
-              false -> quote do: {[], rest}
-            end
-
-          quote do
-            {tag, wire_type, rest} ->
-              {_, rest} = Protox.Decode.parse_unknown(tag, wire_type, rest)
-
-              unquote(case_return)
-          end
-      end
+    unknown_tag_case = make_parse_key_value_unknown(vars, keep_set_fields, keep_unknown_fields)
 
     # Fragment to parse known fields.
-    known_tags_case =
-      fields
-      |> Enum.map(fn %Field{} = field ->
-        single = make_single_case(msg_var, keep_set_fields, field)
-        delimited = make_delimited_case(msg_var, keep_set_fields, single, field)
-
-        delimited ++ single
-      end)
-      |> List.flatten()
+    known_tags_case = make_parse_key_value_known(vars, fields, keep_set_fields)
 
     all_cases = tag_0_case ++ known_tags_case ++ unknown_tag_case
 
     if keep_set_fields do
       quote do
-        {new_set_fields, unquote(field_var), rest} =
+        {new_set_fields, unquote(vars.field), rest} =
           case Protox.Decode.parse_key(bytes) do
             unquote(all_cases)
           end
 
-        msg_updated = struct(unquote(msg_var), unquote(field_var))
+        msg_updated = struct(unquote(vars.msg), unquote(vars.field))
         parse_key_value(new_set_fields, rest, msg_updated)
       end
     else
       quote do
-        {unquote(field_var), rest} =
+        {unquote(vars.field), rest} =
           case Protox.Decode.parse_key(bytes) do
             unquote(all_cases)
           end
 
-        msg_updated = struct(unquote(msg_var), unquote(field_var))
+        msg_updated = struct(unquote(vars.msg), unquote(vars.field))
         parse_key_value(rest, msg_updated)
       end
     end
   end
 
-  defp make_single_case(_msg_var, _keep_set_fields, %Field{type: {:message, _}}),
-    do: quote(do: [])
+  defp make_parse_key_value_tag_0() do
+    quote do
+      {0, _, _} -> raise %Protox.IllegalTagError{}
+    end
+  end
 
-  defp make_single_case(_msg_var, _keep_set_fields, %Field{type: :string}),
-    do: quote(do: [])
+  defp make_parse_key_value_known(vars, fields, keep_set_fields) do
+    fields
+    |> Enum.map(fn %Field{} = field ->
+      single = make_single_case(vars.msg, keep_set_fields, field)
+      delimited = make_delimited_case(vars.msg, keep_set_fields, single, field)
 
-  defp make_single_case(_msg_var, _keep_set_fields, %Field{type: :bytes}),
-    do: quote(do: [])
+      delimited ++ single
+    end)
+    |> List.flatten()
+  end
 
-  defp make_single_case(_msg_var, _keep_set_fields, %Field{type: {x, _}})
-       when x != :enum,
-       do: quote(do: [])
+  defp make_parse_key_value_unknown(
+         vars,
+         keep_set_fields,
+         true = _keep_unknown_fields
+       ) do
+    case_return =
+      case keep_set_fields do
+        true -> quote(do: {unquote(vars.set_fields), [unquote(vars.field)], rest})
+        # No need to maintain a list of set fields when the list of required fields is empty
+        false -> quote(do: {[unquote(vars.field)], rest})
+      end
+
+    quote do
+      {tag, wire_type, rest} ->
+        {unquote(vars.value), rest} = Protox.Decode.parse_unknown(tag, wire_type, rest)
+
+        unquote(vars.field) =
+          {unquote(vars.msg).__struct__.unknown_fields_name,
+           [
+             unquote(vars.value)
+             | unquote(vars.msg).__struct__.unknown_fields(unquote(vars.msg))
+           ]}
+
+        unquote(case_return)
+    end
+  end
+
+  defp make_parse_key_value_unknown(
+         vars,
+         keep_set_fields,
+         false = _keep_unknown_fields
+       ) do
+    # No need to maintain a list of set fields when the list of required fields is empty
+    case_return =
+      case keep_set_fields do
+        # [] -> no fields to update as we don't want to keep unknown fields
+        true -> quote do: {unquote(vars.set_fields), [], rest}
+        false -> quote do: {[], rest}
+      end
+
+    quote do
+      {tag, wire_type, rest} ->
+        {_, rest} = Protox.Decode.parse_unknown(tag, wire_type, rest)
+
+        unquote(case_return)
+    end
+  end
+
+  defp make_single_case(_msg_var, _keep_set_fields, %Field{type: {:message, _}}) do
+    quote(do: [])
+  end
+
+  defp make_single_case(_msg_var, _keep_set_fields, %Field{type: :string}), do: quote(do: [])
+  defp make_single_case(_msg_var, _keep_set_fields, %Field{type: :bytes}), do: quote(do: [])
+
+  defp make_single_case(_msg_var, _keep_set_fields, %Field{type: {x, _}}) when x != :enum do
+    quote(do: [])
+  end
 
   defp make_single_case(msg_var, keep_set_fields, %Field{} = field) do
-    bytes_var = quote do: bytes
-    field_var = quote do: field
-    value_var = quote do: value
-    parse_single = make_parse_single(bytes_var, field.type)
-    update_field = make_update_field(field, msg_var, value_var)
+    vars = %{
+      bytes: quote(do: bytes),
+      field: quote(do: field),
+      value: quote(do: value),
+      msg: msg_var
+    }
+
+    parse_single = make_parse_single(vars.bytes, field.type)
+    update_field = make_update_field(field, vars)
 
     # No need to maintain a list of set fields for proto3
     case_return =
       case keep_set_fields do
-        true -> quote do: {[unquote(field.name) | set_fields], [unquote(field_var)], rest}
-        false -> quote do: {[unquote(field_var)], rest}
+        true -> quote do: {[unquote(field.name) | set_fields], [unquote(vars.field)], rest}
+        false -> quote do: {[unquote(vars.field)], rest}
       end
 
     quote do
-      {unquote(field.tag), _, unquote(bytes_var)} ->
+      {unquote(field.tag), _, unquote(vars.bytes)} ->
         {value, rest} = unquote(parse_single)
-        unquote(field_var) = unquote(update_field)
+        unquote(vars.field) = unquote(update_field)
         unquote(case_return)
     end
   end
@@ -243,19 +279,23 @@ defmodule Protox.DefineDecoder do
   end
 
   defp make_delimited_case_impl(msg_var, keep_set_fields, single, %Field{} = field) do
-    bytes_var = quote do: bytes
-    field_var = quote do: field
-    value_var = quote do: value
-    update_field = make_update_field(field, msg_var, value_var)
+    vars = %{
+      bytes: quote(do: bytes),
+      field: quote(do: field),
+      value: quote(do: value),
+      delimited: quote(do: delimited),
+      msg: msg_var
+    }
+
+    update_field = make_update_field(field, vars)
 
     case_return =
       case keep_set_fields do
-        true -> quote do: {[unquote(field.name) | set_fields], [unquote(field_var)], rest}
-        false -> quote do: {[unquote(field_var)], rest}
+        true -> quote do: {[unquote(field.name) | set_fields], [unquote(vars.field)], rest}
+        false -> quote do: {[unquote(vars.field)], rest}
       end
 
-    delimited_var = quote do: delimited
-    parse_delimited = make_parse_delimited(delimited_var, field.type)
+    parse_delimited = make_parse_delimited(vars.delimited, field.type)
 
     # If `single` was not generated, then we don't need the `@wire_delimited discrimant
     # as there is only one clause for this `tag`.
@@ -266,69 +306,64 @@ defmodule Protox.DefineDecoder do
       end
 
     quote do
-      {unquote(field.tag), unquote(wire_type), unquote(bytes_var)} ->
-        {len, unquote(bytes_var)} = Protox.Varint.decode(unquote(bytes_var))
-        <<unquote(delimited_var)::binary-size(len), rest::binary>> = unquote(bytes_var)
-        unquote(value_var) = unquote(parse_delimited)
-        unquote(field_var) = unquote(update_field)
+      {unquote(field.tag), unquote(wire_type), unquote(vars.bytes)} ->
+        {len, unquote(vars.bytes)} = Protox.Varint.decode(unquote(vars.bytes))
+        <<unquote(vars.delimited)::binary-size(len), rest::binary>> = unquote(vars.bytes)
+        unquote(vars.value) = unquote(parse_delimited)
+        unquote(vars.field) = unquote(update_field)
         unquote(case_return)
     end
   end
 
-  defp make_update_field(%Field{kind: :map} = field, msg_var, value_var) do
+  defp make_update_field(%Field{kind: :map} = field, vars) do
     quote do
-      {entry_key, entry_value} = unquote(value_var)
-      {unquote(field.name), Map.put(unquote(msg_var).unquote(field.name), entry_key, entry_value)}
+      {entry_key, entry_value} = unquote(vars.value)
+
+      {unquote(field.name),
+       Map.put(unquote(vars.msg).unquote(field.name), entry_key, entry_value)}
     end
   end
 
-  defp make_update_field(
-         %Field{kind: {:oneof, parent_field}, type: {:message, _}} = field,
-         msg_var,
-         value_var
-       ) do
+  defp make_update_field(%Field{kind: {:oneof, parent_field}, type: {:message, _}} = field, vars) do
     quote do
-      case unquote(msg_var).unquote(parent_field) do
+      case unquote(vars.msg).unquote(parent_field) do
         {unquote(field.name), previous_value} ->
           {unquote(parent_field),
-           {unquote(field.name), Protox.Message.merge(previous_value, unquote(value_var))}}
+           {unquote(field.name), Protox.Message.merge(previous_value, unquote(vars.value))}}
 
         _ ->
-          {unquote(parent_field), {unquote(field.name), unquote(value_var)}}
+          {unquote(parent_field), {unquote(field.name), unquote(vars.value)}}
       end
     end
   end
 
-  defp make_update_field(%Field{kind: {:oneof, parent_field}} = field, _msg_var, value_var) do
+  defp make_update_field(%Field{kind: {:oneof, parent_field}} = field, vars) do
     case field.label do
       :proto3_optional ->
-        quote(do: {unquote(field.name), unquote(value_var)})
+        quote(do: {unquote(field.name), unquote(vars.value)})
 
       _ ->
-        quote(do: {unquote(parent_field), {unquote(field.name), unquote(value_var)}})
+        quote(do: {unquote(parent_field), {unquote(field.name), unquote(vars.value)}})
     end
   end
 
-  defp make_update_field(
-         %Field{kind: {:default, _}, type: {:message, _}} = field,
-         msg_var,
-         value_var
-       ) do
+  defp make_update_field(%Field{kind: {:default, _}, type: {:message, _}} = field, vars) do
     quote do
       {
         unquote(field.name),
-        Protox.Message.merge(unquote(msg_var).unquote(field.name), unquote(value_var))
+        Protox.Message.merge(unquote(vars.msg).unquote(field.name), unquote(vars.value))
       }
     end
   end
 
-  defp make_update_field(%Field{kind: {:default, _}} = field, _msg_var, value_var) do
-    quote(do: {unquote(field.name), unquote(value_var)})
+  defp make_update_field(%Field{kind: {:default, _}} = field, vars) do
+    quote(do: {unquote(field.name), unquote(vars.value)})
   end
 
-  defp make_update_field(%Field{} = field, msg_var, value_var) do
+  defp make_update_field(%Field{} = field, vars) do
     quote do
-      {unquote(field.name), unquote(msg_var).unquote(field.name) ++ List.wrap(unquote(value_var))}
+      {unquote(field.name),
+       unquote(vars.msg).unquote(field.name) ++ List.wrap(unquote(vars.value))}
     end
   end
 
@@ -484,8 +519,8 @@ defmodule Protox.DefineDecoder do
     quote(do: Protox.Decode.parse_enum(unquote(bytes_var), unquote(mod)))
   end
 
-  defp make_parse_map_entries(fields) do
-    {maps, _} = Protox.Defs.split_maps(fields)
+  defp make_parse_map_entries_funs(fields) do
+    {maps, _other_fields} = Protox.Defs.split_maps(fields)
 
     maps
     |> Enum.map(fn %Field{kind: :map} = field ->
