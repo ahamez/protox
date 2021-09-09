@@ -16,7 +16,6 @@ defmodule Protox.DefineEncoder do
 
     quote do
       unquote(encode_fun)
-
       unquote(encode_oneof_funs)
       unquote(encode_field_funs)
       unquote(encode_unknown_fields_fun)
@@ -24,36 +23,37 @@ defmodule Protox.DefineEncoder do
   end
 
   defp make_encode_fun(oneofs, fields, keep_unknown_fields) do
-    ast = quote do: []
-    ast = make_encode_oneof_fun(ast, oneofs)
-    ast = make_encode_fun_field(ast, fields, keep_unknown_fields)
+    quote(do: [])
+    |> make_encode_oneof_fun(oneofs)
+    |> make_encode_fun_field(fields, keep_unknown_fields)
+    |> make_encode_fun_body()
+  end
 
-    case ast do
-      [] ->
-        quote do
-          @spec encode(struct) :: {:ok, iodata}
-          def encode(msg) do
-            {:ok, encode!(msg)}
-          end
+  defp make_encode_fun_body([] = _ast) do
+    quote do
+      @spec encode(struct) :: {:ok, iodata}
+      def encode(msg) do
+        {:ok, encode!(msg)}
+      end
 
-          @spec encode!(struct) :: iodata
-          def encode!(_msg), do: []
+      @spec encode!(struct) :: iodata
+      def encode!(_msg), do: []
+    end
+  end
+
+  defp make_encode_fun_body(ast) do
+    quote do
+      @spec encode(struct) :: {:ok, iodata} | {:error, any}
+      def encode(msg) do
+        try do
+          {:ok, encode!(msg)}
+        rescue
+          e -> {:error, e}
         end
+      end
 
-      _ ->
-        quote do
-          @spec encode(struct) :: {:ok, iodata} | {:error, any}
-          def encode(msg) do
-            try do
-              {:ok, encode!(msg)}
-            rescue
-              e -> {:error, e}
-            end
-          end
-
-          @spec encode!(struct) :: iodata | no_return
-          def encode!(msg), do: unquote(ast)
-        end
+      @spec encode!(struct) :: iodata | no_return
+      def encode!(msg), do: unquote(ast)
     end
   end
 
@@ -79,7 +79,6 @@ defmodule Protox.DefineEncoder do
   defp make_encode_oneof_fun(ast, oneofs) do
     Enum.reduce(oneofs, ast, fn {parent_name, _children}, ast_acc ->
       fun_name = String.to_atom("encode_#{parent_name}")
-
       # credo:disable-for-next-line Credo.Check.Readability.SinglePipe
       quote do: unquote(ast_acc) |> unquote(fun_name)(msg)
     end)
@@ -88,8 +87,9 @@ defmodule Protox.DefineEncoder do
   defp parent_name(_, [%Protox.Field{label: :proto3_optional, kind: {_, name}}]), do: name
   defp parent_name(name, _), do: name
 
-  defp parent_data_key(_, [%Protox.Field{label: :proto3_optional, name: child_name}]),
-    do: child_name
+  defp parent_data_key(_, [%Protox.Field{label: :proto3_optional, name: child_name}]) do
+    child_name
+  end
 
   defp parent_data_key(parent_name, _), do: parent_name
 
