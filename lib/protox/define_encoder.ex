@@ -58,20 +58,16 @@ defmodule Protox.DefineEncoder do
   end
 
   defp make_encode_fun_field(ast, [], true = _keep_unknown_fields) do
-    # credo:disable-for-next-line Credo.Check.Readability.SinglePipe
-    quote do: unquote(ast) |> encode_unknown_fields(msg)
+    quote(do: unquote(ast) |> encode_unknown_fields(msg))
   end
 
   defp make_encode_fun_field(ast, [], false = _keep_unknown_fields) do
-    # credo:disable-for-next-line Credo.Check.Readability.SinglePipe
-    quote do: unquote(ast)
+    quote(do: unquote(ast))
   end
 
   defp make_encode_fun_field(ast, [%Protox.Field{} = field | fields], keep_unknown_fields) do
     fun_name = String.to_atom("encode_#{field.name}")
-
-    # credo:disable-for-next-line Credo.Check.Readability.SinglePipe
-    ast = quote do: unquote(ast) |> unquote(fun_name)(msg)
+    ast = quote(do: unquote(ast) |> unquote(fun_name)(msg))
 
     make_encode_fun_field(ast, fields, keep_unknown_fields)
   end
@@ -79,8 +75,7 @@ defmodule Protox.DefineEncoder do
   defp make_encode_oneof_fun(ast, oneofs) do
     Enum.reduce(oneofs, ast, fn {parent_name, _children}, ast_acc ->
       fun_name = String.to_atom("encode_#{parent_name}")
-      # credo:disable-for-next-line Credo.Check.Readability.SinglePipe
-      quote do: unquote(ast_acc) |> unquote(fun_name)(msg)
+      quote(do: unquote(ast_acc) |> unquote(fun_name)(msg))
     end)
   end
 
