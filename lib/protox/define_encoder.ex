@@ -142,7 +142,7 @@ defmodule Protox.DefineEncoder do
          syntax,
          vars
        ) do
-    key = Protox.Encode.make_key_bytes(field.tag, field.type)
+    key = make_key_bytes(field.tag, field.type)
     var = quote do: field_value
     encode_value_ast = get_encode_value_body(field.type, var)
 
@@ -187,7 +187,7 @@ defmodule Protox.DefineEncoder do
          _syntax,
          vars
        ) do
-    key = Protox.Encode.make_key_bytes(child_field.tag, child_field.type)
+    key = make_key_bytes(child_field.tag, child_field.type)
     var = quote do: child_field_value
     encode_value_ast = get_encode_value_body(child_field.type, var)
 
@@ -217,7 +217,7 @@ defmodule Protox.DefineEncoder do
   end
 
   defp make_encode_field_body(%Field{kind: :packed} = field, _required, _syntax, vars) do
-    key = Protox.Encode.make_key_bytes(field.tag, :packed)
+    key = make_key_bytes(field.tag, :packed)
     encode_packed_ast = make_encode_packed_body(field.type)
 
     quote do
@@ -248,7 +248,7 @@ defmodule Protox.DefineEncoder do
     # Each key/value entry of a map has the same layout as a message.
     # https://developers.google.com/protocol-buffers/docs/proto3#backwards-compatibility
 
-    key = Protox.Encode.make_key_bytes(field.tag, :map_entry)
+    key = make_key_bytes(field.tag, :map_entry)
 
     {map_key_type, map_value_type} = field.type
 
@@ -257,8 +257,8 @@ defmodule Protox.DefineEncoder do
     encode_map_key_ast = get_encode_value_body(map_key_type, k_var)
     encode_map_value_ast = get_encode_value_body(map_value_type, v_var)
 
-    map_key_key_bytes = Protox.Encode.make_key_bytes(1, map_key_type)
-    map_value_key_bytes = Protox.Encode.make_key_bytes(2, map_value_type)
+    map_key_key_bytes = make_key_bytes(1, map_key_type)
+    map_value_key_bytes = make_key_bytes(2, map_value_type)
     map_keys_len = byte_size(map_value_key_bytes) + byte_size(map_key_key_bytes)
 
     quote do
@@ -331,7 +331,7 @@ defmodule Protox.DefineEncoder do
   end
 
   defp make_encode_repeated_body(tag, type) do
-    key = Protox.Encode.make_key_bytes(tag, type)
+    key = make_key_bytes(tag, type)
     value_var = quote do: value
     encode_value_ast = get_encode_value_body(type, value_var)
 
@@ -412,5 +412,10 @@ defmodule Protox.DefineEncoder do
 
   defp get_encode_value_body(:double, value_var) do
     quote(do: Protox.Encode.encode_double(unquote(value_var)))
+  end
+
+  # Flatten an iolist into a binary at generation-time.
+  defp make_key_bytes(tag, ty) do
+    IO.iodata_to_binary(Protox.Encode.make_key_bytes(tag, ty))
   end
 end
