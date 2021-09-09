@@ -156,7 +156,9 @@ defmodule Protox.DefineDecoder do
     fields
     |> Enum.map(fn %Field{} = field ->
       single = make_single_case(vars.msg, keep_set_fields, field)
-      delimited = make_delimited_case(vars.msg, keep_set_fields, single, field)
+
+      single_generated = single != []
+      delimited = make_delimited_case(vars.msg, keep_set_fields, single_generated, field)
 
       delimited ++ single
     end)
@@ -251,34 +253,44 @@ defmodule Protox.DefineDecoder do
   defp make_delimited_case(
          msg_var,
          keep_set_fields,
-         single,
+         single_generated,
          %Field{type: {:message, _}} = field
        ) do
-    make_delimited_case_impl(msg_var, keep_set_fields, single, field)
+    make_delimited_case_impl(msg_var, keep_set_fields, single_generated, field)
   end
 
-  defp make_delimited_case(msg_var, keep_set_fields, single, %Field{type: :bytes} = field) do
-    make_delimited_case_impl(msg_var, keep_set_fields, single, field)
+  defp make_delimited_case(
+         msg_var,
+         keep_set_fields,
+         single_generated,
+         %Field{type: :bytes} = field
+       ) do
+    make_delimited_case_impl(msg_var, keep_set_fields, single_generated, field)
   end
 
-  defp make_delimited_case(msg_var, keep_set_fields, single, %Field{type: :string} = field) do
-    make_delimited_case_impl(msg_var, keep_set_fields, single, field)
+  defp make_delimited_case(
+         msg_var,
+         keep_set_fields,
+         single_generated,
+         %Field{type: :string} = field
+       ) do
+    make_delimited_case_impl(msg_var, keep_set_fields, single_generated, field)
   end
 
   defp make_delimited_case(
          _msg_var,
          _keep_set_fields,
-         _single,
+         _single_generated,
          %Field{kind: {:default, _}}
        ) do
     []
   end
 
-  defp make_delimited_case(msg_var, keep_set_fields, single, %Field{} = field) do
-    make_delimited_case_impl(msg_var, keep_set_fields, single, field)
+  defp make_delimited_case(msg_var, keep_set_fields, single_generated, %Field{} = field) do
+    make_delimited_case_impl(msg_var, keep_set_fields, single_generated, field)
   end
 
-  defp make_delimited_case_impl(msg_var, keep_set_fields, single, %Field{} = field) do
+  defp make_delimited_case_impl(msg_var, keep_set_fields, single_generated, %Field{} = field) do
     vars = %{
       bytes: quote(do: bytes),
       field: quote(do: field),
@@ -300,9 +312,9 @@ defmodule Protox.DefineDecoder do
     # If `single` was not generated, then we don't need the `@wire_delimited discrimant
     # as there is only one clause for this `tag`.
     wire_type =
-      case single do
-        [] -> quote do: _
-        _ -> quote do: unquote(@wire_delimited)
+      case single_generated do
+        true -> quote do: unquote(@wire_delimited)
+        false -> quote do: _
       end
 
     quote do
