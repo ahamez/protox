@@ -286,6 +286,15 @@ defmodule Protox.DefineDecoder do
     []
   end
 
+  defp make_delimited_case(
+         _msg_var,
+         _keep_set_fields,
+         _single_generated,
+         %Field{kind: {:oneof, _}}
+       ) do
+    []
+  end
+
   defp make_delimited_case(msg_var, keep_set_fields, single_generated, %Field{} = field) do
     make_delimited_case_impl(msg_var, keep_set_fields, single_generated, field)
   end
