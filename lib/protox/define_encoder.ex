@@ -332,85 +332,85 @@ defmodule Protox.DefineEncoder do
 
   defp make_encode_repeated_body(tag, type) do
     key = Protox.Encode.make_key_bytes(tag, type)
-    var = quote do: value
-    encode_value_ast = get_encode_value_body(type, var)
+    value_var = quote do: value
+    encode_value_ast = get_encode_value_body(type, value_var)
 
     quote do
-      Enum.reduce(values, [], fn unquote(var), acc ->
+      Enum.reduce(values, [], fn unquote(value_var), acc ->
         [acc, unquote(key), unquote(encode_value_ast)]
       end)
     end
   end
 
-  defp get_encode_value_body({:message, _}, var) do
+  defp get_encode_value_body({:message, _}, value_var) do
     quote do
-      Protox.Encode.encode_message(unquote(var))
+      Protox.Encode.encode_message(unquote(value_var))
     end
   end
 
-  defp get_encode_value_body({:enum, enum}, var) do
+  defp get_encode_value_body({:enum, enum}, value_var) do
     quote do
-      unquote(var) |> unquote(enum).encode() |> Protox.Encode.encode_enum()
+      unquote(value_var) |> unquote(enum).encode() |> Protox.Encode.encode_enum()
     end
   end
 
-  defp get_encode_value_body(:bool, var) do
-    quote(do: Protox.Encode.encode_bool(unquote(var)))
+  defp get_encode_value_body(:bool, value_var) do
+    quote(do: Protox.Encode.encode_bool(unquote(value_var)))
   end
 
-  defp get_encode_value_body(:bytes, var) do
-    quote(do: Protox.Encode.encode_bytes(unquote(var)))
+  defp get_encode_value_body(:bytes, value_var) do
+    quote(do: Protox.Encode.encode_bytes(unquote(value_var)))
   end
 
-  defp get_encode_value_body(:string, var) do
-    quote(do: Protox.Encode.encode_string(unquote(var)))
+  defp get_encode_value_body(:string, value_var) do
+    quote(do: Protox.Encode.encode_string(unquote(value_var)))
   end
 
-  defp get_encode_value_body(:int32, var) do
-    quote(do: Protox.Encode.encode_int32(unquote(var)))
+  defp get_encode_value_body(:int32, value_var) do
+    quote(do: Protox.Encode.encode_int32(unquote(value_var)))
   end
 
-  defp get_encode_value_body(:int64, var) do
-    quote(do: Protox.Encode.encode_int64(unquote(var)))
+  defp get_encode_value_body(:int64, value_var) do
+    quote(do: Protox.Encode.encode_int64(unquote(value_var)))
   end
 
-  defp get_encode_value_body(:uint32, var) do
-    quote(do: Protox.Encode.encode_uint32(unquote(var)))
+  defp get_encode_value_body(:uint32, value_var) do
+    quote(do: Protox.Encode.encode_uint32(unquote(value_var)))
   end
 
-  defp get_encode_value_body(:uint64, var) do
-    quote(do: Protox.Encode.encode_uint64(unquote(var)))
+  defp get_encode_value_body(:uint64, value_var) do
+    quote(do: Protox.Encode.encode_uint64(unquote(value_var)))
   end
 
-  defp get_encode_value_body(:sint32, var) do
-    quote(do: Protox.Encode.encode_sint32(unquote(var)))
+  defp get_encode_value_body(:sint32, value_var) do
+    quote(do: Protox.Encode.encode_sint32(unquote(value_var)))
   end
 
-  defp get_encode_value_body(:sint64, var) do
-    quote(do: Protox.Encode.encode_sint64(unquote(var)))
+  defp get_encode_value_body(:sint64, value_var) do
+    quote(do: Protox.Encode.encode_sint64(unquote(value_var)))
   end
 
-  defp get_encode_value_body(:fixed32, var) do
-    quote(do: Protox.Encode.encode_fixed32(unquote(var)))
+  defp get_encode_value_body(:fixed32, value_var) do
+    quote(do: Protox.Encode.encode_fixed32(unquote(value_var)))
   end
 
-  defp get_encode_value_body(:fixed64, var) do
-    quote(do: Protox.Encode.encode_fixed64(unquote(var)))
+  defp get_encode_value_body(:fixed64, value_var) do
+    quote(do: Protox.Encode.encode_fixed64(unquote(value_var)))
   end
 
-  defp get_encode_value_body(:sfixed32, var) do
-    quote(do: Protox.Encode.encode_sfixed32(unquote(var)))
+  defp get_encode_value_body(:sfixed32, value_var) do
+    quote(do: Protox.Encode.encode_sfixed32(unquote(value_var)))
   end
 
-  defp get_encode_value_body(:sfixed64, var) do
-    quote(do: Protox.Encode.encode_sfixed64(unquote(var)))
+  defp get_encode_value_body(:sfixed64, value_var) do
+    quote(do: Protox.Encode.encode_sfixed64(unquote(value_var)))
   end
 
-  defp get_encode_value_body(:float, var) do
-    quote(do: Protox.Encode.encode_float(unquote(var)))
+  defp get_encode_value_body(:float, value_var) do
+    quote(do: Protox.Encode.encode_float(unquote(value_var)))
   end
 
-  defp get_encode_value_body(:double, var) do
-    quote(do: Protox.Encode.encode_double(unquote(var)))
+  defp get_encode_value_body(:double, value_var) do
+    quote(do: Protox.Encode.encode_double(unquote(value_var)))
   end
 end
