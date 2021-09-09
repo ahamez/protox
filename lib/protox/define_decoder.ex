@@ -170,23 +170,25 @@ defmodule Protox.DefineDecoder do
          keep_set_fields,
          true = _keep_unknown_fields
        ) do
+    body =
+      quote do
+        {unquote(vars.msg).__struct__.unknown_fields_name,
+         [
+           unquote(vars.value)
+           | unquote(vars.msg).__struct__.unknown_fields(unquote(vars.msg))
+         ]}
+      end
+
     case_return =
       case keep_set_fields do
-        true -> quote(do: {unquote(vars.set_fields), [unquote(vars.field)], rest})
+        true -> quote(do: {unquote(vars.set_fields), [unquote(body)], rest})
         # No need to maintain a list of set fields when the list of required fields is empty
-        false -> quote(do: {[unquote(vars.field)], rest})
+        false -> quote(do: {[unquote(body)], rest})
       end
 
     quote do
       {tag, wire_type, rest} ->
         {unquote(vars.value), rest} = Protox.Decode.parse_unknown(tag, wire_type, rest)
-
-        unquote(vars.field) =
-          {unquote(vars.msg).__struct__.unknown_fields_name,
-           [
-             unquote(vars.value)
-             | unquote(vars.msg).__struct__.unknown_fields(unquote(vars.msg))
-           ]}
 
         unquote(case_return)
     end
@@ -238,14 +240,16 @@ defmodule Protox.DefineDecoder do
     # No need to maintain a list of set fields for proto3
     case_return =
       case keep_set_fields do
-        true -> quote do: {[unquote(field.name) | set_fields], [unquote(vars.field)], rest}
-        false -> quote do: {[unquote(vars.field)], rest}
+        true ->
+          quote do: {[unquote(field.name) | set_fields], [unquote(update_field)], rest}
+
+        false ->
+          quote do: {[unquote(update_field)], rest}
       end
 
     quote do
       {unquote(field.tag), _, unquote(vars.bytes)} ->
         {value, rest} = unquote(parse_single)
-        unquote(vars.field) = unquote(update_field)
         unquote(case_return)
     end
   end
@@ -317,8 +321,8 @@ defmodule Protox.DefineDecoder do
 
     case_return =
       case keep_set_fields do
-        true -> quote do: {[unquote(field.name) | set_fields], [unquote(vars.field)], rest}
-        false -> quote do: {[unquote(vars.field)], rest}
+        true -> quote do: {[unquote(field.name) | set_fields], [unquote(update_field)], rest}
+        false -> quote do: {[unquote(update_field)], rest}
       end
 
     parse_delimited = make_parse_delimited(vars.delimited, field.type)
@@ -331,13 +335,21 @@ defmodule Protox.DefineDecoder do
         false -> quote do: _
       end
 
-    quote do
-      {unquote(field.tag), unquote(wire_type), unquote(vars.bytes)} ->
-        {len, unquote(vars.bytes)} = Protox.Varint.decode(unquote(vars.bytes))
-        <<unquote(vars.delimited)::binary-size(len), rest::binary>> = unquote(vars.bytes)
-        unquote(vars.value) = unquote(parse_delimited)
-        unquote(vars.field) = unquote(update_field)
-        unquote(case_return)
+    if field.type == :string or field.type == :bytes do
+      quote do
+        {unquote(field.tag), unquote(wire_type), unquote(vars.bytes)} ->
+          {len, unquote(vars.bytes)} = Protox.Varint.decode(unquote(vars.bytes))
+          <<unquote(vars.value)::binary-size(len), rest::binary>> = unquote(vars.bytes)
+          unquote(case_return)
+      end
+    else
+      quote do
+        {unquote(field.tag), unquote(wire_type), unquote(vars.bytes)} ->
+          {len, unquote(vars.bytes)} = Protox.Varint.decode(unquote(vars.bytes))
+          <<unquote(vars.delimited)::binary-size(len), rest::binary>> = unquote(vars.bytes)
+          unquote(vars.value) = unquote(parse_delimited)
+          unquote(case_return)
+      end
     end
   end
 
