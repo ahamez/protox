@@ -123,18 +123,25 @@ defmodule Protox.DefineEncoder do
   end
 
   defp make_encode_field_funs(fields, required_fields, syntax) do
+    vars = %{acc: quote(do: acc), msg: quote(do: msg)}
+
     for %Field{name: name} = field <- fields do
       required = name in required_fields
       fun_name = String.to_atom("encode_#{name}")
-      fun_ast = make_encode_field_body(field, required, syntax)
+      fun_ast = make_encode_field_body(field, required, syntax, vars)
 
       quote do
-        defp unquote(fun_name)(acc, msg), do: unquote(fun_ast)
+        defp unquote(fun_name)(unquote(vars.acc), unquote(vars.msg)), do: unquote(fun_ast)
       end
     end
   end
 
-  defp make_encode_field_body(%Field{kind: {:default, default}} = field, required, syntax) do
+  defp make_encode_field_body(
+         %Field{kind: {:default, default}} = field,
+         required,
+         syntax,
+         vars
+       ) do
     key = Protox.Encode.make_key_bytes(field.tag, field.type)
     var = quote do: field_value
     encode_value_ast = get_encode_value_body(field.type, var)
@@ -143,31 +150,31 @@ defmodule Protox.DefineEncoder do
       :proto2 ->
         if required do
           quote do
-            case msg.unquote(field.name) do
+            case unquote(vars.msg).unquote(field.name) do
               nil -> raise Protox.RequiredFieldsError.new([unquote(field.name)])
-              unquote(var) -> [acc, unquote(key), unquote(encode_value_ast)]
+              unquote(var) -> [unquote(vars.acc), unquote(key), unquote(encode_value_ast)]
             end
           end
         else
           quote do
-            unquote(var) = msg.unquote(field.name)
+            unquote(var) = unquote(vars.msg).unquote(field.name)
 
             case unquote(var) do
-              nil -> acc
-              _ -> [acc, unquote(key), unquote(encode_value_ast)]
+              nil -> unquote(vars.acc)
+              _ -> [unquote(vars.acc), unquote(key), unquote(encode_value_ast)]
             end
           end
         end
 
       :proto3 ->
         quote do
-          unquote(var) = msg.unquote(field.name)
+          unquote(var) = unquote(vars.msg).unquote(field.name)
 
           # Use == rather than pattern match for float comparison
           if unquote(var) == unquote(default) do
-            acc
+            unquote(vars.acc)
           else
-            [acc, unquote(key), unquote(encode_value_ast)]
+            [unquote(vars.acc), unquote(key), unquote(encode_value_ast)]
           end
         end
     end
@@ -177,7 +184,8 @@ defmodule Protox.DefineEncoder do
   defp make_encode_field_body(
          %Field{kind: {:oneof, parent_field}} = child_field,
          _required,
-         _syntax
+         _syntax,
+         vars
        ) do
     key = Protox.Encode.make_key_bytes(child_field.tag, child_field.type)
     var = quote do: child_field_value
@@ -186,15 +194,15 @@ defmodule Protox.DefineEncoder do
     case child_field.label do
       :proto3_optional ->
         quote do
-          case msg.unquote(child_field.name) do
+          case unquote(vars.msg).unquote(child_field.name) do
             {_, unquote(var)} ->
-              [acc, unquote(key), unquote(encode_value_ast)]
+              [unquote(vars.acc), unquote(key), unquote(encode_value_ast)]
 
             unquote(var) when not is_nil(unquote(var)) ->
-              [acc, unquote(key), unquote(encode_value_ast)]
+              [unquote(vars.acc), unquote(key), unquote(encode_value_ast)]
 
             _ ->
-              [acc]
+              [unquote(vars.acc)]
           end
         end
 
@@ -202,36 +210,41 @@ defmodule Protox.DefineEncoder do
         # The dispatch on the correct child is performed by the parent encoding function,
         # this is why we don't check if the child is set.
         quote do
-          {_, unquote(var)} = msg.unquote(parent_field)
-          [acc, unquote(key), unquote(encode_value_ast)]
+          {_, unquote(var)} = unquote(vars.msg).unquote(parent_field)
+          [unquote(vars.acc), unquote(key), unquote(encode_value_ast)]
         end
     end
   end
 
-  defp make_encode_field_body(%Field{kind: :packed} = field, _required, _syntax) do
+  defp make_encode_field_body(%Field{kind: :packed} = field, _required, _syntax, vars) do
     key = Protox.Encode.make_key_bytes(field.tag, :packed)
     encode_packed_ast = make_encode_packed_body(field.type)
 
     quote do
-      case msg.unquote(field.name) do
-        [] -> acc
-        values -> [acc, unquote(key), unquote(encode_packed_ast)]
+      case unquote(vars.msg).unquote(field.name) do
+        [] -> unquote(vars.acc)
+        values -> [unquote(vars.acc), unquote(key), unquote(encode_packed_ast)]
       end
     end
   end
 
-  defp make_encode_field_body(%Field{kind: :unpacked} = field, _required, _syntax) do
+  defp make_encode_field_body(
+         %Field{kind: :unpacked} = field,
+         _required,
+         _syntax,
+         vars
+       ) do
     encode_repeated_ast = make_encode_repeated_body(field.tag, field.type)
 
     quote do
-      case msg.unquote(field.name) do
-        [] -> acc
-        values -> [acc, unquote(encode_repeated_ast)]
+      case unquote(vars.msg).unquote(field.name) do
+        [] -> unquote(vars.acc)
+        values -> [unquote(vars.acc), unquote(encode_repeated_ast)]
       end
     end
   end
 
-  defp make_encode_field_body(%Field{kind: :map} = field, _required, _syntax) do
+  defp make_encode_field_body(%Field{kind: :map} = field, _required, _syntax, vars) do
     # Each key/value entry of a map has the same layout as a message.
     # https://developers.google.com/protocol-buffers/docs/proto3#backwards-compatibility
 
@@ -249,9 +262,10 @@ defmodule Protox.DefineEncoder do
     map_keys_len = byte_size(map_value_key_bytes) + byte_size(map_key_key_bytes)
 
     quote do
-      map = Map.fetch!(msg, unquote(field.name))
+      map = Map.fetch!(unquote(vars.msg), unquote(field.name))
 
-      Enum.reduce(map, acc, fn {unquote(k_var), unquote(v_var)}, acc ->
+      Enum.reduce(map, unquote(vars.acc), fn {unquote(k_var), unquote(v_var)},
+                                             unquote(vars.acc) ->
         map_key_value_bytes = :binary.list_to_bin([unquote(encode_map_key_ast)])
         map_key_value_len = byte_size(map_key_value_bytes)
 
@@ -262,7 +276,7 @@ defmodule Protox.DefineEncoder do
           Protox.Varint.encode(unquote(map_keys_len) + map_key_value_len + map_value_value_len)
 
         [
-          acc,
+          unquote(vars.acc),
           unquote(key),
           len,
           unquote(map_key_key_bytes),
