@@ -235,7 +235,7 @@ defmodule Protox.DefineDecoder do
     }
 
     parse_single = make_parse_single(vars.bytes, field.type)
-    update_field = make_update_field(field, vars, _wrap_value = true)
+    update_field = make_update_field(vars.value, field, vars, _wrap_value = true)
 
     # No need to maintain a list of set fields for proto3
     case_return =
@@ -306,7 +306,6 @@ defmodule Protox.DefineDecoder do
   defp make_delimited_case_impl(msg_var, keep_set_fields, single_generated, %Field{} = field) do
     vars = %{
       bytes: quote(do: bytes),
-      field: quote(do: field),
       value: quote(do: value),
       delimited: quote(do: delimited),
       msg: msg_var
@@ -317,15 +316,19 @@ defmodule Protox.DefineDecoder do
     # see https://developers.google.com/protocol-buffers/docs/encoding#optional).
     # Thus, it's useless to wrap in a list the result of the decoding as it means
     # we're using a parse_repeated_* function that always return a list.
-    update_field = make_update_field(field, vars, _wrap_value = !single_generated)
+    update_field =
+      if field.type == :string or field.type == :bytes do
+        make_update_field(vars.value, field, vars, _wrap_value = !single_generated)
+      else
+        parse_delimited = make_parse_delimited(vars.delimited, field.type)
+        make_update_field(parse_delimited, field, vars, _wrap_value = !single_generated)
+      end
 
     case_return =
       case keep_set_fields do
         true -> quote do: {[unquote(field.name) | set_fields], [unquote(update_field)], rest}
         false -> quote do: {[unquote(update_field)], rest}
       end
-
-    parse_delimited = make_parse_delimited(vars.delimited, field.type)
 
     # If `single` was not generated, then we don't need the `@wire_delimited discrimant
     # as there is only one clause for this `tag`.
@@ -347,15 +350,14 @@ defmodule Protox.DefineDecoder do
         {unquote(field.tag), unquote(wire_type), unquote(vars.bytes)} ->
           {len, unquote(vars.bytes)} = Protox.Varint.decode(unquote(vars.bytes))
           <<unquote(vars.delimited)::binary-size(len), rest::binary>> = unquote(vars.bytes)
-          unquote(vars.value) = unquote(parse_delimited)
           unquote(case_return)
       end
     end
   end
 
-  defp make_update_field(%Field{kind: :map} = field, vars, _wrap_value) do
+  defp make_update_field(value, %Field{kind: :map} = field, vars, _wrap_value) do
     quote do
-      {entry_key, entry_value} = unquote(vars.value)
+      {entry_key, entry_value} = unquote(value)
 
       {unquote(field.name),
        Map.put(unquote(vars.msg).unquote(field.name), entry_key, entry_value)}
@@ -363,6 +365,7 @@ defmodule Protox.DefineDecoder do
   end
 
   defp make_update_field(
+         value,
          %Field{kind: {:oneof, parent_field}, type: {:message, _}} = field,
          vars,
          _wrap_value
@@ -371,25 +374,26 @@ defmodule Protox.DefineDecoder do
       case unquote(vars.msg).unquote(parent_field) do
         {unquote(field.name), previous_value} ->
           {unquote(parent_field),
-           {unquote(field.name), Protox.Message.merge(previous_value, unquote(vars.value))}}
+           {unquote(field.name), Protox.Message.merge(previous_value, unquote(value))}}
 
         _ ->
-          {unquote(parent_field), {unquote(field.name), unquote(vars.value)}}
+          {unquote(parent_field), {unquote(field.name), unquote(value)}}
       end
     end
   end
 
-  defp make_update_field(%Field{kind: {:oneof, parent_field}} = field, vars, _wrap_value) do
+  defp make_update_field(value, %Field{kind: {:oneof, parent_field}} = field, _vars, _wrap_value) do
     case field.label do
       :proto3_optional ->
-        quote(do: {unquote(field.name), unquote(vars.value)})
+        quote(do: {unquote(field.name), unquote(value)})
 
       _ ->
-        quote(do: {unquote(parent_field), {unquote(field.name), unquote(vars.value)}})
+        quote(do: {unquote(parent_field), {unquote(field.name), unquote(value)}})
     end
   end
 
   defp make_update_field(
+         value,
          %Field{kind: {:default, _}, type: {:message, _}} = field,
          vars,
          _wrap_value
@@ -397,24 +401,24 @@ defmodule Protox.DefineDecoder do
     quote do
       {
         unquote(field.name),
-        Protox.Message.merge(unquote(vars.msg).unquote(field.name), unquote(vars.value))
+        Protox.Message.merge(unquote(vars.msg).unquote(field.name), unquote(value))
       }
     end
   end
 
-  defp make_update_field(%Field{kind: {:default, _}} = field, vars, _wrap_value) do
-    quote(do: {unquote(field.name), unquote(vars.value)})
+  defp make_update_field(value, %Field{kind: {:default, _}} = field, _vars, _wrap_value) do
+    quote(do: {unquote(field.name), unquote(value)})
   end
 
-  defp make_update_field(%Field{} = field, vars, true = _wrap_value) do
+  defp make_update_field(value, %Field{} = field, vars, true = _wrap_value) do
     quote do
-      {unquote(field.name), unquote(vars.msg).unquote(field.name) ++ [unquote(vars.value)]}
+      {unquote(field.name), unquote(vars.msg).unquote(field.name) ++ [unquote(value)]}
     end
   end
 
-  defp make_update_field(%Field{} = field, vars, false = _wrap_value) do
+  defp make_update_field(value, %Field{} = field, vars, false = _wrap_value) do
     quote do
-      {unquote(field.name), unquote(vars.msg).unquote(field.name) ++ unquote(vars.value)}
+      {unquote(field.name), unquote(vars.msg).unquote(field.name) ++ unquote(value)}
     end
   end
 
