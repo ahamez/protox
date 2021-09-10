@@ -1,15 +1,24 @@
 # ----------------------------------------------------------------------------------------------- #
 
-tags =
+opts =
   with {options, _, []} <-
-         OptionParser.parse(System.argv(), strict: [lib: :string, tags: :string]),
+         OptionParser.parse(System.argv(), strict: [lib: :string, selector: :string, tag: :string]),
        {:ok, lib} <- Keyword.fetch(options, :lib) do
     Code.compile_file(lib)
 
-    case Keyword.get(options, :tags) do
-      nil -> :all
-      tags -> tags |> String.split(",") |> Enum.map(&String.to_atom(&1))
-    end
+    selector =
+      case Keyword.get(options, :selector) do
+        nil -> :all
+        selector -> selector |> String.split(",") |> Enum.map(&String.to_atom(&1))
+      end
+
+    prefix =
+      case Keyword.get(options, :tag) do
+        nil -> ""
+        prefix -> "#{prefix}-"
+      end
+
+    %{selector: selector, prefix: prefix}
   else
     _ ->
       IO.puts("Missing lib argument")
@@ -25,11 +34,11 @@ end
 # ----------------------------------------------------------------------------------------------- #
 
 defmodule Protox.Benchmarks.Data do
-  def inputs(path, tags) do
+  def inputs(path, selector) do
     filter =
-      case tags do
+      case selector do
         :all -> fn _ -> true end
-        tags -> fn {size, _payloads} -> size in tags end
+        selector -> fn {size, _payloads} -> size in selector end
       end
 
     decode =
@@ -66,12 +75,13 @@ end
 
 # ----------------------------------------------------------------------------------------------- #
 
-IO.puts("Will run benchmarks: #{inspect(tags)}")
-{decode_inputs, encode_inputs} = Protox.Benchmarks.Data.inputs("./benchmarks/payloads.bin", tags)
+IO.puts("Will run benchmarks: #{inspect(opts.selector)}")
+
+{decode_inputs, encode_inputs} =
+  Protox.Benchmarks.Data.inputs("./benchmarks/payloads.bin", opts.selector)
 
 # ----------------------------------------------------------------------------------------------- #
 
-{head, 0} = System.cmd("git", ["symbolic-ref", "--short", "HEAD"])
 {hash, 0} = System.cmd("git", ["rev-parse", "--short", "HEAD"])
 elixir_version = System.version()
 
@@ -81,7 +91,7 @@ erlang_version =
   |> File.read!()
   |> String.trim()
 
-tag = "#{elixir_version}-#{erlang_version}-#{String.trim(head)}-#{String.trim(hash)}"
+tag = "#{opts.prefix}#{elixir_version}-#{erlang_version}-#{String.trim(hash)}"
 
 # ----------------------------------------------------------------------------------------------- #
 
