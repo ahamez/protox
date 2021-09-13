@@ -21,6 +21,25 @@ defmodule Protox.IllegalTagError do
   """
 
   defexception message: "Field with illegal tag 0"
+
+  def new() do
+    %__MODULE__{}
+  end
+end
+
+defmodule Protox.InvalidFieldAttribute do
+  @moduledoc """
+  This error is thrown when a field is constructed with an invalid atribute.
+  """
+
+  defexception message: ""
+
+  def new(attribute, expected, got) do
+    %__MODULE__{
+      message:
+        "Field attribute #{attribute} should be in #{inspect(expected)}, got #{inspect(got)}"
+    }
+  end
 end
 
 defmodule Protox.DecodingError do
