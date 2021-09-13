@@ -8,13 +8,13 @@ defmodule Protox.JsonEncode do
   use Protox.Float
 
   @spec encode!(struct()) :: iodata()
-  def encode!(msg, json_encoder \\ Jason) do
+  def encode!(msg) do
     initial_acc = ["}"]
 
     body =
       msg.__struct__.fields()
       |> Enum.reduce(initial_acc, fn %Field{} = field, acc ->
-        case encode_msg_field(msg, field, json_encoder) do
+        case encode_msg_field(msg, field) do
           <<>> ->
             acc
 
@@ -29,40 +29,38 @@ defmodule Protox.JsonEncode do
     ["{" | body]
   end
 
-  defp encode_msg_field(_msg, %Field{kind: {:oneof, _parent}}, _json_encoder) do
+  defp encode_msg_field(_msg, %Field{kind: {:oneof, _parent}}) do
     <<>>
   end
 
-  defp encode_msg_field(msg, %Field{} = field, json_encoder) do
+  defp encode_msg_field(msg, %Field{} = field) do
     field_value = Map.fetch!(msg, field.name)
-    json_value = encode_field(field, field_value, json_encoder)
+    json_value = encode_field(field, field_value)
 
     case json_value do
       <<>> -> <<>>
-      _ -> [json_encoder.encode!(field.json_name), ":", json_value]
+      _ -> [json_encode(field.json_name), ":", json_value]
     end
   end
 
-  defp encode_field(%Field{kind: {:default, default_value}}, value, _json_encoder)
+  defp encode_field(%Field{kind: {:default, default_value}}, value)
        when value == default_value do
     <<>>
   end
 
-  defp encode_field(%Field{kind: {:default, _default_value}, type: type}, value, json_encoder) do
-    encode_value(value, type, json_encoder)
+  defp encode_field(%Field{kind: {:default, _default_value}, type: type}, value) do
+    encode_value(value, type)
   end
 
-  defp encode_field(%Field{kind: :map}, value, _json_encoder) when map_size(value) == 0 do
-    <<>>
-  end
+  defp encode_field(%Field{kind: :map}, value) when map_size(value) == 0, do: <<>>
 
-  defp encode_field(%Field{kind: :map, type: {_key_type, value_type}}, value, json_encoder) do
+  defp encode_field(%Field{kind: :map, type: {_key_type, value_type}}, value) do
     initial_acc = ["}"]
 
     res =
       Enum.reduce(value, initial_acc, fn {k, v}, acc ->
-        k_json = k |> to_string() |> json_encoder.encode!()
-        v_json = encode_value(v, value_type, json_encoder)
+        k_json = k |> to_string() |> json_encode()
+        v_json = encode_value(v, value_type)
 
         case acc do
           ^initial_acc -> [k_json, ":", v_json | acc]
@@ -73,37 +71,33 @@ defmodule Protox.JsonEncode do
     ["{" | res]
   end
 
-  defp encode_field(_field, _type, _json_encoder) do
+  defp encode_field(_field, _type) do
     <<>>
   end
 
-  defp encode_value(value, {:enum, enum}, json_encoder) when is_integer(value) do
-    value |> enum.decode() |> json_encoder.encode!()
-  end
+  defp encode_value(value, :bytes), do: "\"#{Base.encode64(value)}\""
 
-  defp encode_value(value, {:enum, _enum}, json_encoder) when is_atom(value) do
-    json_encoder.encode!(value)
-  end
+  defp encode_value(@positive_infinity_32, :float), do: "\"Infinity\""
+  defp encode_value(@negative_infinity_32, :float), do: "\"-Infinity\""
+  defp encode_value(@nan_32, :float), do: "\"NaN\""
+  defp encode_value(@positive_infinity_64, :double), do: "\"Infinity\""
+  defp encode_value(@negative_infinity_64, :double), do: "\"-Infinity\""
+  defp encode_value(@nan_64, :double), do: "\"NaN\""
 
-  defp encode_value(value, :bytes, _json_encoder) do
-    "\"#{Base.encode64(value)}\""
-  end
+  defp encode_value(value, :int64), do: "\"#{value}\""
+  defp encode_value(value, :uint64), do: "\"#{value}\""
+  defp encode_value(value, :fixed64), do: "\"#{value}\""
+  defp encode_value(value, :sfixed64), do: "\"#{value}\""
 
-  defp encode_value(@positive_infinity_32, :float, _json_encoder), do: "\"Infinity\""
-  defp encode_value(@negative_infinity_32, :float, _json_encoder), do: "\"-Infinity\""
-  defp encode_value(@nan_32, :float, _json_encoder), do: "\"NaN\""
-  defp encode_value(@positive_infinity_64, :double, _json_encoder), do: "\"Infinity\""
-  defp encode_value(@negative_infinity_64, :double, _json_encoder), do: "\"-Infinity\""
-  defp encode_value(@nan_64, :double, _json_encoder), do: "\"NaN\""
+  defp encode_value(true, :bool), do: "true"
 
-  defp encode_value(value, :int64, _json_encoder), do: "\"#{value}\""
-  defp encode_value(value, :uint64, _json_encoder), do: "\"#{value}\""
-  defp encode_value(value, :fixed64, _json_encoder), do: "\"#{value}\""
-  defp encode_value(value, :sfixed64, _json_encoder), do: "\"#{value}\""
+  defp encode_value(value, {:enum, _enum}) when is_atom(value), do: json_encode(value)
+  defp encode_value(value, {:enum, enum}), do: value |> enum.decode() |> json_encode()
 
-  defp encode_value(true, :bool, _json_encoder), do: "true"
+  defp encode_value(value, {:message, _}), do: encode!(value)
 
-  defp encode_value(value, {:message, _}, json_encoder), do: encode!(value, json_encoder)
+  defp encode_value(value, _type), do: json_encode(value)
 
-  defp encode_value(value, _type, json_encoder), do: json_encoder.encode!(value)
+  defp json_encode(value) when is_integer(value), do: "#{value}"
+  defp json_encode(value), do: "\"#{value}\""
 end
