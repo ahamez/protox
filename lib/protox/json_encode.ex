@@ -87,12 +87,12 @@ defmodule Protox.JsonEncode do
     <<>>
   end
 
-  defp encode_field(@positive_infinity_32, _kind, :float, _json_encoder), do: "Infinity"
-  defp encode_field(@negative_infinity_32, _kind, :float, _json_encoder), do: "-Infinity"
-  defp encode_field(@nan_32, _kind, :float, _json_encoder), do: "NaN"
-  defp encode_field(@positive_infinity_64, _kind, :double, _json_encoder), do: "Infinity"
-  defp encode_field(@negative_infinity_64, _kind, :double, _json_encoder), do: "-Infinity"
-  defp encode_field(@nan_64, _kind, :double, _json_encoder), do: "NaN"
+  defp encode_field(@positive_infinity_32, _kind, :float, _json_encoder), do: "\"Infinity\""
+  defp encode_field(@negative_infinity_32, _kind, :float, _json_encoder), do: "\"-Infinity\""
+  defp encode_field(@nan_32, _kind, :float, _json_encoder), do: "\"NaN\""
+  defp encode_field(@positive_infinity_64, _kind, :double, _json_encoder), do: "\"Infinity\""
+  defp encode_field(@negative_infinity_64, _kind, :double, _json_encoder), do: "\"-Infinity\""
+  defp encode_field(@nan_64, _kind, :double, _json_encoder), do: "\"NaN\""
 
   defp encode_field(value, {:default, _default_value}, _type, json_encoder) do
     json_encoder.encode!(value)
