@@ -6,8 +6,8 @@ defmodule Protox.Field do
           tag: number(),
           label: atom(),
           name: atom(),
-          kind: atom() | {:default, any()},
-          type: atom() | {atom(), atom()} | {atom(), {:enum | :message, atom()}}
+          kind: atom() | {:default, any()} | {:oneof, atom()},
+          type: atom() | {atom(), atom()} | {atom(), {:enum | :message, atom()}},
         }
 
   @keys [:tag, :label, :name, :kind, :type]
