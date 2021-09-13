@@ -4,41 +4,47 @@ defmodule Protox.DefsTest do
   alias Protox.Field
 
   @defs [
-    %Field{tag: 8, label: nil, name: :msg_k, kind: :map, type: {:int32, :string}},
-    %Field{tag: 9, label: nil, name: :msg_l, kind: :map, type: {:string, :double}},
-    %Field{tag: 27, label: :repeated, name: :msg_a, kind: :packed, type: :sint64},
-    %Field{tag: 28, label: :repeated, name: :msg_b, kind: :packed, type: :fixed32},
-    %Field{tag: 29, label: :repeated, name: :msg_c, kind: :packed, type: :sfixed64},
-    %Field{tag: 1, label: :optional, name: :msg_d, kind: {:default, :FOO}, type: {:enum, E}},
-    %Field{tag: 2, label: :optional, name: :msg_e, kind: {:default, false}, type: :bool},
-    %Field{tag: 3, label: :optional, name: :msg_f, kind: {:default, nil}, type: {:message, Sub}},
-    %Field{tag: 4, label: :repeated, name: :msg_g, kind: :packed, type: :int32},
-    %Field{tag: 5, label: :optional, name: :msg_h, kind: {:default, 0.0}, type: :double},
-    %Field{tag: 6, label: :repeated, name: :msg_i, kind: :packed, type: :float},
-    %Field{tag: 7, label: :repeated, name: :msg_j, kind: :unpacked, type: {:message, Sub}},
-    %Field{tag: 10, label: :optional, name: :msg_n, kind: {:oneof, :msg_m}, type: :string},
-    %Field{
+    Field.new(tag: 8, label: nil, name: :msg_k, kind: :map, type: {:int32, :string}),
+    Field.new(tag: 9, label: nil, name: :msg_l, kind: :map, type: {:string, :double}),
+    Field.new(tag: 27, label: :repeated, name: :msg_a, kind: :packed, type: :sint64),
+    Field.new(tag: 28, label: :repeated, name: :msg_b, kind: :packed, type: :fixed32),
+    Field.new(tag: 29, label: :repeated, name: :msg_c, kind: :packed, type: :sfixed64),
+    Field.new(tag: 1, label: :optional, name: :msg_d, kind: {:default, :FOO}, type: {:enum, E}),
+    Field.new(tag: 2, label: :optional, name: :msg_e, kind: {:default, false}, type: :bool),
+    Field.new(
+      tag: 3,
+      label: :optional,
+      name: :msg_f,
+      kind: {:default, nil},
+      type: {:message, Sub}
+    ),
+    Field.new(tag: 4, label: :repeated, name: :msg_g, kind: :packed, type: :int32),
+    Field.new(tag: 5, label: :optional, name: :msg_h, kind: {:default, 0.0}, type: :double),
+    Field.new(tag: 6, label: :repeated, name: :msg_i, kind: :packed, type: :float),
+    Field.new(tag: 7, label: :repeated, name: :msg_j, kind: :unpacked, type: {:message, Sub}),
+    Field.new(tag: 10, label: :optional, name: :msg_n, kind: {:oneof, :msg_m}, type: :string),
+    Field.new(
       tag: 11,
       label: :optional,
       name: :msg_o,
       kind: {:oneof, :msg_m},
       type: {:message, Sub}
-    },
-    %Field{tag: 12, label: nil, name: :msg_p, kind: :map, type: {:int32, {:enum, E}}},
-    %Field{
+    ),
+    Field.new(tag: 12, label: nil, name: :msg_p, kind: :map, type: {:int32, {:enum, E}}),
+    Field.new(
       tag: 13,
       label: :optional,
       name: :msg_q,
       kind: {:default, nil},
       type: {:message, Protobuf2}
-    },
-    %Field{
+    ),
+    Field.new(
       tag: 118,
       label: :optional,
       name: :msg_oneof_double,
       kind: {:oneof, :msg_oneof_field},
       type: :double
-    }
+    )
   ]
 
   test "split_oneofs" do
@@ -46,29 +52,29 @@ defmodule Protox.DefsTest do
 
     assert oneofs_fields == [
              msg_m: [
-               %Field{
+               Field.new(
                  tag: 10,
                  label: :optional,
                  name: :msg_n,
                  kind: {:oneof, :msg_m},
                  type: :string
-               },
-               %Field{
+               ),
+               Field.new(
                  tag: 11,
                  label: :optional,
                  name: :msg_o,
                  kind: {:oneof, :msg_m},
                  type: {:message, Sub}
-               }
+               )
              ],
              msg_oneof_field: [
-               %Field{
+               Field.new(
                  tag: 118,
                  label: :optional,
                  name: :msg_oneof_double,
                  kind: {:oneof, :msg_oneof_field},
                  type: :double
-               }
+               )
              ]
            ]
 

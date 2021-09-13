@@ -209,13 +209,14 @@ defmodule Protox.Parse do
           {nil, :map, map_type}
       end
 
-    field = %Field{
-      tag: descriptor.number,
-      label: label,
-      name: String.to_atom(descriptor.name),
-      kind: kind,
-      type: type
-    }
+    field =
+      Field.new(
+        tag: descriptor.number,
+        label: label,
+        name: String.to_atom(descriptor.name),
+        kind: kind,
+        type: type
+      )
 
     new_messages =
       Map.update!(acc.messages, msg_name, fn {syntax, fields} ->
