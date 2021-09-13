@@ -93,30 +93,33 @@ defmodule Protox.JsonEncodeTest do
 
     test "string" do
       msg = %Sub{b: "foo"}
-
-      assert msg |> encode!() |> json_decode!() ==
-               %{"b" => msg.b}
+      assert msg |> encode!() |> json_decode!() == %{"b" => msg.b}
     end
 
     test "bytes" do
       msg = %Sub{m: <<1, 2, 3>>}
-
-      assert msg |> encode!() |> json_decode!() ==
-               %{"m" => Base.encode64(msg.m)}
+      assert msg |> encode!() |> json_decode!() == %{"m" => Base.encode64(msg.m)}
     end
 
     test "nested empty message" do
       msg = %Msg{msg_f: %Sub{}}
-
-      assert msg |> encode!() |> json_decode!() ==
-               %{"msgF" => %{}}
+      assert msg |> encode!() |> json_decode!() == %{"msgF" => %{}}
     end
 
     test "nested message" do
       msg = %Msg{msg_f: %Sub{a: 33}}
+      assert msg |> encode!() |> json_decode!() == %{"msgF" => %{"a" => 33}}
+    end
 
-      assert msg |> encode!() |> json_decode!() ==
-               %{"msgF" => %{"a" => 33}}
+    test "enum" do
+      msg1 = %Sub{r: :BAZ}
+      assert msg1 |> encode!() |> json_decode!() == %{"r" => "BAZ"}
+
+      msg2 = %Sub{r: -1}
+      assert msg2 |> encode!() |> json_decode!() == %{"r" => "NEG"}
+
+      msg3 = %Sub{r: 10}
+      assert msg3 |> encode!() |> json_decode!() == %{"r" => 10}
     end
   end
 
