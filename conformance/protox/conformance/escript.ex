@@ -55,12 +55,13 @@ defmodule Protox.Conformance.Escript do
          {
            :ok,
            req = %Conformance.ConformanceRequest{
-             requested_output_format: :PROTOBUF,
+             requested_output_format: requested_output_format,
              payload: {:protobuf_payload, _}
            }
          },
          log_file
-       ) do
+       )
+       when requested_output_format in [:PROTOBUF, :JSON] do
     IO.binwrite(log_file, "Will parse protobuf\n")
 
     if Conformance.ConformanceRequest.unknown_fields(req) != [] do
@@ -90,9 +91,22 @@ defmodule Protox.Conformance.Escript do
       {:ok, msg} ->
         IO.binwrite(log_file, "Parse: success.\n")
         IO.binwrite(log_file, "Message: #{inspect(msg, limit: :infinity)}\n")
-        encoded_payload = msg |> Protox.Encode.encode!() |> :binary.list_to_bin()
+
+        encoded_payload =
+          case requested_output_format do
+            :JSON -> msg |> Protox.JsonEncode.encode!() |> :binary.list_to_bin()
+            :PROTOBUF -> msg |> Protox.Encode.encode!() |> :binary.list_to_bin()
+          end
+
         IO.binwrite(log_file, "Encoded payload: #{inspect(encoded_payload, limit: :infinity)}\n")
-        %Conformance.ConformanceResponse{result: {:protobuf_payload, encoded_payload}}
+
+        case requested_output_format do
+          :JSON ->
+            %Conformance.ConformanceResponse{result: {:json_payload, encoded_payload}}
+
+          :PROTOBUF ->
+            %Conformance.ConformanceResponse{result: {:protobuf_payload, encoded_payload}}
+        end
 
       {:error, reason} ->
         IO.binwrite(log_file, "Parse error: #{inspect(reason)}\n")
@@ -110,17 +124,14 @@ defmodule Protox.Conformance.Escript do
         {:UNSPECIFIED, _} ->
           "unspecified input"
 
-        {:JSON, _} ->
-          "json input"
-
-        {:PROTOBUF, {:json_payload, _}} ->
-          "json output"
-
-        {:PROTOBUF, nil} ->
+        {_, nil} ->
           "unset payload"
 
-        {:PROTOBUF, {:text_payload, _}} ->
-          "text output"
+        {_, {:json_payload, _}} ->
+          "json input"
+
+        {_, {:text_payload, _}} ->
+          "text input"
 
         {:TEXT_FORMAT, _} ->
           "text output"
