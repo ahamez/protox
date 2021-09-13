@@ -85,8 +85,8 @@ defmodule Protox.JsonEncode do
     json_encoder.encode!(value)
   end
 
-  defp encode_value(value, :bytes, json_encoder) do
-    value |> Base.encode64() |> json_encoder.encode!()
+  defp encode_value(value, :bytes, _json_encoder) do
+    "\"#{Base.encode64(value)}\""
   end
 
   defp encode_value(@positive_infinity_32, :float, _json_encoder), do: "\"Infinity\""
@@ -95,7 +95,15 @@ defmodule Protox.JsonEncode do
   defp encode_value(@positive_infinity_64, :double, _json_encoder), do: "\"Infinity\""
   defp encode_value(@negative_infinity_64, :double, _json_encoder), do: "\"-Infinity\""
   defp encode_value(@nan_64, :double, _json_encoder), do: "\"NaN\""
+
+  defp encode_value(value, :int64, _json_encoder), do: "\"#{value}\""
+  defp encode_value(value, :uint64, _json_encoder), do: "\"#{value}\""
+  defp encode_value(value, :fixed64, _json_encoder), do: "\"#{value}\""
+  defp encode_value(value, :sfixed64, _json_encoder), do: "\"#{value}\""
+
   defp encode_value(true, :bool, _json_encoder), do: "true"
+
   defp encode_value(value, {:message, _}, json_encoder), do: encode!(value, json_encoder)
+
   defp encode_value(value, _type, json_encoder), do: json_encoder.encode!(value)
 end
