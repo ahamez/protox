@@ -46,12 +46,12 @@ defmodule Protox.JsonEncodeTest do
       assert msg |> encode!() |> json_decode!() ==
                %{
                  "a" => msg.a,
-                 "c" => msg.c,
+                 "c" => "#{msg.c}",
                  "d" => msg.d,
-                 "e" => msg.e,
+                 "e" => "#{msg.e}",
                  "f" => msg.f,
                  "k" => msg.k,
-                 "l" => msg.l,
+                 "l" => "#{msg.l}",
                  "z" => msg.z
                }
     end
