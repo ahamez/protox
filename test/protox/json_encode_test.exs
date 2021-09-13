@@ -125,9 +125,27 @@ defmodule Protox.JsonEncodeTest do
 
   describe "repeated" do
     test "map" do
-      msg = %Msg{msg_k: %{1 => "a", 2 => "b"}}
+      msg1 = %Msg{msg_k: %{1 => "a", 2 => "b"}}
+      assert msg1 |> encode!() |> json_decode!() == %{"msgK" => %{"1" => "a", "2" => "b"}}
 
-      assert msg |> encode!() |> json_decode!() == %{"msgK" => %{"1" => "a", "2" => "b"}}
+      msg2 = %Msg{msg_p: %{1 => :FOO, 2 => -1}}
+      assert msg2 |> encode!() |> json_decode!() == %{"msgP" => %{"1" => "FOO", "2" => "NEG"}}
+
+      msg3 = %Upper{msg_map: %{"abc" => %Msg{msg_p: %{1 => :FOO, 2 => -1}}, "def" => %Msg{}}}
+
+      assert msg3 |> encode!() |> json_decode!() ==
+               %{"msgMap" => %{"abc" => %{"msgP" => %{"1" => "FOO", "2" => "NEG"}}, "def" => %{}}}
+    end
+
+    test "array" do
+      msg1 = %Sub{i: [1.0, 0.0, -10], j: [-1, 0, 1]}
+      assert msg1 |> encode!() |> json_decode!() == %{"i" => [1.0, 0.0, -10], "j" => [-1, 0, 1]}
+
+      msg2 = %Msg{msg_j: [msg1]}
+
+      assert msg2 |> encode!() |> json_decode!() == %{
+               "msgJ" => [%{"i" => [1.0, 0.0, -10], "j" => [-1, 0, 1]}]
+             }
     end
   end
 

@@ -30,6 +30,7 @@ defmodule Protox.JsonEncode do
   end
 
   defp encode_msg_field(_msg, %Field{kind: {:oneof, _parent}}) do
+    # TODO
     <<>>
   end
 
@@ -41,6 +42,26 @@ defmodule Protox.JsonEncode do
       <<>> -> <<>>
       _ -> [json_encode(field.json_name), ":", json_value]
     end
+  end
+
+  defp encode_field(%Field{label: :repeated}, []), do: <<>>
+
+  defp encode_field(%Field{label: :repeated, type: type}, value) do
+    initial_acc = ["]"]
+
+    res =
+      value
+      |> Enum.reverse()
+      |> Enum.reduce(initial_acc, fn v, acc ->
+        v_json = encode_value(v, type)
+
+        case acc do
+          ^initial_acc -> [v_json | acc]
+          _ -> [v_json, "," | acc]
+        end
+      end)
+
+    ["[" | res]
   end
 
   defp encode_field(%Field{kind: {:default, default_value}}, value)
@@ -71,10 +92,6 @@ defmodule Protox.JsonEncode do
     ["{" | res]
   end
 
-  defp encode_field(_field, _type) do
-    <<>>
-  end
-
   defp encode_value(value, :bytes), do: "\"#{Base.encode64(value)}\""
 
   defp encode_value(@positive_infinity_32, :float), do: "\"Infinity\""
@@ -98,6 +115,6 @@ defmodule Protox.JsonEncode do
 
   defp encode_value(value, _type), do: json_encode(value)
 
-  defp json_encode(value) when is_integer(value), do: "#{value}"
+  defp json_encode(value) when is_number(value), do: "#{value}"
   defp json_encode(value), do: "\"#{value}\""
 end
