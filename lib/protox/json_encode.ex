@@ -38,17 +38,8 @@ defmodule Protox.JsonEncode do
     json_value = encode_field(field, field_value, json_encoder)
 
     case json_value do
-      <<>> ->
-        <<>>
-
-      _ ->
-        json_name =
-          field.name
-          |> Atom.to_string()
-          |> lower_camel_case()
-          |> json_encoder.encode!()
-
-        [json_name, ":", json_value]
+      <<>> -> <<>>
+      _ -> [json_encoder.encode!(field.json_name), ":", json_value]
     end
   end
 
@@ -107,10 +98,4 @@ defmodule Protox.JsonEncode do
   defp encode_value(true, :bool, _json_encoder), do: "true"
   defp encode_value(value, {:message, _}, json_encoder), do: encode!(value, json_encoder)
   defp encode_value(value, _type, json_encoder), do: json_encoder.encode!(value)
-
-  defp lower_camel_case(string) do
-    <<first, rest::binary>> = Macro.camelize(string)
-
-    <<String.downcase(<<first>>, :ascii)::binary, rest::binary>>
-  end
 end
