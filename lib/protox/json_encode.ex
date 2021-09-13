@@ -5,8 +5,8 @@ defmodule Protox.JsonEncode do
 
   use Protox.Float
 
-  @spec encode(struct()) :: iodata()
-  def encode(msg, json_encoder \\ Jason) do
+  @spec encode!(struct()) :: iodata()
+  def encode!(msg, json_encoder \\ Jason) do
     initial_acc = ["}"]
 
     body =
@@ -56,7 +56,7 @@ defmodule Protox.JsonEncode do
   end
 
   defp encode_field(value, {:default, _default_value}, {:message, _msg_type}, json_encoder) do
-    encode(value, json_encoder)
+    encode!(value, json_encoder)
   end
 
   defp encode_field(value, {:default, default_value}, {:enum, _msg_type}, _json_encoder)
