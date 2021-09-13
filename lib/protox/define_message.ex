@@ -11,13 +11,18 @@ defmodule Protox.DefineMessage do
 
       unknown_fields = make_unknown_fields(:__uf__, fields)
       unknown_fields_funs = make_unknown_fields_funs(keep_unknown_fields, unknown_fields)
+
       struct_fields = make_struct_fields(fields, syntax, unknown_fields, keep_unknown_fields)
+
       required_fields = make_required_fields(fields)
       required_fields_typesecs = make_required_fields_typespec(required_fields)
+
       fields_map = make_fields_map(fields)
       fields_by_name_map = make_fields_by_name_map(fields)
+
       encoder = Protox.DefineEncoder.define(fields, required_fields, syntax, opts)
       decoder = Protox.DefineDecoder.define(msg_name, fields, required_fields, opts)
+
       default_fun = make_default_fun(fields)
 
       module_ast =
