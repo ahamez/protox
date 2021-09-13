@@ -123,6 +123,14 @@ defmodule Protox.JsonEncodeTest do
     end
   end
 
+  describe "repeated" do
+    test "map" do
+      msg = %Msg{msg_k: %{1 => "a", 2 => "b"}}
+
+      assert msg |> encode!() |> json_decode!() == %{"msgK" => %{"1" => "a", "2" => "b"}}
+    end
+  end
+
   defp encode!(msg) do
     msg |> Protox.JsonEncode.encode!() |> :binary.list_to_bin()
   end

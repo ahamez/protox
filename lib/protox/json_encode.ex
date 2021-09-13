@@ -52,89 +52,61 @@ defmodule Protox.JsonEncode do
     end
   end
 
-  defp encode_field(%Field{kind: {:default, _}, type: {:message, _msg}}, nil, _json_encoder) do
-    <<>>
-  end
-
-  defp encode_field(
-         %Field{kind: {:default, _default_value}, type: {:message, _msg}},
-         value,
-         json_encoder
-       ) do
-    encode!(value, json_encoder)
-  end
-
-  defp encode_field(
-         %Field{kind: {:default, default_value}, type: {:enum, _enum}},
-         value,
-         _json_encoder
-       )
-       when value == default_value do
-    <<>>
-  end
-
-  defp encode_field(
-         %Field{kind: {:default, _default_value}, type: {:enum, enum}},
-         value,
-         json_encoder
-       )
-       when is_integer(value) do
-    value |> enum.decode() |> json_encoder.encode!()
-  end
-
-  defp encode_field(
-         %Field{kind: {:default, _default_value}, type: {:enum, _enum}},
-         value,
-         json_encoder
-       )
-       when is_atom(value) do
-    json_encoder.encode!(value)
-  end
-
-  defp encode_field(%Field{kind: {:default, _default_value}, type: :bytes}, <<>>, _json_encoder) do
-    <<>>
-  end
-
-  defp encode_field(%Field{kind: {:default, _default_value}, type: :bytes}, value, json_encoder) do
-    value |> Base.encode64() |> json_encoder.encode!()
-  end
-
   defp encode_field(%Field{kind: {:default, default_value}}, value, _json_encoder)
        when value == default_value do
     <<>>
   end
 
-  defp encode_field(%Field{type: :float}, @positive_infinity_32, _json_encoder) do
-    "\"Infinity\""
+  defp encode_field(%Field{kind: {:default, _default_value}, type: type}, value, json_encoder) do
+    encode_value(value, type, json_encoder)
   end
 
-  defp encode_field(%Field{type: :float}, @negative_infinity_32, _json_encoder) do
-    "\"-Infinity\""
+  defp encode_field(%Field{kind: :map}, value, _json_encoder) when map_size(value) == 0 do
+    <<>>
   end
 
-  defp encode_field(%Field{type: :float}, @nan_32, _json_encoder) do
-    "\"NaN\""
-  end
+  defp encode_field(%Field{kind: :map, type: {_key_type, value_type}}, value, json_encoder) do
+    initial_acc = ["}"]
 
-  defp encode_field(%Field{type: :double}, @positive_infinity_64, _json_encoder) do
-    "\"Infinity\""
-  end
+    res =
+      Enum.reduce(value, initial_acc, fn {k, v}, acc ->
+        k_json = k |> to_string() |> json_encoder.encode!()
+        v_json = encode_value(v, value_type, json_encoder)
 
-  defp encode_field(%Field{type: :double}, @negative_infinity_64, _json_encoder) do
-    "\"-Infinity\""
-  end
+        case acc do
+          ^initial_acc -> [k_json, ":", v_json | acc]
+          _ -> [k_json, ":", v_json, "," | acc]
+        end
+      end)
 
-  defp encode_field(%Field{type: :double}, @nan_64, _json_encoder) do
-    "\"NaN\""
-  end
-
-  defp encode_field(%Field{kind: {:default, _default_value}}, value, json_encoder) do
-    json_encoder.encode!(value)
+    ["{" | res]
   end
 
   defp encode_field(_field, _type, _json_encoder) do
     <<>>
   end
+
+  defp encode_value(value, {:enum, enum}, json_encoder) when is_integer(value) do
+    value |> enum.decode() |> json_encoder.encode!()
+  end
+
+  defp encode_value(value, {:enum, _enum}, json_encoder) when is_atom(value) do
+    json_encoder.encode!(value)
+  end
+
+  defp encode_value(value, :bytes, json_encoder) do
+    value |> Base.encode64() |> json_encoder.encode!()
+  end
+
+  defp encode_value(@positive_infinity_32, :float, _json_encoder), do: "\"Infinity\""
+  defp encode_value(@negative_infinity_32, :float, _json_encoder), do: "\"-Infinity\""
+  defp encode_value(@nan_32, :float, _json_encoder), do: "\"NaN\""
+  defp encode_value(@positive_infinity_64, :double, _json_encoder), do: "\"Infinity\""
+  defp encode_value(@negative_infinity_64, :double, _json_encoder), do: "\"-Infinity\""
+  defp encode_value(@nan_64, :double, _json_encoder), do: "\"NaN\""
+  defp encode_value(true, :bool, _json_encoder), do: "true"
+  defp encode_value(value, {:message, _}, json_encoder), do: encode!(value, json_encoder)
+  defp encode_value(value, _type, json_encoder), do: json_encoder.encode!(value)
 
   defp lower_camel_case(string) do
     <<first, rest::binary>> = Macro.camelize(string)
