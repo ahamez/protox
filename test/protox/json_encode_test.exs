@@ -138,13 +138,18 @@ defmodule Protox.JsonEncodeTest do
     end
 
     test "array" do
-      msg1 = %Sub{i: [1.0, 0.0, -10], j: [-1, 0, 1]}
-      assert msg1 |> encode!() |> json_decode!() == %{"i" => [1.0, 0.0, -10], "j" => [-1, 0, 1]}
+      msg1 = %Sub{g: [0, 1], i: [1.0, 0.0, -10], j: [-1, 0, 1]}
+
+      assert msg1 |> encode!() |> json_decode!() == %{
+               "g" => ["0", "1"],
+               "i" => [1.0, 0.0, -10],
+               "j" => [-1, 0, 1]
+             }
 
       msg2 = %Msg{msg_j: [msg1]}
 
       assert msg2 |> encode!() |> json_decode!() == %{
-               "msgJ" => [%{"i" => [1.0, 0.0, -10], "j" => [-1, 0, 1]}]
+               "msgJ" => [%{"g" => ["0", "1"], "i" => [1.0, 0.0, -10], "j" => [-1, 0, 1]}]
              }
     end
   end
