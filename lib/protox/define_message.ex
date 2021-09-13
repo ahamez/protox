@@ -42,6 +42,9 @@ defmodule Protox.DefineMessage do
                 }
           def defs_by_name(), do: unquote(fields_by_name_map)
 
+          @spec fields() :: list(Protox.Field.t())
+          def fields(), do: unquote(Macro.escape(fields))
+
           unquote(unknown_fields_funs)
 
           @spec required_fields() :: unquote(required_fields_typesecs)
