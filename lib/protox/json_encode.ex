@@ -17,7 +17,7 @@ defmodule Protox.JsonEncode do
   TODO
   """
   @spec encode!(struct()) :: iodata()
-  def encode!(msg, opts \\ @default_opts) when is_struct(msg) do
+  def encode!(msg, opts \\ @default_opts) do
     {json_encoder, opts} = Keyword.pop!(opts, :json_encoder)
     {json_encoder_opts, _opts} = Keyword.pop!(opts, :json_encoder_opts)
 
