@@ -8,7 +8,7 @@ defmodule Protox.JsonEncode do
   use Protox.Float
 
   @spec encode!(struct()) :: iodata()
-  def encode!(msg) do
+  def encode!(msg) when is_struct(msg) do
     initial_acc = ["}"]
 
     body =
@@ -29,9 +29,19 @@ defmodule Protox.JsonEncode do
     ["{" | body]
   end
 
-  defp encode_msg_field(_msg, %Field{kind: {:oneof, _parent}}) do
-    # TODO
-    <<>>
+  defp encode_msg_field(msg, %Field{name: child_name, kind: {:oneof, parent_name}} = field) do
+    case Map.fetch!(msg, parent_name) do
+      {^child_name, field_value} ->
+        json_value = encode_value(field_value, field.type)
+
+        case json_value do
+          <<>> -> <<>>
+          _ -> [json_encode(field.json_name), ":", json_value]
+        end
+
+      _ ->
+        <<>>
+    end
   end
 
   defp encode_msg_field(msg, %Field{} = field) do
