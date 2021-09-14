@@ -1,3 +1,6 @@
+# X.X.X
+  - Fix decoding of fixed32 and fixed64 values (detected using JSON conformance tests)
+
 # 1.5.1
   - Fix handling of multiple import paths (thanks to https://github.com/zolakeith)
 
