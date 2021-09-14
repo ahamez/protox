@@ -144,7 +144,7 @@ defmodule Protox.DecodeTest do
              d: 0,
              e: 0,
              f: 0,
-             g: [1, -2],
+             g: [1, 18_446_744_073_709_551_614],
              h: [],
              i: []
            }
@@ -162,7 +162,7 @@ defmodule Protox.DecodeTest do
              d: 0,
              e: 0,
              f: 0,
-             g: [1, -2],
+             g: [1, 18_446_744_073_709_551_614],
              h: [],
              i: []
            }
@@ -494,7 +494,7 @@ defmodule Protox.DecodeTest do
     bytes =
       <<226, 1, 20, 0, 0, 0, 0, 1, 0, 0, 0, 254, 255, 255, 255, 3, 0, 0, 0, 240, 216, 255, 255>>
 
-    assert Msg.decode!(bytes) == %Msg{msg_b: [0, 1, -2, 3, -10_000]}
+    assert Msg.decode!(bytes) == %Msg{msg_b: [0, 1, 4_294_967_294, 3, 4_294_957_296]}
   end
 
   test "Msg.msg_c" do

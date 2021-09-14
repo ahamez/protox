@@ -75,9 +75,9 @@ defmodule Protox.Decode do
   def parse_float(<<value::float-little-32, rest::binary>>), do: {value, rest}
 
   def parse_sfixed64(<<value::signed-little-64, rest::binary>>), do: {value, rest}
-  def parse_fixed64(<<value::signed-little-64, rest::binary>>), do: {value, rest}
+  def parse_fixed64(<<value::unsigned-little-64, rest::binary>>), do: {value, rest}
   def parse_sfixed32(<<value::signed-little-32, rest::binary>>), do: {value, rest}
-  def parse_fixed32(<<value::signed-little-32, rest::binary>>), do: {value, rest}
+  def parse_fixed32(<<value::unsigned-little-32, rest::binary>>), do: {value, rest}
 
   def parse_bool(bytes) do
     {value, rest} = Varint.decode(bytes)
