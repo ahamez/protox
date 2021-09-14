@@ -986,9 +986,9 @@ defmodule Protox.DecodeTest do
     req2 = <<130, 7, 7, 18, 5, 16, 1, 200, 5, 1>>
     req = req1 <> req2
 
-    m1 = TestAllTypesProto3.decode!(req1)
-    m2 = TestAllTypesProto3.decode!(req2)
-    m = TestAllTypesProto3.decode!(req)
+    m1 = CoRecursive.decode!(req1)
+    m2 = CoRecursive.decode!(req2)
+    m = CoRecursive.decode!(req)
 
     # https://developers.google.com/protocol-buffers/docs/encoding#optional
     assert m == Protox.Message.merge(m1, m2)

@@ -323,12 +323,12 @@ defmodule Defs do
             label: :none,
             name: :corecursive,
             kind: {:default, nil},
-            type: {:message, TestAllTypesProto3}
+            type: {:message, CoRecursive}
           )
         ]
       },
       {
-        TestAllTypesProto3,
+        CoRecursive,
         :proto3,
         [
           Protox.Field.new(
