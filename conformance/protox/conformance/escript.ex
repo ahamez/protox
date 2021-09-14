@@ -71,6 +71,7 @@ defmodule Protox.Conformance.Escript do
     IO.binwrite(log_file, "#{inspect(req)}\n")
 
     {:protobuf_payload, payload} = req.payload
+    IO.binwrite(log_file, "payload: #{inspect(payload, limit: :infinity)}\n")
 
     proto_type =
       case req.message_type do
