@@ -50,38 +50,6 @@ defmodule Protox do
     end
   end
 
-  defp get_namespace(opts) do
-    Keyword.pop(opts, :namespace)
-  end
-
-  defp get_paths(opts) do
-    case Keyword.pop(opts, :paths) do
-      {nil, opts} -> get_path(opts)
-      {ps, opts} -> {Enum.map(ps, &Path.expand/1), opts}
-    end
-  end
-
-  defp get_path(opts) do
-    case Keyword.pop(opts, :path) do
-      {nil, opts} -> {nil, opts}
-      {p, opts} -> {[Path.expand(p)], opts}
-    end
-  end
-
-  defp get_files(opts) do
-    case Keyword.pop(opts, :schema) do
-      {<<text::binary>>, opts} ->
-        filename = "#{Base.encode16(:crypto.hash(:sha, text))}.proto"
-        filepath = [Mix.Project.build_path(), filename] |> Path.join() |> Path.expand()
-        File.write!(filepath, text)
-        {[filepath], opts}
-
-      {nil, opts} ->
-        {files, opts} = Keyword.pop(opts, :files)
-        {Enum.map(files, &Path.expand/1), opts}
-    end
-  end
-
   defmodule FileContent do
     @moduledoc false
     defstruct([:name, :content])
@@ -116,6 +84,40 @@ defmodule Protox do
       multiple_file_content(output_path, code)
     else
       single_file_content(output_path, code)
+    end
+  end
+
+  # -- Private
+
+  defp get_namespace(opts) do
+    Keyword.pop(opts, :namespace)
+  end
+
+  defp get_paths(opts) do
+    case Keyword.pop(opts, :paths) do
+      {nil, opts} -> get_path(opts)
+      {ps, opts} -> {Enum.map(ps, &Path.expand/1), opts}
+    end
+  end
+
+  defp get_path(opts) do
+    case Keyword.pop(opts, :path) do
+      {nil, opts} -> {nil, opts}
+      {p, opts} -> {[Path.expand(p)], opts}
+    end
+  end
+
+  defp get_files(opts) do
+    case Keyword.pop(opts, :schema) do
+      {<<text::binary>>, opts} ->
+        filename = "#{Base.encode16(:crypto.hash(:sha, text))}.proto"
+        filepath = [Mix.Project.build_path(), filename] |> Path.join() |> Path.expand()
+        File.write!(filepath, text)
+        {[filepath], opts}
+
+      {nil, opts} ->
+        {files, opts} = Keyword.pop(opts, :files)
+        {Enum.map(files, &Path.expand/1), opts}
     end
   end
 
