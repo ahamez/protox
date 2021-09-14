@@ -1,3 +1,20 @@
+defprotocol Protox.JsonMessageEncoder do
+  @fallback_to_any true
+  def encode!(msg, json_encode)
+end
+
+defimpl Protox.JsonMessageEncoder, for: Any do
+  def encode!(msg, json_encode) do
+    Protox.JsonEncode.encode_message(msg, json_encode)
+  end
+end
+
+defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.Duration do
+  def encode!(msg, _json_encode) do
+    "\"#{msg.seconds}\""
+  end
+end
+
 defmodule Protox.JsonEncode do
   @doc """
   TODO
@@ -21,15 +38,16 @@ defmodule Protox.JsonEncode do
       json_encoder.encode!(value, json_encoder_opts)
     end
 
-    do_encode(msg, json_encode)
+    Protox.JsonMessageEncoder.encode!(msg, json_encode)
   end
 
-  defp do_encode(msg, json_encode) do
+  @doc false
+  def encode_message(msg, json_encode) do
     initial_acc = ["}"]
 
     body =
       msg.__struct__.fields()
-      |> Enum.reduce(initial_acc, fn %Field{} = field, acc ->
+      |> Enum.reduce(initial_acc, fn %Protox.Field{} = field, acc ->
         case encode_msg_field(msg, field, json_encode) do
           <<>> ->
             acc
@@ -44,6 +62,8 @@ defmodule Protox.JsonEncode do
 
     ["{" | body]
   end
+
+  # -- Private
 
   defp encode_msg_field(
          msg,
@@ -143,7 +163,9 @@ defmodule Protox.JsonEncode do
     value |> enum.decode() |> json_encode.()
   end
 
-  defp encode_value(value, {:message, _}, json_encode), do: do_encode(value, json_encode)
+  defp encode_value(value, {:message, _}, json_encode) do
+    Protox.JsonMessageEncoder.encode!(value, json_encode)
+  end
 
   defp encode_value(value, _type, json_encode), do: json_encode.(value)
 end
