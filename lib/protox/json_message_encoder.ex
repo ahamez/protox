@@ -31,7 +31,7 @@ defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.Duration do
         raise Protox.JsonEncodingError.new(msg, "nanos is > 999_999_999")
 
       true ->
-        duration = msg.seconds + msg.nanos / 1_000_000
+        duration = msg.seconds + msg.nanos / 1_000_000_000
         "\"#{Float.round(duration, 6)}s\""
     end
   end
