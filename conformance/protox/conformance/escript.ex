@@ -93,20 +93,28 @@ defmodule Protox.Conformance.Escript do
         IO.binwrite(log_file, "Parse: success.\n")
         IO.binwrite(log_file, "Message: #{inspect(msg, limit: :infinity)}\n")
 
-        encoded_payload =
+        try do
+          encoded_payload =
+            case requested_output_format do
+              :JSON -> msg |> Protox.JsonEncode.encode!() |> :binary.list_to_bin()
+              :PROTOBUF -> msg |> Protox.Encode.encode!() |> :binary.list_to_bin()
+            end
+
+          IO.binwrite(
+            log_file,
+            "Encoded payload: #{inspect(encoded_payload, limit: :infinity)}\n"
+          )
+
           case requested_output_format do
-            :JSON -> msg |> Protox.JsonEncode.encode!() |> :binary.list_to_bin()
-            :PROTOBUF -> msg |> Protox.Encode.encode!() |> :binary.list_to_bin()
+            :JSON ->
+              %Conformance.ConformanceResponse{result: {:json_payload, encoded_payload}}
+
+            :PROTOBUF ->
+              %Conformance.ConformanceResponse{result: {:protobuf_payload, encoded_payload}}
           end
-
-        IO.binwrite(log_file, "Encoded payload: #{inspect(encoded_payload, limit: :infinity)}\n")
-
-        case requested_output_format do
-          :JSON ->
-            %Conformance.ConformanceResponse{result: {:json_payload, encoded_payload}}
-
-          :PROTOBUF ->
-            %Conformance.ConformanceResponse{result: {:protobuf_payload, encoded_payload}}
+        rescue
+          e ->
+            %Conformance.ConformanceResponse{result: {:serialize_error, e.message}}
         end
 
       {:error, reason} ->
