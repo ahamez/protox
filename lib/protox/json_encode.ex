@@ -1,23 +1,7 @@
-defprotocol Protox.JsonMessageEncoder do
-  @fallback_to_any true
-  def encode_message(msg, json_encode)
-end
-
-defimpl Protox.JsonMessageEncoder, for: Any do
-  def encode_message(msg, json_encode) do
-    Protox.JsonEncode.encode_message(msg, json_encode)
-  end
-end
-
-defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.Duration do
-  def encode_message(msg, _json_encode) do
-    "\"#{msg.seconds}\""
-  end
-end
-
 defmodule Protox.JsonEncode do
   @moduledoc """
-  TODO
+  Export a proto3 message to JSON.
+  See https://developers.google.com/protocol-buffers/docs/proto3#json.
   """
 
   alias Protox.Field
