@@ -59,3 +59,21 @@ defmodule Protox.DecodingError do
     }
   end
 end
+
+defmodule Protox.JsonEncodingError do
+  @moduledoc """
+  This error is thrown when a protobuf message could not be encoded to JSON.
+  """
+
+  defexception message: "",
+               protobuf_msg: nil,
+               reason: ""
+
+  def new(protobuf_msg, reason) do
+    %__MODULE__{
+      message: "Could not encode #{inspect(protobuf_msg)} to JSON because #{reason}",
+      protobuf_msg: protobuf_msg,
+      reason: reason
+    }
+  end
+end
