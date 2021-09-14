@@ -124,12 +124,9 @@ defmodule Protox.JsonEncode do
 
   defp encode_value(value, :bytes, _json_encode), do: "\"#{Base.encode64(value)}\""
 
-  defp encode_value(@positive_infinity_32, :float, _json_encode), do: "\"Infinity\""
-  defp encode_value(@negative_infinity_32, :float, _json_encode), do: "\"-Infinity\""
-  defp encode_value(@nan_32, :float, _json_encode), do: "\"NaN\""
-  defp encode_value(@positive_infinity_64, :double, _json_encode), do: "\"Infinity\""
-  defp encode_value(@negative_infinity_64, :double, _json_encode), do: "\"-Infinity\""
-  defp encode_value(@nan_64, :double, _json_encode), do: "\"NaN\""
+  defp encode_value(:infinity, _type, _json_encode), do: "\"Infinity\""
+  defp encode_value(:"-infinity", _type, _json_encode), do: "\"-Infinity\""
+  defp encode_value(:nan, _type, _json_encode), do: "\"NaN\""
 
   defp encode_value(value, :int64, _json_encode), do: "\"#{value}\""
   defp encode_value(value, :uint64, _json_encode), do: "\"#{value}\""

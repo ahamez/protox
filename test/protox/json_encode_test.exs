@@ -58,8 +58,8 @@ defmodule Protox.JsonEncodeTest do
 
     test "floats" do
       msg = %FloatPrecision{
-        a: @positive_infinity_64,
-        b: @positive_infinity_32
+        a: :infinity,
+        b: :infinity
       }
 
       assert msg |> encode!() |> json_decode!() ==
@@ -69,8 +69,8 @@ defmodule Protox.JsonEncodeTest do
                }
 
       msg = %FloatPrecision{
-        a: @negative_infinity_64,
-        b: @negative_infinity_32
+        a: :"-infinity",
+        b: :"-infinity"
       }
 
       assert msg |> encode!() |> json_decode!() ==
@@ -80,8 +80,8 @@ defmodule Protox.JsonEncodeTest do
                }
 
       msg = %FloatPrecision{
-        a: @nan_64,
-        b: @nan_32
+        a: :nan,
+        b: :nan
       }
 
       assert msg |> encode!() |> json_decode!() ==
