@@ -18,8 +18,8 @@ defmodule Protox.JsonEncode do
   """
   @spec encode!(struct()) :: iodata()
   def encode!(msg, opts \\ @default_opts) do
-    {json_encoder, opts} = Keyword.pop!(opts, :json_encoder)
-    {json_encoder_opts, _opts} = Keyword.pop!(opts, :json_encoder_opts)
+    json_encoder = Keyword.fetch!(opts, :json_encoder)
+    json_encoder_opts = Keyword.fetch!(opts, :json_encoder_opts)
 
     json_encode = fn value ->
       json_encoder.encode!(value, json_encoder_opts)
