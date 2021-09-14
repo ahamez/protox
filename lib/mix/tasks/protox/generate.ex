@@ -39,7 +39,7 @@ defmodule Mix.Tasks.Protox.Generate do
       {multiple_files, opts} = Keyword.pop(opts, :multiple_files, false)
 
       files
-      |> Protox.generate_module_code(
+      |> Protox.Generate.generate_module_code(
         Path.expand(output_path),
         multiple_files,
         include_paths,
@@ -54,7 +54,7 @@ defmodule Mix.Tasks.Protox.Generate do
     end
   end
 
-  defp generate_file(%Protox.FileContent{name: file_name, content: content}) do
+  defp generate_file(%Protox.Generate.FileContent{name: file_name, content: content}) do
     File.write!(file_name, content)
   end
 
