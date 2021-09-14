@@ -96,8 +96,8 @@ defmodule Protox.Conformance.Escript do
         try do
           encoded_payload =
             case requested_output_format do
-              :JSON -> msg |> Protox.JsonEncode.encode!() |> :binary.list_to_bin()
-              :PROTOBUF -> msg |> Protox.Encode.encode!() |> :binary.list_to_bin()
+              :JSON -> msg |> Protox.json_encode!() |> :binary.list_to_bin()
+              :PROTOBUF -> msg |> Protox.encode!() |> :binary.list_to_bin()
             end
 
           IO.binwrite(
@@ -171,7 +171,7 @@ defmodule Protox.Conformance.Escript do
   end
 
   defp make_message_bytes(msg) do
-    data = msg |> Protox.Encode.encode!() |> :binary.list_to_bin()
+    data = msg |> Protox.encode!() |> :binary.list_to_bin()
     <<byte_size(data)::unsigned-little-32, data::binary>>
   end
 end

@@ -23,7 +23,7 @@ You can interact with `Msg` as if it were a native Elixir structure. For example
 
 ```elixir
 iex> msg = %Msg{a: 42, b: %{1 => "a map entry"}}
-iex> {:ok, iodata} = Protox.Encode.encode(msg) # or Msg.encode(msg)
+iex> {:ok, iodata} = Msg.encode(msg) # or Protox.encode(msg)
 ...
 iex> binary = # read binary from a socket, a file, etc.
 iex> {:ok, msg} = Msg.decode(binary)
@@ -120,11 +120,11 @@ Here's how to create and encode a new message:
 
 ```elixir
 iex> msg = %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}}
-iex> {:ok, iodata} = Protox.Encode.encode(msg)
+iex> {:ok, iodata} = Protox.encode(msg)
 ```
 Or, with throwing style:
 ```elixir
-iex> iodata = Protox.Encode.encode!(msg)
+iex> iodata = Protox.encode!(msg)
 ```
 
 It's also possible to call `encode/1` and `encode!/1` directly on the generated structures:
@@ -136,7 +136,7 @@ iex> {:ok, iodata} = Fiz.Foo.encode(msg)
 Note that `encode/1` returns an [IO data](https://hexdocs.pm/elixir/IO.html#module-use-cases-for-io-data), not a binary, for efficiency reasons. Such  IO data can be used
 directly with [files](https://hexdocs.pm/elixir/IO.html#binwrite/2) or sockets write operations, and therefore you don't need to transform them:
 ```elixir
-iex> {:ok, iodata} = Protox.Encode.encode(%Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}})
+iex> {:ok, iodata} = Protox.encode(%Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}})
 [[[], <<18>>, <<4>>, "\b", <<1>>, <<18>>, <<0>>], "\b", <<3>>]
 
 iex> {:ok, file} = File.open("msg.bin", [:write])
@@ -149,7 +149,7 @@ iex> IO.binwrite(file, iodata)
 However, you can use [`:binary.list_to_bin/1`](https://erlang.org/doc/man/binary.html#list_to_bin-1) or [`IO.iodata_to_binary`](https://hexdocs.pm/elixir/IO.html#iodata_to_binary/1) to get a binary should the need arises:
 
 ```elixir
-iex> %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}} |> Protox.Encode.encode!() |> :binary.list_to_bin()
+iex> %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}} |> Protox.encode!() |> :binary.list_to_bin()
 <<8, 3, 18, 4, 8, 1, 18, 0>>
 ```
 
@@ -297,7 +297,7 @@ Note that protox will still correctly parse unknown fields, they just won't be a
       """
     end
 
-    iex> Protox.Encode.encode!(%Required{})
+    iex> Protox.encode!(%Required{})
     ** (Protox.RequiredFieldsError) Some required fields are not set: [:a]
 
     iex> Required.decode!(<<>>)
