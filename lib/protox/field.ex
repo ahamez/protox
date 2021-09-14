@@ -46,10 +46,10 @@ defmodule Protox.Field do
   defp get_label(attrs) do
     label = Keyword.get(attrs, :label, nil)
 
-    if label not in @labels do
-      raise Protox.InvalidFieldAttribute.new(:label, @labels, label)
-    else
+    if label in @labels do
       label
+    else
+      raise Protox.InvalidFieldAttribute.new(:label, @labels, label)
     end
   end
 
