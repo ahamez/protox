@@ -50,6 +50,53 @@ defmodule Protox do
     end
   end
 
+  @doc """
+  Throwing version of `encode/1`.
+  """
+  @spec encode!(struct()) :: iodata() | no_return()
+  def encode!(msg) do
+    msg.__struct__.encode!(msg)
+  end
+
+  @doc """
+  Encode a protobuf message into IO data.
+
+  ## Example
+      msg = %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}}
+      {:ok, iodata} = Protox.encode(msg)
+
+  """
+  @spec encode(struct()) :: {:ok, iodata()} | {:error, any()}
+  def encode(msg) do
+    msg.__struct__.encode(msg)
+  end
+
+  @doc """
+  TODO
+  """
+  @spec decode!(binary(), atom()) :: struct() | no_return()
+  def decode!(binary, msg_module) do
+    msg_module.decode!(binary)
+  end
+
+  @doc """
+  TODO
+  """
+  @spec decode(binary(), atom()) :: {:ok, struct()} | {:error, any()}
+  def decode(binary, msg_module) do
+    msg_module.decode(binary)
+  end
+
+  @doc """
+  Export a proto3 message `msg` to JSON as iodata.
+
+  See https://developers.google.com/protocol-buffers/docs/proto3#json.
+  """
+  @spec json_encode!(struct()) :: iodata()
+  def json_encode!(msg) do
+    Protox.JsonEncode.encode!(msg)
+  end
+
   # -- Private
 
   defp get_namespace(opts) do

@@ -12,9 +12,9 @@ defmodule Protox.PropertiesTest do
   defp generate(mod) do
     let fields <- Protox.RandomInit.generate_fields(mod) do
       msg = Protox.RandomInit.generate_struct(mod, fields)
-      encoded = Protox.Encode.encode!(msg)
+      encoded = Protox.encode!(msg)
       encoded_bin = :binary.list_to_bin(encoded)
-      decoded = mod.decode!(encoded_bin)
+      decoded = Protox.decode!(encoded_bin, mod)
 
       {msg, encoded, encoded_bin, decoded}
     end

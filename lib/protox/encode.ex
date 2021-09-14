@@ -24,6 +24,7 @@ defmodule Protox.Encode do
       {:ok, iodata} = Protox.Encode.encode(msg)
 
   """
+  @deprecated "Use Protox.encode/1 instead"
   @spec encode(struct()) :: {:ok, iodata()} | {:error, any()}
   def encode(msg) do
     # A compilation error at the line below usually happen if `msg`
@@ -34,6 +35,7 @@ defmodule Protox.Encode do
   @doc """
   Throwing version of `encode/1`.
   """
+  @deprecated "Use Protox.encode!/1 instead"
   @spec encode!(struct()) :: iodata() | no_return()
   def encode!(msg) do
     # A compilation error at the line below usually happen if `msg`

@@ -1,8 +1,5 @@
 defmodule Protox.JsonEncode do
-  @moduledoc """
-  Export a proto3 message to JSON.
-  See https://developers.google.com/protocol-buffers/docs/proto3#json.
-  """
+  @moduledoc false
 
   alias Protox.Field
 
@@ -13,9 +10,6 @@ defmodule Protox.JsonEncode do
     json_encoder_opts: []
   ]
 
-  @doc """
-  TODO
-  """
   @spec encode!(struct()) :: iodata()
   def encode!(msg, opts \\ @default_opts) do
     json_encoder = Keyword.fetch!(opts, :json_encoder)
@@ -28,7 +22,6 @@ defmodule Protox.JsonEncode do
     Protox.JsonMessageEncoder.encode_message(msg, json_encode)
   end
 
-  @doc false
   def encode_message(msg, json_encode) do
     initial_acc = ["}"]
 
