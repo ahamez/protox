@@ -131,6 +131,60 @@ defmodule Protox.JsonEncodeTest do
     end
   end
 
+  describe "Google.Protobuf.Duration" do
+    test "correct " do
+      msg = %Google.Protobuf.Duration{seconds: 10, nanos: 9_999_999}
+      assert encode_decode(msg) == "10.010000s"
+    end
+
+    test "wrong" do
+      assert_raise Protox.JsonEncodingError, fn ->
+        msg = %Google.Protobuf.Duration{seconds: -315_576_000_000 - 1}
+        encode_decode(msg)
+      end
+
+      assert_raise Protox.JsonEncodingError, fn ->
+        msg = %Google.Protobuf.Duration{seconds: 315_576_000_000 + 1}
+        encode_decode(msg)
+      end
+
+      assert_raise Protox.JsonEncodingError, fn ->
+        msg = %Google.Protobuf.Duration{nanos: -999_999_999 - 1}
+        encode_decode(msg)
+      end
+
+      assert_raise Protox.JsonEncodingError, fn ->
+        msg = %Google.Protobuf.Duration{nanos: 999_999_999 + 1}
+        encode_decode(msg)
+      end
+    end
+  end
+
+  describe "Google.Protobuf.Timestamp" do
+    test "correct " do
+      msg = %Google.Protobuf.Timestamp{seconds: 3000, nanos: 0}
+      assert encode_decode(msg) == "1970-01-01T00:50:00.000000Z"
+    end
+
+    test "wrong" do
+      assert_raise Protox.JsonEncodingError, fn ->
+        {:ok, dt, 0} = DateTime.from_iso8601("9999-12-31T23:59:59.999999999Z")
+        unix = DateTime.to_unix(dt, :nanosecond) + 1
+
+        msg = %Google.Protobuf.Timestamp{nanos: unix}
+        encode_decode(msg)
+      end
+
+      assert_raise Protox.JsonEncodingError, fn ->
+        {:ok, dt, 0} = DateTime.from_iso8601("0001-01-01T00:00:00Z")
+        unix = DateTime.to_unix(dt, :nanosecond) - 1
+
+        msg = %Google.Protobuf.Timestamp{nanos: unix}
+        encode_decode(msg)
+      end
+    end
+  end
+
   defp encode!(msg) do
     msg |> Protox.JsonEncode.encode!() |> IO.iodata_to_binary()
   end

@@ -16,7 +16,7 @@ defimpl Protox.JsonMessageEncoder, for: Any do
 end
 
 defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.Duration do
-  def encode_message(msg, _json_encode) do
+  def encode_message(msg, json_encode) do
     cond do
       msg.seconds < -315_576_000_000 ->
         raise Protox.JsonEncodingError.new(msg, "seconds is < -315_576_000_000")
@@ -31,38 +31,45 @@ defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.Duration do
         raise Protox.JsonEncodingError.new(msg, "nanos is > 999_999_999")
 
       true ->
-        duration = msg.seconds + msg.nanos / 1_000_000_000
-        "\"#{Float.round(duration, 6)}s\""
+        duration =
+          Decimal.add(
+            Decimal.new(msg.seconds),
+            Decimal.div(Decimal.new(msg.nanos), Decimal.new(1_000_000_000))
+          )
+
+        json_encode.("#{Decimal.round(duration, 6)}s")
     end
   end
 end
 
 defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.Timestamp do
-  def encode_message(msg, _json_encode) do
+  def encode_message(msg, json_encode) do
     unix_timestamp = msg.seconds * 1_000_000_000 + msg.nanos
 
     cond do
-      unix_timestamp > 253_402_300_799 * 1_000_000_000 ->
+      unix_timestamp > 253_402_300_799_999_999_000 ->
         raise Protox.JsonEncodingError.new(msg, "timestamp is > 9999-12-31T23:59:59.999999999Z")
 
-      unix_timestamp < -62_135_596_800 * 1_000_000_000 ->
+      unix_timestamp < -62_135_596_800_000_000_000 ->
         raise Protox.JsonEncodingError.new(msg, "timestamp is < 0001-01-01T00:00:00Z")
 
       true ->
         unix_timestamp
         |> DateTime.from_unix!(:nanosecond)
         |> DateTime.to_iso8601()
+        |> json_encode.()
     end
   end
 end
 
 defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.FieldMask do
-  def encode_message(msg, _json_encode) do
+  def encode_message(msg, json_encode) do
     case check_paths(msg.paths) do
       :ok ->
         msg.paths
         |> Enum.map(&lower_camel_case/1)
         |> Enum.join(",")
+        |> json_encode.()
 
       :error ->
         raise Protox.JsonEncodingError.new(msg, "path is invalid")
