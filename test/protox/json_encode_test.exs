@@ -186,7 +186,7 @@ defmodule Protox.JsonEncodeTest do
   end
 
   defp encode!(msg) do
-    msg |> Protox.JsonEncode.encode!() |> IO.iodata_to_binary()
+    msg |> Protox.json_encode!() |> IO.iodata_to_binary()
   end
 
   defp json_decode!(iodata) do
