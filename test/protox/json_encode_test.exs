@@ -131,6 +131,18 @@ defmodule Protox.JsonEncodeTest do
     end
   end
 
+  describe "oneof" do
+    test "string" do
+      msg = %Msg{msg_m: {:msg_n, "toto"}}
+      assert encode_decode(msg) == %{"msgN" => "toto"}
+    end
+
+    test "message" do
+      msg = %Msg{msg_m: {:msg_o, %Sub{}}}
+      assert encode_decode(msg) == %{"msgO" => %{}}
+    end
+  end
+
   describe "Google.Protobuf.Duration" do
     test "correct " do
       msg = %Google.Protobuf.Duration{seconds: 10, nanos: 9_999_999}
