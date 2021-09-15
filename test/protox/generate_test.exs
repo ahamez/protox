@@ -7,10 +7,13 @@ defmodule Protox.GenerateTest do
     file = Path.join(__DIR__, "../samples/prefix/bar/bar.proto")
     generated_file_name = "generated_code.ex"
 
+    {:ok, files_content} =
+      Protox.Generate.generate_module_code([file], generated_file_name, false, [
+        "./test/samples"
+      ])
+
     assert [%Protox.Generate.FileContent{name: ^generated_file_name, content: content}] =
-             Protox.Generate.generate_module_code([file], generated_file_name, false, [
-               "./test/samples"
-             ])
+             files_content
 
     tmp_dir = System.tmp_dir!()
     tmp_file = Path.join(tmp_dir, generated_file_name)
@@ -26,14 +29,17 @@ defmodule Protox.GenerateTest do
     file = Path.join(__DIR__, "../samples/prefix/bar/bar.proto")
     generated_file_name = "generated_code.ex"
 
+    {:ok, files_content} =
+      Protox.Generate.generate_module_code(
+        [file],
+        generated_file_name,
+        false,
+        ["./test/samples"],
+        "Namespace"
+      )
+
     assert [%Protox.Generate.FileContent{name: ^generated_file_name, content: content}] =
-             Protox.Generate.generate_module_code(
-               [file],
-               generated_file_name,
-               false,
-               ["./test/samples"],
-               "Namespace"
-             )
+             files_content
 
     tmp_dir = System.tmp_dir!()
     tmp_file = Path.join(tmp_dir, generated_file_name)
@@ -49,6 +55,11 @@ defmodule Protox.GenerateTest do
     file = Path.join(__DIR__, "../samples/prefix/bar/bar.proto")
     generated_path_name = "generated_code"
 
+    {:ok, files_content} =
+      Protox.Generate.generate_module_code([file], generated_path_name, true, [
+        "./test/samples"
+      ])
+
     assert [
              %Protox.Generate.FileContent{
                name: "generated_code/elixir_bar.ex",
@@ -58,10 +69,7 @@ defmodule Protox.GenerateTest do
                name: "generated_code/elixir_foo.ex",
                content: foo_content
              }
-           ] =
-             Protox.Generate.generate_module_code([file], generated_path_name, true, [
-               "./test/samples"
-             ])
+           ] = files_content
 
     tmp_dir = System.tmp_dir!()
     bar_tmp_file = Path.join(tmp_dir, "bar.ex")
@@ -81,6 +89,15 @@ defmodule Protox.GenerateTest do
     file = Path.join(__DIR__, "../samples/prefix/bar/bar.proto")
     generated_path_name = "generated_code"
 
+    {:ok, files_content} =
+      Protox.Generate.generate_module_code(
+        [file],
+        generated_path_name,
+        true,
+        ["./test/samples"],
+        "Namespace"
+      )
+
     assert [
              %Protox.Generate.FileContent{
                name: "generated_code/elixir_namespace_bar.ex",
@@ -90,14 +107,7 @@ defmodule Protox.GenerateTest do
                name: "generated_code/elixir_namespace_foo.ex",
                content: foo_content
              }
-           ] =
-             Protox.Generate.generate_module_code(
-               [file],
-               generated_path_name,
-               true,
-               ["./test/samples"],
-               "Namespace"
-             )
+           ] = files_content
 
     tmp_dir = System.tmp_dir!()
     bar_tmp_file = Path.join(tmp_dir, "bar.ex")

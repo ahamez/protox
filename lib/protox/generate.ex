@@ -21,24 +21,31 @@ defmodule Protox.Generate do
         _ -> Enum.map(include_paths, &Path.expand/1)
       end
 
-    {:ok, file_descriptor_set} =
-      files
-      |> Enum.map(&Path.expand/1)
-      |> Protox.Protoc.run(paths)
+    case launch_protoc(files, paths) do
+      {:ok, file_descriptor_set} ->
+        %{enums: enums, messages: messages} =
+          Protox.Parse.parse(file_descriptor_set, namespace_or_nil)
 
-    %{enums: enums, messages: messages} =
-      Protox.Parse.parse(file_descriptor_set, namespace_or_nil)
+        code = quote do: unquote(Protox.Define.define(enums, messages, opts))
 
-    code = quote do: unquote(Protox.Define.define(enums, messages, opts))
+        if multiple_files do
+          {:ok, multiple_file_content(output_path, code)}
+        else
+          {:ok, single_file_content(output_path, code)}
+        end
 
-    if multiple_files do
-      multiple_file_content(output_path, code)
-    else
-      single_file_content(output_path, code)
+      {:error, msg} ->
+        {:error, msg}
     end
   end
 
   # -- Private
+
+  defp launch_protoc(files, paths) do
+    files
+    |> Enum.map(&Path.expand/1)
+    |> Protox.Protoc.run(paths)
+  end
 
   defp single_file_content(output_path, code) do
     [
