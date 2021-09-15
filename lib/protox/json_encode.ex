@@ -53,11 +53,7 @@ defmodule Protox.JsonEncode do
     case Map.fetch!(msg, parent_name) do
       {^child_name, field_value} ->
         json_value = encode_value(field_value, field.type, json_encode)
-
-        case json_value do
-          <<>> -> <<>>
-          _ -> [json_encode.(field.json_name), ":", json_value]
-        end
+        [json_encode.(field.json_name), ":", json_value]
 
       _ ->
         <<>>
