@@ -41,6 +41,7 @@ You can find [here](https://github.com/ahamez/protox/blob/master/test/example_te
   - [Usage with files](#usage-with-files)
   - [Encode](#encode)
   - [Decode](#decode)
+  - [JSON](#json)
   - [Packages and  namespaces](#packages-and--namespaces)
     - [Packages](#packages)
     - [Prepend namespaces](#prepend-namespaces)
@@ -164,6 +165,10 @@ Or, with throwing style:
 ```elixir
 iex> msg = Fiz.Foo.decode!(<<8, 3, 18, 4, 8, 1, 18, 0>>)
 ```
+
+## JSON
+
+TODO
 
 ## Packages and  namespaces
 
