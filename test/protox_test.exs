@@ -1,6 +1,5 @@
 defmodule ProtoxTest do
   use ExUnit.Case
-
   Code.require_file("test/messages.exs")
   Code.require_file("test/random_init.exs")
 
@@ -99,6 +98,8 @@ defmodule ProtoxTest do
     namespace: NoUf,
     keep_unknown_fields: false
 
+  doctest Protox
+
   setup_all do
     {
       :ok,
@@ -106,7 +107,13 @@ defmodule ProtoxTest do
     }
   end
 
-  test "symmetric float precision" do
+  test "Can decode using Protox top-level interface" do
+    bytes = <<8, 150, 1>>
+    assert Protox.decode!(bytes, Sub) == %Sub{a: 150, b: ""}
+    assert Protox.decode(bytes, Sub) == {:ok, %Sub{a: 150, b: ""}}
+  end
+
+  test "Symmetric float precision" do
     msg = %FloatPrecision{
       a: 8.73291669056208,
       b: 0.1
@@ -117,17 +124,17 @@ defmodule ProtoxTest do
     assert Float.round(decoded.b, 1) == msg.b
   end
 
-  test "symmetric (Sub)" do
+  test "Symmetric (Sub)" do
     msg = Protox.RandomInit.generate_msg(Sub)
     assert msg |> Sub.encode!() |> :binary.list_to_bin() |> Sub.decode!() == msg
   end
 
-  test "symmetric (Msg)" do
+  test "Symmetric (Msg)" do
     msg = Protox.RandomInit.generate_msg(Msg)
     assert msg |> Msg.encode!() |> :binary.list_to_bin() |> Msg.decode!() == msg
   end
 
-  test "symmetric (Upper)" do
+  test "Symmetric (Upper)" do
     msg = Protox.RandomInit.generate_msg(Upper)
     assert msg |> Upper.encode!() |> :binary.list_to_bin() |> Upper.decode!() == msg
   end
@@ -145,7 +152,7 @@ defmodule ProtoxTest do
     assert Namespace.Enum.constants() == [{0, :FOO}, {1, :BAR}]
   end
 
-  test "from files" do
+  test "From files" do
     assert Proto2A.syntax() == :proto2
 
     assert Proto2A.defs() == %{

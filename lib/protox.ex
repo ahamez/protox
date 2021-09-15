@@ -1,10 +1,11 @@
 defmodule Protox do
   @moduledoc ~S'''
-  Use this module to generate the Elixir modules corresponding to a set of protobuf definitions.
+  Use this module to generate the Elixir structs corresponding to a set of protobuf definitions
+  and to encode/decode instances of these structures.
 
-  ## Examples
+  ## Elixit structs generation examples
   From a set of files:
-      defmodule Foo do
+      defmodule Dummy do
         use Protox,
           files: [
             "./defs/foo.proto",
@@ -14,10 +15,11 @@ defmodule Protox do
       end
 
   From a string:
-      defmodule Bar do
+      defmodule Dummy do
         use Protox,
           schema: """
           syntax = "proto3";
+          package fiz;
 
           message Baz {
           }
@@ -31,7 +33,49 @@ defmodule Protox do
   The generated modules respect the package declaration. For instance, in the above example,
   both the `Fiz.Baz` and `Fiz.Foo` modules will be generated.
 
-  See [README](readme.html) for detailed instructions.
+  ## Encoding/decoding
+  For the rest of this module documentation, we suppose the following protobuf messages are defined:
+      defmodule Dummy do
+        use Protox,
+          schema: """
+            syntax = "proto3";
+            package fiz;
+
+            message Baz {
+            }
+
+            enum Enum {
+              FOO = 0;
+              BAR = 1;
+            }
+
+            message Foo {
+              Enum a = 1;
+              map<int32, Baz> b = 2;
+            }
+          """,
+          namespace: Namespace
+
+        use Protox,
+          schema: """
+          syntax = "proto3";
+
+          message Msg {
+            map<int32, string> msg_k = 8;
+          }
+          """
+
+        use Protox,
+          schema: """
+          syntax = "proto3";
+
+          message Sub {
+            int32 a = 1;
+          }
+          """
+      end
+
+  See each function documentation to see how they are used to encode and decode protobuf messages.
   '''
 
   defmacro __using__(opts) do
@@ -53,6 +97,7 @@ defmodule Protox do
   @doc """
   Throwing version of `encode/1`.
   """
+  @doc since: "1.6.0"
   @spec encode!(struct()) :: iodata() | no_return()
   def encode!(msg) do
     msg.__struct__.encode!(msg)
@@ -61,37 +106,91 @@ defmodule Protox do
   @doc """
   Encode a protobuf message into IO data.
 
-  ## Example
-      msg = %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}}
-      {:ok, iodata} = Protox.encode(msg)
+  ## Examples
+      iex> msg = %Namespace.Fiz.Foo{a: 3, b: %{1 => %Namespace.Fiz.Baz{}}}
+      iex> {:ok, iodata} = Protox.encode(msg)
+      iex> :binary.list_to_bin(iodata)
+      <<8, 3, 18, 4, 8, 1, 18, 0>>
+
+      iex> msg = %Namespace.Fiz.Foo{a: "should not be a string"}
+      iex> {:error, reason} = Protox.encode(msg)
+      iex> reason
+      %ArgumentError{message: "argument error"}
 
   """
+  @doc since: "1.6.0"
   @spec encode(struct()) :: {:ok, iodata()} | {:error, any()}
   def encode(msg) do
     msg.__struct__.encode(msg)
   end
 
   @doc """
-  TODO
+  Throwing version of `decode/2`.
   """
+  @doc since: "1.6.0"
   @spec decode!(binary(), atom()) :: struct() | no_return()
   def decode!(binary, msg_module) do
     msg_module.decode!(binary)
   end
 
   @doc """
-  TODO
+  Decode a binary into a protobuf message.
+
+  ## Examples
+      iex> binary = <<66, 7, 8, 1, 18, 3, 102, 111, 111, 66, 7, 8, 2, 18, 3, 98, 97, 114>>
+      iex> {:ok, msg} = Protox.decode(binary, Msg)
+      iex> msg
+      %Msg{msg_k: %{1 => "foo", 2 => "bar"}}
+
+      iex> binary = <<66, 7, 8, 1, 18, 3, 102, 111, 66, 7, 8, 2, 18, 3, 98, 97, 114>>
+      iex> {:error, reason} = Protox.decode(binary, Msg)
+      iex> reason
+      %Protox.IllegalTagError{message: "Field with illegal tag 0"}
   """
+  @doc since: "1.6.0"
   @spec decode(binary(), atom()) :: {:ok, struct()} | {:error, any()}
   def decode(binary, msg_module) do
     msg_module.decode(binary)
   end
 
   @doc """
-  Export a proto3 message `msg` to JSON as iodata.
+  Export a proto3 message to JSON as IO data.
 
-  See https://developers.google.com/protocol-buffers/docs/proto3#json.
+  ## Examples
+      iex> msg = %Namespace.Fiz.Foo{a: :BAR}
+      iex> {:ok, iodata} = Protox.json_encode(msg)
+      iex> iodata
+      ["{", ["\\"a\\"", ":", "\\"BAR\\""], "}"]
+
+      iex> msg = %Sub{a: 42}
+      iex> {:ok, iodata} = Protox.json_encode(msg)
+      iex> iodata
+      ["{", ["\\"a\\"", ":", "42"], "}"]
+
+      iex> msg = %Msg{msg_k: %{1 => "foo", 2 => "bar"}}
+      iex> {:ok, iodata} = msg |> Protox.json_encode()
+      iex> :binary.list_to_bin(iodata)
+      "{\\"msgK\\":{\\"2\\":\\"bar\\",\\"1\\":\\"foo\\"}}"
+
+  ## Encoding specifications
+  See https://developers.google.com/protocol-buffers/docs/proto3#json for the specifications
+  of the encoding.
+
   """
+  @doc since: "1.6.0"
+  @spec json_encode(struct()) :: {:ok, iodata()} | {:error, any()}
+  def json_encode(msg) do
+    try do
+      {:ok, json_encode!(msg)}
+    rescue
+      e -> {:error, e}
+    end
+  end
+
+  @doc """
+  Throwing version of `json_encode/1`
+  """
+  @doc since: "1.6.0"
   @spec json_encode!(struct()) :: iodata()
   def json_encode!(msg) do
     Protox.JsonEncode.encode!(msg)

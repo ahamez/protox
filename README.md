@@ -26,7 +26,7 @@ iex> msg = %Msg{a: 42, b: %{1 => "a map entry"}}
 iex> {:ok, iodata} = Msg.encode(msg) # or Protox.encode(msg)
 ...
 iex> binary = # read binary from a socket, a file, etc.
-iex> {:ok, msg} = Msg.decode(binary)
+iex> {:ok, msg} = Msg.decode(binary) # or Protox.decode(binary, Msg)
 ```
 
 You can find [here](https://github.com/ahamez/protox/blob/master/test/example_test.exs) a more involved example with most types.
@@ -157,6 +157,16 @@ iex> %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}} |> Protox.encode!() |> :binary.list_t
 ## Decode
 
 Here's how to decode a message from a binary:
+
+```elixir
+iex> {:ok, msg} = Protox.decode(<<8, 3, 18, 4, 8, 1, 18, 0>>, Fiz.Foo)
+```
+Or, with throwing style:
+```elixir
+iex> msg = Protox.decode!(<<8, 3, 18, 4, 8, 1, 18, 0>>, Fiz.Foo)
+```
+
+It's also possible to call `decode/1` and `decode!/1` directly on the generated structures:
 
 ```elixir
 iex> {:ok, msg} = Fiz.Foo.decode(<<8, 3, 18, 4, 8, 1, 18, 0>>)
