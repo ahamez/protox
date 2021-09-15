@@ -33,26 +33,21 @@ defmodule Mix.Tasks.Protox.Generate do
                keep_unknown_fields: :boolean
              ]
            ),
-         {:ok, output_path} <- Keyword.fetch(opts, :output_path) do
-      {include_paths, opts} = pop_values(opts, :include_path)
-      {namespace, opts} = Keyword.pop(opts, :namespace)
-      {multiple_files, opts} = Keyword.pop(opts, :multiple_files, false)
-
-      files
-      |> Protox.Generate.generate_module_code(
-        Path.expand(output_path),
-        multiple_files,
-        include_paths,
-        namespace,
-        opts
-      )
-      |> Enum.each(&generate_file/1)
+         {:ok, output_path} <- Keyword.fetch(opts, :output_path),
+         {include_paths, opts} = pop_values(opts, :include_path),
+         {namespace, opts} = Keyword.pop(opts, :namespace),
+         {multiple_files, opts} = Keyword.pop(opts, :multiple_files, false),
+         {:ok, files_content} <-
+           generate(files, output_path, multiple_files, include_paths, namespace, opts) do
+      Enum.each(files_content, &generate_file/1)
     else
       err ->
-        IO.puts("Failed to generate code: #{inspect(err)}")
-        :error
+        IO.puts(:stderr, "Failed to generate code: #{inspect(err)}")
+        exit({:shutdown, 1})
     end
   end
+
+  # -- Private
 
   defp generate_file(%Protox.Generate.FileContent{name: file_name, content: content}) do
     File.write!(file_name, content)
@@ -67,5 +62,16 @@ defmodule Mix.Tasks.Protox.Generate do
       end)
 
     {Enum.reverse(values), Enum.reverse(new_opts)}
+  end
+
+  defp generate(files, output_path, multiple_files, include_paths, namespace, opts) do
+    Protox.Generate.generate_module_code(
+      files,
+      Path.expand(output_path),
+      multiple_files,
+      include_paths,
+      namespace,
+      opts
+    )
   end
 end

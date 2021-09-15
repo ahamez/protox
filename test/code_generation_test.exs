@@ -1,5 +1,5 @@
 defmodule Protox.CodeGenerationTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
 
   setup_all _context do
     tmp_dir = System.tmp_dir!()
@@ -74,6 +74,27 @@ defmodule Protox.CodeGenerationTest do
     assert length(Code.compile_file(tmp_file)) > 0
 
     File.rm!(tmp_file)
+  end
+
+  test "Don't generate when definition is invalid", %{
+    code_generation_path: path,
+    protox_path: protox_path
+  } do
+    File.rm_rf!("#{path}/lib/output")
+    File.mkdir_p!("#{path}/lib/output")
+
+    {_, generation_exit_status} =
+      System.cmd(
+        "mix",
+        [
+          "protox.generate",
+          "--output-path=./lib/output/should_fail.ex",
+          "#{protox_path}/test/samples/invalid.proto"
+        ],
+        cd: path
+      )
+
+    assert generation_exit_status == 1
   end
 
   defp launch(code_generation_path, protox_path, output, args) do
