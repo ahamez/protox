@@ -122,6 +122,6 @@ defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.FieldMask do
   defp has_camel_cased_components?(path) do
     path
     |> String.split("_")
-    |> Enum.any?(fn str -> str == lower_camel_case(str) end)
+    |> Enum.any?(fn str -> str == lower_camel_case(str) and not (str == String.downcase(str)) end)
   end
 end
