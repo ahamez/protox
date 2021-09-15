@@ -29,18 +29,22 @@ jobs:
             dialyzer: true
           - elixir: 1.9.4
             otp: 22.3
+            credo: true
             dialyzer: true
           - elixir: 1.10.4
             otp: 22.3              
+            credo: true
             dialyzer: true
           - elixir: 1.11.4
             otp: 23.2.5
             check_deps: true
+            credo: true
             dialyzer: true
           - elixir: 1.12.1
             otp: 24.0.2
             check_deps: true
             check_format: true
+            credo: true
             dialyzer: true
 
     steps:
@@ -116,6 +120,7 @@ jobs:
 
     - name: Credo
       run: mix credo
+      if: ${{ matrix.credo }}
 
     - name: Dialyzer
       run: mix dialyzer
