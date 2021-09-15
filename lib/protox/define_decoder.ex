@@ -202,7 +202,6 @@ defmodule Protox.DefineDecoder do
     # No need to maintain a list of set fields when the list of required fields is empty
     case_return =
       case keep_set_fields do
-        # [] -> no fields to update as we don't want to keep unknown fields
         true -> quote do: {unquote(vars.set_fields), [], rest}
         false -> quote do: {[], rest}
       end
