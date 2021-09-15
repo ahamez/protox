@@ -140,22 +140,22 @@ defmodule Protox.JsonEncodeTest do
     test "wrong" do
       assert_raise Protox.JsonEncodingError, fn ->
         msg = %Google.Protobuf.Duration{seconds: -315_576_000_000 - 1}
-        encode_decode(msg)
+        encode!(msg)
       end
 
       assert_raise Protox.JsonEncodingError, fn ->
         msg = %Google.Protobuf.Duration{seconds: 315_576_000_000 + 1}
-        encode_decode(msg)
+        encode!(msg)
       end
 
       assert_raise Protox.JsonEncodingError, fn ->
         msg = %Google.Protobuf.Duration{nanos: -999_999_999 - 1}
-        encode_decode(msg)
+        encode!(msg)
       end
 
       assert_raise Protox.JsonEncodingError, fn ->
         msg = %Google.Protobuf.Duration{nanos: 999_999_999 + 1}
-        encode_decode(msg)
+        encode!(msg)
       end
     end
   end
@@ -172,7 +172,7 @@ defmodule Protox.JsonEncodeTest do
         unix = DateTime.to_unix(dt, :nanosecond) + 1
 
         msg = %Google.Protobuf.Timestamp{nanos: unix}
-        encode_decode(msg)
+        encode!(msg)
       end
 
       assert_raise Protox.JsonEncodingError, fn ->
@@ -180,7 +180,31 @@ defmodule Protox.JsonEncodeTest do
         unix = DateTime.to_unix(dt, :nanosecond) - 1
 
         msg = %Google.Protobuf.Timestamp{nanos: unix}
-        encode_decode(msg)
+        encode!(msg)
+      end
+    end
+  end
+
+  describe "Google.Protobuf.FieldMask" do
+    test "correct " do
+      msg = %Google.Protobuf.FieldMask{paths: ["foo.bar_baz", "foo"]}
+      assert encode_decode(msg) == "foo.barBaz,foo"
+    end
+
+    test "wrong" do
+      assert_raise Protox.JsonEncodingError, fn ->
+        msg = %Google.Protobuf.FieldMask{paths: ["fooBar"]}
+        encode!(msg)
+      end
+
+      assert_raise Protox.JsonEncodingError, fn ->
+        msg = %Google.Protobuf.FieldMask{paths: ["foo_3_bar"]}
+        encode!(msg)
+      end
+
+      assert_raise Protox.JsonEncodingError, fn ->
+        msg = %Google.Protobuf.FieldMask{paths: ["foo__bar"]}
+        encode!(msg)
       end
     end
   end
