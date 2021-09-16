@@ -23,7 +23,7 @@ defmodule Protox.DefineMessage do
       encoder = Protox.DefineEncoder.define(fields, required_fields, syntax, opts)
       decoder = Protox.DefineDecoder.define(msg_name, fields, required_fields, opts)
 
-      default_fun = make_default_fun(fields)
+      default_fun = make_default_funs(fields)
 
       module_ast =
         quote do
@@ -100,7 +100,7 @@ defmodule Protox.DefineMessage do
     []
   end
 
-  defp make_default_fun(fields) do
+  defp make_default_funs(fields) do
     spec =
       quote do
         @spec default(atom) :: {:ok, boolean | integer | String.t() | float} | {:error, atom}
