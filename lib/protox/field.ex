@@ -5,18 +5,16 @@ defmodule Protox.Field do
 
   @type t() :: %__MODULE__{
           tag: number(),
-          label: atom(),
+          label: Protox.Types.label(),
           name: atom(),
-          kind: atom() | {:default, any()} | {:oneof, atom()},
-          type: atom() | {atom(), atom()} | {atom(), {:enum | :message, atom()}},
+          kind: Protox.Types.kind(),
+          type: Protox.Types.type(),
           json_name: binary()
         }
 
   @keys [:tag, :label, :name, :kind, :type, :json_name]
   @enforce_keys @keys
   defstruct @keys
-
-  @labels [:none, :optional, :proto3_optional, :repeated, :required, nil]
 
   @doc false
   @spec new!(keyword()) :: %__MODULE__{} | no_return()
@@ -47,6 +45,7 @@ defmodule Protox.Field do
     end
   end
 
+  @labels [:none, :optional, :proto3_optional, :repeated, :required, nil]
   defp get_label(attrs) do
     label = Keyword.get(attrs, :label, nil)
 

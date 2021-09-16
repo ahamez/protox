@@ -75,4 +75,15 @@ defmodule Protox.Types do
           | {:enum, atom}
           | {:message, atom}
           | {map_key_type, type}
+
+  @typedoc """
+  This type gives more information on the field presence (if applicable).
+  """
+  @type label ::
+          :none
+          | :optional
+          | :proto3_optional
+          | :repeated
+          | :required
+          | nil
 end
