@@ -49,18 +49,10 @@ syntax()
 Get the syntax of the protobuf message: `:proto2` or `:proto3`.
 
 ```elixir
-@spec defs() :: %{required(non_neg_integer) => {atom, Protox.Types.kind(), Protox.Types.type()}}
-defs()
+@spec fields() :: list(Protox.Field.t())
+fields()
 ```
 Get the underlying definition of a protobuf message, mostly used for internal usage.
-See [Types](documentation/reference.md#types) section to get a description of `Protox.Types.kind` and `Protox.Types.type`.
-
-```elixir
-@spec %{required(atom) => {non_neg_integer, Protox.Types.kind(), Protox.Types.type()}}
-defs_by_name()
-```
-Get the underlying definition of a protobuf message, mostly used for internal usage.
-See [Types](documentation/reference.md#types) section to get a description of `Protox.Types.kind` and `Protox.Types.type`.
 
 ### Default values
 
