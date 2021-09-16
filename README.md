@@ -2,14 +2,14 @@
 
 ![Elixir CI](https://github.com/ahamez/protox/workflows/Elixir%20CI/badge.svg) [![Coverage Status](https://coveralls.io/repos/github/ahamez/protox/badge.svg?branch=master)](https://coveralls.io/github/ahamez/protox?branch=master) [![Hex Docs](https://img.shields.io/badge/hex-docs-brightgreen.svg)](https://hexdocs.pm/protox/) [![Hex.pm Version](http://img.shields.io/hexpm/v/protox.svg)](https://hex.pm/packages/protox) [![License](https://img.shields.io/hexpm/l/protox.svg)](https://github.com/ahamez/protox/blob/master/LICENSE)
 
-`Protox` is an Elixir library to work with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers) (aka *protobuf*), versions 2 and 3.
+`protox` is an Elixir library to work with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers) (aka *protobuf*), versions 2 and 3.
 
 The primary objective of `protox` is **reliability**: it uses [property based testing](https://github.com/alfert/propcheck) and has a [near 100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master). Also, using [mutation testing](https://en.wikipedia.org/wiki/Mutation_testing) with the invaluable help of [Muzak pro](https://devonestes.com/muzak), the quality of the `protox` test suite has been validated.
 Therefore, `protox` passes all the tests of the conformance checker provided by Google. See [Conformance](#conformance) section for more information.
 
 This library is easy to use: you just point to the `*.proto` files or give the schema to the `Protox` macro, no need to generate any file! However, should you need to generate files, a mix task is available (see [Files generation](#files-generation)).
 
-`Protox` provides a full-blown Elixir experience with protobuf messages. For instance, given the following protobuf `msg.proto` file:
+`protox` provides a full-blown Elixir experience with protobuf messages. For instance, given the following protobuf `msg.proto` file:
 ```proto
 syntax = "proto3";
 
@@ -41,7 +41,7 @@ You can find [here](https://github.com/ahamez/protox/blob/master/test/example_te
   - [Usage with files](#usage-with-files)
   - [Encode](#encode)
   - [Decode](#decode)
-  - [JSON](#json)
+  - [JSON encode](#json)
   - [Packages and  namespaces](#packages-and--namespaces)
     - [Packages](#packages)
     - [Prepend namespaces](#prepend-namespaces)
@@ -60,7 +60,7 @@ You can find [here](https://github.com/ahamez/protox/blob/master/test/example_te
 
 - Elixir >= 1.7
 - protoc >= 3.0
-  Protox uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`. You can download it [here](https://github.com/google/protobuf) or you can install it with your favorite package manager (`brew install protobuf`, `apt install protobuf-compiler`, etc.).
+  `protox` uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`. You can download it [here](https://github.com/google/protobuf) or you can install it with your favorite package manager (`brew install protobuf`, `apt install protobuf-compiler`, etc.).
   *This dependency is only required at compile-time*.
 
 
@@ -139,10 +139,8 @@ directly with [files](https://hexdocs.pm/elixir/IO.html#binwrite/2) or sockets w
 ```elixir
 iex> {:ok, iodata} = Protox.encode(%Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}})
 [[[], <<18>>, <<4>>, "\b", <<1>>, <<18>>, <<0>>], "\b", <<3>>]
-
 iex> {:ok, file} = File.open("msg.bin", [:write])
 {:ok, #PID<0.1023.0>}
-
 iex> IO.binwrite(file, iodata)
 :ok
 ```
@@ -178,7 +176,29 @@ iex> msg = Fiz.Foo.decode!(<<8, 3, 18, 4, 8, 1, 18, 0>>)
 
 ## JSON
 
-TODO
+`protox` uses the official [Google's JSON specification](https://developers.google.com/protocol-buffers/docs/proto3#json) to encode to JSON.
+
+Here's how to encode a message to JSON (as an IO data):
+
+```elixir
+iex> msg = %Namespace.Fiz.Foo{a: :BAR}
+iex> {:ok, iodata} = Protox.json_encode(msg)
+{:ok, ["{", ["\"a\"", ":", "\"BAR\""], "}"]}
+```
+
+Or, with throwing style:
+
+```elixir
+iex> msg = %Namespace.Fiz.Foo{a: :BAR}
+iex> iodata = Protox.json_encode!(msg)
+["{", ["\"a\"", ":", "\"BAR\""], "}"]
+```
+
+Note that `protox` does not (yet) support the encoding of all [protobuf well-know types](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf): unsupported types will be encoded like a regular message, rather than with the custom encoding specified in the [JSON specification](https://developers.google.com/protocol-buffers/docs/proto3#json).
+The currently supported types are: [Duration](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#duration), [FieldMask](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#fieldmask) and [Timestamp](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#timestamp).
+
+If in a hurry, you can add the support of the missing type yourself by implementing the [`Protox.JsonMessageEncoder`](./lib/protox/json_message_encoder.ex) protocol.
+
 
 ## Packages and  namespaces
 
@@ -294,7 +314,7 @@ Note that protox will still correctly parse unknown fields, they just won't be a
 
 ## Unsupported features
 
-* Protobuf 3 [JSON mapping](https://developers.google.com/protocol-buffers/docs/proto3#json)
+* Decoding from Protobuf 3 [JSON mapping](https://developers.google.com/protocol-buffers/docs/proto3#json)
 * Groups ([deprecated in protobuf](https://developers.google.com/protocol-buffers/docs/proto#groups))
 * All [options](https://developers.google.com/protocol-buffers/docs/proto3#options) other than `packed` and `default` are ignored as they concern other languages implementation details.
 
