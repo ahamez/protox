@@ -3,6 +3,8 @@ defmodule Protox.Message do
   This module provides functions to work with messages.
   """
 
+  alias Protox.Field
+
   @doc """
   Singular fields of `msg` will be overwritten, if specified in `from`, except for
   embedded messages which will be merged. Repeated fields will be concatenated.
@@ -39,31 +41,28 @@ defmodule Protox.Message do
   end
 
   defp merge_field(msg, name, v1, v2) do
-    defs = msg.__struct__.defs_by_name()
-    syntax = msg.__struct__.syntax()
-
-    case defs[name] do
-      {_, :packed, _} ->
+    case msg.__struct__.field_def(name) do
+      {:ok, %Field{kind: :packed}} ->
         v1 ++ v2
 
-      {_, :unpacked, _} ->
+      {:ok, %Field{kind: :unpacked}} ->
         v1 ++ v2
 
-      {_, {:default, _}, {:message, _}} ->
+      {:ok, %Field{kind: {:default, _}, type: {:message, _}}} ->
         merge(v1, v2)
 
-      {_, {:default, _}, _} ->
+      {:ok, %Field{kind: {:default, _}}} ->
         {:ok, default} = msg.__struct__.default(name)
-        merge_scalar(syntax, v1, v2, default)
+        merge_scalar(msg.__struct__.syntax(), v1, v2, default)
 
-      nil ->
-        merge_oneof(v1, v2, defs)
-
-      {_, :map, {_, {:message, _}}} ->
+      {:ok, %Field{kind: :map, type: {_, {:message, _}}}} ->
         Map.merge(v1, v2, fn _key, w1, w2 -> merge(w1, w2) end)
 
-      {_, :map, _} ->
+      {:ok, %Field{kind: :map}} ->
         Map.merge(v1, v2)
+
+      {:error, :no_such_field} ->
+        merge_oneof(msg, v1, v2)
     end
   end
 
@@ -71,17 +70,25 @@ defmodule Protox.Message do
   defp merge_scalar(:proto3, v1, v2, default) when v2 == default, do: v1
   defp merge_scalar(_syntax, _v1, v2, _default), do: v2
 
-  defp merge_oneof({v1_field, v1_value}, v2 = {v2_field, v2_value}, defs)
-       when v1_field == v2_field do
-    case {defs[v1_field], defs[v2_field]} do
-      {{_, {:oneof, _}, {:message, _}}, {_, {:oneof, _}, {:message, _}}} ->
-        {v1_field, merge(v1_value, v2_value)}
+  defp merge_oneof(
+         msg,
+         {v1_child_field, v1_child_value},
+         {v2_child_field, v2_child_value} = v2
+       )
+       when v1_child_field == v2_child_field do
+    {:ok, v1_child_field_def} = msg.__struct__.field_def(v1_child_field)
+    {:ok, v2_child_field_def} = msg.__struct__.field_def(v2_child_field)
 
-      _ ->
-        v2
+    if is_oneof_message(v1_child_field_def) and is_oneof_message(v2_child_field_def) do
+      {v1_child_field, merge(v1_child_value, v2_child_value)}
+    else
+      v2
     end
   end
 
-  defp merge_oneof(v1, nil, _defs), do: v1
-  defp merge_oneof(_v1, v2, _defs), do: v2
+  defp merge_oneof(_msg, v1, nil), do: v1
+  defp merge_oneof(_msg, _v1, v2), do: v2
+
+  defp is_oneof_message(%Field{kind: {:oneof, _}, type: {:message, _}}), do: true
+  defp is_oneof_message(_), do: false
 end
