@@ -7,7 +7,7 @@ This documentation lists the functions generated with each Elixir structure asso
 ### Encode
 
 ```elixir
-@spec(encode(struct) :: {:ok, iodata} | {:error, any})
+@spec encode(struct) :: {:ok, iodata} | {:error, any}
 encode(msg)
 ```
 
@@ -16,7 +16,7 @@ Returns `{:ok, iodata}` when the encoding was successful and `{:error, descripti
 
 
 ```elixir
-@spec(encode!(struct) :: iodata | no_return)
+@spec encode!(struct) :: iodata | no_return
 encode!(msg)
 ```
 
@@ -25,7 +25,7 @@ Throwing version of `encode/1`.
 ### Decode
 
 ```elixir
-@spec(decode(binary) :: {:ok, struct} | {:error, any})
+@spec decode(binary) :: {:ok, struct} | {:error, any}
 decode(data)
 ```
 
@@ -34,7 +34,7 @@ Returns `{:ok, msg}` when the decoding was successful and `{:error, description}
 
 
 ```elixir
-@spec(decode!(binary) :: struct | no_return)
+@spec decode!(binary) :: struct | no_return
 decode!(data)
 ```
 
@@ -43,21 +43,29 @@ Throwing version of `decode/1`.
 ### Syntax and definitions
 
 ```elixir
-@spec(syntax() :: atom)
+@spec syntax() :: atom
 syntax()
 ```
 Get the syntax of the protobuf message: `:proto2` or `:proto3`.
 
 ```elixir
-@spec fields() :: list(Protox.Field.t())
-fields()
+@spec fields_defs() :: list(Protox.Field.t())
+fields_defs()
 ```
-Get the underlying definition of a protobuf message, mostly used for internal usage.
+Get the underlying definition of a protobuf message, mostly for internal usage.
+
+
+```elixir
+@spec field_def(atom()) :: Protox.Field.t()
+field_def(field_name)
+```
+Get the underlying definition of a specific field, mostly for internal usage.
+
 
 ### Default values
 
 ```elixir
-@spec(default(atom) :: {:ok, boolean | integer | String.t() | binary | float} | {:error, atom}
+@spec default(atom) :: {:ok, boolean | integer | String.t() | binary | float} | {:error, atom}
 default(field_name)
 ```
 
