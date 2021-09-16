@@ -14,7 +14,7 @@ defmodule Protox.JsonEncode do
     initial_acc = ["}"]
 
     body =
-      msg.__struct__.fields()
+      msg.__struct__.fields_defs()
       |> Enum.reduce(initial_acc, fn %Protox.Field{} = field, acc ->
         case encode_msg_field(msg, field, json_encode) do
           <<>> ->
