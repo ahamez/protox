@@ -210,7 +210,7 @@ defmodule Protox.Parse do
       end
 
     field =
-      Field.new(
+      Field.new!(
         tag: descriptor.number,
         label: label,
         name: String.to_atom(descriptor.name),

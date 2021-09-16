@@ -18,8 +18,9 @@ defmodule Protox.Field do
 
   @labels [:none, :optional, :proto3_optional, :repeated, :required, nil]
 
-  @spec new(keyword()) :: %__MODULE__{} | no_return()
-  def new(attrs) do
+  @doc false
+  @spec new!(keyword()) :: %__MODULE__{} | no_return()
+  def new!(attrs) do
     tag = get_tag(attrs)
     label = get_label(attrs)
     name = Keyword.fetch!(attrs, :name)
