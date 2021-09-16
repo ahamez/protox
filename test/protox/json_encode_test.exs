@@ -144,41 +144,59 @@ defmodule Protox.JsonEncodeTest do
   end
 
   describe "Google.Protobuf.Duration" do
-    test "correct " do
+    test "success" do
       msg = %Google.Protobuf.Duration{seconds: 10, nanos: 9_999_999}
       assert encode_decode(msg) == "10.010000s"
     end
 
-    test "wrong" do
+    test "failure: duration < minimal duration" do
+      msg = %Google.Protobuf.Duration{seconds: -315_576_000_000 - 1}
+
       assert_raise Protox.JsonEncodingError, fn ->
-        msg = %Google.Protobuf.Duration{seconds: -315_576_000_000 - 1}
         encode!(msg)
       end
 
+      assert {:error, _} = Protox.json_encode(msg)
+    end
+
+    test "failure: duration > maximal duration" do
+      msg = %Google.Protobuf.Duration{seconds: 315_576_000_000 + 1}
+
       assert_raise Protox.JsonEncodingError, fn ->
-        msg = %Google.Protobuf.Duration{seconds: 315_576_000_000 + 1}
         encode!(msg)
       end
 
+      assert {:error, _} = Protox.json_encode(msg)
+    end
+
+    test "failure: duration nanos < minimal nanos" do
+      msg = %Google.Protobuf.Duration{nanos: -999_999_999 - 1}
+
       assert_raise Protox.JsonEncodingError, fn ->
-        msg = %Google.Protobuf.Duration{nanos: -999_999_999 - 1}
         encode!(msg)
       end
 
+      assert {:error, _} = Protox.json_encode(msg)
+    end
+
+    test "failure: duration nanos < maximal nanos" do
+      msg = %Google.Protobuf.Duration{nanos: 999_999_999 + 1}
+
       assert_raise Protox.JsonEncodingError, fn ->
-        msg = %Google.Protobuf.Duration{nanos: 999_999_999 + 1}
         encode!(msg)
       end
+
+      assert {:error, _} = Protox.json_encode(msg)
     end
   end
 
   describe "Google.Protobuf.Timestamp" do
-    test "correct " do
+    test "success" do
       msg = %Google.Protobuf.Timestamp{seconds: 3000, nanos: 0}
       assert encode_decode(msg) == "1970-01-01T00:50:00.000000Z"
     end
 
-    test "wrong" do
+    test "failure" do
       assert_raise Protox.JsonEncodingError, fn ->
         {:ok, dt, 0} = DateTime.from_iso8601("9999-12-31T23:59:59.999999999Z")
         unix = DateTime.to_unix(dt, :nanosecond) + 1
@@ -198,12 +216,12 @@ defmodule Protox.JsonEncodeTest do
   end
 
   describe "Google.Protobuf.FieldMask" do
-    test "correct " do
+    test "success" do
       msg = %Google.Protobuf.FieldMask{paths: ["foo.bar_baz", "foo"]}
       assert encode_decode(msg) == "foo.barBaz,foo"
     end
 
-    test "wrong" do
+    test "failure" do
       assert_raise Protox.JsonEncodingError, fn ->
         msg = %Google.Protobuf.FieldMask{paths: ["fooBar"]}
         encode!(msg)
