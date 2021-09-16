@@ -20,6 +20,8 @@ defmodule Protox.DefineMessage do
       fields_map = make_fields_map(fields)
       fields_by_name_map = make_fields_by_name_map(fields)
 
+      field_def_funs = make_field_funs(fields)
+
       encoder = Protox.DefineEncoder.define(fields, required_fields, syntax, opts)
       decoder = Protox.DefineDecoder.define(msg_name, fields, required_fields, opts)
 
@@ -62,6 +64,8 @@ defmodule Protox.DefineMessage do
 
           @spec fields_defs() :: list(Protox.Field.t())
           def fields_defs(), do: unquote(Macro.escape(fields))
+
+          unquote(field_def_funs)
 
           unquote(unknown_fields_funs)
 
@@ -122,6 +126,27 @@ defmodule Protox.DefineMessage do
           quote do
             def default(unquote(name)), do: {:error, :no_default_value}
           end
+      end)
+
+    List.flatten([spec, ast, match_all])
+  end
+
+  defp make_field_funs(fields) do
+    spec =
+      quote do
+        @spec field_def(atom) :: Protox.Field.t()
+      end
+
+    match_all =
+      quote do
+        def field_def(_), do: {:error, :no_such_field}
+      end
+
+    ast =
+      Enum.map(fields, fn %Field{} = field ->
+        quote do
+          def field_def(unquote(field.name)), do: {:ok, unquote(Macro.escape(field))}
+        end
       end)
 
     List.flatten([spec, ast, match_all])
