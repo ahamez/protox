@@ -134,7 +134,7 @@ defmodule Protox.DefineMessage do
   defp make_field_funs(fields) do
     spec =
       quote do
-        @spec field_def(atom) :: Protox.Field.t()
+        @spec field_def(atom) :: {:ok, Protox.Field.t()} | {:error, :no_such_field}
       end
 
     match_all =
