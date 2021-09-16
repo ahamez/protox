@@ -172,16 +172,25 @@ defmodule Protox do
       iex> :binary.list_to_bin(iodata)
       "{\\"msgK\\":{\\"2\\":\\"bar\\",\\"1\\":\\"foo\\"}}"
 
+  ## JSON library configuration
+  The default library to encode values (i.e. mostly to escape strings) to JSON  is [`Jason`](https://github.com/michalmuskala/jason).
+  However, you can chose to use [`Poison`](https://github.com/devinus/poison):
+      iex> msg = %Namespace.Fiz.Foo{a: :BAR}
+      iex> Protox.json_encode(msg, json_encoder: Poison)
+      {:ok, ["{", ["\\"a\\"", ":", "\\"BAR\\""], "}"]}
+
+  You can also use another library as long as it exports an `encode!` function. You can easily
+  create a module to wrap a library that would not have this interface (like [jiffy](https://github.com/davisp/jiffy)).
+
   ## Encoding specifications
   See https://developers.google.com/protocol-buffers/docs/proto3#json for the specifications
   of the encoding.
-
   """
   @doc since: "1.6.0"
-  @spec json_encode(struct()) :: {:ok, iodata()} | {:error, any()}
-  def json_encode(msg) do
+  @spec json_encode(struct(), keyword()) :: {:ok, iodata()} | {:error, any()}
+  def json_encode(msg, opts \\ []) do
     try do
-      {:ok, json_encode!(msg)}
+      {:ok, json_encode!(msg, opts)}
     rescue
       e -> {:error, e}
     end
@@ -191,9 +200,11 @@ defmodule Protox do
   Throwing version of `json_encode/1`
   """
   @doc since: "1.6.0"
-  @spec json_encode!(struct()) :: iodata()
-  def json_encode!(msg) do
-    Protox.JsonEncode.encode!(msg)
+  @spec json_encode!(struct(), keyword()) :: iodata()
+  def json_encode!(msg, opts \\ []) do
+    {json_encoder, _opts} = Keyword.pop(opts, :json_encoder, Jason)
+
+    Protox.JsonEncode.encode!(msg, &json_encoder.encode!(&1))
   end
 
   # -- Private

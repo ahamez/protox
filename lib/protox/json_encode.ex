@@ -5,20 +5,8 @@ defmodule Protox.JsonEncode do
 
   use Protox.Float
 
-  @default_opts [
-    json_encoder: Jason,
-    json_encoder_opts: []
-  ]
-
-  @spec encode!(struct()) :: iodata()
-  def encode!(msg, opts \\ @default_opts) do
-    json_encoder = Keyword.fetch!(opts, :json_encoder)
-    json_encoder_opts = Keyword.fetch!(opts, :json_encoder_opts)
-
-    json_encode = fn value ->
-      json_encoder.encode!(value, json_encoder_opts)
-    end
-
+  @spec encode!(struct(), fun()) :: iodata()
+  def encode!(msg, json_encode) do
     Protox.JsonMessageEncoder.encode_message(msg, json_encode)
   end
 

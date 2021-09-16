@@ -41,10 +41,8 @@ You can find [here](https://github.com/ahamez/protox/blob/master/test/example_te
   - [Usage with files](#usage-with-files)
   - [Encode](#encode)
   - [Decode](#decode)
-  - [JSON encode](#json)
+  - [JSON](#json)
   - [Packages and  namespaces](#packages-and--namespaces)
-    - [Packages](#packages)
-    - [Prepend namespaces](#prepend-namespaces)
   - [Specify import path](#specify-import-path)
   - [Unknown fields](#unknown-fields)
   - [Unsupported features](#unsupported-features)
@@ -176,9 +174,11 @@ iex> msg = Fiz.Foo.decode!(<<8, 3, 18, 4, 8, 1, 18, 0>>)
 
 ## JSON
 
-`protox` uses the official [Google's JSON specification](https://developers.google.com/protocol-buffers/docs/proto3#json) to encode to JSON.
+### Encode
 
-Here's how to encode a message to JSON (as an IO data):
+`protox` implements the [Google's JSON specification](https://developers.google.com/protocol-buffers/docs/proto3#json) to encode to JSON.
+
+Here's how to encode a message to JSON, exported as IO data:
 
 ```elixir
 iex> msg = %Namespace.Fiz.Foo{a: :BAR}
@@ -193,6 +193,17 @@ iex> msg = %Namespace.Fiz.Foo{a: :BAR}
 iex> iodata = Protox.json_encode!(msg)
 ["{", ["\"a\"", ":", "\"BAR\""], "}"]
 ```
+
+### JSON library configuration
+
+By default, `protox` uses [`Jason`](https://github.com/michalmuskala/jason) to encode values to JSON (i.e. mostly to escape strings). However, you can chose to use [`Poison`](https://github.com/devinus/poison) (or any other library that exports a `encode!` function):
+
+```elixir
+iex> Protox.json_encode!(msg, json_encoder: Poison)
+```
+
+
+### Well-known types
 
 Note that `protox` does not (yet) support the encoding of all [protobuf well-know types](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf): unsupported types will be encoded like a regular message, rather than with the custom encoding specified in the [JSON specification](https://developers.google.com/protocol-buffers/docs/proto3#json).
 The currently supported types are: [Duration](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#duration), [FieldMask](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#fieldmask) and [Timestamp](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#timestamp).

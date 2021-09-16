@@ -221,6 +221,45 @@ defmodule Protox.JsonEncodeTest do
     end
   end
 
+  describe "JSON libraries" do
+    test "Jason" do
+      msg = %Msg{msg_k: %{1 => "a", 2 => "b"}}
+      json = Protox.json_encode!(msg, json_encoder: Jason)
+
+      assert json == [
+               "{",
+               ["\"msgK\"", ":", ["{", "\"2\"", ":", "\"b\"", ",", "\"1\"", ":", "\"a\"", "}"]],
+               "}"
+             ]
+    end
+
+    test "Poison" do
+      msg = %Msg{msg_k: %{1 => "a", 2 => "b"}}
+      json = Protox.json_encode!(msg, json_encoder: Poison)
+
+      assert json == [
+               "{",
+               ["\"msgK\"", ":", ["{", "\"2\"", ":", "\"b\"", ",", "\"1\"", ":", "\"a\"", "}"]],
+               "}"
+             ]
+    end
+
+    test "jiffy" do
+      defmodule Jiffy do
+        defdelegate encode!(msg), to: :jiffy, as: :encode
+      end
+
+      msg = %Msg{msg_k: %{1 => "a", 2 => "b"}}
+      json = Protox.json_encode!(msg, json_encoder: Protox.JsonEncodeTest.Jiffy)
+
+      assert json == [
+               "{",
+               ["\"msgK\"", ":", ["{", "\"2\"", ":", "\"b\"", ",", "\"1\"", ":", "\"a\"", "}"]],
+               "}"
+             ]
+    end
+  end
+
   defp encode!(msg) do
     msg |> Protox.json_encode!() |> IO.iodata_to_binary()
   end
