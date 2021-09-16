@@ -1,6 +1,6 @@
 defmodule Protox.Message do
   @moduledoc """
-  This module provides functions to work with messages.
+  This module provides a helper function to merge messages.
   """
 
   alias Protox.Field
@@ -39,6 +39,8 @@ defmodule Protox.Message do
       end
     end)
   end
+
+  # -- Private
 
   defp merge_field(msg, name, v1, v2) do
     case msg.__struct__.field_def(name) do

@@ -1,6 +1,7 @@
 defmodule Protox.Field do
-  @moduledoc false
-  # Internal. Describe a field of a message.
+  @moduledoc """
+  The definition of a protobuf field (e.g. tag, type, etc.).
+  """
 
   @type t() :: %__MODULE__{
           tag: number(),
@@ -32,6 +33,8 @@ defmodule Protox.Field do
       json_name: make_json_name(name, Keyword.get(attrs, :json_name, &lower_camel_case/1))
     }
   end
+
+  # -- Private
 
   defp get_tag(attrs) do
     tag = Keyword.fetch!(attrs, :tag)
