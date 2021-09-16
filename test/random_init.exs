@@ -19,40 +19,39 @@ defmodule Protox.RandomInit do
   # Recursively generate the sub messages of mod
   def generate_struct(mod, fields) do
     sub_msgs =
-      mod.defs()
-      |> Map.values()
+      mod.fields_defs()
       # Get all sub messages
-      |> Enum.filter(fn {_name, kind, ty} ->
-        case {kind, ty} do
+      |> Enum.filter(fn %Protox.Field{} = field ->
+        case {field.kind, field.type} do
           {:map, {_, {:message, _}}} -> true
           {_, {:message, _}} -> true
           _ -> false
         end
       end)
       # Transform into a map for lookup
-      |> Enum.reduce(%{}, fn {field_name, kind, ty}, acc ->
-        case kind do
+      |> Enum.reduce(%{}, fn %Protox.Field{} = field, acc ->
+        case field.kind do
           {:default, _} ->
-            {:message, sub_msg} = ty
-            Map.put(acc, field_name, {:scalar, sub_msg})
+            {:message, sub_msg} = field.type
+            Map.put(acc, field.name, {:scalar, sub_msg})
 
           :unpacked ->
-            {:message, sub_msg} = ty
-            Map.put(acc, field_name, {:repeated, sub_msg})
+            {:message, sub_msg} = field.type
+            Map.put(acc, field.name, {:repeated, sub_msg})
 
           :map ->
-            {_, {:message, sub_msg}} = ty
-            Map.put(acc, field_name, {:map, sub_msg})
+            {_, {:message, sub_msg}} = field.type
+            Map.put(acc, field.name, {:map, sub_msg})
 
           {:oneof, oneof_name} ->
-            {:message, sub_msg} = ty
+            {:message, sub_msg} = field.type
 
             Map.update(
               acc,
               oneof_name,
               # initial insertion
-              {:oneof, %{field_name => sub_msg}},
-              fn {:oneof, sub_map} -> {:oneof, Map.put(sub_map, field_name, sub_msg)} end
+              {:oneof, %{field.name => sub_msg}},
+              fn {:oneof, sub_map} -> {:oneof, Map.put(sub_map, field.name, sub_msg)} end
             )
         end
       end)
