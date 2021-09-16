@@ -79,8 +79,7 @@ defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.FieldMask do
     case check_paths(msg.paths) do
       :ok ->
         msg.paths
-        |> Enum.map(&lower_camel_case/1)
-        |> Enum.join(",")
+        |> Enum.map_join(",", &lower_camel_case/1)
         |> json_encode.()
 
       :error ->
