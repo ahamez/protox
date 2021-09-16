@@ -32,6 +32,22 @@ defmodule Protox.DefineMessage do
           unquote(encoder)
           unquote(decoder)
 
+          @spec json_encode!(struct(), keyword()) :: iodata()
+          def json_encode!(msg, opts \\ []) do
+            {json_encoder, _opts} = Keyword.pop_first(opts, :json_encoder, Jason)
+
+            Protox.JsonEncode.encode!(msg, &json_encoder.encode!(&1))
+          end
+
+          @spec json_encode(struct(), keyword()) :: {:ok, iodata()} | {:error, any()}
+          def json_encode(msg, opts \\ []) do
+            try do
+              {:ok, json_encode!(msg, opts)}
+            rescue
+              e -> {:error, e}
+            end
+          end
+
           @deprecated "Use fields/0 instead"
           @spec defs() :: %{
                   required(non_neg_integer) => {atom, Protox.Types.kind(), Protox.Types.type()}

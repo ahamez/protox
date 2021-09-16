@@ -130,6 +130,7 @@ It's also possible to call `encode/1` and `encode!/1` directly on the generated 
 
 ```elixir
 iex> {:ok, iodata} = Fiz.Foo.encode(msg)
+iex> iodata = Fiz.Foo.encode!(msg)
 ```
 
 Note that `encode/1` returns an [IO data](https://hexdocs.pm/elixir/IO.html#module-use-cases-for-io-data), not a binary, for efficiency reasons. Such  IO data can be used
@@ -166,9 +167,6 @@ It's also possible to call `decode/1` and `decode!/1` directly on the generated 
 
 ```elixir
 iex> {:ok, msg} = Fiz.Foo.decode(<<8, 3, 18, 4, 8, 1, 18, 0>>)
-```
-Or, with throwing style:
-```elixir
 iex> msg = Fiz.Foo.decode!(<<8, 3, 18, 4, 8, 1, 18, 0>>)
 ```
 
@@ -192,6 +190,13 @@ Or, with throwing style:
 iex> msg = %Namespace.Fiz.Foo{a: :BAR}
 iex> iodata = Protox.json_encode!(msg)
 ["{", ["\"a\"", ":", "\"BAR\""], "}"]
+```
+
+It's also possible to call `json_encode` and `json_encode!` directly on the generated structures:
+
+```elixir
+iex> {:ok, iodata} = Fiz.Foo.json_encode(msg)
+iex> iodata = Fiz.Foo.json_encode!(msg)
 ```
 
 ### JSON library configuration

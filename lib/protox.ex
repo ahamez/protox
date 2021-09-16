@@ -189,11 +189,7 @@ defmodule Protox do
   @doc since: "1.6.0"
   @spec json_encode(struct(), keyword()) :: {:ok, iodata()} | {:error, any()}
   def json_encode(msg, opts \\ []) do
-    try do
-      {:ok, json_encode!(msg, opts)}
-    rescue
-      e -> {:error, e}
-    end
+    msg.__struct__.json_encode(msg, opts)
   end
 
   @doc """
@@ -202,9 +198,7 @@ defmodule Protox do
   @doc since: "1.6.0"
   @spec json_encode!(struct(), keyword()) :: iodata()
   def json_encode!(msg, opts \\ []) do
-    {json_encoder, _opts} = Keyword.pop(opts, :json_encoder, Jason)
-
-    Protox.JsonEncode.encode!(msg, &json_encoder.encode!(&1))
+    msg.__struct__.json_encode!(msg, opts)
   end
 
   # -- Private
