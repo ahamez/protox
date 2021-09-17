@@ -7,6 +7,7 @@ defmodule Protox.DecodingError do
                binary: <<>>,
                reason: nil
 
+  @doc false
   def new(reason, binary) do
     %__MODULE__{
       message: "Could not decode data #{inspect(binary)}",
@@ -23,6 +24,7 @@ defmodule Protox.IllegalTagError do
 
   defexception message: "Field with illegal tag 0"
 
+  @doc false
   def new() do
     %__MODULE__{}
   end
@@ -35,6 +37,7 @@ defmodule Protox.InvalidFieldAttribute do
 
   defexception message: ""
 
+  @doc false
   def new(attribute, expected, got) do
     %__MODULE__{
       message:
@@ -52,6 +55,7 @@ defmodule Protox.JsonEncodingError do
                protobuf_msg: nil,
                reason: ""
 
+  @doc false
   def new(protobuf_msg, reason) do
     %__MODULE__{
       message: "Could not encode #{inspect(protobuf_msg)} to JSON because #{reason}",
@@ -70,6 +74,7 @@ defmodule Protox.RequiredFieldsError do
   defexception message: "",
                missing_fields: []
 
+  @doc false
   def new(missing_fields) do
     %__MODULE__{
       message: "Some required fields are not set: #{inspect(missing_fields)}",
