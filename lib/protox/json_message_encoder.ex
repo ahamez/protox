@@ -7,7 +7,6 @@ defprotocol Protox.JsonMessageEncoder do
   as a string rather than
   an object as required by the [JSON encoding specification](https://developers.google.com/protocol-buffers/docs/proto3#json).
   """
-  @moduledoc since: "1.6.0"
 
   @doc """
   The contract of a message encoder.
