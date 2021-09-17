@@ -87,6 +87,8 @@ defmodule Protox.DefineMessage do
     end
   end
 
+  # -- Private
+
   defp make_unknown_fields_funs(true = _keep_unknown_fields, unknown_fields) do
     quote do
       @spec unknown_fields(struct) :: [{non_neg_integer, Protox.Types.tag(), binary}]
@@ -104,6 +106,7 @@ defmodule Protox.DefineMessage do
     []
   end
 
+  # Generate the functions that provide a direct access to the default value of a field.
   defp make_default_funs(fields) do
     spec =
       quote do
@@ -131,6 +134,7 @@ defmodule Protox.DefineMessage do
     List.flatten([spec, ast, match_all])
   end
 
+  # Generate the functions that provide a direct access to a field defininition.
   defp make_field_funs(fields) do
     spec =
       quote do
