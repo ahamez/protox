@@ -18,7 +18,7 @@ defmodule Protox.GeneratePayloads do
 
     Stream.repeatedly(fn ->
       {:ok, msg} = :proper_gen.pick(gen, size)
-      msg |> Protox.Encode.encode!() |> :binary.list_to_bin()
+      msg |> Protox.encode!() |> :binary.list_to_bin()
     end)
     |> Stream.reject(fn bytes ->
       byte_size(bytes) == 0 or byte_size(bytes) < min_sz or byte_size(bytes) >= max_sz
@@ -32,7 +32,7 @@ defmodule Protox.GeneratePayloads do
   def handmade() do
     Enum.map(Protox.Benchmarks.HandmadePayloads.payloads(), fn msg ->
       mod = msg.__struct__ |> Module.split() |> List.last()
-      {mod, msg |> Protox.Encode.encode!() |> :binary.list_to_bin()}
+      {mod, msg |> Protox.encode!() |> :binary.list_to_bin()}
     end)
   end
 end

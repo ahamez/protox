@@ -1,6 +1,6 @@
 defmodule Protox.Benchmarks.Run do
-  def decode({mod, bytes}), do: namespace(mod).decode!(bytes)
-  def encode(msg), do: Protox.Encode.encode(msg)
+  def decode({mod, bytes}), do: Protox.decode!(bytes, namespace(mod))
+  def encode(msg), do: Protox.encode(msg)
 
   def decode_name(), do: "decode_protox"
   def decode_file_name(), do: "decode_protox.benchee"
