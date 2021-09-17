@@ -61,6 +61,25 @@ defmodule Protox.InvalidSyntax do
   end
 end
 
+defmodule Protox.JsonDecodingError do
+  @moduledoc """
+  This error is thrown when a JSON payload could not be decoded to a protobuf message.
+  """
+
+  defexception message: "",
+               expected_protobuf_message: nil,
+               reason: ""
+
+  @doc false
+  def new(expected_protobuf_message, reason) do
+    %__MODULE__{
+      message: "Could not decode JSON payload to #{expected_protobuf_message} because #{reason}",
+      expected_protobuf_message: expected_protobuf_message,
+      reason: reason
+    }
+  end
+end
+
 defmodule Protox.JsonEncodingError do
   @moduledoc """
   This error is thrown when a protobuf message could not be encoded to JSON.

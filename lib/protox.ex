@@ -95,6 +95,35 @@ defmodule Protox do
   end
 
   @doc """
+  Throwing version of `decode/2`.
+  """
+  @doc since: "1.6.0"
+  @spec decode!(binary(), atom()) :: struct() | no_return()
+  def decode!(binary, msg_module) do
+    msg_module.decode!(binary)
+  end
+
+  @doc """
+  Decode a binary into a protobuf message.
+
+  ## Examples
+      iex> binary = <<66, 7, 8, 1, 18, 3, 102, 111, 111, 66, 7, 8, 2, 18, 3, 98, 97, 114>>
+      iex> {:ok, msg} = Protox.decode(binary, Msg)
+      iex> msg
+      %Msg{msg_k: %{1 => "foo", 2 => "bar"}}
+
+      iex> binary = <<66, 7, 8, 1, 18, 3, 102, 111, 66, 7, 8, 2, 18, 3, 98, 97, 114>>
+      iex> {:error, reason} = Protox.decode(binary, Msg)
+      iex> reason
+      %Protox.IllegalTagError{message: "Field with illegal tag 0"}
+  """
+  @doc since: "1.6.0"
+  @spec decode(binary(), atom()) :: {:ok, struct()} | {:error, any()}
+  def decode(binary, msg_module) do
+    msg_module.decode(binary)
+  end
+
+  @doc """
   Throwing version of `encode/1`.
   """
   @doc since: "1.6.0"
@@ -125,32 +154,21 @@ defmodule Protox do
   end
 
   @doc """
-  Throwing version of `decode/2`.
+    TODO
   """
   @doc since: "1.6.0"
-  @spec decode!(binary(), atom()) :: struct() | no_return()
-  def decode!(binary, msg_module) do
-    msg_module.decode!(binary)
+  @spec json_decode(iodata(), atom(), keyword()) :: {:ok, struct()} | {:error, any()}
+  def json_decode(input, message_module, opts \\ []) do
+    message_module.json_decode(input, opts)
   end
 
   @doc """
-  Decode a binary into a protobuf message.
-
-  ## Examples
-      iex> binary = <<66, 7, 8, 1, 18, 3, 102, 111, 111, 66, 7, 8, 2, 18, 3, 98, 97, 114>>
-      iex> {:ok, msg} = Protox.decode(binary, Msg)
-      iex> msg
-      %Msg{msg_k: %{1 => "foo", 2 => "bar"}}
-
-      iex> binary = <<66, 7, 8, 1, 18, 3, 102, 111, 66, 7, 8, 2, 18, 3, 98, 97, 114>>
-      iex> {:error, reason} = Protox.decode(binary, Msg)
-      iex> reason
-      %Protox.IllegalTagError{message: "Field with illegal tag 0"}
+  Throwing version of `json_decode/1`.
   """
   @doc since: "1.6.0"
-  @spec decode(binary(), atom()) :: {:ok, struct()} | {:error, any()}
-  def decode(binary, msg_module) do
-    msg_module.decode(binary)
+  @spec json_decode!(iodata(), atom(), keyword()) :: iodata() | no_return()
+  def json_decode!(input, message_module, opts \\ []) do
+    message_module.json_decode!(input, opts)
   end
 
   @doc """
@@ -201,7 +219,7 @@ defmodule Protox do
   Throwing version of `json_encode/1`.
   """
   @doc since: "1.6.0"
-  @spec json_encode!(struct(), keyword()) :: iodata()
+  @spec json_encode!(struct(), keyword()) :: iodata() | no_return()
   def json_encode!(msg, opts \\ []) do
     msg.__struct__.json_encode!(msg, opts)
   end
