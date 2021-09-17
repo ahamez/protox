@@ -222,20 +222,18 @@ defmodule Protox.DefineMessage do
     for %Field{label: :required, name: name} <- fields, do: name
   end
 
-  defp make_required_fields_typespec([]) do
-    quote do: []
-  end
+  defp make_required_fields_typespec([]), do: quote(do: [])
 
   defp make_required_fields_typespec(fields) do
     specs =
       Enum.reduce(
         fields,
         fn field, acc ->
-          quote do: unquote(acc) | unquote(field)
+          quote(do: unquote(acc) | unquote(field))
         end
       )
 
-    quote do: [unquote(specs)]
+    quote(do: [unquote(specs)])
   end
 
   # Generate a map used to store a message's definitions.
