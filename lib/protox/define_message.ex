@@ -25,6 +25,8 @@ defmodule Protox.DefineMessage do
       encoder = Protox.DefineEncoder.define(fields, required_fields, syntax, opts)
       decoder = Protox.DefineDecoder.define(msg_name, fields, required_fields, opts)
 
+      json_encode_bang_fun = make_json_encode_bang_fun(syntax)
+
       default_fun = make_default_funs(fields)
 
       module_ast =
@@ -34,12 +36,7 @@ defmodule Protox.DefineMessage do
           unquote(encoder)
           unquote(decoder)
 
-          @spec json_encode!(struct(), keyword()) :: iodata()
-          def json_encode!(msg, opts \\ []) do
-            {json_encoder, _opts} = Keyword.pop_first(opts, :json_encoder, Jason)
-
-            Protox.JsonEncode.encode!(msg, &json_encoder.encode!(&1))
-          end
+          unquote(json_encode_bang_fun)
 
           @spec json_encode(struct(), keyword()) :: {:ok, iodata()} | {:error, any()}
           def json_encode(msg, opts \\ []) do
@@ -88,6 +85,26 @@ defmodule Protox.DefineMessage do
   end
 
   # -- Private
+
+  defp make_json_encode_bang_fun(:proto2) do
+    quote do
+      @spec json_encode!(struct(), keyword()) :: iodata()
+      def json_encode!(_msg, _opts) do
+        raise Protox.InvalidSyntax.new(_expected = :proto3, _got = :proto2)
+      end
+    end
+  end
+
+  defp make_json_encode_bang_fun(:proto3) do
+    quote do
+      @spec json_encode!(struct(), keyword()) :: iodata()
+      def json_encode!(msg, opts \\ []) do
+        {json_encoder, _opts} = Keyword.pop_first(opts, :json_encoder, Jason)
+
+        Protox.JsonEncode.encode!(msg, &json_encoder.encode!(&1))
+      end
+    end
+  end
 
   defp make_unknown_fields_funs(true = _keep_unknown_fields, unknown_fields) do
     quote do

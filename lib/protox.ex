@@ -156,6 +156,11 @@ defmodule Protox do
   @doc """
   Export a proto3 message to JSON as IO data.
 
+  ## Errors
+  This function returns a tuple `{:error, reason}` if:
+  - `msg` is not a proto3 message; `reason` is a `Protox.InvalidSyntax` error
+  - `msg` could not be encoded to JSON; `reason` is a `JsonEncodingError` error
+
   ## Examples
       iex> msg = %Namespace.Fiz.Foo{a: :BAR}
       iex> {:ok, iodata} = Protox.json_encode(msg)
@@ -193,7 +198,7 @@ defmodule Protox do
   end
 
   @doc """
-  Throwing version of `json_encode/1`
+  Throwing version of `json_encode/1`.
   """
   @doc since: "1.6.0"
   @spec json_encode!(struct(), keyword()) :: iodata()

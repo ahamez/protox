@@ -46,6 +46,21 @@ defmodule Protox.InvalidFieldAttribute do
   end
 end
 
+defmodule Protox.InvalidSyntax do
+  @moduledoc """
+  This error is thrown when an operation is applied on a message with the wrong syntax (protobuf 2 or 3).
+  """
+
+  defexception message: ""
+
+  @doc false
+  def new(expected, got) do
+    %__MODULE__{
+      message: "Syntax should be #{inspect(expected)}, got #{inspect(got)}"
+    }
+  end
+end
+
 defmodule Protox.JsonEncodingError do
   @moduledoc """
   This error is thrown when a protobuf message could not be encoded to JSON.

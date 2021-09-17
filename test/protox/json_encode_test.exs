@@ -278,6 +278,18 @@ defmodule Protox.JsonEncodeTest do
     end
   end
 
+  describe "JSON is valid for proto3 only" do
+    test "failure: raise when given a proto2 message" do
+      msg = %Protobuf2{}
+
+      assert_raise Protox.InvalidSyntax, "Syntax should be :proto3, got :proto2", fn ->
+        Protox.json_encode!(msg)
+      end
+
+      assert {:error, %Protox.InvalidSyntax{}} = Protox.json_encode(msg)
+    end
+  end
+
   defp encode!(msg) do
     msg |> Protox.json_encode!() |> IO.iodata_to_binary()
   end
