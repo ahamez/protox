@@ -167,6 +167,7 @@ defmodule Protox.DefineMessage do
       Enum.map(fields, fn %Field{} = field ->
         quote do
           def field_def(unquote(field.name)), do: {:ok, unquote(Macro.escape(field))}
+          def field_def(unquote(field.json_name)), do: {:ok, unquote(Macro.escape(field))}
         end
       end)
 
