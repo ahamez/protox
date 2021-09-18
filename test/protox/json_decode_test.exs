@@ -4,7 +4,7 @@ defmodule Protox.JsonDecodeTest do
   use ExUnit.Case
   use Protox.Float
 
-  describe "scalar types" do
+  describe "Scalar types" do
     test "success: transform null to default value" do
       msg = %Sub{a: 0}
       json = "{\"a\":null}"
@@ -50,7 +50,7 @@ defmodule Protox.JsonDecodeTest do
     # end
   end
 
-  describe "errors" do
+  describe "Errors" do
     test "failure: parsing an unknown field raises an exception" do
       json = "{\"this_field_does_not_exist\": 42}"
 
