@@ -2,6 +2,8 @@ defmodule Protox.PropertiesTest do
   use ExUnit.Case
   use PropCheck
 
+  @moduletag :slow
+
   @tag :properties
   property "Upper" do
     forall {msg, encoded, encoded_bin, decoded} <- generate(Upper) do

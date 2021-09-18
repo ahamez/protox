@@ -1,6 +1,8 @@
 defmodule Protox.CodeGenerationTest do
   use ExUnit.Case, async: false
 
+  @moduletag :slow
+
   setup_all _context do
     tmp_dir = System.tmp_dir!()
     code_generation_path = "#{tmp_dir}/code_generation"
