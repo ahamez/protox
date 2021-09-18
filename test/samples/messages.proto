@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+import "protobuf2.proto";
+
+message Sub {
+  int32 a = 1;
+  string b = 2;
+  int64 c = 6;
+  uint32 d = 7;
+  uint64 e = 8;
+  sint64 f = 9;
+  repeated fixed64 g = 13;
+  repeated sfixed32 h = 14;
+  repeated double i = 15;
+  repeated int32 j = 16 [packed=false];
+  fixed32 k = 17;
+  sfixed64 l = 18;
+  bytes m = 19;
+  repeated bool n = 20;
+  repeated E o = 21;
+  repeated bool p = 22 [packed=false];
+  repeated E q = 23 [packed=false];
+  E r = 24;
+  repeated uint32 u = 27;
+  repeated sint32 w = 28;
+  repeated int64 x = 29;
+  repeated uint64 y = 30;
+  sint32 z = 10001;
+  sint64 zz = 10002;
+  map<sfixed64, bytes> map1 = 12345;
+  map<sfixed64, bytes> map2 = 12346;
+}
+
+enum E {
+  option allow_alias = true;
+
+  FOO = 0;
+  BAZ = 1;
+  BAR = 1;
+  NEG = -1;
+}
+
+message Msg {
+
+  repeated sint64 msg_a = 27;
+  repeated fixed32 msg_b = 28;
+  repeated sfixed64 msg_c = 29;
+  E msg_d = 1;
+  bool msg_e = 2;
+  Sub msg_f = 3;
+  repeated int32 msg_g = 4;
+  double msg_h = 5;
+  repeated float msg_i = 6;
+  repeated Sub msg_j = 7;
+  map<int32, string> msg_k = 8;
+  map<string, double> msg_l = 9;
+  oneof msg_m {
+    string msg_n = 10;
+    Sub msg_o = 11;
+  }
+  map<int32, E> msg_p = 12;
+  Protobuf2 msg_q = 13;
+  oneof msg_oneof_field {
+    double msg_oneof_double = 118;
+  }
+}
+
+message Upper {
+  Msg msg = 1;
+  map<string, Msg> msg_map = 2;
+  Empty empty = 3;
+  Required req = 4;
+}
+
+message Empty {
+}
+
+message FloatPrecision {
+  double a = 1;
+  float b = 2;
+}
+
+message NoNameClash {
+  int32 __uf__ = 1;
+}
+
+message CoRecursive {
+  oneof oneof_field {
+    NestedMessage oneof_nested_message = 112;
+  }
+}
+
+message NestedMessage {
+  int32 a = 1;
+  CoRecursive corecursive = 2;
+}

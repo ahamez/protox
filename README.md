@@ -452,7 +452,7 @@ The detailed reference of the generated code is available [here](documentation/r
 It's also possible to generate a file that will contain all code corresponding to the protobuf messages:
 
 ```shell
-MIX_ENV=prod mix protox.generate --output-path=/path/to/message.ex --include-path=. test/messages.proto test/samples/proto2.proto
+MIX_ENV=prod mix protox.generate --output-path=/path/to/message.ex --include-path=./test/samples test/samples/messages.proto test/samples/proto2.proto
 ```
 
 The `--include-path` option is the same as the option described in section [Specify import path](#specify-import-path). If multiple include paths are needed, simply add more `--include-path` options.
@@ -463,7 +463,7 @@ If you have large protobuf files, you can use the `--multiple-files` option to g
 
 ```shell
 mkdir generated
-MIX_ENV=prod mix protox.generate --multiple-files --output-path=generated --include-path=. test/messages.proto test/samples/proto2.proto
+MIX_ENV=prod mix protox.generate --multiple-files --output-path=generated --include-path=./test/samples test/samples/messages.proto test/samples/proto2.proto
 ```
 
 Doing so, Elixir will be able to parallelize the compilation of generated modules.
