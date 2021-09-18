@@ -2,7 +2,7 @@ defmodule Protox.Benchmarks do
   use Protox, files: ["./benchmarks/benchmarks.proto"], namespace: Protox.Benchmarks
 end
 
-Code.compile_file("./test/random_init.exs")
+Code.compile_file("./test/support/random_init.exs")
 Code.compile_file("./benchmarks/handmade_payloads.exs")
 
 defmodule Protox.GeneratePayloads do
