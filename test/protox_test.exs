@@ -295,6 +295,7 @@ defmodule ProtoxTest do
     encoded_txt_cmdline =
       "protoc --decode=#{mod} -I ./test/samples ./test/samples/messages.proto ./test/samples/protobuf2.proto  < #{encoded_bin_path}"
 
+    # We use :os.cmd as we protoc can only read the content `encoded_bin_path` from stdin.
     # credo:disable-for-next-line Credo.Check.Warning.UnsafeExec
     encoded_txt = "#{:os.cmd(String.to_charlist(encoded_txt_cmdline))}"
 
