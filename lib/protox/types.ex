@@ -34,7 +34,7 @@ defmodule Protox.Types do
   @typedoc """
   This type give more details on how a field is encoded.
   """
-  @type kind :: {:default, any} | :packed | :unpacked | :map | {:oneof, atom}
+  @type kind :: {:default, any()} | :packed | :unpacked | :map | {:oneof, atom()}
 
   @typedoc """
   All types that can be used as a key in map field.
@@ -72,9 +72,9 @@ defmodule Protox.Types do
           | :bool
           | :string
           | :bytes
-          | {:enum, atom}
-          | {:message, atom}
-          | {map_key_type, type}
+          | {:enum, atom()}
+          | {:message, atom()}
+          | {map_key_type(), type()}
 
   @typedoc """
   This type gives more information on the field presence (if applicable).
