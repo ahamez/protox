@@ -11,15 +11,15 @@ defmodule Protox.DefineEnum do
         quote do
           unquote(default_fun)
 
-          @spec encode(atom) :: integer | atom
+          @spec encode(atom()) :: integer() | atom()
           unquote(encode_constants_funs)
           def encode(x), do: x
 
-          @spec decode(integer) :: atom | integer
+          @spec decode(integer()) :: atom() | integer()
           unquote(decode_constants_funs)
           def decode(x), do: x
 
-          @spec constants() :: [{integer, atom}]
+          @spec constants() :: [{integer(), atom()}]
           def constants(), do: unquote(constants)
         end
 
