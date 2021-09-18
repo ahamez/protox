@@ -5,7 +5,7 @@ defmodule Protox.CodeGenerationTest do
     tmp_dir = System.tmp_dir!()
     code_generation_path = "#{tmp_dir}/code_generation"
 
-    # Remove possible leftoverss
+    # Remove possible leftovers
     File.rm_rf!(code_generation_path)
 
     {_, 0} = System.cmd("mix", ["new", "code_generation"], cd: tmp_dir)
@@ -91,7 +91,8 @@ defmodule Protox.CodeGenerationTest do
           "--output-path=./lib/output/should_fail.ex",
           "#{protox_path}/test/samples/invalid.proto"
         ],
-        cd: path
+        cd: path,
+        stderr_to_stdout: true
       )
 
     assert generation_exit_status == 1
