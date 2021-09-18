@@ -4,6 +4,22 @@ defmodule Protox.JsonDecodeTest do
   use ExUnit.Case
   use Protox.Float
 
+  describe "Field names" do
+    test "success: json field name is camel case" do
+      msg = %Msg{msg_e: true}
+      json = "{\"msgE\":true}"
+
+      assert Protox.json_decode!(json, Msg) == msg
+    end
+
+    test "success: json field name is lower case" do
+      msg = %Msg{msg_e: true}
+      json = "{\"msg_e\":true}"
+
+      assert Protox.json_decode!(json, Msg) == msg
+    end
+  end
+
   describe "Scalar types" do
     test "success: transform null to default value" do
       msg = %Sub{a: 0}
