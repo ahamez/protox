@@ -154,7 +154,24 @@ defmodule Protox do
   end
 
   @doc """
-    TODO
+  ## Errors
+  This function returns a tuple `{:error, reason}` if:
+  - `message_module` is not a proto3 message; `reason` is a `Protox.InvalidSyntax` error
+  - `input` could not be decoded to JSON; `reason` is a `Protox.JsonDecodingError` error
+
+  ## JSON library configuration
+  The default library to decode JSON is [`Jason`](https://github.com/michalmuskala/jason).
+  However, you can chose to use [`Poison`](https://github.com/devinus/poison):
+      iex> Protox.json_decode("{\\"a\\":\\"BAR\\"}", Namespace.Fiz.Foo, json_decoder: Poison)
+      {:ok, %Namespace.Fiz.Foo{__uf__: [], a: "BAR", b: %{}}}
+
+  You can also use another library as long as it exports an `decode!` function. You can easily
+  create a module to wrap a library that would not have this interface (like [`jiffy`](https://github.com/davisp/jiffy)):
+      defmodule Jiffy do
+        def decode!(input) do
+          :jiffy.decode(input, [:return_maps, :use_nil])
+        end
+      end
   """
   @doc since: "1.6.0"
   @spec json_decode(iodata(), atom(), keyword()) :: {:ok, struct()} | {:error, any()}
@@ -163,7 +180,7 @@ defmodule Protox do
   end
 
   @doc """
-  Throwing version of `json_decode/1`.
+  Throwing version of `json_decode/2`.
   """
   @doc since: "1.6.0"
   @spec json_decode!(iodata(), atom(), keyword()) :: iodata() | no_return()
@@ -177,7 +194,7 @@ defmodule Protox do
   ## Errors
   This function returns a tuple `{:error, reason}` if:
   - `msg` is not a proto3 message; `reason` is a `Protox.InvalidSyntax` error
-  - `msg` could not be encoded to JSON; `reason` is a `JsonEncodingError` error
+  - `msg` could not be encoded to JSON; `reason` is a `Protox.JsonEncodingError` error
 
   ## Examples
       iex> msg = %Namespace.Fiz.Foo{a: :BAR}
@@ -202,8 +219,12 @@ defmodule Protox do
       iex> Protox.json_encode(msg, json_encoder: Poison)
       {:ok, ["{", ["\\"a\\"", ":", "\\"BAR\\""], "}"]}
 
-  You can also use another library as long as it exports an `encode!` function. You can easily
-  create a module to wrap a library that would not have this interface (like [jiffy](https://github.com/davisp/jiffy)).
+  You can also use another library as long as it exports an `encode!` function, which is expected to return objects as maps and `nil`
+  to represent `null`.
+  You can easily create a module to wrap a library that would not have this interface (like [`jiffy`](https://github.com/davisp/jiffy)):
+      defmodule Jiffy do
+        defdelegate encode!(msg), to: :jiffy, as: :encode
+      end
 
   ## Encoding specifications
   See https://developers.google.com/protocol-buffers/docs/proto3#json for the specifications
