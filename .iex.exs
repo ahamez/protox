@@ -1,1 +1,1 @@
-import_file("./test/messages.exs")
+import_file("./test/support/messages.exs")

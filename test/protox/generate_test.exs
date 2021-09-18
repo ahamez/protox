@@ -1,7 +1,7 @@
 defmodule Protox.GenerateTest do
   use ExUnit.Case
 
-  Code.require_file("test/messages.exs")
+  Code.require_file("./test/support/messages.exs")
 
   test "Generate code in a single file" do
     file = Path.join(__DIR__, "../samples/prefix/bar/bar.proto")

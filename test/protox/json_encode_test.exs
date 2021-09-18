@@ -1,5 +1,5 @@
 defmodule Protox.JsonEncodeTest do
-  Code.require_file("./test/messages.exs")
+  Code.require_file("./test/support/messages.exs")
 
   use ExUnit.Case
   use Protox.Float

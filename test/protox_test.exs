@@ -1,7 +1,8 @@
 defmodule ProtoxTest do
   use ExUnit.Case
-  Code.require_file("test/messages.exs")
-  Code.require_file("test/random_init.exs")
+
+  Code.require_file("test/support/messages.exs")
+  Code.require_file("test/support/random_init.exs")
 
   use Protox,
     schema: """

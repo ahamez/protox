@@ -1,7 +1,7 @@
 defmodule Protox.DecodeTest do
   use ExUnit.Case
 
-  Code.require_file("test/messages.exs")
+  Code.require_file("./test/support/messages.exs")
 
   test "Sub.a" do
     bytes = <<8, 150, 1>>
