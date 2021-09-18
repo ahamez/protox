@@ -5,14 +5,14 @@ defmodule Protox.JsonDecodeTest do
   use Protox.Float
 
   describe "scalar types" do
-    test "transform null to default value" do
+    test "success: transform null to default value" do
       msg = %Sub{a: 0}
       json = "{\"a\":null}"
 
       assert Protox.json_decode!(json, Sub) == msg
     end
 
-    test "integers" do
+    test "success: integers" do
       msg = %Sub{
         a: -1
       }
@@ -51,34 +51,46 @@ defmodule Protox.JsonDecodeTest do
   end
 
   describe "errors" do
-    test "parsing an unknown field raises an exception" do
+    test "failure: parsing an unknown field raises an exception" do
       json = "{\"this_field_does_not_exist\": 42}"
 
       assert_raise Protox.JsonDecodingError, fn ->
         Protox.json_decode!(json, Sub)
       end
     end
+
+    test "failure: raise when given a proto2 message" do
+      assert_raise Protox.InvalidSyntax, "Syntax should be :proto3, got :proto2", fn ->
+        Protox.json_decode!("", Protobuf2)
+      end
+
+      assert {:error, %Protox.InvalidSyntax{}} = Protox.json_decode("", Protobuf2)
+    end
   end
 
-  # describe "JSON libraries" do
-  #   test "Jason" do
-  #   end
+  describe "JSON libraries" do
+    defmodule Jiffy do
+      def decode!(input) do
+        :jiffy.decode(input, [:return_maps, :use_nil])
+      end
+    end
 
-  #   test "Poison" do
-  #   end
+    setup do
+      {:ok,
+       %{json: "{\"a\":null, \"b\":\"foo\", \"c\": 33}", expected: %Sub{a: 0, b: "foo", c: 33}}}
+    end
 
-  #   test "jiffy" do
-  # end
+    test "success: jason", %{json: json, expected: expected} do
+      assert Protox.json_decode!(json, Sub, json_decoder: Jason) == expected
+    end
 
-  # describe "JSON is valid for proto3 only" do
-  #   test "failure: raise when given a proto2 message" do
-  #     msg = %Protobuf2{}
+    test "success: poison", %{json: json, expected: expected} do
+      assert Protox.json_decode!(json, Sub, json_decoder: Poison) == expected
+    end
 
-  #     assert_raise Protox.InvalidSyntax, "Syntax should be :proto3, got :proto2", fn ->
-  #       Protox.json_encode!(msg)
-  #     end
-
-  #     assert {:error, %Protox.InvalidSyntax{}} = Protox.json_encode(msg)
-  #   end
-  # end
+    test "success: jiffy", %{json: json, expected: expected} do
+      assert Protox.json_decode!(<<json::binary>>, Sub, json_decoder: Protox.JsonDecodeTest.Jiffy) ==
+               expected
+    end
+  end
 end
