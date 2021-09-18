@@ -21,3 +21,8 @@ if Mix.env() != :prod do
       ]
     ]
 end
+
+if Mix.env() == :dev do
+  config :mix_test_watch,
+    clear: true
+end
