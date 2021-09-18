@@ -163,7 +163,7 @@ defmodule Protox do
   The default library to decode JSON is [`Jason`](https://github.com/michalmuskala/jason).
   However, you can chose to use [`Poison`](https://github.com/devinus/poison):
       iex> Protox.json_decode("{\\"a\\":\\"BAR\\"}", Namespace.Fiz.Foo, json_decoder: Poison)
-      {:ok, %Namespace.Fiz.Foo{__uf__: [], a: "BAR", b: %{}}}
+      {:ok, %Namespace.Fiz.Foo{__uf__: [], a: :BAR, b: %{}}}
 
   You can also use another library as long as it exports an `decode!` function. You can easily
   create a module to wrap a library that would not have this interface (like [`jiffy`](https://github.com/davisp/jiffy)):

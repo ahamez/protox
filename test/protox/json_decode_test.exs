@@ -5,65 +5,104 @@ defmodule Protox.JsonDecodeTest do
   use Protox.Float
 
   describe "Field names" do
-    test "success: json field name is camel case" do
+    test "Success: json field name is camel case" do
       msg = %Msg{msg_e: true}
       json = "{\"msgE\":true}"
-
       assert Protox.json_decode!(json, Msg) == msg
     end
 
-    test "success: json field name is lower case" do
+    test "Success: json field name is lower case" do
       msg = %Msg{msg_e: true}
       json = "{\"msg_e\":true}"
-
       assert Protox.json_decode!(json, Msg) == msg
     end
   end
 
   describe "Scalar types" do
-    test "success: transform null to default value" do
-      msg = %Sub{a: 0}
-      json = "{\"a\":null}"
-
-      assert Protox.json_decode!(json, Sub) == msg
-    end
-
-    test "success: integers" do
-      msg = %Sub{
-        a: -1
+    test "Success" do
+      scalar_tests = %{
+        "{\"a\":null}" => {
+          %Sub{a: 0},
+          "null as default value"
+        },
+        "{\"a\":-1}" => {
+          %Sub{a: -1},
+          "int32 as number"
+        },
+        "{\"a\":-1.0}" => {
+          %FloatPrecision{a: -1.0},
+          "double as number"
+        },
+        "{\"a\":\"-1.0\"}" => {
+          %FloatPrecision{a: -1.0},
+          "double as string"
+        },
+        "{\"b\":-1.0}" => {
+          %FloatPrecision{b: -1.0},
+          "float as number"
+        },
+        "{\"b\":\"-1.0\"}" => {
+          %FloatPrecision{b: -1.0},
+          "float as string"
+        },
+        "{\"b\": \"foo\"}" => {
+          %Sub{b: "foo"},
+          "string"
+        },
+        "{\"m\":\"AQID\"}" => {
+          %Sub{m: <<1, 2, 3>>},
+          "bytes"
+        },
+        "{\"r\":\"FOO\"}" => {
+          %Sub{r: :FOO},
+          "enum as string"
+        },
+        "{\"r\":-1}" => {
+          %Sub{r: :NEG},
+          "enum as number"
+        },
+        "{\"r\":42}" => {
+          %Sub{r: 42},
+          "enum as unknown number"
+        },
+        "{\"c\":\"1\", \"l\":\"33\", \"e\":\"24\"}" =>
+          {%Sub{c: 1, e: 24, l: 33}, "int64, sfixed64, uint64 as string"},
+        "{\"c\":1, \"l\":33, \"e\":24}" =>
+          {%Sub{c: 1, l: 33, e: 24}, "int64, sfixed64, uint64 as numbers"},
+        "{\"msgF\": {\"a\": 1}}" => {
+          %Msg{msg_f: %Sub{a: 1}},
+          "nested messasge"
+        }
       }
 
-      json = "{\"a\":-1}"
-
-      assert Protox.json_decode!(json, Sub) == msg
+      for {json, {expected, description}} <- scalar_tests do
+        assert Protox.json_decode!(json, expected.__struct__) == expected,
+               "Cannot decode #{description}"
+      end
     end
 
-    # test "integers" do
-    #   msg = %Sub{
-    #     a: -1,
-    #     c: 10_000,
-    #     d: 32,
-    #     e: 54,
-    #     f: -14,
-    #     k: 34,
-    #     l: -98,
-    #     z: -10
-    #   }
+    for {atom, string} <- [{:infinity, "Infinity"}, {:"-infinity", "-Infinity"}, {:nan, "NaN"}] do
+      test "Success: double is #{string}" do
+        msg = %FloatPrecision{a: unquote(atom)}
+        json = "{\"a\":\"#{unquote(string)}\"}"
+        assert Protox.json_decode!(json, FloatPrecision) == msg
+      end
+    end
 
-    #   # json_decoded =                %{
-    #   #            "a" => msg.a,
-    #   #            "c" => "#{msg.c}",
-    #   #            "d" => msg.d,
-    #   #            "e" => "#{msg.e}",
-    #   #            "f" => msg.f,
-    #   #            "k" => msg.k,
-    #   #            "l" => "#{msg.l}",
-    #   #            "z" => msg.z
-    #   #          }
+    test "Failure: enum as unknown string" do
+      assert_raise Protox.JsonDecodingError, fn ->
+        Protox.json_decode!("{\"r\":\"WRONG_ENUM_ENTRY\"}", Sub)
+      end
+    end
 
-    # json = "{\"z\":-10,\"l\":\"-98\",\"k\":34,\"f\":-14,\"e\":\"54\",\"d\":32,\"c\":\"10000\",\"a\":-1}"
+    test "Failure: enum as unknown string, when atom already exists but is not part of the enum" do
+      _ = :ALREADY_EXISTING_ATOM
+      json = "{\"r\":\"ALREADY_EXISTING_ATOM\"}"
 
-    # end
+      assert_raise Protox.JsonDecodingError, fn ->
+        Protox.json_decode!(json, Sub)
+      end
+    end
   end
 
   describe "Errors" do
@@ -85,28 +124,32 @@ defmodule Protox.JsonDecodeTest do
   end
 
   describe "JSON libraries" do
-    defmodule Jiffy do
-      def decode!(input) do
-        :jiffy.decode(input, [:return_maps, :use_nil])
-      end
-    end
-
     setup do
-      {:ok,
-       %{json: "{\"a\":null, \"b\":\"foo\", \"c\": 33}", expected: %Sub{a: 0, b: "foo", c: 33}}}
+      {
+        :ok,
+        %{
+          json: "{\"a\":null, \"b\":\"foo\", \"c\": 33}",
+          expected: %Sub{a: 0, b: "foo", c: 33}
+        }
+      }
     end
 
-    test "success: jason", %{json: json, expected: expected} do
+    test "Success: jason", %{json: json, expected: expected} do
       assert Protox.json_decode!(json, Sub, json_decoder: Jason) == expected
     end
 
-    test "success: poison", %{json: json, expected: expected} do
+    test "Success: poison", %{json: json, expected: expected} do
       assert Protox.json_decode!(json, Sub, json_decoder: Poison) == expected
     end
 
-    test "success: jiffy", %{json: json, expected: expected} do
-      assert Protox.json_decode!(<<json::binary>>, Sub, json_decoder: Protox.JsonDecodeTest.Jiffy) ==
-               expected
+    test "Success: jiffy", %{json: json, expected: expected} do
+      defmodule Jiffy do
+        def decode!(input) do
+          :jiffy.decode(input, [:return_maps, :use_nil])
+        end
+      end
+
+      assert Protox.json_decode!(json, Sub, json_decoder: Protox.JsonDecodeTest.Jiffy) == expected
     end
   end
 end
