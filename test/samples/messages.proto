@@ -21,6 +21,7 @@ message Sub {
   repeated bool p = 22 [packed=false];
   repeated E q = 23 [packed=false];
   E r = 24;
+  fixed64 s = 25;
   repeated uint32 u = 27;
   repeated sint32 w = 28;
   repeated int64 x = 29;
