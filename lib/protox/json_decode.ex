@@ -15,20 +15,24 @@ defmodule Protox.JsonDecode do
 
     Enum.reduce(json, initial_msg, fn {field_json_name, field_value}, acc ->
       field = get_field(mod, field_json_name)
-      field_value = decode_msg_field(field, field_value)
+      {field_name, field_value} = decode_msg_field(field, field_value)
 
-      Map.put(acc, field.name, field_value)
+      Map.put(acc, field_name, field_value)
     end)
   end
 
   # -- Private
 
-  defp decode_msg_field(%Field{kind: {:default, default_value}}, nil = _json_value) do
-    default_value
+  defp decode_msg_field(%Field{kind: {:default, default_value}} = field, nil = _json_value) do
+    {field.name, default_value}
   end
 
   defp decode_msg_field(%Field{kind: {:default, _default_value}} = field, json_value) do
-    decode_value(json_value, field.type)
+    {field.name, decode_value(json_value, field.type)}
+  end
+
+  defp decode_msg_field(%Field{kind: {:oneof, parent_name}} = field, json_value) do
+    {parent_name, {field.name, decode_value(json_value, field.type)}}
   end
 
   defp decode_msg_field(%Field{} = _field, _json_value) do

@@ -72,6 +72,14 @@ defmodule Protox.JsonDecodeTest do
         "{\"msgF\": {\"a\": 1}}" => {
           %Msg{msg_f: %Sub{a: 1}},
           "nested messasge"
+        },
+        "{\"msgN\":\"foo\"}" => {
+          %Msg{msg_m: {:msg_n, "foo"}},
+          "oneof set to string"
+        },
+        "{\"msgO\":{\"a\":1}}" => {
+          %Msg{msg_m: {:msg_o, %Sub{a: 1}}},
+          "oneof set to message"
         }
       }
 
