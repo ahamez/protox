@@ -137,7 +137,7 @@ defmodule Protox.DefineEncoder do
   end
 
   defp make_encode_field_body(
-         %Field{kind: {:default, default}} = field,
+         %Field{kind: {:scalar, default}} = field,
          required,
          syntax,
          vars

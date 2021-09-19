@@ -74,7 +74,7 @@ defmodule Protox.Parse do
   defp resolve_types(%Field{} = field, _enums), do: field
 
   defp default_value(
-         %Field{kind: {:default, :default_to_resolve}, type: {:enum, ename}} = field,
+         %Field{kind: {:scalar, :default_to_resolve}, type: {:enum, ename}} = field,
          enums
        ) do
     # proto2: the first entry is always the default value
@@ -82,7 +82,7 @@ defmodule Protox.Parse do
     # to have the value 0
     [{_, first_is_default} | _] = Map.fetch!(enums, ename)
 
-    %Field{field | kind: {:default, first_is_default}, type: {:enum, ename}}
+    %Field{field | kind: {:scalar, first_is_default}, type: {:enum, ename}}
   end
 
   defp default_value(%Field{} = field, _enums), do: field
@@ -311,7 +311,7 @@ defmodule Protox.Parse do
 
   defp get_kind(_syntax, _upper, %FieldDescriptorProto{label: label} = descriptor)
        when label == :optional or label == :required do
-    {:default, get_default_value(descriptor)}
+    {:scalar, get_default_value(descriptor)}
   end
 
   defp get_type(%FieldDescriptorProto{type_name: tyname}) when tyname != nil do

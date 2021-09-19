@@ -29,11 +29,11 @@ defmodule Protox.JsonDecode do
 
   # -- Private
 
-  defp decode_msg_field(%Field{kind: {:default, default_value}} = field, nil = _json_value) do
+  defp decode_msg_field(%Field{kind: {:scalar, default_value}} = field, nil = _json_value) do
     {field.name, default_value}
   end
 
-  defp decode_msg_field(%Field{kind: {:default, _default_value}} = field, json_value) do
+  defp decode_msg_field(%Field{kind: {:scalar, _default_value}} = field, json_value) do
     {field.name, decode_value(json_value, field.type)}
   end
 

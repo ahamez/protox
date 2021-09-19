@@ -144,7 +144,7 @@ defmodule Protox.DefineMessage do
 
     ast =
       Enum.map(fields, fn
-        %Field{name: name, kind: {:default, default}} ->
+        %Field{name: name, kind: {:scalar, default}} ->
           quote do
             def default(unquote(name)), do: {:ok, unquote(default)}
           end
@@ -219,8 +219,8 @@ defmodule Protox.DefineMessage do
           {:oneof, parent} -> make_oneof_field(label, name, parent)
           :packed -> {name, []}
           :unpacked -> {name, []}
-          {:default, _} when syntax == :proto2 -> {name, nil}
-          {:default, default_value} when syntax == :proto3 -> {name, default_value}
+          {:scalar, _} when syntax == :proto2 -> {name, nil}
+          {:scalar, default_value} when syntax == :proto3 -> {name, default_value}
         end
       end
 

@@ -82,12 +82,12 @@ defmodule Protox.JsonEncode do
     ["[" | res]
   end
 
-  defp encode_field(%Field{kind: {:default, default_value}}, value, _json_encode)
+  defp encode_field(%Field{kind: {:scalar, default_value}}, value, _json_encode)
        when value == default_value do
     <<>>
   end
 
-  defp encode_field(%Field{kind: {:default, _default_value}, type: type}, value, json_encode) do
+  defp encode_field(%Field{kind: {:scalar, _default_value}, type: type}, value, json_encode) do
     encode_value(value, type, json_encode)
   end
 

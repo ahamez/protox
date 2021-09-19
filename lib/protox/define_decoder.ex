@@ -284,7 +284,7 @@ defmodule Protox.DefineDecoder do
          _msg_var,
          _keep_set_fields,
          _single_generated,
-         %Field{kind: {:default, _}}
+         %Field{kind: {:scalar, _}}
        ) do
     []
   end
@@ -393,7 +393,7 @@ defmodule Protox.DefineDecoder do
 
   defp make_update_field(
          value,
-         %Field{kind: {:default, _}, type: {:message, _}} = field,
+         %Field{kind: {:scalar, _}, type: {:message, _}} = field,
          vars,
          _wrap_value
        ) do
@@ -405,7 +405,7 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_update_field(value, %Field{kind: {:default, _}} = field, _vars, _wrap_value) do
+  defp make_update_field(value, %Field{kind: {:scalar, _}} = field, _vars, _wrap_value) do
     quote(do: {unquote(field.name), unquote(value)})
   end
 

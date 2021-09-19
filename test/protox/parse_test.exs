@@ -20,7 +20,7 @@ defmodule Protox.ParseTest do
     assert syntax(messages, Abc.Def.Proto3) == :proto3
     fs = fields(messages, Abc.Def.Proto3)
     assert field(fs, 1) == {:repeated, :repeated_int32, :packed, :int32}
-    assert field(fs, 2) == {:optional, :double, {:default, 0}, :double}
+    assert field(fs, 2) == {:optional, :double, {:scalar, 0}, :double}
     assert field(fs, 3) == {nil, :map_sfixed32_fixed64, :map, {:sfixed32, :fixed64}}
     assert field(fs, 4) == {:optional, :oneof_1_int32, {:oneof, :oneof_1}, :int32}
     assert field(fs, 5) == {:optional, :oneof_1_double, {:oneof, :oneof_1}, :double}
@@ -32,7 +32,7 @@ defmodule Protox.ParseTest do
 
     assert field(fs, 8) == {nil, :map_string_proto2a, :map, {:string, {:message, Proto2A}}}
 
-    assert field(fs, 9) == {:optional, :bytes, {:default, <<>>}, :bytes}
+    assert field(fs, 9) == {:optional, :bytes, {:scalar, <<>>}, :bytes}
 
     assert field(fs, 10) ==
              {nil, :map_int64_nested_enum, :map, {:int64, {:enum, Abc.Def.Proto3.NestedEnum}}}
@@ -44,7 +44,7 @@ defmodule Protox.ParseTest do
               {:enum, Abc.Def.Proto3.NestedEnum}}
 
     assert field(fs, 9999) ==
-             {:optional, :nested_enum, {:default, :FOO}, {:enum, Abc.Def.Proto3.NestedEnum}}
+             {:optional, :nested_enum, {:scalar, :FOO}, {:enum, Abc.Def.Proto3.NestedEnum}}
 
     assert syntax(messages, Abc.Def.EmptyProto3) == :proto3
     assert [] = fields(messages, Abc.Def.EmptyProto3)
@@ -58,9 +58,9 @@ defmodule Protox.ParseTest do
   test "Parse FileDescriptorSet, protobuf 2 messages", %{messages: messages} do
     assert syntax(messages, Proto2A.NestedMessage) == :proto2
     fs = fields(messages, Proto2A.NestedMessage)
-    assert field(fs, 1) == {:required, :required_string, {:default, "foo"}, :string}
-    assert field(fs, 2) == {:optional, :optional_float, {:default, -1.1}, :float}
-    assert field(fs, 3) == {:optional, :optional_fixed64, {:default, 32_108}, :fixed64}
+    assert field(fs, 1) == {:required, :required_string, {:scalar, "foo"}, :string}
+    assert field(fs, 2) == {:optional, :optional_float, {:scalar, -1.1}, :float}
+    assert field(fs, 3) == {:optional, :optional_fixed64, {:scalar, 32_108}, :fixed64}
 
     assert syntax(messages, Proto2A) == :proto2
     fs = fields(messages, Proto2A)
@@ -68,7 +68,7 @@ defmodule Protox.ParseTest do
     assert field(fs, 2) == {:repeated, :repeated_int32_unpacked, :unpacked, :int32}
 
     assert field(fs, 3) ==
-             {:optional, :optional_nested_message, {:default, nil},
+             {:optional, :optional_nested_message, {:scalar, nil},
               {:message, Proto2A.NestedMessage}}
 
     assert field(fs, 4) ==
@@ -77,19 +77,19 @@ defmodule Protox.ParseTest do
     assert field(fs, 5) ==
              {:repeated, :repeated_nested_message, :unpacked, {:message, Proto2A.NestedMessage}}
 
-    assert field(fs, 6) == {:optional, :bytes, {:default, <<96, 118>>}, :bytes}
-    assert field(fs, 126) == {:optional, :extension_int32, {:default, 0}, :int32}
-    assert field(fs, 199) == {:optional, :extension_double, {:default, 42.42}, :double}
+    assert field(fs, 6) == {:optional, :bytes, {:scalar, <<96, 118>>}, :bytes}
+    assert field(fs, 126) == {:optional, :extension_int32, {:scalar, 0}, :int32}
+    assert field(fs, 199) == {:optional, :extension_double, {:scalar, 42.42}, :double}
 
     assert syntax(messages, Proto2B) == :proto2
     fs = fields(messages, Proto2B)
 
     assert field(fs, 1) ==
-             {:optional, :optional_proto2a_nested_enum, {:default, :N_ZERO},
+             {:optional, :optional_proto2a_nested_enum, {:scalar, :N_ZERO},
               {:enum, Proto2A.NestedEnum}}
 
     assert field(fs, 2) ==
-             {:required, :required_proto2a_nested_enum, {:default, :N_THREE},
+             {:required, :required_proto2a_nested_enum, {:scalar, :N_THREE},
               {:enum, Proto2A.NestedEnum}}
   end
 
