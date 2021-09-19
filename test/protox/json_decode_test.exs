@@ -127,6 +127,10 @@ defmodule Protox.JsonDecodeTest do
     "{\"mapInt32Int32\": {\"0\": null}}" => {
       ProtobufTestMessages.Proto3.TestAllTypesProto3,
       "map int32 entry value is null"
+    },
+    "{\"optionalUint32\": 0.5}" => {
+      ProtobufTestMessages.Proto3.TestAllTypesProto3,
+      "float as integer"
     }
   }
 

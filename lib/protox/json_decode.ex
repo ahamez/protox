@@ -5,6 +5,8 @@ defmodule Protox.JsonDecode do
 
   import Protox.Guards
 
+  use Protox.Float
+
   # @spec decode!(iodata(), atom(), fun()) :: struct() | no_return()
   def decode!(input, mod, json_decode) do
     json = json_decode.(input)
@@ -15,19 +17,19 @@ defmodule Protox.JsonDecode do
   def decode_message(mod, json) do
     initial_msg = struct!(mod)
 
-    Enum.reduce(json, initial_msg, fn {field_json_name, field_value}, acc ->
-      field = get_field(mod, field_json_name)
-      {field_name, field_value} = decode_msg_field(field, field_value)
+    Enum.reduce(json, initial_msg, fn
+      {_field_json_name, nil = _field_value}, acc ->
+        acc
 
-      Map.put(acc, field_name, field_value)
+      {field_json_name, field_value}, acc ->
+        field = get_field(mod, field_json_name)
+        {field_name, field_value} = decode_msg_field(field, field_value)
+
+        Map.put(acc, field_name, field_value)
     end)
   end
 
   # -- Private
-
-  defp decode_msg_field(%Field{kind: {:scalar, default_value}} = field, nil = _json_value) do
-    {field.name, default_value}
-  end
 
   defp decode_msg_field(%Field{kind: {:scalar, _default_value}} = field, json_value) do
     {field.name, decode_value(json_value, field.type)}
@@ -56,16 +58,16 @@ defmodule Protox.JsonDecode do
     {field.name, list}
   end
 
-  defp decode_value("Infinity", type) when type in [:double, :float], do: :infinity
-  defp decode_value("-Infinity", type) when type in [:double, :float], do: :"-infinity"
-  defp decode_value("NaN", type) when type in [:double, :float], do: :nan
+  defp decode_value("Infinity", type) when is_protobuf_float(type), do: :infinity
+  defp decode_value("-Infinity", type) when is_protobuf_float(type), do: :"-infinity"
+  defp decode_value("NaN", type) when is_protobuf_float(type), do: :nan
 
   defp decode_value("true", :bool), do: true
   defp decode_value("false", :bool), do: false
   defp decode_value(true, :bool), do: true
   defp decode_value(false, :bool), do: false
 
-  defp decode_value(json_value, type) when is_binary(json_value) and type in [:double, :float] do
+  defp decode_value(json_value, type) when is_binary(json_value) and is_protobuf_float(type) do
     case Float.parse(json_value) do
       {value, ""} -> value
       _ -> raise JsonDecodingError.new("#{json_value} is not a valid float")
@@ -109,8 +111,34 @@ defmodule Protox.JsonDecode do
     JsonMessageDecoder.decode_message(msg_mod, json_value)
   end
 
-  defp decode_value(json_value, type) when is_primitive(type) and is_number(json_value) do
+  defp decode_value(json_value, type) when is_protobuf_integer(type) and is_integer(json_value) do
     json_value
+  end
+
+  defp decode_value(json_value, type) when type == :float and is_number(json_value) do
+    cond do
+      json_value > @max_float ->
+        raise JsonDecodingError.new("#{json_value} is too large for a float")
+
+      json_value < @min_float ->
+        raise JsonDecodingError.new("#{json_value} is too small for a float")
+
+      true ->
+        json_value
+    end
+  end
+
+  defp decode_value(json_value, type) when type == :double and is_number(json_value) do
+    cond do
+      json_value > @max_double ->
+        raise JsonDecodingError.new("#{json_value} is too large for a float")
+
+      json_value < @min_double ->
+        raise JsonDecodingError.new("#{json_value} is too small for a float")
+
+      true ->
+        json_value
+    end
   end
 
   defp decode_value(json_value, type) do
