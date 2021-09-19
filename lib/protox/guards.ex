@@ -15,7 +15,10 @@ defmodule Protox.Guards do
 
   @primitives @primitive_varint ++ @primitives_fixed
 
-  @integers @integers_fixed32 ++ @integers_fixed64 ++ @primitives_varint32 ++ @primitives_varint64
+  @integers32 @integers_fixed32 ++ @primitives_varint32
+  @integers64 @integers_fixed64 ++ @primitives_varint64
+  @integers @integers32 ++ @integers64
+
   @floats [:float, :double]
 
   defmacro is_primitive(type) do
