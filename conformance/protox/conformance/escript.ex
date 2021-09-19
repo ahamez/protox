@@ -56,12 +56,13 @@ defmodule Protox.Conformance.Escript do
            :ok,
            req = %Conformance.ConformanceRequest{
              requested_output_format: requested_output_format,
-             payload: {:protobuf_payload, _}
+             payload: {payload_type, _}
            }
          },
          log_file
        )
-       when requested_output_format in [:PROTOBUF, :JSON] do
+       when requested_output_format in [:PROTOBUF, :JSON] and
+              payload_type in [:protobuf_payload, :json_payload] do
     IO.binwrite(log_file, "Will parse protobuf\n")
 
     if Conformance.ConformanceRequest.unknown_fields(req) != [] do
@@ -70,8 +71,12 @@ defmodule Protox.Conformance.Escript do
 
     IO.binwrite(log_file, "#{inspect(req)}\n")
 
-    {:protobuf_payload, payload} = req.payload
-    IO.binwrite(log_file, "payload: #{inspect(payload, limit: :infinity)}\n")
+    {_payload_type, payload} = req.payload
+
+    IO.binwrite(
+      log_file,
+      "payload_type: #{payload_type}\npayload: #{inspect(payload, limit: :infinity)}\n"
+    )
 
     proto_type =
       case req.message_type do
@@ -88,7 +93,13 @@ defmodule Protox.Conformance.Escript do
           ProtobufTestMessages.Proto3.TestAllTypesProto3
       end
 
-    case proto_type.decode(payload) do
+    decode_payload_fun =
+      case payload_type do
+        :protobuf_payload -> fn -> proto_type.decode(payload) end
+        :json_payload -> fn -> proto_type.json_decode(payload) end
+      end
+
+    case decode_payload_fun.() do
       {:ok, msg} ->
         IO.binwrite(log_file, "Parse: success.\n")
         IO.binwrite(log_file, "Message: #{inspect(msg, limit: :infinity)}\n")
@@ -135,9 +146,6 @@ defmodule Protox.Conformance.Escript do
 
         {_, nil} ->
           "unset payload"
-
-        {_, {:json_payload, _}} ->
-          "json input"
 
         {_, {:text_payload, _}} ->
           "text input"
