@@ -3,6 +3,8 @@ defmodule Protox.JsonDecode do
 
   alias Protox.{Field, JsonDecodingError, JsonMessageDecoder}
 
+  import Protox.Guards
+
   # @spec decode!(iodata(), atom(), fun()) :: struct() | no_return()
   def decode!(input, mod, json_decode) do
     json = json_decode.(input)
@@ -35,31 +37,35 @@ defmodule Protox.JsonDecode do
     {parent_name, {field.name, decode_value(json_value, field.type)}}
   end
 
-  defp decode_msg_field(%Field{label: :repeated} = field, json_value_list)
-       when is_list(json_value_list) do
-    value_list =
-      Enum.map(json_value_list, fn json_value ->
-        decode_value(json_value, field.type)
+  defp decode_msg_field(%Field{kind: :map, type: {key_type, value_type}} = field, json_value)
+       when is_map(json_value) do
+    map =
+      for {key, value} <- json_value, into: %{} do
+        {decode_value(key, key_type), decode_value(value, value_type)}
+      end
+
+    {field.name, map}
+  end
+
+  defp decode_msg_field(%Field{label: :repeated} = field, json_value) when is_list(json_value) do
+    list =
+      Enum.map(json_value, fn value ->
+        decode_value(value, field.type)
       end)
 
-    {field.name, value_list}
+    {field.name, list}
   end
 
   defp decode_msg_field(%Field{} = field, json_value) do
-    raise JsonDecodingError.new("cannot decode #{json_value} for field #{field.name}")
-  end
-
-  defp decode_value(json_value, type)
-       when is_binary(json_value) and type in [:int64, :fixed64, :sfixed64, :uint64] do
-    case Integer.parse(json_value) do
-      {value, ""} -> value
-      _ -> raise JsonDecodingError.new("#{json_value} is not a valid integer")
-    end
+    raise JsonDecodingError.new("cannot decode #{inspect(json_value)} for field #{field.name}")
   end
 
   defp decode_value("Infinity", type) when type in [:double, :float], do: :infinity
   defp decode_value("-Infinity", type) when type in [:double, :float], do: :"-infinity"
   defp decode_value("NaN", type) when type in [:double, :float], do: :nan
+
+  defp decode_value("true", :bool), do: true
+  defp decode_value("false", :bool), do: false
 
   defp decode_value(json_value, type) when is_binary(json_value) and type in [:double, :float] do
     case Float.parse(json_value) do
@@ -68,7 +74,15 @@ defmodule Protox.JsonDecode do
     end
   end
 
-  defp decode_value(json_value, :bytes = _type), do: Base.decode64!(json_value)
+  defp decode_value(json_value, type) when is_binary(json_value) and is_primitive(type) do
+    case Integer.parse(json_value) do
+      {value, ""} -> value
+      _ -> raise JsonDecodingError.new("#{json_value} is not a valid integer")
+    end
+  end
+
+  defp decode_value(json_value, :bytes), do: Base.decode64!(json_value)
+  defp decode_value(json_value, :string), do: json_value
 
   defp decode_value(json_value, {:enum, enum_mod} = _type) when is_integer(json_value) do
     enum_mod.decode(json_value)
@@ -97,7 +111,7 @@ defmodule Protox.JsonDecode do
     JsonMessageDecoder.decode_message(msg_mod, json_value)
   end
 
-  defp decode_value(json_value, _type), do: json_value
+  defp decode_value(json_value, type) when is_primitive(type), do: json_value
 
   defp get_field(mod, json_name) do
     case mod.field_def(json_name) do

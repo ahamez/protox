@@ -75,6 +75,18 @@ defmodule Protox.JsonDecodeTest do
     "{\"i\":[\"1\",\"-1.12\",\"0.1\"]}" => {
       %Sub{i: [1, -1.12, 0.1]},
       "repeated double as string"
+    },
+    "{\"msgK\":{\"2\":\"2\",\"1\":\"1\"}}" => {
+      %Msg{msg_k: %{1 => "1", 2 => "2"}},
+      "map int32 => string"
+    },
+    "{\"msgL\":{\"2\":-2.0,\"1\":1.0}}" => {
+      %Msg{msg_l: %{"1" => 1.0, "2" => -2.0}},
+      "map string => double"
+    },
+    "{\"map1\":{\"2\":\"Ag==\",\"1\":\"AQ==\"}}" => {
+      %Sub{map1: %{1 => <<1>>, 2 => <<2>>}},
+      "map sfixed64 => bytes"
     }
   }
 
