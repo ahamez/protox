@@ -160,24 +160,6 @@ defmodule Protox.JsonDecodeTest do
         Protox.json_decode!(json, Sub)
       end
     end
-
-    test "Failure: raise when given a proto2 message" do
-      assert_raise Protox.InvalidSyntax, "Syntax should be :proto3, got :proto2", fn ->
-        Protox.json_decode!("{}", Protobuf2)
-      end
-
-      assert {:error, %Protox.InvalidSyntax{}} = Protox.json_decode("{}", Protobuf2)
-    end
-
-    test "Failure: raise when given a nested proto2 message" do
-      json = "{\"msgQ\": {}}"
-
-      assert_raise Protox.InvalidSyntax, "Syntax should be :proto3, got :proto2", fn ->
-        Protox.json_decode!(json, Msg)
-      end
-
-      assert {:error, %Protox.InvalidSyntax{}} = Protox.json_decode(json, Msg)
-    end
   end
 
   describe "Field names" do
