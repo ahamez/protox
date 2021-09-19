@@ -40,27 +40,13 @@ decode!(data)
 
 Throwing version of `decode/1`.
 
-### Syntax and definitions
+### Syntax
 
 ```elixir
 @spec syntax() :: atom
 syntax()
 ```
 Get the syntax of the protobuf message: `:proto2` or `:proto3`.
-
-```elixir
-@spec fields_defs() :: list(Protox.Field.t())
-fields_defs()
-```
-Get the underlying definition of a protobuf message, mostly for internal usage.
-
-
-```elixir
-@spec field_def(atom()) :: Protox.Field.t()
-field_def(field_name)
-```
-Get the underlying definition of a specific field, mostly for internal usage.
-
 
 ### Default values
 
