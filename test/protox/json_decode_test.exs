@@ -142,6 +142,10 @@ defmodule Protox.JsonDecodeTest do
     "{\"optionalUint32\": 0.5}" => {
       ProtobufTestMessages.Proto3.TestAllTypesProto3,
       "float as integer"
+    },
+    "{\"optionalInt32\": 4.294967295e9}" => {
+      ProtobufTestMessages.Proto3.TestAllTypesProto3,
+      "integer represented as float value too large"
     }
   }
 
