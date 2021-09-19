@@ -1,21 +1,13 @@
 defmodule Protox.Integer do
   defmacro __using__(_) do
     quote do
-      @max_unsigned_32 Protox.Integer.max_unsigned_32()
-      @max_unsigned_64 Protox.Integer.max_unsigned_64()
+      @max_unsigned_32 4_294_967_295
+      @max_unsigned_64 18_446_744_073_709_551_615
+
+      @min_signed_32 -2_147_483_648
+      @max_signed_32 2_147_483_647
+      @min_signed_64 -9_223_372_036_854_775_808
+      @max_signed_64 9_223_372_036_854_775_807
     end
-  end
-
-  def max_unsigned_32() do
-    <<value::little-32>> = <<0b11111111111111111111111111111111::32>>
-
-    value
-  end
-
-  def max_unsigned_64() do
-    <<value::little-64>> =
-      <<0b1111111111111111111111111111111111111111111111111111111111111111::64>>
-
-    value
   end
 end
