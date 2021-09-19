@@ -56,10 +56,6 @@ defmodule Protox.JsonDecode do
     {field.name, list}
   end
 
-  defp decode_msg_field(%Field{} = field, json_value) do
-    raise JsonDecodingError.new("cannot decode #{inspect(json_value)} for field #{field.name}")
-  end
-
   defp decode_value("Infinity", type) when type in [:double, :float], do: :infinity
   defp decode_value("-Infinity", type) when type in [:double, :float], do: :"-infinity"
   defp decode_value("NaN", type) when type in [:double, :float], do: :nan
