@@ -67,6 +67,14 @@ defmodule Protox.JsonDecodeTest do
     "{\"msgO\":{\"a\":1}}" => {
       %Msg{msg_m: {:msg_o, %Sub{a: 1}}},
       "oneof set to message"
+    },
+    "{\"i\":[1,-1.12,0.1]}" => {
+      %Sub{i: [1, -1.12, 0.1]},
+      "repeated double as number"
+    },
+    "{\"i\":[\"1\",\"-1.12\",\"0.1\"]}" => {
+      %Sub{i: [1, -1.12, 0.1]},
+      "repeated double as string"
     }
   }
 
