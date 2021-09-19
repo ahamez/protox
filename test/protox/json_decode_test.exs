@@ -144,7 +144,7 @@ defmodule Protox.JsonDecodeTest do
   end
 
   describe "Errors" do
-    test "failure: parsing an unknown field raises an exception" do
+    test "Failure: parsing an unknown field raises an exception" do
       json = "{\"this_field_does_not_exist\": 42}"
 
       assert_raise Protox.JsonDecodingError, fn ->
@@ -152,12 +152,22 @@ defmodule Protox.JsonDecodeTest do
       end
     end
 
-    test "failure: raise when given a proto2 message" do
+    test "Failure: raise when given a proto2 message" do
       assert_raise Protox.InvalidSyntax, "Syntax should be :proto3, got :proto2", fn ->
-        Protox.json_decode!("", Protobuf2)
+        Protox.json_decode!("{}", Protobuf2)
       end
 
-      assert {:error, %Protox.InvalidSyntax{}} = Protox.json_decode("", Protobuf2)
+      assert {:error, %Protox.InvalidSyntax{}} = Protox.json_decode("{}", Protobuf2)
+    end
+
+    test "Failure: raise when given a nested proto2 message" do
+      json = "{\"msgQ\": {}}"
+
+      assert_raise Protox.InvalidSyntax, "Syntax should be :proto3, got :proto2", fn ->
+        Protox.json_decode!(json, Msg)
+      end
+
+      assert {:error, %Protox.InvalidSyntax{}} = Protox.json_decode(json, Msg)
     end
   end
 
