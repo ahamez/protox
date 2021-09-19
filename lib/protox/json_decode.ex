@@ -13,10 +13,6 @@ defmodule Protox.JsonDecode do
   end
 
   def decode_message(mod, json) do
-    if mod.syntax() == :proto2 do
-      raise Protox.InvalidSyntax.new(_expected = :proto3, _got = :proto2)
-    end
-
     initial_msg = struct!(mod)
 
     Enum.reduce(json, initial_msg, fn {field_json_name, field_value}, acc ->
