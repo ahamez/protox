@@ -1,4 +1,6 @@
 defmodule Protox.Integer do
+  @moduledoc false
+
   defmacro __using__(_) do
     quote do
       @max_unsigned_32 4_294_967_295
