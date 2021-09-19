@@ -7,7 +7,7 @@ defmodule Protox.JsonDecodeTest do
   use ExUnit.Case
   use Protox.Float
 
-  @scalar_tests %{
+  @scalar_success_tests %{
     "{\"a\":null}" => {
       %Sub{a: 0},
       "null as default value"
@@ -91,11 +91,39 @@ defmodule Protox.JsonDecodeTest do
     "{\"map1\":{\"2\":\"Ag==\",\"1\":\"AQ==\"}}" => {
       %Sub{map1: %{1 => <<1>>, 2 => <<2>>}},
       "map sfixed64 => bytes"
+    },
+    "{\"a\":\"Infinity\"}" => {
+      %FloatPrecision{a: :infinity}
+    },
+    "{\"a\":\"-Infinity\"}" => {
+      %FloatPrecision{a: :"-infinity"}
+    },
+    "{\"a\":\"NaN\"}" => {
+      %FloatPrecision{a: :nan}
+    }
+  }
+
+  @scalar_failure_tests %{
+    "{\"r\":\"WRONG_ENUM_ENTRY\"}" => {
+      Sub,
+      "enum as unknown string"
+    },
+    "{\"a\":\"1.0invalid\"}" => {
+      FloatPrecision,
+      "invalid float"
+    },
+    "{\"a\":\"1invalid\"}" => {
+      Sub,
+      "invalid integer"
+    },
+    "{\"r\":\"scalar\"}" => {
+      Sub,
+      "already existing atom which is not part of the enum"
     }
   }
 
   describe "Scalar types" do
-    for {json, {expected, description}} <- @scalar_tests do
+    for {json, {expected, description}} <- @scalar_success_tests do
       test "Success: can decode #{description}" do
         json = unquote(json)
         expected = unquote(Macro.escape(expected))
@@ -104,43 +132,20 @@ defmodule Protox.JsonDecodeTest do
       end
     end
 
-    for {value, string} <- [{:infinity, "Infinity"}, {:"-infinity", "-Infinity"}, {:nan, "NaN"}] do
-      test "Success: double is #{string}" do
-        value = unquote(value)
-        string = unquote(string)
+    for {json, {mod, description}} <- @scalar_failure_tests do
+      test "Failure: should not decode #{description}" do
+        json = unquote(json)
+        mod = unquote(mod)
 
-        msg = %FloatPrecision{a: value}
-        json = "{\"a\":\"#{string}\"}"
-        assert Protox.json_decode!(json, FloatPrecision) == msg
+        assert_raise Protox.JsonDecodingError, fn ->
+          Protox.json_decode!(json, mod)
+        end
       end
     end
 
-    test "Failure: enum as unknown string" do
-      assert_raise Protox.JsonDecodingError, fn ->
-        Protox.json_decode!("{\"r\":\"WRONG_ENUM_ENTRY\"}", Sub)
-      end
-    end
-
-    test "Failure: invalid float" do
-      assert_raise Protox.JsonDecodingError, fn ->
-        Protox.json_decode!("{\"a\":\"1.0invalid\"}", FloatPrecision)
-      end
-    end
-
-    test "Failure: invalid integer" do
-      assert_raise Protox.JsonDecodingError, fn ->
-        Protox.json_decode!("{\"a\":\"1invalid\"}", Sub)
-      end
-    end
-
-    test "Failure: enum as unknown string, when atom already exists but is not part of the enum" do
-      _ = :ALREADY_EXISTING_ATOM
-      json = "{\"r\":\"ALREADY_EXISTING_ATOM\"}"
-
-      assert_raise Protox.JsonDecodingError, fn ->
-        Protox.json_decode!(json, Sub)
-      end
-    end
+    # test "Failure: key value is null" do
+    #   json = "{\"mapInt32Int32\": {\"0\": null}}"
+    # end
   end
 
   describe "Errors" do
