@@ -93,13 +93,24 @@ defmodule Protox.JsonDecodeTest do
       "map sfixed64 => bytes"
     },
     "{\"a\":\"Infinity\"}" => {
-      %FloatPrecision{a: :infinity}
+      %FloatPrecision{a: :infinity},
+      "double +infinity"
     },
     "{\"a\":\"-Infinity\"}" => {
-      %FloatPrecision{a: :"-infinity"}
+      %FloatPrecision{a: :"-infinity"},
+      "double -infinity"
     },
     "{\"a\":\"NaN\"}" => {
-      %FloatPrecision{a: :nan}
+      %FloatPrecision{a: :nan},
+      "double nan"
+    },
+    "{\"optionalInt32\": 100000.000}" => {
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{optional_int32: 100_000},
+      "integer with trailing zeros"
+    },
+    "{\"optionalInt32\": 1e5}" => {
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{optional_int32: 100_000},
+      "integer represented as float value"
     }
   }
 

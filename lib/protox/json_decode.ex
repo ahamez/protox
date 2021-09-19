@@ -113,30 +113,52 @@ defmodule Protox.JsonDecode do
   end
 
   defp decode_value(json_value, type)
-       when type in [:uint32, :fixed32] and is_integer(json_value) do
-    cond do
-      json_value > @max_unsigned_32 ->
-        raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
-
-      json_value < 0 ->
-        raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
-
-      true ->
-        json_value
-    end
+       when type in [:uint32, :fixed32] and is_integer(json_value) and
+              json_value > @max_unsigned_32 do
+    raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
   end
 
   defp decode_value(json_value, type)
-       when type in [:uint64, :fixed64] and is_integer(json_value) do
-    cond do
-      json_value > @max_unsigned_64 ->
-        raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
+       when type in [:uint64, :fixed64] and is_integer(json_value) and
+              json_value > @max_unsigned_64 do
+    raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
+  end
 
-      json_value < 0 ->
-        raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
+  defp decode_value(json_value, type)
+       when type in [:uint32, :fixed32, :uint64, :fixed64] and is_integer(json_value) and
+              json_value < 0 do
+    raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
+  end
 
-      true ->
-        json_value
+  defp decode_value(json_value, type)
+       when type == :float and is_number(json_value) and json_value > @max_float do
+    raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
+  end
+
+  defp decode_value(json_value, type)
+       when type == :float and is_number(json_value) and json_value < @min_float do
+    raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
+  end
+
+  defp decode_value(json_value, type)
+       when type == :double and is_number(json_value) and json_value > @max_double do
+    raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
+  end
+
+  defp decode_value(json_value, type)
+       when type == :double and is_number(json_value) and json_value < @min_double do
+    raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
+  end
+
+  defp decode_value(json_value, type) when is_protobuf_integer(type) and is_float(json_value) do
+    is_integer? = json_value |> Decimal.from_float() |> Decimal.integer?()
+
+    if is_integer? do
+      json_value
+    else
+      raise JsonDecodingError.new(
+              "cannot decode #{inspect(json_value)} for type #{inspect(type)}"
+            )
     end
   end
 
@@ -144,30 +166,8 @@ defmodule Protox.JsonDecode do
     json_value
   end
 
-  defp decode_value(json_value, type) when type == :float and is_number(json_value) do
-    cond do
-      json_value > @max_float ->
-        raise JsonDecodingError.new("#{json_value} is too large for a float")
-
-      json_value < @min_float ->
-        raise JsonDecodingError.new("#{json_value} is too small for a float")
-
-      true ->
-        json_value
-    end
-  end
-
-  defp decode_value(json_value, type) when type == :double and is_number(json_value) do
-    cond do
-      json_value > @max_double ->
-        raise JsonDecodingError.new("#{json_value} is too large for a float")
-
-      json_value < @min_double ->
-        raise JsonDecodingError.new("#{json_value} is too small for a float")
-
-      true ->
-        json_value
-    end
+  defp decode_value(json_value, type) when is_protobuf_float(type) and is_number(json_value) do
+    json_value
   end
 
   defp decode_value(json_value, type) do
