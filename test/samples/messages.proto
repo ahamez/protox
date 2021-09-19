@@ -2,6 +2,15 @@ syntax = "proto3";
 
 import "protobuf2.proto";
 
+enum E {
+  option allow_alias = true;
+
+  FOO = 0;
+  BAZ = 1;
+  BAR = 1;
+  NEG = -1;
+}
+
 message Sub {
   int32 a = 1;
   string b = 2;
@@ -31,18 +40,7 @@ message Sub {
   map<sfixed64, bytes> map1 = 12345;
   map<sfixed64, bytes> map2 = 12346;
 }
-
-enum E {
-  option allow_alias = true;
-
-  FOO = 0;
-  BAZ = 1;
-  BAR = 1;
-  NEG = -1;
-}
-
 message Msg {
-
   repeated sint64 msg_a = 27;
   repeated fixed32 msg_b = 28;
   repeated sfixed64 msg_c = 29;
