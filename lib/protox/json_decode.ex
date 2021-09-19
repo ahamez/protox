@@ -5,8 +5,7 @@ defmodule Protox.JsonDecode do
 
   import Protox.Guards
 
-  use Protox.Float
-  use Protox.Integer
+  use Protox.{Float, Integer}
 
   # @spec decode!(iodata(), atom(), fun()) :: struct() | no_return()
   def decode!(input, mod, json_decode) do
