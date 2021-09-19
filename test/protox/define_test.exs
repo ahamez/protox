@@ -67,7 +67,7 @@ defmodule Protox.DefineTest do
       assert fields == [
                %Protox.Field{
                  json_name: "a",
-                 kind: {:default, :FOO},
+                 kind: {:scalar, :FOO},
                  label: :optional,
                  name: :a,
                  tag: 1,
@@ -83,7 +83,7 @@ defmodule Protox.DefineTest do
                },
                %Protox.Field{
                  json_name: "c",
-                 kind: {:default, 0},
+                 kind: {:scalar, 0},
                  label: :optional,
                  name: :c,
                  tag: 3,
@@ -91,7 +91,7 @@ defmodule Protox.DefineTest do
                },
                %Protox.Field{
                  json_name: "d",
-                 kind: {:default, nil},
+                 kind: {:scalar, nil},
                  label: :optional,
                  name: :d,
                  tag: 4,
@@ -105,7 +105,7 @@ defmodule Protox.DefineTest do
                {:ok,
                 %Protox.Field{
                   json_name: "a",
-                  kind: {:default, :FOO},
+                  kind: {:scalar, :FOO},
                   label: :optional,
                   name: :a,
                   tag: 1,
@@ -118,7 +118,7 @@ defmodule Protox.DefineTest do
                {:ok,
                 %Protox.Field{
                   json_name: "a",
-                  kind: {:default, :FOO},
+                  kind: {:scalar, :FOO},
                   label: :optional,
                   name: :a,
                   tag: 1,

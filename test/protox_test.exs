@@ -145,7 +145,7 @@ defmodule ProtoxTest do
     assert Namespace.Fiz.Baz.defs() == %{}
 
     assert Namespace.Fiz.Foo.defs() == %{
-             1 => {:a, {:default, :FOO}, {:enum, Namespace.Fiz.Enum}},
+             1 => {:a, {:scalar, :FOO}, {:enum, Namespace.Fiz.Enum}},
              2 => {:b, :map, {:int32, {:message, Namespace.Fiz.Baz}}}
            }
 
@@ -159,40 +159,40 @@ defmodule ProtoxTest do
     assert Proto2A.defs() == %{
              1 => {:repeated_int32_packed, :packed, :int32},
              2 => {:repeated_int32_unpacked, :unpacked, :int32},
-             3 => {:optional_nested_message, {:default, nil}, {:message, Proto2A.NestedMessage}},
+             3 => {:optional_nested_message, {:scalar, nil}, {:message, Proto2A.NestedMessage}},
              4 => {:repeated_nested_enum, :unpacked, {:enum, Proto2A.NestedEnum}},
              5 => {:repeated_nested_message, :unpacked, {:message, Proto2A.NestedMessage}},
-             6 => {:bytes, {:default, "`v"}, :bytes},
-             126 => {:extension_int32, {:default, 0}, :int32},
-             199 => {:extension_double, {:default, 42.42}, :double}
+             6 => {:bytes, {:scalar, "`v"}, :bytes},
+             126 => {:extension_int32, {:scalar, 0}, :int32},
+             199 => {:extension_double, {:scalar, 42.42}, :double}
            }
 
     assert Proto2B.syntax() == :proto2
 
     assert Proto2B.defs() == %{
              1 =>
-               {:optional_proto2a_nested_enum, {:default, :N_ZERO}, {:enum, Proto2A.NestedEnum}},
+               {:optional_proto2a_nested_enum, {:scalar, :N_ZERO}, {:enum, Proto2A.NestedEnum}},
              2 =>
-               {:required_proto2a_nested_enum, {:default, :N_THREE}, {:enum, Proto2A.NestedEnum}}
+               {:required_proto2a_nested_enum, {:scalar, :N_THREE}, {:enum, Proto2A.NestedEnum}}
            }
 
     assert Abc.Def.Proto3.syntax() == :proto3
 
     assert Abc.Def.Proto3.defs() == %{
              1 => {:repeated_int32, :packed, :int32},
-             2 => {:double, {:default, 0}, :double},
+             2 => {:double, {:scalar, 0}, :double},
              3 => {:map_sfixed32_fixed64, :map, {:sfixed32, :fixed64}},
              4 => {:oneof_1_int32, {:oneof, :oneof_1}, :int32},
              5 => {:oneof_1_double, {:oneof, :oneof_1}, :double},
              6 => {:oneof_1_foreign_enum, {:oneof, :oneof_1}, {:enum, Abc.Def.ForeignEnum}},
              7 => {:oneof_1_proto2a, {:oneof, :oneof_1}, {:message, Proto2A}},
              8 => {:map_string_proto2a, :map, {:string, {:message, Proto2A}}},
-             9 => {:bytes, {:default, ""}, :bytes},
+             9 => {:bytes, {:scalar, ""}, :bytes},
              10 => {:map_int64_nested_enum, :map, {:int64, {:enum, Abc.Def.Proto3.NestedEnum}}},
              134 => {:oneof_2_int32, {:oneof, :oneof_2}, :int32},
              135 =>
                {:oneof_2_nested_enum, {:oneof, :oneof_2}, {:enum, Abc.Def.Proto3.NestedEnum}},
-             9999 => {:nested_enum, {:default, :FOO}, {:enum, Abc.Def.Proto3.NestedEnum}},
+             9999 => {:nested_enum, {:scalar, :FOO}, {:enum, Abc.Def.Proto3.NestedEnum}},
              200 => {:repeated_int32_packed, :packed, :int32},
              201 => {:repeated_int32_unpacked, :unpacked, :int32},
              51 => {:repeated_nested_enum, :packed, {:enum, Abc.Def.Proto3.NestedEnum}}
@@ -206,24 +206,24 @@ defmodule ProtoxTest do
              1 => {:repeated_int32_packed, :packed, :int32},
              2 => {:repeated_int32_unpacked, :unpacked, :int32},
              3 =>
-               {:optional_nested_message, {:default, nil},
+               {:optional_nested_message, {:scalar, nil},
                 {:message, Namespace.Proto2A.NestedMessage}},
              4 => {:repeated_nested_enum, :unpacked, {:enum, Namespace.Proto2A.NestedEnum}},
              5 =>
                {:repeated_nested_message, :unpacked, {:message, Namespace.Proto2A.NestedMessage}},
-             6 => {:bytes, {:default, "`v"}, :bytes},
-             126 => {:extension_int32, {:default, 0}, :int32},
-             199 => {:extension_double, {:default, 42.42}, :double}
+             6 => {:bytes, {:scalar, "`v"}, :bytes},
+             126 => {:extension_int32, {:scalar, 0}, :int32},
+             199 => {:extension_double, {:scalar, 42.42}, :double}
            }
 
     assert Namespace.Proto2B.syntax() == :proto2
 
     assert Namespace.Proto2B.defs() == %{
              1 =>
-               {:optional_proto2a_nested_enum, {:default, :N_ZERO},
+               {:optional_proto2a_nested_enum, {:scalar, :N_ZERO},
                 {:enum, Namespace.Proto2A.NestedEnum}},
              2 =>
-               {:required_proto2a_nested_enum, {:default, :N_THREE},
+               {:required_proto2a_nested_enum, {:scalar, :N_THREE},
                 {:enum, Namespace.Proto2A.NestedEnum}}
            }
 
@@ -231,7 +231,7 @@ defmodule ProtoxTest do
 
     assert Namespace.Abc.Def.Proto3.defs() == %{
              1 => {:repeated_int32, :packed, :int32},
-             2 => {:double, {:default, 0}, :double},
+             2 => {:double, {:scalar, 0}, :double},
              3 => {:map_sfixed32_fixed64, :map, {:sfixed32, :fixed64}},
              4 => {:oneof_1_int32, {:oneof, :oneof_1}, :int32},
              5 => {:oneof_1_double, {:oneof, :oneof_1}, :double},
@@ -239,7 +239,7 @@ defmodule ProtoxTest do
                {:oneof_1_foreign_enum, {:oneof, :oneof_1}, {:enum, Namespace.Abc.Def.ForeignEnum}},
              7 => {:oneof_1_proto2a, {:oneof, :oneof_1}, {:message, Namespace.Proto2A}},
              8 => {:map_string_proto2a, :map, {:string, {:message, Namespace.Proto2A}}},
-             9 => {:bytes, {:default, ""}, :bytes},
+             9 => {:bytes, {:scalar, ""}, :bytes},
              10 =>
                {:map_int64_nested_enum, :map,
                 {:int64, {:enum, Namespace.Abc.Def.Proto3.NestedEnum}}},
@@ -248,7 +248,7 @@ defmodule ProtoxTest do
                {:oneof_2_nested_enum, {:oneof, :oneof_2},
                 {:enum, Namespace.Abc.Def.Proto3.NestedEnum}},
              9999 =>
-               {:nested_enum, {:default, :FOO}, {:enum, Namespace.Abc.Def.Proto3.NestedEnum}},
+               {:nested_enum, {:scalar, :FOO}, {:enum, Namespace.Abc.Def.Proto3.NestedEnum}},
              200 => {:repeated_int32_packed, :packed, :int32},
              201 => {:repeated_int32_unpacked, :unpacked, :int32},
              51 => {:repeated_nested_enum, :packed, {:enum, Namespace.Abc.Def.Proto3.NestedEnum}}

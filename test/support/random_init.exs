@@ -31,7 +31,7 @@ defmodule Protox.RandomInit do
       # Transform into a map for lookup
       |> Enum.reduce(%{}, fn %Protox.Field{} = field, acc ->
         case field.kind do
-          {:default, _} ->
+          {:scalar, _} ->
             {:message, sub_msg} = field.type
             Map.put(acc, field.name, {:scalar, sub_msg})
 
@@ -118,7 +118,7 @@ defmodule Protox.RandomInit do
           {field_name, generate_fields(sub_msg)}
 
         {_field, {field_name, {:oneof, _}, ty}} ->
-          {field_name, get_gen({:default, :dummy}, ty)}
+          {field_name, get_gen({:scalar, :dummy}, ty)}
       end)
 
     [{oneof_name, oneof([nil | generators])} | acc]
@@ -146,31 +146,31 @@ defmodule Protox.RandomInit do
     do_generate([{name, get_gen(kind, type)} | acc], xs)
   end
 
-  defp get_gen({:default, _}, {:enum, e}) do
+  defp get_gen({:scalar, _}, {:enum, e}) do
     oneof(e.constants() |> Map.new() |> Map.values())
   end
 
-  defp get_gen({:default, _}, :bool), do: bool()
+  defp get_gen({:scalar, _}, :bool), do: bool()
 
-  defp get_gen({:default, _}, :int32), do: integer()
-  defp get_gen({:default, _}, :int64), do: integer()
-  defp get_gen({:default, _}, :sint32), do: integer()
-  defp get_gen({:default, _}, :sint64), do: integer()
-  defp get_gen({:default, _}, :sfixed32), do: integer()
-  defp get_gen({:default, _}, :sfixed64), do: integer()
-  defp get_gen({:default, _}, :fixed32), do: non_neg_integer()
-  defp get_gen({:default, _}, :fixed64), do: non_neg_integer()
+  defp get_gen({:scalar, _}, :int32), do: integer()
+  defp get_gen({:scalar, _}, :int64), do: integer()
+  defp get_gen({:scalar, _}, :sint32), do: integer()
+  defp get_gen({:scalar, _}, :sint64), do: integer()
+  defp get_gen({:scalar, _}, :sfixed32), do: integer()
+  defp get_gen({:scalar, _}, :sfixed64), do: integer()
+  defp get_gen({:scalar, _}, :fixed32), do: non_neg_integer()
+  defp get_gen({:scalar, _}, :fixed64), do: non_neg_integer()
 
-  defp get_gen({:default, _}, :uint32), do: non_neg_integer()
-  defp get_gen({:default, _}, :uint64), do: non_neg_integer()
+  defp get_gen({:scalar, _}, :uint32), do: non_neg_integer()
+  defp get_gen({:scalar, _}, :uint64), do: non_neg_integer()
 
-  defp get_gen({:default, _}, :float), do: gen_float()
-  defp get_gen({:default, _}, :double), do: gen_float()
+  defp get_gen({:scalar, _}, :float), do: gen_float()
+  defp get_gen({:scalar, _}, :double), do: gen_float()
 
-  defp get_gen({:default, _}, :bytes), do: binary()
-  defp get_gen({:default, _}, :string), do: utf8()
+  defp get_gen({:scalar, _}, :bytes), do: binary()
+  defp get_gen({:scalar, _}, :string), do: utf8()
 
-  defp get_gen({:default, _}, {:message, sub_msg}) do
+  defp get_gen({:scalar, _}, {:message, sub_msg}) do
     oneof([nil, generate_fields(sub_msg)])
   end
 
@@ -217,7 +217,7 @@ defmodule Protox.RandomInit do
 
   defp get_gen(:map, {key_ty, {:message, sub_msg}}) do
     map(
-      get_gen({:default, :dummy}, key_ty),
+      get_gen({:scalar, :dummy}, key_ty),
       # we don't want a nil when a message is a value in a map
       generate_fields(sub_msg)
     )
@@ -225,8 +225,8 @@ defmodule Protox.RandomInit do
 
   defp get_gen(:map, {key_ty, value_ty}) do
     map(
-      get_gen({:default, :dummy}, key_ty),
-      get_gen({:default, :dummy}, value_ty)
+      get_gen({:scalar, :dummy}, key_ty),
+      get_gen({:scalar, :dummy}, value_ty)
     )
   end
 

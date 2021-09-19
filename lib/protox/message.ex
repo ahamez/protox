@@ -50,10 +50,10 @@ defmodule Protox.Message do
       {:ok, %Field{kind: :unpacked}} ->
         v1 ++ v2
 
-      {:ok, %Field{kind: {:default, _}, type: {:message, _}}} ->
+      {:ok, %Field{kind: {:scalar, _}, type: {:message, _}}} ->
         merge(v1, v2)
 
-      {:ok, %Field{kind: {:default, _}}} ->
+      {:ok, %Field{kind: {:scalar, _}}} ->
         {:ok, default} = msg.__struct__.default(name)
         merge_scalar(msg.__struct__.syntax(), v1, v2, default)
 

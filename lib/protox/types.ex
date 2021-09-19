@@ -34,7 +34,7 @@ defmodule Protox.Types do
   @typedoc """
   This type give more details on how a field is encoded.
   """
-  @type kind :: {:default, any()} | :packed | :unpacked | :map | {:oneof, atom()}
+  @type kind :: {:scalar, any()} | :packed | :unpacked | :map | {:oneof, atom()}
 
   @typedoc """
   All types that can be used as a key in map field.

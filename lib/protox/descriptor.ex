@@ -60,14 +60,14 @@ defmodule Protox.Descriptor do
             tag: 1,
             label: :none,
             name: :name,
-            kind: {:default, ""},
+            kind: {:scalar, ""},
             type: :string
           ),
           Protox.Field.new!(
             tag: 2,
             label: :none,
             name: :package,
-            kind: {:default, ""},
+            kind: {:scalar, ""},
             type: :string
           ),
           Protox.Field.new!(
@@ -95,7 +95,7 @@ defmodule Protox.Descriptor do
             tag: 12,
             label: :none,
             name: :syntax,
-            kind: {:default, ""},
+            kind: {:scalar, ""},
             type: :string
           )
         ]
@@ -108,10 +108,10 @@ defmodule Protox.Descriptor do
             tag: 1,
             label: :none,
             name: :start,
-            kind: {:default, 0},
+            kind: {:scalar, 0},
             type: :int32
           ),
-          Protox.Field.new!(tag: 2, label: :none, name: :end, kind: {:default, 0}, type: :int32)
+          Protox.Field.new!(tag: 2, label: :none, name: :end, kind: {:scalar, 0}, type: :int32)
         ]
       },
       # Protox.Google.Protobuf.DescriptorProto.ReservedRange ignored
@@ -124,7 +124,7 @@ defmodule Protox.Descriptor do
             tag: 1,
             label: :none,
             name: :name,
-            kind: {:default, nil},
+            kind: {:scalar, nil},
             type: :string
           ),
           Protox.Field.new!(
@@ -173,7 +173,7 @@ defmodule Protox.Descriptor do
             tag: 7,
             label: :none,
             name: :options,
-            kind: {:default, nil},
+            kind: {:scalar, nil},
             type: {:message, Protox.Google.Protobuf.MessageOptions}
           )
         ]
@@ -187,70 +187,70 @@ defmodule Protox.Descriptor do
             tag: 1,
             label: :none,
             name: :name,
-            kind: {:default, nil},
+            kind: {:scalar, nil},
             type: :string
           ),
           Protox.Field.new!(
             tag: 3,
             label: :none,
             name: :number,
-            kind: {:default, nil},
+            kind: {:scalar, nil},
             type: :int32
           ),
           Protox.Field.new!(
             tag: 4,
             label: :none,
             name: :label,
-            kind: {:default, nil},
+            kind: {:scalar, nil},
             type: {:enum, Protox.Google.Protobuf.FieldDescriptorProto.Label}
           ),
           Protox.Field.new!(
             tag: 5,
             label: :none,
             name: :type,
-            kind: {:default, nil},
+            kind: {:scalar, nil},
             type: {:enum, Protox.Google.Protobuf.FieldDescriptorProto.Type}
           ),
           Protox.Field.new!(
             tag: 6,
             label: :none,
             name: :type_name,
-            kind: {:default, nil},
+            kind: {:scalar, nil},
             type: :string
           ),
           Protox.Field.new!(
             tag: 2,
             label: :none,
             name: :extendee,
-            kind: {:default, nil},
+            kind: {:scalar, nil},
             type: :string
           ),
           Protox.Field.new!(
             tag: 7,
             label: :none,
             name: :default_value,
-            kind: {:default, nil},
+            kind: {:scalar, nil},
             type: :string
           ),
           Protox.Field.new!(
             tag: 9,
             label: :none,
             name: :oneof_index,
-            kind: {:default, nil},
+            kind: {:scalar, nil},
             type: :int32
           ),
           Protox.Field.new!(
             tag: 8,
             label: :none,
             name: :options,
-            kind: {:default, nil},
+            kind: {:scalar, nil},
             type: {:message, Protox.Google.Protobuf.FieldOptions}
           ),
           Protox.Field.new!(
             tag: 17,
             label: :none,
             name: :proto3_optional,
-            kind: {:default, false},
+            kind: {:scalar, false},
             type: :bool
           )
         ]
@@ -264,7 +264,7 @@ defmodule Protox.Descriptor do
             tag: 1,
             label: :none,
             name: :name,
-            kind: {:default, nil},
+            kind: {:scalar, nil},
             type: :string
           )
         ]
@@ -278,7 +278,7 @@ defmodule Protox.Descriptor do
             tag: 1,
             label: :none,
             name: :name,
-            kind: {:default, nil},
+            kind: {:scalar, nil},
             type: :string
           ),
           Protox.Field.new!(
@@ -299,14 +299,14 @@ defmodule Protox.Descriptor do
             tag: 1,
             label: :none,
             name: :name,
-            kind: {:default, nil},
+            kind: {:scalar, nil},
             type: :string
           ),
           Protox.Field.new!(
             tag: 2,
             label: :none,
             name: :number,
-            kind: {:default, nil},
+            kind: {:scalar, nil},
             type: :int32
           )
         ]
@@ -323,14 +323,14 @@ defmodule Protox.Descriptor do
             tag: 3,
             label: :none,
             name: :deprecated,
-            kind: {:default, false},
+            kind: {:scalar, false},
             type: :bool
           ),
           Protox.Field.new!(
             tag: 7,
             label: :none,
             name: :map_entry,
-            kind: {:default, false},
+            kind: {:scalar, false},
             type: :bool
           )
         ]
@@ -344,14 +344,14 @@ defmodule Protox.Descriptor do
             tag: 2,
             label: :none,
             name: :packed,
-            kind: {:default, nil},
+            kind: {:scalar, nil},
             type: :bool
           ),
           Protox.Field.new!(
             tag: 3,
             label: :none,
             name: :deprecated,
-            kind: {:default, false},
+            kind: {:scalar, false},
             type: :bool
           )
         ]

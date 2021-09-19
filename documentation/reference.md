@@ -141,7 +141,7 @@ Types `Protox.Types.tag`, `Protox.Types.kind` and `Protox.Types.type` are define
 @type wire_32bits :: 5
 
 @type tag :: wire_varint | wire_64bits | wire_delimited | wire_32bits
-@type kind :: {:default, any} | :packed | :unpacked | :map | {:oneof, atom}
+@type kind :: {:scalar, any} | :packed | :unpacked | :map | {:oneof, atom}
 @type map_key_type ::
         :int32
         | :int64
