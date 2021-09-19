@@ -119,6 +119,14 @@ defmodule Protox.JsonDecodeTest do
     "{\"r\":\"scalar\"}" => {
       Sub,
       "already existing atom which is not part of the enum"
+    },
+    "{\"map1\": {\"0\": null}}" => {
+      Sub,
+      "map bytes entry value is null"
+    },
+    "{\"mapInt32Int32\": {\"0\": null}}" => {
+      ProtobufTestMessages.Proto3.TestAllTypesProto3,
+      "map int32 entry value is null"
     }
   }
 
@@ -142,10 +150,6 @@ defmodule Protox.JsonDecodeTest do
         end
       end
     end
-
-    # test "Failure: key value is null" do
-    #   json = "{\"mapInt32Int32\": {\"0\": null}}"
-    # end
   end
 
   describe "Errors" do

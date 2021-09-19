@@ -66,6 +66,8 @@ defmodule Protox.JsonDecode do
 
   defp decode_value("true", :bool), do: true
   defp decode_value("false", :bool), do: false
+  defp decode_value(true, :bool), do: true
+  defp decode_value(false, :bool), do: false
 
   defp decode_value(json_value, type) when is_binary(json_value) and type in [:double, :float] do
     case Float.parse(json_value) do
@@ -81,8 +83,8 @@ defmodule Protox.JsonDecode do
     end
   end
 
-  defp decode_value(json_value, :bytes), do: Base.decode64!(json_value)
-  defp decode_value(json_value, :string), do: json_value
+  defp decode_value(json_value, :bytes) when is_binary(json_value), do: Base.decode64!(json_value)
+  defp decode_value(json_value, :string) when is_binary(json_value), do: json_value
 
   defp decode_value(json_value, {:enum, enum_mod} = _type) when is_integer(json_value) do
     enum_mod.decode(json_value)
@@ -111,7 +113,13 @@ defmodule Protox.JsonDecode do
     JsonMessageDecoder.decode_message(msg_mod, json_value)
   end
 
-  defp decode_value(json_value, type) when is_primitive(type), do: json_value
+  defp decode_value(json_value, type) when is_primitive(type) and is_number(json_value) do
+    json_value
+  end
+
+  defp decode_value(json_value, type) do
+    raise JsonDecodingError.new("cannot decode #{inspect(json_value)} for type #{inspect(type)}")
+  end
 
   defp get_field(mod, json_name) do
     case mod.field_def(json_name) do
