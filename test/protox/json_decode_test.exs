@@ -32,6 +32,10 @@ defmodule Protox.JsonDecodeTest do
       %FloatPrecision{b: -1.0},
       "float as string"
     },
+    "{\"b\":\"-1\"}" => {
+      %FloatPrecision{b: -1.0},
+      "float as string without decimal"
+    },
     "{\"b\": \"foo\"}" => {
       %Sub{b: "foo"},
       "string"
@@ -114,6 +118,18 @@ defmodule Protox.JsonDecodeTest do
     test "Failure: enum as unknown string" do
       assert_raise Protox.JsonDecodingError, fn ->
         Protox.json_decode!("{\"r\":\"WRONG_ENUM_ENTRY\"}", Sub)
+      end
+    end
+
+    test "Failure: invalid float" do
+      assert_raise Protox.JsonDecodingError, fn ->
+        Protox.json_decode!("{\"a\":\"1.0invalid\"}", FloatPrecision)
+      end
+    end
+
+    test "Failure: invalid integer" do
+      assert_raise Protox.JsonDecodingError, fn ->
+        Protox.json_decode!("{\"a\":\"1invalid\"}", Sub)
       end
     end
 
