@@ -1,13 +1,13 @@
 defmodule Protox.JsonDecode do
   @moduledoc false
 
-  alias Protox.Field
+  alias Protox.{Field, JsonDecodingError, JsonMessageDecoder}
 
   # @spec decode!(iodata(), atom(), fun()) :: struct() | no_return()
   def decode!(input, mod, json_decode) do
     json = json_decode.(input)
 
-    Protox.JsonMessageDecoder.decode_message(mod, json)
+    JsonMessageDecoder.decode_message(mod, json)
   end
 
   def decode_message(mod, json) do
@@ -66,25 +66,19 @@ defmodule Protox.JsonDecode do
         # It's quite a hack: as the generated encode/1 of an enum does not indicate
         # if the given atom has been correctly encoded as a number, we check the type
         # of the returned value to detect if `as_atom` is part of the enum.
-        raise Protox.JsonDecodingError.new(
-                enum_mod,
-                "#{json_value} is not a field of #{enum_mod}"
-              )
+        raise JsonDecodingError.new("#{json_value} is not a field of #{enum_mod}")
       else
         as_atom
       end
     rescue
       ArgumentError ->
-        reraise Protox.JsonDecodingError.new(
-                  enum_mod,
-                  "#{json_value} is not a field of #{enum_mod}"
-                ),
+        reraise JsonDecodingError.new("#{json_value} is not a field of #{enum_mod}"),
                 __STACKTRACE__
     end
   end
 
   defp decode_value(json_value, {:message, msg_mod}) do
-    Protox.JsonMessageDecoder.decode_message(msg_mod, json_value)
+    JsonMessageDecoder.decode_message(msg_mod, json_value)
   end
 
   defp decode_value(json_value, _type), do: json_value
@@ -95,7 +89,7 @@ defmodule Protox.JsonDecode do
         field
 
       {:error, :no_such_field} ->
-        raise Protox.JsonDecodingError.new(mod, "#{json_name} is not a field of #{mod}")
+        raise JsonDecodingError.new("#{json_name} is not a field of #{mod}")
     end
   end
 end
