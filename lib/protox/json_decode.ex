@@ -41,7 +41,10 @@ defmodule Protox.JsonDecode do
 
   defp decode_value(json_value, type)
        when is_binary(json_value) and type in [:int64, :fixed64, :sfixed64, :uint64] do
-    String.to_integer(json_value)
+    case Integer.parse(json_value) do
+      {value, ""} -> value
+      _ -> raise JsonDecodingError.new("#{json_value} is not a valid integer")
+    end
   end
 
   defp decode_value("Infinity", type) when type in [:double, :float], do: :infinity
@@ -49,7 +52,10 @@ defmodule Protox.JsonDecode do
   defp decode_value("NaN", type) when type in [:double, :float], do: :nan
 
   defp decode_value(json_value, type) when is_binary(json_value) and type in [:double, :float] do
-    String.to_float(json_value)
+    case Float.parse(json_value) do
+      {value, ""} -> value
+      _ -> raise JsonDecodingError.new("#{json_value} is not a valid float")
+    end
   end
 
   defp decode_value(json_value, :bytes = _type), do: Base.decode64!(json_value)
