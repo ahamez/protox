@@ -67,14 +67,12 @@ defmodule Protox.JsonDecodingError do
   """
 
   defexception message: "",
-               expected_protobuf_message: nil,
                reason: ""
 
   @doc false
-  def new(expected_protobuf_message, reason) do
+  def new(reason) do
     %__MODULE__{
-      message: "Could not decode JSON payload to #{expected_protobuf_message} because #{reason}",
-      expected_protobuf_message: expected_protobuf_message,
+      message: "Could not decode JSON payload because #{reason}",
       reason: reason
     }
   end
