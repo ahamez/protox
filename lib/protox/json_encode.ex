@@ -11,6 +11,10 @@ defmodule Protox.JsonEncode do
   end
 
   def encode_message(msg, json_encode) do
+    if msg.__struct__.syntax() == :proto2 do
+      raise Protox.InvalidSyntax.new(_expected = :proto3, _got = :proto2)
+    end
+
     initial_acc = ["}"]
 
     body =
