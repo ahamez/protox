@@ -35,8 +35,18 @@ defmodule Protox.JsonDecode do
     {parent_name, {field.name, decode_value(json_value, field.type)}}
   end
 
-  defp decode_msg_field(%Field{} = _field, _json_value) do
-    raise "TODO"
+  defp decode_msg_field(%Field{label: :repeated} = field, json_value_list)
+       when is_list(json_value_list) do
+    value_list =
+      Enum.map(json_value_list, fn json_value ->
+        decode_value(json_value, field.type)
+      end)
+
+    {field.name, value_list}
+  end
+
+  defp decode_msg_field(%Field{} = field, json_value) do
+    raise JsonDecodingError.new("cannot decode #{json_value} for field #{field.name}")
   end
 
   defp decode_value(json_value, type)
