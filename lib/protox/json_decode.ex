@@ -18,28 +18,36 @@ defmodule Protox.JsonDecode do
     initial_msg = struct!(mod)
 
     Enum.reduce(json, initial_msg, fn
-      {_field_json_name, nil = _field_value}, acc ->
-        acc
+      {_field_json_name, nil = _field_value}, msg_acc ->
+        msg_acc
 
-      {field_json_name, field_value}, acc ->
+      {field_json_name, field_value}, msg_acc ->
         field = get_field(mod, field_json_name)
-        {field_name, field_value} = decode_msg_field(field, field_value)
+        {field_name, field_value} = decode_msg_field(field, field_value, msg_acc)
 
-        Map.put(acc, field_name, field_value)
+        Map.put(msg_acc, field_name, field_value)
     end)
   end
 
   # -- Private
 
-  defp decode_msg_field(%Field{kind: {:scalar, _default_value}} = field, json_value) do
+  defp decode_msg_field(%Field{kind: {:scalar, _default_value}} = field, json_value, _msg) do
     {field.name, decode_value(json_value, field.type)}
   end
 
-  defp decode_msg_field(%Field{kind: {:oneof, parent_name}} = field, json_value) do
-    {parent_name, {field.name, decode_value(json_value, field.type)}}
+  defp decode_msg_field(%Field{kind: {:oneof, parent_name}} = field, json_value, msg) do
+    if Map.fetch!(msg, parent_name) == nil do
+      {parent_name, {field.name, decode_value(json_value, field.type)}}
+    else
+      raise JsonDecodingError.new("oneof #{parent_name} already set")
+    end
   end
 
-  defp decode_msg_field(%Field{kind: :map, type: {key_type, value_type}} = field, json_value)
+  defp decode_msg_field(
+         %Field{kind: :map, type: {key_type, value_type}} = field,
+         json_value,
+         _msg
+       )
        when is_map(json_value) do
     map =
       for {key, value} <- json_value, into: %{} do
@@ -49,7 +57,8 @@ defmodule Protox.JsonDecode do
     {field.name, map}
   end
 
-  defp decode_msg_field(%Field{label: :repeated} = field, json_value) when is_list(json_value) do
+  defp decode_msg_field(%Field{label: :repeated} = field, json_value, _msg)
+       when is_list(json_value) do
     list =
       Enum.map(json_value, fn value ->
         decode_value(value, field.type)

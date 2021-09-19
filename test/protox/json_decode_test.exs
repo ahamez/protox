@@ -146,6 +146,10 @@ defmodule Protox.JsonDecodeTest do
     "{\"optionalInt32\": 4.294967295e9}" => {
       ProtobufTestMessages.Proto3.TestAllTypesProto3,
       "integer represented as float value too large"
+    },
+    "{\"oneofUint32\": 1, \"oneofString\": \"test\"}" => {
+      ProtobufTestMessages.Proto3.TestAllTypesProto3,
+      "duplicate oneof"
     }
   }
 
