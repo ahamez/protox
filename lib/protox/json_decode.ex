@@ -6,6 +6,7 @@ defmodule Protox.JsonDecode do
   import Protox.Guards
 
   use Protox.Float
+  use Protox.Integer
 
   # @spec decode!(iodata(), atom(), fun()) :: struct() | no_return()
   def decode!(input, mod, json_decode) do
@@ -69,14 +70,14 @@ defmodule Protox.JsonDecode do
 
   defp decode_value(json_value, type) when is_binary(json_value) and is_protobuf_float(type) do
     case Float.parse(json_value) do
-      {value, ""} -> value
+      {value, ""} -> decode_value(value, type)
       _ -> raise JsonDecodingError.new("#{json_value} is not a valid float")
     end
   end
 
   defp decode_value(json_value, type) when is_binary(json_value) and is_primitive(type) do
     case Integer.parse(json_value) do
-      {value, ""} -> value
+      {value, ""} -> decode_value(value, type)
       _ -> raise JsonDecodingError.new("#{json_value} is not a valid integer")
     end
   end
@@ -109,6 +110,34 @@ defmodule Protox.JsonDecode do
 
   defp decode_value(json_value, {:message, msg_mod}) do
     JsonMessageDecoder.decode_message(msg_mod, json_value)
+  end
+
+  defp decode_value(json_value, type)
+       when type in [:uint32, :fixed32] and is_integer(json_value) do
+    cond do
+      json_value > @max_unsigned_32 ->
+        raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
+
+      json_value < 0 ->
+        raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
+
+      true ->
+        json_value
+    end
+  end
+
+  defp decode_value(json_value, type)
+       when type in [:uint64, :fixed64] and is_integer(json_value) do
+    cond do
+      json_value > @max_unsigned_64 ->
+        raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
+
+      json_value < 0 ->
+        raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
+
+      true ->
+        json_value
+    end
   end
 
   defp decode_value(json_value, type) when is_protobuf_integer(type) and is_integer(json_value) do

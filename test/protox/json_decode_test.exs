@@ -56,10 +56,10 @@ defmodule Protox.JsonDecodeTest do
       %Sub{r: 42},
       "enum as unknown number"
     },
-    "{\"c\":\"-1\", \"e\":\"-24\", \"l\":\"33\", \"s\":\"67\"}" =>
-      {%Sub{c: -1, e: -24, l: 33, s: 67}, "int64, sfixed64, uint64, fixed64 as string"},
-    "{\"c\":-1, \"e\":-24, \"l\":33, \"s\": 67}" =>
-      {%Sub{c: -1, e: -24, l: 33, s: 67}, "int64, sfixed64, uint64, fixed64 as numbers"},
+    "{\"c\":\"-1\", \"e\":\"24\", \"l\":\"33\", \"s\":\"67\"}" =>
+      {%Sub{c: -1, e: 24, l: 33, s: 67}, "int64, sfixed64, uint64, fixed64 as string"},
+    "{\"c\":-1, \"e\":24, \"l\":33, \"s\": 67}" =>
+      {%Sub{c: -1, e: 24, l: 33, s: 67}, "int64, sfixed64, uint64, fixed64 as numbers"},
     "{\"msgF\": {\"a\": 1}}" => {
       %Msg{msg_f: %Sub{a: 1}},
       "nested messasge"
