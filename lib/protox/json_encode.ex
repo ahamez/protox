@@ -106,7 +106,7 @@ defmodule Protox.JsonEncode do
     ["{" | res]
   end
 
-  defp encode_value(value, :bytes, _json_encode), do: "\"#{Base.encode64(value)}\""
+  defp encode_value(value, :bytes, _json_encode), do: "\"#{Base.url_encode64(value)}\""
 
   defp encode_value(:infinity, _type, _json_encode), do: "\"Infinity\""
   defp encode_value(:"-infinity", _type, _json_encode), do: "\"-Infinity\""
