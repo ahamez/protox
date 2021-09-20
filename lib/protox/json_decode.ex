@@ -90,7 +90,10 @@ defmodule Protox.JsonDecode do
     end
   end
 
-  defp decode_value(json_value, :bytes) when is_binary(json_value), do: Base.decode64!(json_value)
+  defp decode_value(json_value, :bytes) when is_binary(json_value) do
+    Base.url_decode64!(json_value, padding: false)
+  end
+
   defp decode_value(json_value, :string) when is_binary(json_value), do: json_value
 
   defp decode_value(json_value, {:enum, enum_mod} = _type) when is_integer(json_value) do

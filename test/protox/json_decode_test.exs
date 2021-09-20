@@ -115,6 +115,10 @@ defmodule Protox.JsonDecodeTest do
     "{\"optionalAliasedEnum\": \"ALIAS_BAZ\"}" => {
       %ProtobufTestMessages.Proto3.TestAllTypesProto3{optional_aliased_enum: :ALIAS_BAZ},
       "enum alias"
+    },
+    "{\"optionalBytes\": \"-_\"}" => {
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{optional_bytes: <<251>>},
+      "missing padding"
     }
   }
 
