@@ -111,6 +111,10 @@ defmodule Protox.JsonDecodeTest do
     "{\"optionalInt32\": 1e5}" => {
       %ProtobufTestMessages.Proto3.TestAllTypesProto3{optional_int32: 100_000},
       "integer represented as float value"
+    },
+    "{\"optionalAliasedEnum\": \"ALIAS_BAZ\"}" => {
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{optional_aliased_enum: :ALIAS_BAZ},
+      "enum alias"
     }
   }
 
