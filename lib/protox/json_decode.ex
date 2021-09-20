@@ -98,21 +98,12 @@ defmodule Protox.JsonDecode do
   end
 
   defp decode_value(json_value, {:enum, enum_mod} = _type) when is_binary(json_value) do
-    try do
-      as_atom = String.to_existing_atom(json_value)
-
-      if is_atom(enum_mod.encode(as_atom)) do
-        # It's quite a hack: as the generated encode/1 of an enum does not indicate
-        # if the given atom has been correctly encoded as a number, we check the type
-        # of the returned value to detect if `as_atom` is part of the enum.
-        raise JsonDecodingError.new("#{json_value} is not a field of #{enum_mod}")
-      else
-        as_atom
-      end
-    rescue
-      ArgumentError ->
-        reraise JsonDecodingError.new("#{json_value} is not a field of #{enum_mod}"),
-                __STACKTRACE__
+    if enum_mod.encode(json_value) == json_value do
+      # It's quite a hack: generated encode/1 returns its argument unmodified if it's not
+      # part of the enum.
+      raise JsonDecodingError.new("#{json_value} is not a field of #{enum_mod}")
+    else
+      String.to_atom(json_value)
     end
   end
 
