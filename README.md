@@ -2,6 +2,9 @@
 
 ![Elixir CI](https://github.com/ahamez/protox/workflows/Elixir%20CI/badge.svg) [![Coverage Status](https://coveralls.io/repos/github/ahamez/protox/badge.svg?branch=master)](https://coveralls.io/github/ahamez/protox?branch=master) [![Hex Docs](https://img.shields.io/badge/hex-docs-brightgreen.svg)](https://hexdocs.pm/protox/) [![Hex.pm Version](http://img.shields.io/hexpm/v/protox.svg)](https://hex.pm/packages/protox) [![License](https://img.shields.io/hexpm/l/protox.svg)](https://github.com/ahamez/protox/blob/master/LICENSE)
 
+> **This README is for the current development version, which is not the currently published version [1.5.1](https://hex.pm/packages/protox)**. You can find the
+docs for the latest published version of `protox` [here](https://hexdocs.pm/protox/readme.html).
+
 `protox` is an Elixir library to work with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers) (aka *protobuf*), versions 2 and 3.
 
 The primary objective of `protox` is **reliability**: it uses [property based testing](https://github.com/alfert/propcheck) and has a [near 100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master). Also, using [mutation testing](https://en.wikipedia.org/wiki/Mutation_testing) with the invaluable help of [Muzak pro](https://devonestes.com/muzak), the quality of the `protox` test suite has been validated.
