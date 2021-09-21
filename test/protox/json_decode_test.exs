@@ -187,16 +187,6 @@ defmodule Protox.JsonDecodeTest do
     end
   end
 
-  describe "Errors" do
-    test "Failure: parsing an unknown field raises an exception" do
-      json = "{\"this_field_does_not_exist\": 42}"
-
-      assert_raise Protox.JsonDecodingError, fn ->
-        Protox.json_decode!(json, Sub)
-      end
-    end
-  end
-
   describe "Field names" do
     test "Success: json field name is camel case" do
       msg = %Msg{msg_e: true}
