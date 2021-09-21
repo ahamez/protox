@@ -119,6 +119,10 @@ defmodule Protox.JsonDecodeTest do
     "{\"optionalBytes\": \"-_\"}" => {
       %ProtobufTestMessages.Proto3.TestAllTypesProto3{optional_bytes: <<251>>},
       "missing padding"
+    },
+    "{\"mapBoolBool\": {\"tr\\u0075e\": true}}" => {
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{map_bool_bool: %{true => true}},
+      "map bool => bool where key is an escaped string"
     }
   }
 
