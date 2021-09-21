@@ -50,9 +50,21 @@ defmodule Protox.JsonDecode do
        )
        when is_map(json_value) do
     map =
-      for {key, value} <- json_value, into: %{} do
-        {decode_value(key, key_type), decode_value(value, value_type)}
-      end
+      json_value
+      |> Stream.map(fn
+        # A special case for booleans is required as they are accepted as strings
+        # when keys of a map, but not as values (which means we can't have a
+        # decode_value() function for :bool
+        {"true", value} when key_type == :bool ->
+          {true, decode_value(value, value_type)}
+
+        {"false", value} when key_type == :bool ->
+          {false, decode_value(value, value_type)}
+
+        {key, value} ->
+          {decode_value(key, key_type), decode_value(value, value_type)}
+      end)
+      |> Enum.into(%{})
 
     {field.name, map}
   end
@@ -71,8 +83,6 @@ defmodule Protox.JsonDecode do
   defp decode_value("-Infinity", type) when is_protobuf_float(type), do: :"-infinity"
   defp decode_value("NaN", type) when is_protobuf_float(type), do: :nan
 
-  defp decode_value("true", :bool), do: true
-  defp decode_value("false", :bool), do: false
   defp decode_value(true, :bool), do: true
   defp decode_value(false, :bool), do: false
 
