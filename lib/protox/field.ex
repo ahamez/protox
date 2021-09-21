@@ -65,8 +65,10 @@ defmodule Protox.Field do
   end
 
   defp lower_camel_case(atom) do
-    <<first, rest::binary>> = atom |> Atom.to_string() |> Macro.camelize()
+    [first_word | last_words] = atom |> Atom.to_string() |> String.split("_")
 
-    <<String.downcase(<<first>>, :ascii)::binary, rest::binary>>
+    camel_last_words = Enum.map(last_words, &Macro.camelize/1)
+
+    Enum.join([first_word | camel_last_words])
   end
 end
