@@ -22,10 +22,14 @@ defmodule Protox.JsonDecode do
         msg_acc
 
       {field_json_name, field_value}, msg_acc ->
-        field = get_field(mod, field_json_name)
-        {field_name, field_value} = decode_msg_field(field, field_value, msg_acc)
+        case get_field(mod, field_json_name) do
+          {:ok, field} ->
+            {field_name, field_value} = decode_msg_field(field, field_value, msg_acc)
+            Map.put(msg_acc, field_name, field_value)
 
-        Map.put(msg_acc, field_name, field_value)
+          {:error, :no_such_field} ->
+            msg_acc
+        end
     end)
   end
 
@@ -114,7 +118,7 @@ defmodule Protox.JsonDecode do
     if enum_mod.encode(json_value) == json_value do
       # It's quite a hack: generated encode/1 returns its argument unmodified if it's not
       # part of the enum.
-      raise JsonDecodingError.new("#{json_value} is not a field of #{enum_mod}")
+      raise JsonDecodingError.new("#{json_value} is not value of #{enum_mod}")
     else
       String.to_atom(json_value)
     end
@@ -211,12 +215,6 @@ defmodule Protox.JsonDecode do
   end
 
   defp get_field(mod, json_name) do
-    case mod.field_def(json_name) do
-      {:ok, %Field{} = field} ->
-        field
-
-      {:error, :no_such_field} ->
-        raise JsonDecodingError.new("#{json_name} is not a field of #{mod}")
-    end
+    mod.field_def(json_name)
   end
 end
