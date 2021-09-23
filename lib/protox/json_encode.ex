@@ -50,7 +50,7 @@ defmodule Protox.JsonEncode do
 
   defp encode_msg_field(msg, %Field{} = field, json_encode) do
     field_value = Map.fetch!(msg, field.name)
-    json_value = encode_field(field, field_value, json_encode)
+    json_value = encode_field(field, field_value, json_encode, msg.__struct__.syntax())
 
     case json_value do
       <<>> -> <<>>
@@ -58,9 +58,9 @@ defmodule Protox.JsonEncode do
     end
   end
 
-  defp encode_field(%Field{label: :repeated}, [], _json_encode), do: <<>>
+  defp encode_field(%Field{label: :repeated}, [], _json_encode, _syntax), do: <<>>
 
-  defp encode_field(%Field{label: :repeated, type: type}, value, json_encode) do
+  defp encode_field(%Field{label: :repeated, type: type}, value, json_encode, _syntax) do
     initial_acc = ["]"]
 
     res =
@@ -78,18 +78,33 @@ defmodule Protox.JsonEncode do
     ["[" | res]
   end
 
-  defp encode_field(%Field{kind: {:scalar, default_value}}, value, _json_encode)
+  defp encode_field(%Field{}, nil, _json_encode, _syntax) do
+    <<>>
+  end
+
+  defp encode_field(%Field{kind: {:scalar, default_value}}, value, _json_encode, :proto3)
        when value == default_value do
     <<>>
   end
 
-  defp encode_field(%Field{kind: {:scalar, _default_value}, type: type}, value, json_encode) do
+  defp encode_field(
+         %Field{kind: {:scalar, _default_value}, type: type},
+         value,
+         json_encode,
+         _syntax
+       ) do
     encode_value(value, type, json_encode)
   end
 
-  defp encode_field(%Field{kind: :map}, value, _json_encode) when map_size(value) == 0, do: <<>>
+  defp encode_field(%Field{kind: :map}, value, _json_encode, _syntax) when map_size(value) == 0,
+    do: <<>>
 
-  defp encode_field(%Field{kind: :map, type: {_key_type, value_type}}, value, json_encode) do
+  defp encode_field(
+         %Field{kind: :map, type: {_key_type, value_type}},
+         value,
+         json_encode,
+         _syntax
+       ) do
     initial_acc = ["}"]
 
     res =
