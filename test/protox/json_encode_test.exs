@@ -146,6 +146,69 @@ defmodule Protox.JsonEncodeTest do
       "Google.Protobuf.FieldMask",
       %Google.Protobuf.FieldMask{paths: ["foo.bar_baz", "foo"]},
       "foo.barBaz,foo"
+    },
+    {
+      "Google.Protobuf.BoolValue",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{
+        optional_bool_wrapper: %Google.Protobuf.BoolValue{value: false}
+      },
+      %{"optionalBoolWrapper" => false}
+    },
+    {
+      "Google.Protobuf.BytesValue",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{
+        optional_bytes_wrapper: %Google.Protobuf.BytesValue{value: <<>>}
+      },
+      %{"optionalBytesWrapper" => ""}
+    },
+    {
+      "Google.Protobuf.DoubleValue",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{
+        optional_double_wrapper: %Google.Protobuf.DoubleValue{value: 1.0}
+      },
+      %{"optionalDoubleWrapper" => 1.0}
+    },
+    {
+      "Google.Protobuf.FloatValue",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{
+        optional_float_wrapper: %Google.Protobuf.FloatValue{value: 1.0}
+      },
+      %{"optionalFloatWrapper" => 1.0}
+    },
+    {
+      "Google.Protobuf.Int32Value",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{
+        optional_int32_wrapper: %Google.Protobuf.Int32Value{value: 0}
+      },
+      %{"optionalInt32Wrapper" => 0}
+    },
+    {
+      "Google.Protobuf.Int64Value",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{
+        optional_int64_wrapper: %Google.Protobuf.Int64Value{value: 0}
+      },
+      %{"optionalInt64Wrapper" => "0"}
+    },
+    {
+      "Google.Protobuf.UInt32Value",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{
+        optional_uint32_wrapper: %Google.Protobuf.UInt32Value{value: 0}
+      },
+      %{"optionalUint32Wrapper" => 0}
+    },
+    {
+      "Google.Protobuf.UInt64Value",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{
+        optional_uint64_wrapper: %Google.Protobuf.UInt64Value{value: 0}
+      },
+      %{"optionalUint64Wrapper" => "0"}
+    },
+    {
+      "Google.Protobuf.StringValue",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{
+        optional_string_wrapper: %Google.Protobuf.StringValue{value: "foo"}
+      },
+      %{"optionalStringWrapper" => "foo"}
     }
   ]
 

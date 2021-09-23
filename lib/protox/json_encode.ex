@@ -31,6 +31,33 @@ defmodule Protox.JsonEncode do
     ["{" | body]
   end
 
+  def encode_value(value, :bytes, _json_encode), do: "\"#{Base.url_encode64(value)}\""
+
+  def encode_value(:infinity, _type, _json_encode), do: "\"Infinity\""
+  def encode_value(:"-infinity", _type, _json_encode), do: "\"-Infinity\""
+  def encode_value(:nan, _type, _json_encode), do: "\"NaN\""
+
+  def encode_value(value, :int64, _json_encode), do: "\"#{value}\""
+  def encode_value(value, :uint64, _json_encode), do: "\"#{value}\""
+  def encode_value(value, :fixed64, _json_encode), do: "\"#{value}\""
+  def encode_value(value, :sfixed64, _json_encode), do: "\"#{value}\""
+
+  def encode_value(true, :bool, _json_encode), do: "true"
+
+  def encode_value(value, {:enum, _enum}, json_encode) when is_atom(value) do
+    json_encode.(value)
+  end
+
+  def encode_value(value, {:enum, enum}, json_encode) do
+    value |> enum.decode() |> json_encode.()
+  end
+
+  def encode_value(value, {:message, _}, json_encode) do
+    Protox.JsonMessageEncoder.encode_message(value, json_encode)
+  end
+
+  def encode_value(value, _type, json_encode), do: json_encode.(value)
+
   # -- Private
 
   defp encode_msg_field(
@@ -120,31 +147,4 @@ defmodule Protox.JsonEncode do
 
     ["{" | res]
   end
-
-  defp encode_value(value, :bytes, _json_encode), do: "\"#{Base.url_encode64(value)}\""
-
-  defp encode_value(:infinity, _type, _json_encode), do: "\"Infinity\""
-  defp encode_value(:"-infinity", _type, _json_encode), do: "\"-Infinity\""
-  defp encode_value(:nan, _type, _json_encode), do: "\"NaN\""
-
-  defp encode_value(value, :int64, _json_encode), do: "\"#{value}\""
-  defp encode_value(value, :uint64, _json_encode), do: "\"#{value}\""
-  defp encode_value(value, :fixed64, _json_encode), do: "\"#{value}\""
-  defp encode_value(value, :sfixed64, _json_encode), do: "\"#{value}\""
-
-  defp encode_value(true, :bool, _json_encode), do: "true"
-
-  defp encode_value(value, {:enum, _enum}, json_encode) when is_atom(value) do
-    json_encode.(value)
-  end
-
-  defp encode_value(value, {:enum, enum}, json_encode) do
-    value |> enum.decode() |> json_encode.()
-  end
-
-  defp encode_value(value, {:message, _}, json_encode) do
-    Protox.JsonMessageEncoder.encode_message(value, json_encode)
-  end
-
-  defp encode_value(value, _type, json_encode), do: json_encode.(value)
 end
