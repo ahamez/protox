@@ -31,6 +31,137 @@ defmodule Protox.JsonDecode do
     end)
   end
 
+  def decode_value("Infinity", type) when is_protobuf_float(type), do: :infinity
+  def decode_value("-Infinity", type) when is_protobuf_float(type), do: :"-infinity"
+  def decode_value("NaN", type) when is_protobuf_float(type), do: :nan
+
+  def decode_value(true, :bool), do: true
+  def decode_value(false, :bool), do: false
+
+  def decode_value(json_value, type) when is_binary(json_value) and is_protobuf_float(type) do
+    case Float.parse(json_value) do
+      {value, ""} -> decode_value(value, type)
+      _ -> raise JsonDecodingError.new("#{json_value} is not a valid float")
+    end
+  end
+
+  def decode_value(json_value, type) when is_binary(json_value) and is_primitive(type) do
+    case Integer.parse(json_value) do
+      {value, ""} -> decode_value(value, type)
+      _ -> raise JsonDecodingError.new("#{json_value} is not a valid integer")
+    end
+  end
+
+  def decode_value(json_value, :bytes) when is_binary(json_value) do
+    Base.url_decode64!(json_value, padding: false)
+  end
+
+  def decode_value(json_value, :string) when is_binary(json_value), do: json_value
+
+  def decode_value(json_value, {:enum, enum_mod} = _type) when is_integer(json_value) do
+    enum_mod.decode(json_value)
+  end
+
+  def decode_value(json_value, {:enum, enum_mod} = _type) when is_binary(json_value) do
+    if enum_mod.encode(json_value) == json_value do
+      # It's quite a hack: generated encode/1 returns its argument unmodified if it's not
+      # part of the enum.
+      raise JsonDecodingError.new("#{json_value} is not value of #{enum_mod}")
+    else
+      String.to_atom(json_value)
+    end
+  end
+
+  def decode_value(json_value, {:message, msg_mod}) do
+    JsonMessageDecoder.decode_message(struct(msg_mod), json_value)
+  end
+
+  def decode_value(json_value, type)
+       when type in [:uint32, :fixed32] and is_integer(json_value) and
+              json_value > @max_unsigned_32 do
+    raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
+  end
+
+  def decode_value(json_value, type)
+       when type in [:int32, :sint32, :sfixed32] and is_integer(json_value) and
+              json_value > @max_signed_32 do
+    raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
+  end
+
+  def decode_value(json_value, type)
+       when type in [:int32, :sint32, :sfixed32] and is_integer(json_value) and
+              json_value < @min_signed_32 do
+    raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
+  end
+
+  def decode_value(json_value, type)
+       when type in [:uint64, :fixed64] and is_integer(json_value) and
+              json_value > @max_unsigned_64 do
+    raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
+  end
+
+  def decode_value(json_value, type)
+       when type in [:int64, :sint64, :sfixed64] and is_integer(json_value) and
+              json_value > @max_signed_64 do
+    raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
+  end
+
+  def decode_value(json_value, type)
+       when type in [:int64, :sint64, :sfixed64] and is_integer(json_value) and
+              json_value < @min_signed_64 do
+    raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
+  end
+
+  def decode_value(json_value, type)
+       when type in [:uint32, :fixed32, :uint64, :fixed64] and is_integer(json_value) and
+              json_value < 0 do
+    raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
+  end
+
+  def decode_value(json_value, type)
+       when type == :float and is_number(json_value) and json_value > @max_float do
+    raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
+  end
+
+  def decode_value(json_value, type)
+       when type == :float and is_number(json_value) and json_value < @min_float do
+    raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
+  end
+
+  def decode_value(json_value, type)
+       when type == :double and is_number(json_value) and json_value > @max_double do
+    raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
+  end
+
+  def decode_value(json_value, type)
+       when type == :double and is_number(json_value) and json_value < @min_double do
+    raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
+  end
+
+  def decode_value(json_value, type) when is_protobuf_integer(type) and is_float(json_value) do
+    decimal_float = Decimal.from_float(json_value)
+
+    if Decimal.integer?(decimal_float) do
+      decode_value(Decimal.to_integer(decimal_float), type)
+    else
+      raise JsonDecodingError.new(
+              "cannot decode #{inspect(json_value)} for type #{inspect(type)}"
+            )
+    end
+  end
+
+  def decode_value(json_value, type) when is_protobuf_integer(type) and is_integer(json_value) do
+    json_value
+  end
+
+  def decode_value(json_value, type) when is_protobuf_float(type) and is_number(json_value) do
+    json_value
+  end
+
+  def decode_value(json_value, type) do
+    raise JsonDecodingError.new("cannot decode #{inspect(json_value)} for type #{inspect(type)}")
+  end
+
   # -- Private
 
   defp decode_msg_field(%Field{kind: {:scalar, _default_value}} = field, json_value, _msg) do
@@ -79,137 +210,6 @@ defmodule Protox.JsonDecode do
       end)
 
     {field.name, list}
-  end
-
-  defp decode_value("Infinity", type) when is_protobuf_float(type), do: :infinity
-  defp decode_value("-Infinity", type) when is_protobuf_float(type), do: :"-infinity"
-  defp decode_value("NaN", type) when is_protobuf_float(type), do: :nan
-
-  defp decode_value(true, :bool), do: true
-  defp decode_value(false, :bool), do: false
-
-  defp decode_value(json_value, type) when is_binary(json_value) and is_protobuf_float(type) do
-    case Float.parse(json_value) do
-      {value, ""} -> decode_value(value, type)
-      _ -> raise JsonDecodingError.new("#{json_value} is not a valid float")
-    end
-  end
-
-  defp decode_value(json_value, type) when is_binary(json_value) and is_primitive(type) do
-    case Integer.parse(json_value) do
-      {value, ""} -> decode_value(value, type)
-      _ -> raise JsonDecodingError.new("#{json_value} is not a valid integer")
-    end
-  end
-
-  defp decode_value(json_value, :bytes) when is_binary(json_value) do
-    Base.url_decode64!(json_value, padding: false)
-  end
-
-  defp decode_value(json_value, :string) when is_binary(json_value), do: json_value
-
-  defp decode_value(json_value, {:enum, enum_mod} = _type) when is_integer(json_value) do
-    enum_mod.decode(json_value)
-  end
-
-  defp decode_value(json_value, {:enum, enum_mod} = _type) when is_binary(json_value) do
-    if enum_mod.encode(json_value) == json_value do
-      # It's quite a hack: generated encode/1 returns its argument unmodified if it's not
-      # part of the enum.
-      raise JsonDecodingError.new("#{json_value} is not value of #{enum_mod}")
-    else
-      String.to_atom(json_value)
-    end
-  end
-
-  defp decode_value(json_value, {:message, msg_mod}) do
-    JsonMessageDecoder.decode_message(struct(msg_mod), json_value)
-  end
-
-  defp decode_value(json_value, type)
-       when type in [:uint32, :fixed32] and is_integer(json_value) and
-              json_value > @max_unsigned_32 do
-    raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
-  end
-
-  defp decode_value(json_value, type)
-       when type in [:int32, :sint32, :sfixed32] and is_integer(json_value) and
-              json_value > @max_signed_32 do
-    raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
-  end
-
-  defp decode_value(json_value, type)
-       when type in [:int32, :sint32, :sfixed32] and is_integer(json_value) and
-              json_value < @min_signed_32 do
-    raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
-  end
-
-  defp decode_value(json_value, type)
-       when type in [:uint64, :fixed64] and is_integer(json_value) and
-              json_value > @max_unsigned_64 do
-    raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
-  end
-
-  defp decode_value(json_value, type)
-       when type in [:int64, :sint64, :sfixed64] and is_integer(json_value) and
-              json_value > @max_signed_64 do
-    raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
-  end
-
-  defp decode_value(json_value, type)
-       when type in [:int64, :sint64, :sfixed64] and is_integer(json_value) and
-              json_value < @min_signed_64 do
-    raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
-  end
-
-  defp decode_value(json_value, type)
-       when type in [:uint32, :fixed32, :uint64, :fixed64] and is_integer(json_value) and
-              json_value < 0 do
-    raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
-  end
-
-  defp decode_value(json_value, type)
-       when type == :float and is_number(json_value) and json_value > @max_float do
-    raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
-  end
-
-  defp decode_value(json_value, type)
-       when type == :float and is_number(json_value) and json_value < @min_float do
-    raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
-  end
-
-  defp decode_value(json_value, type)
-       when type == :double and is_number(json_value) and json_value > @max_double do
-    raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
-  end
-
-  defp decode_value(json_value, type)
-       when type == :double and is_number(json_value) and json_value < @min_double do
-    raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
-  end
-
-  defp decode_value(json_value, type) when is_protobuf_integer(type) and is_float(json_value) do
-    decimal_float = Decimal.from_float(json_value)
-
-    if Decimal.integer?(decimal_float) do
-      decode_value(Decimal.to_integer(decimal_float), type)
-    else
-      raise JsonDecodingError.new(
-              "cannot decode #{inspect(json_value)} for type #{inspect(type)}"
-            )
-    end
-  end
-
-  defp decode_value(json_value, type) when is_protobuf_integer(type) and is_integer(json_value) do
-    json_value
-  end
-
-  defp decode_value(json_value, type) when is_protobuf_float(type) and is_number(json_value) do
-    json_value
-  end
-
-  defp decode_value(json_value, type) do
-    raise JsonDecodingError.new("cannot decode #{inspect(json_value)} for type #{inspect(type)}")
   end
 
   defp get_field(msg, json_name) do
