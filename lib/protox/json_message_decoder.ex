@@ -6,11 +6,11 @@ defprotocol Protox.JsonMessageDecoder do
   @doc since: "1.6.0"
   @fallback_to_any true
   # @spec decode_message(atom(), struct()) :: struct()
-  def decode_message(mod, json)
+  def decode_message(initial_message, json)
 end
 
 defimpl Protox.JsonMessageDecoder, for: Any do
-  def decode_message(mod, json) do
-    Protox.JsonDecode.decode_message(mod, json)
+  def decode_message(initial_message, json) do
+    Protox.JsonDecode.decode_message(initial_message, json)
   end
 end

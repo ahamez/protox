@@ -11,18 +11,16 @@ defmodule Protox.JsonDecode do
   def decode!(input, mod, json_decode) do
     json = json_decode.(input)
 
-    JsonMessageDecoder.decode_message(mod, json)
+    JsonMessageDecoder.decode_message(struct(mod), json)
   end
 
-  def decode_message(mod, json) do
-    initial_msg = struct!(mod)
-
+  def decode_message(initial_msg, json) do
     Enum.reduce(json, initial_msg, fn
       {_field_json_name, nil = _field_value}, msg_acc ->
         msg_acc
 
       {field_json_name, field_value}, msg_acc ->
-        case get_field(mod, field_json_name) do
+        case get_field(initial_msg, field_json_name) do
           {:ok, field} ->
             {field_name, field_value} = decode_msg_field(field, field_value, msg_acc)
             Map.put(msg_acc, field_name, field_value)
@@ -125,7 +123,7 @@ defmodule Protox.JsonDecode do
   end
 
   defp decode_value(json_value, {:message, msg_mod}) do
-    JsonMessageDecoder.decode_message(msg_mod, json_value)
+    JsonMessageDecoder.decode_message(struct(msg_mod), json_value)
   end
 
   defp decode_value(json_value, type)
@@ -214,7 +212,7 @@ defmodule Protox.JsonDecode do
     raise JsonDecodingError.new("cannot decode #{inspect(json_value)} for type #{inspect(type)}")
   end
 
-  defp get_field(mod, json_name) do
-    mod.field_def(json_name)
+  defp get_field(msg, json_name) do
+    msg.__struct__.field_def(json_name)
   end
 end
