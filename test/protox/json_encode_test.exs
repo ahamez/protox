@@ -1,12 +1,15 @@
-defmodule Protox.JsonEncodeTest do
+defmodule Protox.JsonEncodeTestMessages do
   Code.require_file("./test/support/messages.exs")
+end
 
+defmodule Protox.JsonEncodeTest do
   use ExUnit.Case
   use Protox.Float
 
-  describe "scalar types" do
-    test "default values does not output anything" do
-      msg = %Sub{
+  @sucess_tests [
+    {
+      "default values does not output anything (Sub)",
+      %Sub{
         a: Protox.Default.default(:int32),
         b: Protox.Default.default(:string),
         c: Protox.Default.default(:int64),
@@ -18,169 +21,177 @@ defmodule Protox.JsonEncodeTest do
         m: Protox.Default.default(:bytes),
         r: Protox.Default.default({:enum, E}),
         z: Protox.Default.default(:sint32)
-      }
-
-      assert encode!(msg) == "{}"
-
-      msg = %Msg{
+      },
+      %{}
+    },
+    {
+      "default values does not output anything (Msg)",
+      %Msg{
         msg_e: Protox.Default.default(:bool),
         msg_f: Protox.Default.default({:message, Sub}),
         msg_h: Protox.Default.default(:double)
+      },
+      %{}
+    },
+    {
+      "integers",
+      %Sub{a: -1, c: 10_000, d: 32, e: 54, f: -14, k: 34, l: -98, z: -10},
+      %{
+        "a" => -1,
+        "c" => "10000",
+        "d" => 32,
+        "e" => "54",
+        "f" => -14,
+        "k" => 34,
+        "l" => "-98",
+        "z" => -10
       }
+    },
+    {
+      "float infinity",
+      %FloatPrecision{a: :infinity, b: :infinity},
+      %{"a" => "Infinity", "b" => "Infinity"}
+    },
+    {
+      "float -infinity",
+      %FloatPrecision{a: :"-infinity", b: :"-infinity"},
+      %{"a" => "-Infinity", "b" => "-Infinity"}
+    },
+    {
+      "float NaN",
+      %FloatPrecision{a: :nan, b: :nan},
+      %{"a" => "NaN", "b" => "NaN"}
+    },
+    {
+      "string",
+      %Sub{b: "foo"},
+      %{"b" => "foo"}
+    },
+    {
+      "bytes",
+      %Sub{m: <<1, 2, 3>>},
+      %{"m" => Base.encode64(<<1, 2, 3>>)}
+    },
+    {
+      "nested empty message",
+      %Msg{msg_f: %Sub{}},
+      %{"msgF" => %{}}
+    },
+    {
+      "nested message",
+      %Msg{msg_f: %Sub{a: 33}},
+      %{"msgF" => %{"a" => 33}}
+    },
+    {
+      "enum (existing field)",
+      %Sub{r: :BAZ},
+      %{"r" => "BAZ"}
+    },
+    {
+      "enum (existing value)",
+      %Sub{r: -1},
+      %{"r" => "NEG"}
+    },
+    {
+      "enum (unknown value)",
+      %Sub{r: 10},
+      %{"r" => 10}
+    },
+    {
+      "map int -> string",
+      %Msg{msg_k: %{1 => "a", 2 => "b"}},
+      %{"msgK" => %{"1" => "a", "2" => "b"}}
+    },
+    {
+      "map int -> enum",
+      %Msg{msg_p: %{1 => :FOO, 2 => -1}},
+      %{"msgP" => %{"1" => "FOO", "2" => "NEG"}}
+    },
+    {
+      "map string -> message",
+      %Upper{msg_map: %{"abc" => %Msg{msg_p: %{1 => :FOO, 2 => -1}}, "def" => %Msg{}}},
+      %{"msgMap" => %{"abc" => %{"msgP" => %{"1" => "FOO", "2" => "NEG"}}, "def" => %{}}}
+    },
+    {
+      "array of float",
+      %Sub{g: [0, 1], i: [1.0, 0.0, -10], j: [-1, 0, 1]},
+      %{"g" => ["0", "1"], "i" => [1.0, 0.0, -10], "j" => [-1, 0, 1]}
+    },
+    {
+      "array of messages",
+      %Msg{msg_j: [%Sub{g: [0, 1], i: [1.0, 0.0, -10], j: [-1, 0, 1]}]},
+      %{"msgJ" => [%{"g" => ["0", "1"], "i" => [1.0, 0.0, -10], "j" => [-1, 0, 1]}]}
+    },
+    {
+      "oneof string child",
+      %Msg{msg_m: {:msg_n, "toto"}},
+      %{"msgN" => "toto"}
+    },
+    {
+      "oneof message child",
+      %Msg{msg_m: {:msg_o, %Sub{}}},
+      %{"msgO" => %{}}
+    },
+    {
+      "Google.Protobuf.Duration",
+      %Google.Protobuf.Duration{seconds: 10, nanos: 9_999_999},
+      "10.010000s"
+    },
+    {
+      "Google.Protobuf.Timestamp",
+      %Google.Protobuf.Timestamp{seconds: 3000, nanos: 0},
+      "1970-01-01T00:50:00.000000Z"
+    },
+    {
+      "Google.Protobuf.FieldMask",
+      %Google.Protobuf.FieldMask{paths: ["foo.bar_baz", "foo"]},
+      "foo.barBaz,foo"
+    }
+  ]
 
-      assert encode!(msg) == "{}"
-    end
+  @failure_tests [
+    {
+      "duration < minimal duration",
+      %Google.Protobuf.Duration{seconds: -315_576_000_000 - 1}
+    },
+    {
+      "duration > maximal duration",
+      %Google.Protobuf.Duration{seconds: 315_576_000_000 + 1}
+    },
+    {
+      "duration nanos < minimal nanos",
+      %Google.Protobuf.Duration{nanos: -999_999_999 - 1}
+    },
+    {
+      "duration nanos < maximal nanos",
+      %Google.Protobuf.Duration{nanos: 999_999_999 + 1}
+    },
+    {
+      "field mask (1)",
+      %Google.Protobuf.FieldMask{paths: ["fooBar"]}
+    },
+    {
+      "field mask (2)",
+      %Google.Protobuf.FieldMask{paths: ["foo_3_bar"]}
+    },
+    {
+      "field_mask (3)",
+      %Google.Protobuf.FieldMask{paths: ["foo__bar"]}
+    }
+  ]
 
-    test "integers" do
-      msg = %Sub{
-        a: -1,
-        c: 10_000,
-        d: 32,
-        e: 54,
-        f: -14,
-        k: 34,
-        l: -98,
-        z: -10
-      }
+  for {description, msg, expected} <- @sucess_tests do
+    test "Sucess: can encode #{description}" do
+      msg = unquote(Macro.escape(msg))
+      expected = unquote(Macro.escape(expected))
 
-      assert encode_decode(msg) ==
-               %{
-                 "a" => msg.a,
-                 "c" => "#{msg.c}",
-                 "d" => msg.d,
-                 "e" => "#{msg.e}",
-                 "f" => msg.f,
-                 "k" => msg.k,
-                 "l" => "#{msg.l}",
-                 "z" => msg.z
-               }
-    end
-
-    test "floats" do
-      msg = %FloatPrecision{a: :infinity, b: :infinity}
-      assert encode_decode(msg) == %{"a" => "Infinity", "b" => "Infinity"}
-
-      msg = %FloatPrecision{a: :"-infinity", b: :"-infinity"}
-      assert encode_decode(msg) == %{"a" => "-Infinity", "b" => "-Infinity"}
-
-      msg = %FloatPrecision{a: :nan, b: :nan}
-      assert encode_decode(msg) == %{"a" => "NaN", "b" => "NaN"}
-    end
-
-    test "string" do
-      msg = %Sub{b: "foo"}
-      assert encode_decode(msg) == %{"b" => msg.b}
-    end
-
-    test "bytes" do
-      msg = %Sub{m: <<1, 2, 3>>}
-      assert encode_decode(msg) == %{"m" => Base.encode64(msg.m)}
-    end
-
-    test "nested empty message" do
-      msg = %Msg{msg_f: %Sub{}}
-      assert encode_decode(msg) == %{"msgF" => %{}}
-    end
-
-    test "nested message" do
-      msg = %Msg{msg_f: %Sub{a: 33}}
-      assert encode_decode(msg) == %{"msgF" => %{"a" => 33}}
-    end
-
-    test "enum" do
-      msg1 = %Sub{r: :BAZ}
-      assert encode_decode(msg1) == %{"r" => "BAZ"}
-
-      msg2 = %Sub{r: -1}
-      assert encode_decode(msg2) == %{"r" => "NEG"}
-
-      msg3 = %Sub{r: 10}
-      assert encode_decode(msg3) == %{"r" => 10}
+      assert encode_decode(msg) == expected
     end
   end
 
-  describe "repeated" do
-    test "map" do
-      msg1 = %Msg{msg_k: %{1 => "a", 2 => "b"}}
-      assert encode_decode(msg1) == %{"msgK" => %{"1" => "a", "2" => "b"}}
-
-      msg2 = %Msg{msg_p: %{1 => :FOO, 2 => -1}}
-      assert encode_decode(msg2) == %{"msgP" => %{"1" => "FOO", "2" => "NEG"}}
-
-      msg3 = %Upper{msg_map: %{"abc" => %Msg{msg_p: %{1 => :FOO, 2 => -1}}, "def" => %Msg{}}}
-
-      assert encode_decode(msg3) == %{
-               "msgMap" => %{"abc" => %{"msgP" => %{"1" => "FOO", "2" => "NEG"}}, "def" => %{}}
-             }
-    end
-
-    test "array" do
-      msg1 = %Sub{g: [0, 1], i: [1.0, 0.0, -10], j: [-1, 0, 1]}
-
-      assert encode_decode(msg1) == %{
-               "g" => ["0", "1"],
-               "i" => [1.0, 0.0, -10],
-               "j" => [-1, 0, 1]
-             }
-
-      msg2 = %Msg{msg_j: [msg1]}
-
-      assert encode_decode(msg2) == %{
-               "msgJ" => [%{"g" => ["0", "1"], "i" => [1.0, 0.0, -10], "j" => [-1, 0, 1]}]
-             }
-    end
-  end
-
-  describe "oneof" do
-    test "string" do
-      msg = %Msg{msg_m: {:msg_n, "toto"}}
-      assert encode_decode(msg) == %{"msgN" => "toto"}
-    end
-
-    test "message" do
-      msg = %Msg{msg_m: {:msg_o, %Sub{}}}
-      assert encode_decode(msg) == %{"msgO" => %{}}
-    end
-  end
-
-  describe "Google.Protobuf.Duration" do
-    test "success" do
-      msg = %Google.Protobuf.Duration{seconds: 10, nanos: 9_999_999}
-      assert encode_decode(msg) == "10.010000s"
-    end
-
-    test "failure: duration < minimal duration" do
-      msg = %Google.Protobuf.Duration{seconds: -315_576_000_000 - 1}
-
-      assert_raise Protox.JsonEncodingError, fn ->
-        encode!(msg)
-      end
-
-      assert {:error, _} = Protox.json_encode(msg)
-    end
-
-    test "failure: duration > maximal duration" do
-      msg = %Google.Protobuf.Duration{seconds: 315_576_000_000 + 1}
-
-      assert_raise Protox.JsonEncodingError, fn ->
-        encode!(msg)
-      end
-
-      assert {:error, _} = Protox.json_encode(msg)
-    end
-
-    test "failure: duration nanos < minimal nanos" do
-      msg = %Google.Protobuf.Duration{nanos: -999_999_999 - 1}
-
-      assert_raise Protox.JsonEncodingError, fn ->
-        encode!(msg)
-      end
-
-      assert {:error, _} = Protox.json_encode(msg)
-    end
-
-    test "failure: duration nanos < maximal nanos" do
-      msg = %Google.Protobuf.Duration{nanos: 999_999_999 + 1}
+  for {description, msg} <- @failure_tests do
+    test "Failure: can encode #{description}" do
+      msg = unquote(Macro.escape(msg))
 
       assert_raise Protox.JsonEncodingError, fn ->
         encode!(msg)
@@ -191,11 +202,6 @@ defmodule Protox.JsonEncodeTest do
   end
 
   describe "Google.Protobuf.Timestamp" do
-    test "success" do
-      msg = %Google.Protobuf.Timestamp{seconds: 3000, nanos: 0}
-      assert encode_decode(msg) == "1970-01-01T00:50:00.000000Z"
-    end
-
     test "failure" do
       assert_raise Protox.JsonEncodingError, fn ->
         {:ok, dt, 0} = DateTime.from_iso8601("9999-12-31T23:59:59.999999999Z")
@@ -210,30 +216,6 @@ defmodule Protox.JsonEncodeTest do
         unix = DateTime.to_unix(dt, :nanosecond) - 1
 
         msg = %Google.Protobuf.Timestamp{nanos: unix}
-        encode!(msg)
-      end
-    end
-  end
-
-  describe "Google.Protobuf.FieldMask" do
-    test "success" do
-      msg = %Google.Protobuf.FieldMask{paths: ["foo.bar_baz", "foo"]}
-      assert encode_decode(msg) == "foo.barBaz,foo"
-    end
-
-    test "failure" do
-      assert_raise Protox.JsonEncodingError, fn ->
-        msg = %Google.Protobuf.FieldMask{paths: ["fooBar"]}
-        encode!(msg)
-      end
-
-      assert_raise Protox.JsonEncodingError, fn ->
-        msg = %Google.Protobuf.FieldMask{paths: ["foo_3_bar"]}
-        encode!(msg)
-      end
-
-      assert_raise Protox.JsonEncodingError, fn ->
-        msg = %Google.Protobuf.FieldMask{paths: ["foo__bar"]}
         encode!(msg)
       end
     end
@@ -277,6 +259,8 @@ defmodule Protox.JsonEncodeTest do
              ]
     end
   end
+
+  # -- Private
 
   defp encode!(msg) do
     msg |> Protox.json_encode!() |> IO.iodata_to_binary()

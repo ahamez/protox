@@ -7,182 +7,230 @@ defmodule Protox.JsonDecodeTest do
   use ExUnit.Case
   use Protox.Float
 
-  @scalar_success_tests %{
-    "{\"a\":null}" => {
-      %Sub{a: 0},
-      "null as default value"
+  @success_tests [
+    {
+      "null as default value",
+      "{\"a\":null}",
+      %Sub{a: 0}
     },
-    "{\"a\":-1}" => {
-      %Sub{a: -1},
-      "int32 as number"
+    {
+      "int32 as number",
+      "{\"a\":-1}",
+      %Sub{a: -1}
     },
-    "{\"a\":-1.0}" => {
-      %FloatPrecision{a: -1.0},
-      "double as number"
+    {
+      "double as number",
+      "{\"a\":-1.0}",
+      %FloatPrecision{a: -1.0}
     },
-    "{\"a\":\"-1.0\"}" => {
-      %FloatPrecision{a: -1.0},
-      "double as string"
+    {
+      "double as string",
+      "{\"a\":\"-1.0\"}",
+      %FloatPrecision{a: -1.0}
     },
-    "{\"b\":-1.0}" => {
-      %FloatPrecision{b: -1.0},
-      "float as number"
+    {
+      "float as number",
+      "{\"b\":-1.0}",
+      %FloatPrecision{b: -1.0}
     },
-    "{\"b\":\"-1.0\"}" => {
-      %FloatPrecision{b: -1.0},
-      "float as string"
+    {
+      "float as string",
+      "{\"b\":\"-1.0\"}",
+      %FloatPrecision{b: -1.0}
     },
-    "{\"b\":\"-1\"}" => {
-      %FloatPrecision{b: -1.0},
-      "float as string without decimal"
+    {
+      "float as string without decimal",
+      "{\"b\":\"-1\"}",
+      %FloatPrecision{b: -1.0}
     },
-    "{\"b\": \"foo\"}" => {
-      %Sub{b: "foo"},
-      "string"
+    {
+      "string",
+      "{\"b\": \"foo\"}",
+      %Sub{b: "foo"}
     },
-    "{\"m\":\"AQID\"}" => {
-      %Sub{m: <<1, 2, 3>>},
-      "bytes"
+    {
+      "bytes",
+      "{\"m\":\"AQID\"}",
+      %Sub{m: <<1, 2, 3>>}
     },
-    "{\"r\":\"FOO\"}" => {
-      %Sub{r: :FOO},
-      "enum as string"
+    {
+      "enum as string",
+      "{\"r\":\"FOO\"}",
+      %Sub{r: :FOO}
     },
-    "{\"r\":-1}" => {
-      %Sub{r: :NEG},
-      "enum as number"
+    {
+      "enum as number",
+      "{\"r\":-1}",
+      %Sub{r: :NEG}
     },
-    "{\"r\":42}" => {
-      %Sub{r: 42},
-      "enum as unknown number"
+    {
+      "enum as unknown number",
+      "{\"r\":42}",
+      %Sub{r: 42}
     },
-    "{\"c\":\"-1\", \"e\":\"24\", \"l\":\"33\", \"s\":\"67\"}" =>
-      {%Sub{c: -1, e: 24, l: 33, s: 67}, "int64, sfixed64, uint64, fixed64 as string"},
-    "{\"c\":-1, \"e\":24, \"l\":33, \"s\": 67}" =>
-      {%Sub{c: -1, e: 24, l: 33, s: 67}, "int64, sfixed64, uint64, fixed64 as numbers"},
-    "{\"msgF\": {\"a\": 1}}" => {
-      %Msg{msg_f: %Sub{a: 1}},
-      "nested messasge"
+    {
+      "int64, sfixed64, uint64, fixed64 as string",
+      "{\"c\":\"-1\", \"e\":\"24\", \"l\":\"33\", \"s\":\"67\"}",
+      %Sub{c: -1, e: 24, l: 33, s: 67}
     },
-    "{\"msgN\":\"foo\"}" => {
-      %Msg{msg_m: {:msg_n, "foo"}},
-      "oneof set to string"
+    {
+      "int64, sfixed64, uint64, fixed64 as numbers",
+      "{\"c\":-1, \"e\":24, \"l\":33, \"s\": 67}",
+      %Sub{c: -1, e: 24, l: 33, s: 67}
     },
-    "{\"msgO\":{\"a\":1}}" => {
-      %Msg{msg_m: {:msg_o, %Sub{a: 1}}},
-      "oneof set to message"
+    {
+      "nested messasge",
+      "{\"msgF\": {\"a\": 1}}",
+      %Msg{msg_f: %Sub{a: 1}}
     },
-    "{\"i\":[1,-1.12,0.1]}" => {
-      %Sub{i: [1, -1.12, 0.1]},
-      "repeated double as number"
+    {
+      "oneof set to string",
+      "{\"msgN\":\"foo\"}",
+      %Msg{msg_m: {:msg_n, "foo"}}
     },
-    "{\"i\":[\"1\",\"-1.12\",\"0.1\"]}" => {
-      %Sub{i: [1, -1.12, 0.1]},
-      "repeated double as string"
+    {
+      "oneof set to message",
+      "{\"msgO\":{\"a\":1}}",
+      %Msg{msg_m: {:msg_o, %Sub{a: 1}}}
     },
-    "{\"msgK\":{\"2\":\"2\",\"1\":\"1\"}}" => {
-      %Msg{msg_k: %{1 => "1", 2 => "2"}},
-      "map int32 => string"
+    {
+      "repeated double as number",
+      "{\"i\":[1,-1.12,0.1]}",
+      %Sub{i: [1, -1.12, 0.1]}
     },
-    "{\"msgL\":{\"2\":-2.0,\"1\":1.0}}" => {
-      %Msg{msg_l: %{"1" => 1.0, "2" => -2.0}},
-      "map string => double"
+    {
+      "repeated double as string",
+      "{\"i\":[\"1\",\"-1.12\",\"0.1\"]}",
+      %Sub{i: [1, -1.12, 0.1]}
     },
-    "{\"map1\":{\"2\":\"Ag==\",\"1\":\"AQ==\"}}" => {
-      %Sub{map1: %{1 => <<1>>, 2 => <<2>>}},
-      "map sfixed64 => bytes"
+    {
+      "map int32 => string",
+      "{\"msgK\":{\"2\":\"2\",\"1\":\"1\"}}",
+      %Msg{msg_k: %{1 => "1", 2 => "2"}}
     },
-    "{\"a\":\"Infinity\"}" => {
-      %FloatPrecision{a: :infinity},
-      "double +infinity"
+    {
+      "map string => double",
+      "{\"msgL\":{\"2\":-2.0,\"1\":1.0}}",
+      %Msg{msg_l: %{"1" => 1.0, "2" => -2.0}}
     },
-    "{\"a\":\"-Infinity\"}" => {
-      %FloatPrecision{a: :"-infinity"},
-      "double -infinity"
+    {
+      "map sfixed64 => bytes",
+      "{\"map1\":{\"2\":\"Ag==\",\"1\":\"AQ==\"}}",
+      %Sub{map1: %{1 => <<1>>, 2 => <<2>>}}
     },
-    "{\"a\":\"NaN\"}" => {
-      %FloatPrecision{a: :nan},
-      "double nan"
+    {
+      "double +infinity",
+      "{\"a\":\"Infinity\"}",
+      %FloatPrecision{a: :infinity}
     },
-    "{\"optionalInt32\": 100000.000}" => {
-      %ProtobufTestMessages.Proto3.TestAllTypesProto3{optional_int32: 100_000},
-      "integer with trailing zeros"
+    {
+      "double -infinity",
+      "{\"a\":\"-Infinity\"}",
+      %FloatPrecision{a: :"-infinity"}
     },
-    "{\"optionalInt32\": 1e5}" => {
-      %ProtobufTestMessages.Proto3.TestAllTypesProto3{optional_int32: 100_000},
-      "integer represented as float value"
+    {
+      "double nan",
+      "{\"a\":\"NaN\"}",
+      %FloatPrecision{a: :nan}
     },
-    "{\"optionalAliasedEnum\": \"ALIAS_BAZ\"}" => {
-      %ProtobufTestMessages.Proto3.TestAllTypesProto3{optional_aliased_enum: :ALIAS_BAZ},
-      "enum alias"
+    {
+      "integer with trailing zeros",
+      "{\"optionalInt32\": 100000.000}",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{optional_int32: 100_000}
     },
-    "{\"optionalBytes\": \"-_\"}" => {
-      %ProtobufTestMessages.Proto3.TestAllTypesProto3{optional_bytes: <<251>>},
-      "missing padding"
+    {
+      "integer represented as float value",
+      "{\"optionalInt32\": 1e5}",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{optional_int32: 100_000}
     },
-    "{\"mapBoolBool\": {\"tr\\u0075e\": true}}" => {
-      %ProtobufTestMessages.Proto3.TestAllTypesProto3{map_bool_bool: %{true => true}},
-      "map bool => bool where key is an escaped string"
+    {
+      "enum alias",
+      "{\"optionalAliasedEnum\": \"ALIAS_BAZ\"}",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{optional_aliased_enum: :ALIAS_BAZ}
+    },
+    {
+      "missing padding",
+      "{\"optionalBytes\": \"-_\"}",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{optional_bytes: <<251>>}
+    },
+    {
+      "map bool => bool where key is an escaped string",
+      "{\"mapBoolBool\": {\"tr\\u0075e\": true}}",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{map_bool_bool: %{true => true}}
+    },
+    {
+      "BoolValue",
+      "{\"optionalBoolWrapper\": false}",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{
+        optional_bool_wrapper: %Google.Protobuf.BoolValue{value: false}
+      }
     }
-  }
+  ]
 
-  @scalar_failure_tests %{
-    "{\"r\":\"WRONG_ENUM_ENTRY\"}" => {
-      Sub,
-      "enum as unknown string"
+  @failure_tests [
+    {
+      "enum as unknown string",
+      "{\"r\":\"WRONG_ENUM_ENTRY\"}",
+      Sub
     },
-    "{\"a\":\"1.0invalid\"}" => {
-      FloatPrecision,
-      "invalid float"
+    {
+      "invalid float",
+      "{\"a\":\"1.0invalid\"}",
+      FloatPrecision
     },
-    "{\"a\":\"1invalid\"}" => {
-      Sub,
-      "invalid integer"
+    {
+      "invalid integer",
+      "{\"a\":\"1invalid\"}",
+      Sub
     },
-    "{\"r\":\"scalar\"}" => {
-      Sub,
-      "already existing atom which is not part of the enum"
+    {
+      "already existing atom which is not part of the enum",
+      "{\"r\":\"scalar\"}",
+      Sub
     },
-    "{\"map1\": {\"0\": null}}" => {
-      Sub,
-      "map bytes entry value is null"
+    {
+      "map bytes entry value is null",
+      "{\"map1\": {\"0\": null}}",
+      Sub
     },
-    "{\"mapInt32Int32\": {\"0\": null}}" => {
-      ProtobufTestMessages.Proto3.TestAllTypesProto3,
-      "map int32 entry value is null"
+    {
+      "map int32 entry value is null",
+      "{\"mapInt32Int32\": {\"0\": null}}",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
     },
-    "{\"optionalUint32\": 0.5}" => {
-      ProtobufTestMessages.Proto3.TestAllTypesProto3,
-      "float as integer"
+    {
+      "float as integer",
+      "{\"optionalUint32\": 0.5}",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
     },
-    "{\"optionalInt32\": 4.294967295e9}" => {
-      ProtobufTestMessages.Proto3.TestAllTypesProto3,
-      "integer represented as float value too large"
+    {
+      "integer represented as float value too large",
+      "{\"optionalInt32\": 4.294967295e9}",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
     },
-    "{\"oneofUint32\": 1, \"oneofString\": \"test\"}" => {
-      ProtobufTestMessages.Proto3.TestAllTypesProto3,
-      "duplicate oneof"
+    {
+      "duplicate oneof",
+      "{\"oneofUint32\": 1, \"oneofString\": \"test\"}",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
     }
-  }
+  ]
 
-  describe "Scalar types" do
-    for {json, {expected, description}} <- @scalar_success_tests do
-      test "Success: can decode #{description}" do
-        json = unquote(json)
-        expected = unquote(Macro.escape(expected))
+  for {description, json, expected} <- @success_tests do
+    test "Success: can decode #{description}" do
+      json = unquote(json)
+      expected = unquote(Macro.escape(expected))
 
-        assert Protox.json_decode!(json, expected.__struct__) == expected
-      end
+      assert Protox.json_decode!(json, expected.__struct__) == expected
     end
+  end
 
-    for {json, {mod, description}} <- @scalar_failure_tests do
-      test "Failure: should not decode #{description}" do
-        json = unquote(json)
-        mod = unquote(mod)
+  for {description, json, mod} <- @failure_tests do
+    test "Failure: should not decode #{description}" do
+      json = unquote(json)
+      mod = unquote(mod)
 
-        assert_raise Protox.JsonDecodingError, fn ->
-          Protox.json_decode!(json, mod)
-        end
+      assert_raise Protox.JsonDecodingError, fn ->
+        Protox.json_decode!(json, mod)
       end
     end
   end
