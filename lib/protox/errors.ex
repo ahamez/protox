@@ -10,7 +10,7 @@ defmodule Protox.DecodingError do
   @doc false
   def new(reason, binary) do
     %__MODULE__{
-      message: "Could not decode data #{inspect(binary)}",
+      message: "Could not decode data (#{inspect(reason)})",
       binary: binary,
       reason: reason
     }
@@ -90,7 +90,7 @@ defmodule Protox.JsonEncodingError do
   @doc false
   def new(protobuf_msg, reason) do
     %__MODULE__{
-      message: "Could not encode #{inspect(protobuf_msg)} to JSON because #{reason}",
+      message: "Could not encode #{inspect(protobuf_msg.__struct__)} to JSON because #{reason}",
       protobuf_msg: protobuf_msg,
       reason: reason
     }

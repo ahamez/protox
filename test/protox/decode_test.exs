@@ -1005,16 +1005,17 @@ defmodule Protox.DecodeTest do
   end
 
   test "Decode dummy varint data returns an error" do
-    assert {:error, %Protox.DecodingError{reason: :varint}} = Empty.decode(<<255, 255, 255, 255>>)
+    assert {:error, %Protox.DecodingError{reason: :invalid_varint}} =
+             Empty.decode(<<255, 255, 255, 255>>)
   end
 
   test "Decode! dummy varint data raises DecodingError" do
     exception =
-      assert_raise Protox.DecodingError, ~r/^Could not decode data/, fn ->
+      assert_raise Protox.DecodingError, fn ->
         Empty.decode!(<<255, 255, 255, 255>>)
       end
 
-    assert exception.reason == :varint
+    assert exception.reason == :invalid_varint
   end
 
   test "Raise when required field is missing" do
