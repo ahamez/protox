@@ -77,64 +77,64 @@ defmodule Protox.JsonDecode do
   end
 
   def decode_value(json_value, type)
-       when type in [:uint32, :fixed32] and is_integer(json_value) and
-              json_value > @max_unsigned_32 do
+      when type in [:uint32, :fixed32] and is_integer(json_value) and
+             json_value > @max_unsigned_32 do
     raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
   end
 
   def decode_value(json_value, type)
-       when type in [:int32, :sint32, :sfixed32] and is_integer(json_value) and
-              json_value > @max_signed_32 do
+      when type in [:int32, :sint32, :sfixed32] and is_integer(json_value) and
+             json_value > @max_signed_32 do
     raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
   end
 
   def decode_value(json_value, type)
-       when type in [:int32, :sint32, :sfixed32] and is_integer(json_value) and
-              json_value < @min_signed_32 do
+      when type in [:int32, :sint32, :sfixed32] and is_integer(json_value) and
+             json_value < @min_signed_32 do
     raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
   end
 
   def decode_value(json_value, type)
-       when type in [:uint64, :fixed64] and is_integer(json_value) and
-              json_value > @max_unsigned_64 do
+      when type in [:uint64, :fixed64] and is_integer(json_value) and
+             json_value > @max_unsigned_64 do
     raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
   end
 
   def decode_value(json_value, type)
-       when type in [:int64, :sint64, :sfixed64] and is_integer(json_value) and
-              json_value > @max_signed_64 do
+      when type in [:int64, :sint64, :sfixed64] and is_integer(json_value) and
+             json_value > @max_signed_64 do
     raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
   end
 
   def decode_value(json_value, type)
-       when type in [:int64, :sint64, :sfixed64] and is_integer(json_value) and
-              json_value < @min_signed_64 do
+      when type in [:int64, :sint64, :sfixed64] and is_integer(json_value) and
+             json_value < @min_signed_64 do
     raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
   end
 
   def decode_value(json_value, type)
-       when type in [:uint32, :fixed32, :uint64, :fixed64] and is_integer(json_value) and
-              json_value < 0 do
+      when type in [:uint32, :fixed32, :uint64, :fixed64] and is_integer(json_value) and
+             json_value < 0 do
     raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
   end
 
   def decode_value(json_value, type)
-       when type == :float and is_number(json_value) and json_value > @max_float do
+      when type == :float and is_number(json_value) and json_value > @max_float do
     raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
   end
 
   def decode_value(json_value, type)
-       when type == :float and is_number(json_value) and json_value < @min_float do
+      when type == :float and is_number(json_value) and json_value < @min_float do
     raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
   end
 
   def decode_value(json_value, type)
-       when type == :double and is_number(json_value) and json_value > @max_double do
+      when type == :double and is_number(json_value) and json_value > @max_double do
     raise JsonDecodingError.new("#{json_value} is too large for a #{type}")
   end
 
   def decode_value(json_value, type)
-       when type == :double and is_number(json_value) and json_value < @min_double do
+      when type == :double and is_number(json_value) and json_value < @min_double do
     raise JsonDecodingError.new("#{json_value} is too small for a #{type}")
   end
 
