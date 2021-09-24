@@ -5,7 +5,7 @@ defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.UInt32Value do
 end
 
 defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.UInt32Value do
-  def encode_message(%Google.Protobuf.UInt32Value{} = msg, json_encode) do
+  def encode_message(msg, json_encode) do
     Protox.JsonEncode.encode_value(msg.value, :uint32, json_encode)
   end
 end

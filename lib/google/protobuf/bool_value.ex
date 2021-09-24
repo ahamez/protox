@@ -5,7 +5,7 @@ defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.BoolValue do
 end
 
 defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.BoolValue do
-  def encode_message(%Google.Protobuf.BoolValue{} = msg, json_encode) do
-    json_encode.(msg.value)
+  def encode_message(msg, json_encode) do
+    Protox.JsonEncode.encode_value(msg.value, :bool, json_encode)
   end
 end
