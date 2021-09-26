@@ -26,7 +26,9 @@ defmodule Mix.Tasks.Protox.Conformance do
         false -> Mix.Shell.IO
       end
 
-    case shell.cmd("#{runner} --enforce_recommended ./protox_conformance") do
+    case shell.cmd(
+           "#{runner} --enforce_recommended --failure_list ./conformance/failure_list.txt ./protox_conformance"
+         ) do
       0 -> :ok
       1 -> {:error, :runner_failure}
       126 -> {:error, :cannot_execute_runner}

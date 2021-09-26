@@ -1,0 +1,6 @@
+# We ignore these Timestamp tests as Elixir DateTime does not provide enough precision
+# to work with timestamps with a very small fractional part.
+Recommended.Proto3.JsonInput.TimestampHas3FractionalDigits.Validator
+Recommended.Proto3.JsonInput.TimestampHas9FractionalDigits.Validator
+Recommended.Proto3.JsonInput.TimestampHasZeroFractionalDigit.Validator
+Recommended.Proto3.JsonInput.TimestampZeroNormalized.Validator
