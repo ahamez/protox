@@ -293,6 +293,16 @@ defmodule Protox.JsonDecodeTest do
       "duplicate oneof",
       "{\"oneofUint32\": 1, \"oneofString\": \"test\"}",
       ProtobufTestMessages.Proto3.TestAllTypesProto3
+    },
+    {
+      "missing T in timestamp",
+      "\"0001-01-01 00:00:00Z\"",
+      Google.Protobuf.Timestamp
+    },
+    {
+      "timestamp too small",
+      "\"0000-01-01T00:00:00Z\"",
+      Google.Protobuf.Timestamp
     }
   ]
 
