@@ -1,3 +1,17 @@
+defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.Timestamp do
+  def decode_message(initial_message, json) do
+    {:ok, dt, _offset} = DateTime.from_iso8601(json)
+    unix_timestamp = DateTime.to_unix(dt, :nanosecond)
+
+    nanos = rem(unix_timestamp, 1_000_000_000)
+    seconds = div(unix_timestamp, 1_000_000_000)
+
+    struct!(initial_message, seconds: seconds, nanos: nanos)
+  end
+
+  # -- Private
+end
+
 defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.Timestamp do
   def encode_message(msg, json_encode) do
     unix_timestamp = msg.seconds * 1_000_000_000 + msg.nanos
