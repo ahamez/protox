@@ -220,6 +220,16 @@ defmodule Protox.JsonDecodeTest do
       %ProtobufTestMessages.Proto3.TestAllTypesProto3{
         optional_string_wrapper: %Google.Protobuf.StringValue{value: "foo"}
       }
+    },
+    {
+      "Google.Protobuf.Duration",
+      "{\"optionalDuration\": \"-315576000000.999999999s\"}",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{
+        optional_duration: %Google.Protobuf.Duration{
+          seconds: -315_576_000_000,
+          nanos: -999_999_999
+        }
+      }
     }
   ]
 
