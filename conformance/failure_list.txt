@@ -4,3 +4,7 @@ Recommended.Proto3.JsonInput.TimestampHas3FractionalDigits.Validator
 Recommended.Proto3.JsonInput.TimestampHas9FractionalDigits.Validator
 Recommended.Proto3.JsonInput.TimestampHasZeroFractionalDigit.Validator
 Recommended.Proto3.JsonInput.TimestampZeroNormalized.Validator
+Required.Proto3.JsonInput.TimestampMaxValue.ProtobufOutput
+Required.Proto3.JsonInput.TimestampMaxValue.JsonOutput
+Required.Proto3.JsonInput.TimestampRepeatedValue.JsonOutput
+Required.Proto3.JsonInput.TimestampRepeatedValue.ProtobufOutput
