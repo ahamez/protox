@@ -230,6 +230,21 @@ defmodule Protox.JsonDecodeTest do
           nanos: -999_999_999
         }
       }
+    },
+    {
+      "Google.Protobuf.Timestamp leap",
+      "\"1993-02-10T00:00:00.000Z\"",
+      %Google.Protobuf.Timestamp{seconds: 729_302_400, nanos: 0}
+    },
+    {
+      "Google.Protobuf.Timestamp positive offset",
+      "\"1970-01-01T08:00:01+08:00\"",
+      %Google.Protobuf.Timestamp{seconds: 1, nanos: 0}
+    },
+    {
+      "Google.Protobuf.Timestamp negative offset",
+      "\"1969-12-31T16:00:01-08:00\"",
+      %Google.Protobuf.Timestamp{seconds: 1, nanos: 0}
     }
   ]
 
