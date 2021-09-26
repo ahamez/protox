@@ -3,7 +3,8 @@ defmodule Protox.JsonEncodeTestMessages do
 end
 
 defmodule Protox.JsonEncodeTest do
-  use ExUnit.Case
+  # use ExUnit.Case
+  use ExUnit.Case, async: false
   use Protox.Float
 
   @sucess_tests [
@@ -135,7 +136,27 @@ defmodule Protox.JsonEncodeTest do
     {
       "Google.Protobuf.Duration",
       %Google.Protobuf.Duration{seconds: 10, nanos: 9_999_999},
-      "10.010000s"
+      "10.009999999s"
+    },
+    {
+      "Google.Protobuf.Duration 0 fraction digits",
+      %Google.Protobuf.Duration{seconds: 1, nanos: 0},
+      "1s"
+    },
+    {
+      "Google.Protobuf.Duration 3 fraction digits",
+      %Google.Protobuf.Duration{seconds: 1, nanos: 10_000_000},
+      "1.010s"
+    },
+    {
+      "Google.Protobuf.Duration 6 fraction digits",
+      %Google.Protobuf.Duration{seconds: 1, nanos: 10_000},
+      "1.000010s"
+    },
+    {
+      "Google.Protobuf.Duration 9 fraction digits",
+      %Google.Protobuf.Duration{seconds: 1, nanos: 10},
+      "1.000000010s"
     },
     {
       "Google.Protobuf.Timestamp",
@@ -209,6 +230,11 @@ defmodule Protox.JsonEncodeTest do
         optional_string_wrapper: %Google.Protobuf.StringValue{value: "foo"}
       },
       %{"optionalStringWrapper" => "foo"}
+    },
+    {
+      "Google.Protobuf.Duration min value",
+      %Google.Protobuf.Duration{seconds: -315_576_000_000, nanos: -999_999_999},
+      "-315576000000.999999999s"
     }
   ]
 
