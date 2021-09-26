@@ -18,3 +18,4 @@ erl_crash.dump
 /benchmarks/*.benchee
 /benchmarks/payloads.bin
 /benchmarks/output
+/failing_tests.txt
