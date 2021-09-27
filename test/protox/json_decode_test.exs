@@ -245,6 +245,11 @@ defmodule Protox.JsonDecodeTest do
       "Google.Protobuf.Timestamp negative offset",
       "\"1969-12-31T16:00:01-08:00\"",
       %Google.Protobuf.Timestamp{seconds: 1, nanos: 0}
+    },
+    {
+      "Google.Protobuf.FieldMask",
+      "\"foo,barBaz\"",
+      %Google.Protobuf.FieldMask{paths: ["foo", "bar_baz"]}
     }
   ]
 
