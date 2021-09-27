@@ -1,9 +1,20 @@
+# This implementation has been developed by making the conformance tests happy. However, I'm not sure
+# they cover everything, and the specification is a little light on details.
+# https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#json-encoding-of-field-masks
+
 defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.FieldMask do
   def decode_message(initial_message, json) do
+    if String.contains?(json, "_") do
+      raise Protox.JsonDecodingError.new(
+              "field mask has an invalid format (it contains an \"_\")"
+            )
+    end
+
     paths =
       json
       |> String.split(",")
       |> Enum.map(&Macro.underscore/1)
+      |> Enum.reject(fn str -> String.length(str) == 0 end)
 
     struct!(initial_message, paths: paths)
   end

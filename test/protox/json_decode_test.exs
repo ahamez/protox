@@ -250,6 +250,11 @@ defmodule Protox.JsonDecodeTest do
       "Google.Protobuf.FieldMask",
       "\"foo,barBaz\"",
       %Google.Protobuf.FieldMask{paths: ["foo", "bar_baz"]}
+    },
+    {
+      "Empty Google.Protobuf.FieldMask",
+      "\"\"",
+      %Google.Protobuf.FieldMask{paths: []}
     }
   ]
 
@@ -308,6 +313,11 @@ defmodule Protox.JsonDecodeTest do
       "timestamp too small",
       "\"0000-01-01T00:00:00Z\"",
       Google.Protobuf.Timestamp
+    },
+    {
+      "Empty Google.Protobuf.FieldMask",
+      "\"bar_bar\"",
+      Google.Protobuf.FieldMask
     }
   ]
 
