@@ -1,3 +1,14 @@
+defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.FieldMask do
+  def decode_message(initial_message, json) do
+    paths =
+      json
+      |> String.split(",")
+      |> Enum.map(&Macro.underscore/1)
+
+    struct!(initial_message, paths: paths)
+  end
+end
+
 defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.FieldMask do
   def encode_message(msg, json_encode) do
     case check_paths(msg.paths) do
