@@ -37,7 +37,7 @@ defmodule Protox.Parse do
             fn %Field{} = field ->
               field
               |> resolve_types(acc.enums)
-              |> default_value(acc.enums)
+              |> set_default_value(acc.enums)
               |> concat_names(namespace_or_nil)
             end
           )
@@ -73,7 +73,7 @@ defmodule Protox.Parse do
 
   defp resolve_types(%Field{} = field, _enums), do: field
 
-  defp default_value(
+  defp set_default_value(
          %Field{kind: {:scalar, :default_to_resolve}, type: {:enum, ename}} = field,
          enums
        ) do
@@ -85,7 +85,7 @@ defmodule Protox.Parse do
     %Field{field | kind: {:scalar, first_is_default}, type: {:enum, ename}}
   end
 
-  defp default_value(%Field{} = field, _enums), do: field
+  defp set_default_value(%Field{} = field, _enums), do: field
 
   defp concat_names(%Field{type: {:enum, ename}} = field, namespace_or_nil) do
     %Field{field | type: {:enum, Module.concat([namespace_or_nil | ename])}}
