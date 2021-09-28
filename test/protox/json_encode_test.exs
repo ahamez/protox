@@ -235,6 +235,26 @@ defmodule Protox.JsonEncodeTest do
       "Google.Protobuf.Duration min value",
       %Google.Protobuf.Duration{seconds: -315_576_000_000, nanos: -999_999_999},
       "-315576000000.999999999s"
+    },
+    {
+      "NullValueInOtherOneofNewFormat",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{
+        oneof_field: {:oneof_null_value, :NULL_VALUE}
+      },
+      %{"oneofNullValue" => nil}
+    },
+    {
+      "Struct",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{
+        optional_value: %Google.Protobuf.Value{
+          kind:
+            {:struct_value,
+             %Google.Protobuf.Struct{
+               fields: %{"value" => %Google.Protobuf.Value{kind: {:number_value, 1}}}
+             }}
+        }
+      },
+      %{"optionalValue" => %{"value" => 1}}
     }
   ]
 

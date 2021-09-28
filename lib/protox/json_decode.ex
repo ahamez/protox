@@ -1,34 +1,57 @@
 defmodule Protox.JsonDecode do
   @moduledoc false
 
-  alias Protox.{Field, JsonDecodingError, JsonMessageDecoder}
+  alias Protox.{Field, JsonDecodingError, JsonEnumDecoder, JsonMessageDecoder}
 
   import Protox.Guards
 
   use Protox.{Float, Integer}
 
-  # @spec decode!(iodata(), atom(), fun()) :: struct() | no_return()
+  @spec decode!(iodata(), atom(), fun()) :: any() | no_return()
   def decode!(input, mod, json_decode) do
-    json = json_decode.(input)
-
-    JsonMessageDecoder.decode_message(struct(mod), json)
+    case json_decode.(input) do
+      nil -> raise JsonDecodingError.new("invalid top-level null")
+      json -> JsonMessageDecoder.decode_message(struct(mod), json)
+    end
   end
 
+  def decode_message(_initial_msg, nil), do: nil
+
   def decode_message(initial_msg, json) do
-    Enum.reduce(json, initial_msg, fn
-      {_field_json_name, nil = _field_value}, msg_acc ->
-        msg_acc
+    Enum.reduce(json, initial_msg, fn {field_json_name, field_value}, msg_acc ->
+      case get_field(initial_msg, field_json_name) do
+        {:ok, field} ->
+          case decode_msg_field(field, field_value, msg_acc) do
+            nil ->
+              msg_acc
 
-      {field_json_name, field_value}, msg_acc ->
-        case get_field(initial_msg, field_json_name) do
-          {:ok, field} ->
-            {field_name, field_value} = decode_msg_field(field, field_value, msg_acc)
-            Map.put(msg_acc, field_name, field_value)
+            {_field_name, nil} ->
+              msg_acc
 
-          {:error, :no_such_field} ->
-            msg_acc
-        end
+            {field_name, field_value} ->
+              Map.put(msg_acc, field_name, field_value)
+          end
+
+        {:error, :no_such_field} ->
+          msg_acc
+      end
     end)
+  end
+
+  def decode_enum(_enum, nil), do: nil
+
+  def decode_enum(enum, json) when is_integer(json) do
+    enum.__struct__.decode(json)
+  end
+
+  def decode_enum(enum, json) when is_binary(json) do
+    if enum.__struct__.encode(json) == json do
+      # It's quite a hack: generated encode/1 returns its argument unmodified if it's not
+      # part of the enum.
+      raise JsonDecodingError.new("#{json} is not value of #{enum.__struct__}")
+    else
+      String.to_atom(json)
+    end
   end
 
   def decode_value("Infinity", type) when is_protobuf_float(type), do: :infinity
@@ -58,18 +81,8 @@ defmodule Protox.JsonDecode do
 
   def decode_value(json_value, :string) when is_binary(json_value), do: json_value
 
-  def decode_value(json_value, {:enum, enum_mod} = _type) when is_integer(json_value) do
-    enum_mod.decode(json_value)
-  end
-
-  def decode_value(json_value, {:enum, enum_mod} = _type) when is_binary(json_value) do
-    if enum_mod.encode(json_value) == json_value do
-      # It's quite a hack: generated encode/1 returns its argument unmodified if it's not
-      # part of the enum.
-      raise JsonDecodingError.new("#{json_value} is not value of #{enum_mod}")
-    else
-      String.to_atom(json_value)
-    end
+  def decode_value(json_value, {:enum, enum_mod}) do
+    JsonEnumDecoder.decode_enum(struct(enum_mod), json_value)
   end
 
   def decode_value(json_value, {:message, msg_mod}) do
@@ -158,6 +171,11 @@ defmodule Protox.JsonDecode do
     json_value
   end
 
+  def decode_value(nil = _json_value, type)
+      when is_primitive(type) or type == :bytes or type == :string do
+    nil
+  end
+
   def decode_value(json_value, type) do
     raise JsonDecodingError.new("cannot decode #{inspect(json_value)} for type #{inspect(type)}")
   end
@@ -169,12 +187,19 @@ defmodule Protox.JsonDecode do
   end
 
   defp decode_msg_field(%Field{kind: {:oneof, parent_name}} = field, json_value, msg) do
-    if Map.fetch!(msg, parent_name) == nil do
-      {parent_name, {field.name, decode_value(json_value, field.type)}}
-    else
+    field_value = decode_value(json_value, field.type)
+
+    if Map.fetch!(msg, parent_name) != nil and field_value != nil do
       raise JsonDecodingError.new("oneof #{parent_name} already set")
+    else
+      case field_value do
+        nil -> nil
+        field_value -> {parent_name, {field.name, field_value}}
+      end
     end
   end
+
+  defp decode_msg_field(%Field{kind: :map} = _field, nil = _json_value, _msg), do: nil
 
   defp decode_msg_field(
          %Field{kind: :map, type: {key_type, value_type}} = field,
@@ -185,6 +210,9 @@ defmodule Protox.JsonDecode do
     map =
       json_value
       |> Stream.map(fn
+        {_key, nil} ->
+          raise JsonDecodingError.new("found null value in map")
+
         # A special case for booleans is required as they are accepted as strings
         # when keys of a map, but not as values (which means we can't have a
         # decode_value() function for :bool
@@ -202,11 +230,16 @@ defmodule Protox.JsonDecode do
     {field.name, map}
   end
 
+  defp decode_msg_field(%Field{label: :repeated} = _field, nil = _json_value, _msg), do: nil
+
   defp decode_msg_field(%Field{label: :repeated} = field, json_value, _msg)
        when is_list(json_value) do
     list =
       Enum.map(json_value, fn value ->
-        decode_value(value, field.type)
+        case decode_value(value, field.type) do
+          nil -> raise JsonDecodingError.new("found null value in array")
+          decoded_value -> decoded_value
+        end
       end)
 
     {field.name, list}

@@ -3,6 +3,8 @@
 # https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#json-encoding-of-field-masks
 
 defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.FieldMask do
+  def decode_message(_initial_message, nil), do: nil
+
   def decode_message(initial_message, json) do
     if String.contains?(json, "_") do
       raise Protox.JsonDecodingError.new(

@@ -31,6 +31,14 @@ defmodule Protox.JsonEncode do
     ["{" | body]
   end
 
+  def encode_enum(_enum, value, json_encode) when is_atom(value) do
+    json_encode.(value)
+  end
+
+  def encode_enum(enum, value, json_encode) do
+    value |> enum.__struct__.decode() |> json_encode.()
+  end
+
   def encode_value(value, :bytes, _json_encode), do: "\"#{Base.url_encode64(value)}\""
 
   def encode_value(:infinity, _type, _json_encode), do: "\"Infinity\""
@@ -44,12 +52,8 @@ defmodule Protox.JsonEncode do
 
   def encode_value(true, :bool, _json_encode), do: "true"
 
-  def encode_value(value, {:enum, _enum}, json_encode) when is_atom(value) do
-    json_encode.(value)
-  end
-
   def encode_value(value, {:enum, enum}, json_encode) do
-    value |> enum.decode() |> json_encode.()
+    Protox.JsonEnumEncoder.encode_enum(struct(enum), value, json_encode)
   end
 
   def encode_value(value, {:message, _}, json_encode) do

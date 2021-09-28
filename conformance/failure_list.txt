@@ -1,4 +1,4 @@
-# We ignore these Timestamp tests as Elixir DateTime does not provide enough precision
+# We ignore these Timestamp tests as Elixir DateTime does not provide enough precision.
 # to work with timestamps with a very small fractional part.
 Recommended.Proto3.JsonInput.TimestampHas3FractionalDigits.Validator
 Recommended.Proto3.JsonInput.TimestampHas9FractionalDigits.Validator
@@ -9,7 +9,7 @@ Required.Proto3.JsonInput.TimestampMaxValue.JsonOutput
 Required.Proto3.JsonInput.TimestampRepeatedValue.JsonOutput
 Required.Proto3.JsonInput.TimestampRepeatedValue.ProtobufOutput
 
-# We'll implement Any support later
+# We'll implement Any support later.
 Required.Proto3.JsonInput.Any.JsonOutput
 Required.Proto3.JsonInput.Any.ProtobufOutput
 Required.Proto3.JsonInput.AnyNested.JsonOutput
@@ -30,3 +30,6 @@ Required.Proto3.JsonInput.AnyWithValueForInteger.JsonOutput
 Required.Proto3.JsonInput.AnyWithValueForInteger.ProtobufOutput
 Required.Proto3.JsonInput.AnyWithValueForJsonObject.JsonOutput
 Required.Proto3.JsonInput.AnyWithValueForJsonObject.ProtobufOutput
+
+# Could not find the specs for this one
+Recommended.Proto2.JsonInput.FieldNameExtension.Validator

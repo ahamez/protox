@@ -1,4 +1,8 @@
 defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.Duration do
+  def decode_message(_initial_message, nil = _json) do
+    nil
+  end
+
   def decode_message(initial_message, json) do
     dec = get_decimal(json)
 

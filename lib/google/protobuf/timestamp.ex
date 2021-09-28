@@ -1,4 +1,6 @@
 defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.Timestamp do
+  def decode_message(_initial_message, nil), do: nil
+
   def decode_message(initial_message, json) do
     if not String.contains?(json, "T") do
       raise Protox.JsonDecodingError.new("Missing 'T' in timestamp")

@@ -1,4 +1,6 @@
 defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.Int32Value do
+  def decode_message(_initial_message, nil), do: nil
+
   def decode_message(initial_message, value) do
     struct!(initial_message, value: Protox.JsonDecode.decode_value(value, :int32))
   end
