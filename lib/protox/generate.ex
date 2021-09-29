@@ -11,7 +11,6 @@ defmodule Protox.Generate do
         output_path,
         multiple_files,
         include_paths,
-        namespace_or_nil \\ nil,
         opts \\ []
       )
       when is_list(files) and is_binary(output_path) and is_boolean(multiple_files) do
@@ -23,8 +22,7 @@ defmodule Protox.Generate do
 
     case launch_protoc(files, paths) do
       {:ok, file_descriptor_set} ->
-        %{enums: enums, messages: messages} =
-          Protox.Parse.parse(file_descriptor_set, namespace_or_nil)
+        %{enums: enums, messages: messages} = Protox.Parse.parse(file_descriptor_set, opts)
 
         code = quote do: unquote(Protox.Define.define(enums, messages, opts))
 

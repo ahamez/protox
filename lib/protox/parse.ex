@@ -14,9 +14,11 @@ defmodule Protox.Parse do
     MessageOptions
   }
 
-  @spec parse(binary, atom | nil) :: map()
-  def parse(file_descriptor_set, namespace_or_nil \\ nil) do
+  @spec parse(binary, Keyword.t()) :: map()
+  def parse(file_descriptor_set, opts \\ []) do
     {:ok, descriptor} = FileDescriptorSet.decode(file_descriptor_set)
+
+    namespace_or_nil = Keyword.get(opts, :namespace)
 
     %{enums: %{}, messages: %{}}
     |> parse_files(descriptor.file)
