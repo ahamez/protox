@@ -255,6 +255,21 @@ defmodule Protox.JsonEncodeTest do
         }
       },
       %{"optionalValue" => %{"value" => 1}}
+    },
+    {
+      "ListValue",
+      %Google.Protobuf.ListValue{values: [%Google.Protobuf.Value{kind: {:number_value, 0}}]},
+      [0]
+    },
+    {
+      "NullValue",
+      %Google.Protobuf.Value{kind: {:null_value, :NULL_VALUE}},
+      nil
+    },
+    {
+      "ListValue inside Value",
+      %Google.Protobuf.Value{kind: {:list_value, %Google.Protobuf.ListValue{}}},
+      []
     }
   ]
 
