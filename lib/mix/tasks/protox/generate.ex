@@ -20,19 +20,18 @@ defmodule Mix.Tasks.Protox.Generate do
 
   use Mix.Task
 
+  @options [
+    output_path: :string,
+    include_path: :keep,
+    namespace: :string,
+    multiple_files: :boolean,
+    keep_unknown_fields: :boolean
+  ]
+
   @impl Mix.Task
   @spec run(any) :: any
   def run(args) do
-    with {opts, files, []} <-
-           OptionParser.parse(args,
-             strict: [
-               output_path: :string,
-               include_path: :keep,
-               namespace: :string,
-               multiple_files: :boolean,
-               keep_unknown_fields: :boolean
-             ]
-           ),
+    with {opts, files, []} <- OptionParser.parse(args, strict: @options),
          {:ok, output_path} <- Keyword.fetch(opts, :output_path),
          {include_paths, opts} = pop_values(opts, :include_path),
          {multiple_files, opts} = Keyword.pop(opts, :multiple_files, false),
