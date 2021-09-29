@@ -156,7 +156,6 @@ defmodule Protox do
   @doc """
   ## Errors
   This function returns a tuple `{:error, reason}` if:
-  - `message_module` is not a proto3 message; `reason` is a `Protox.InvalidSyntax` error
   - `input` could not be decoded to JSON; `reason` is a `Protox.JsonDecodingError` error
 
   ## JSON library configuration
@@ -193,7 +192,6 @@ defmodule Protox do
 
   ## Errors
   This function returns a tuple `{:error, reason}` if:
-  - `msg` is not a proto3 message; `reason` is a `Protox.InvalidSyntax` error
   - `msg` could not be encoded to JSON; `reason` is a `Protox.JsonEncodingError` error
 
   ## Examples
