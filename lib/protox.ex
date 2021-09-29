@@ -81,14 +81,12 @@ defmodule Protox do
   defmacro __using__(opts) do
     {opts, _} = Code.eval_quoted(opts)
 
-    {namespace, opts} = get_namespace(opts)
     {paths, opts} = get_paths(opts)
     {files, opts} = get_files(opts)
 
     {:ok, file_descriptor_set} = Protox.Protoc.run(files, paths)
 
-    %{enums: enums, messages: messages} =
-      Protox.Parse.parse(file_descriptor_set, namespace: namespace)
+    %{enums: enums, messages: messages} = Protox.Parse.parse(file_descriptor_set, opts)
 
     quote do
       unquote(make_external_resources(files))
@@ -248,10 +246,6 @@ defmodule Protox do
   end
 
   # -- Private
-
-  defp get_namespace(opts) do
-    Keyword.pop(opts, :namespace)
-  end
 
   defp get_paths(opts) do
     case Keyword.pop(opts, :paths) do

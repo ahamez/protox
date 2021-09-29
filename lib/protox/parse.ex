@@ -19,13 +19,33 @@ defmodule Protox.Parse do
     {:ok, descriptor} = FileDescriptorSet.decode(file_descriptor_set)
 
     namespace_or_nil = Keyword.get(opts, :namespace)
+    compile_well_known_types = Keyword.get(opts, :__compile_well_known_types, false)
 
     %{enums: %{}, messages: %{}}
     |> parse_files(descriptor.file)
     |> post_process(namespace_or_nil)
+    |> maybe_remove_well_known_types(compile_well_known_types)
   end
 
   # -- Private
+
+  defp maybe_remove_well_known_types(acc, false = _compile_well_known_types) do
+    filtered_messages =
+      Enum.reject(acc.messages, fn {message_name, _syntax, _fields} ->
+        message_name in Google.Protobuf.well_known_types()
+      end)
+
+    filtered_enums =
+      Enum.reject(acc.enums, fn {enum_name, _constants} ->
+        enum_name in Google.Protobuf.well_known_types()
+      end)
+
+    %{enums: filtered_enums, messages: filtered_messages}
+  end
+
+  defp maybe_remove_well_known_types(acc, true = _compile_well_known_types) do
+    acc
+  end
 
   # canonization: camelization, fqdn, prepend with namespace
   defp post_process(acc, namespace_or_nil) do
