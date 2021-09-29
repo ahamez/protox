@@ -29,6 +29,8 @@ defmodule Protox.Parse do
 
   # -- Private
 
+  defp maybe_remove_well_known_types(acc, true = _compile_well_known_types), do: acc
+
   defp maybe_remove_well_known_types(acc, false = _compile_well_known_types) do
     filtered_messages =
       Enum.reject(acc.messages, fn {message_name, _syntax, _fields} ->
@@ -41,10 +43,6 @@ defmodule Protox.Parse do
       end)
 
     %{enums: filtered_enums, messages: filtered_messages}
-  end
-
-  defp maybe_remove_well_known_types(acc, true = _compile_well_known_types) do
-    acc
   end
 
   # canonization: camelization, fqdn, prepend with namespace
