@@ -159,6 +159,11 @@ defmodule Protox.JsonDecodeTest do
       %ProtobufTestMessages.Proto3.TestAllTypesProto3{map_bool_bool: %{true => true}}
     },
     {
+      "map bool => bool where key is a boolean",
+      "{\"mapBoolBool\": {\"false\": true}}",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{map_bool_bool: %{false => true}}
+    },
+    {
       "Google.Protobuf.BoolValue",
       "{\"optionalBoolWrapper\": false}",
       %ProtobufTestMessages.Proto3.TestAllTypesProto3{
@@ -430,6 +435,11 @@ defmodule Protox.JsonDecodeTest do
           }
         }
       }
+    },
+    {
+      "Unknown field",
+      "{\"invalidField\": 1}",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{}
     }
   ]
 
@@ -470,8 +480,53 @@ defmodule Protox.JsonDecodeTest do
       ProtobufTestMessages.Proto3.TestAllTypesProto3
     },
     {
-      "integer represented as float value too large",
+      "signed integer 32 bits represented as float value too large",
       "{\"optionalInt32\": 4.294967295e9}",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
+    },
+    {
+      "unsigned integer 32 bits represented as float value too large",
+      "{\"optionalUint32\": 4.294967295e10}",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
+    },
+    {
+      "signed integer 64 bits represented as float value too large",
+      "{\"optionalInt64\": 1.0e100}",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
+    },
+    {
+      "unsigned integer 64 bits represented as float value too large",
+      "{\"optionalUint64\": 1.0e100}",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
+    },
+    {
+      "float represented as float value too large",
+      "{\"optionalFloat\": 1.0e100}",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
+    },
+    {
+      "signed integer 32 bits represented as float value too small",
+      "{\"optionalInt32\": -4.294967295e9}",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
+    },
+    {
+      "unsigned integer 32 bits represented as float value too small",
+      "{\"optionalUint32\": -1}",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
+    },
+    {
+      "signed integer 64 bits represented as float value too small",
+      "{\"optionalInt64\": -1.0e100}",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
+    },
+    {
+      "unsigned integer 64 bits represented as float value too small",
+      "{\"optionalUint64\": -1}",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
+    },
+    {
+      "float represented as float value too small",
+      "{\"optionalFloat\": -1.0e100}",
       ProtobufTestMessages.Proto3.TestAllTypesProto3
     },
     {
@@ -490,9 +545,64 @@ defmodule Protox.JsonDecodeTest do
       Google.Protobuf.Timestamp
     },
     {
-      "Empty Google.Protobuf.FieldMask",
+      "empty Google.Protobuf.FieldMask",
       "\"bar_bar\"",
       Google.Protobuf.FieldMask
+    },
+    {
+      "malformed ListValue",
+      "1",
+      Google.Protobuf.ListValue
+    },
+    {
+      "malformed NullValue",
+      "{\"oneofNullValue\": \"INVALID_NULL_VALUE\"}",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
+    },
+    {
+      "duration < minimal duration",
+      "\"#{-315_576_000_000 - 1}s\"",
+      Google.Protobuf.Duration
+    },
+    {
+      "duration > maximal duration",
+      "\"#{315_576_000_000 + 1}s\"",
+      Google.Protobuf.Duration
+    },
+    {
+      "duration with invalid suffix",
+      "\"0wrong_suffix\"",
+      Google.Protobuf.Duration
+    },
+    {
+      "duration with no suffix",
+      "\"0\"",
+      Google.Protobuf.Duration
+    },
+    {
+      "invalid duration",
+      "\"invalid_duration\"",
+      Google.Protobuf.Duration
+    },
+    {
+      "timestamp > max",
+      "\"10000-12-31T23:59:59.999999999Z\"",
+      Google.Protobuf.Timestamp
+    },
+    {
+      "top-level null",
+      "null",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
+    },
+    {
+      "invalid value for an integer",
+      "{\"optionalUint32\": []}",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
+    },
+    {
+      "null in array",
+      "{\"repeatedInt32\": [null]}",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
     }
   ]
 
