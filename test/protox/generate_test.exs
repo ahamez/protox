@@ -33,9 +33,9 @@ defmodule Protox.GenerateTest do
       Protox.Generate.generate_module_code(
         [file],
         generated_file_name,
-        false,
+        _multiple_files = false,
         ["./test/samples"],
-        "Namespace"
+        namespace: "Namespace"
       )
 
     assert [%Protox.Generate.FileContent{name: ^generated_file_name, content: content}] =
@@ -93,9 +93,9 @@ defmodule Protox.GenerateTest do
       Protox.Generate.generate_module_code(
         [file],
         generated_path_name,
-        true,
+        _multiple_files = true,
         ["./test/samples"],
-        "Namespace"
+        namespace: "Namespace"
       )
 
     assert [

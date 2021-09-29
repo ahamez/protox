@@ -35,10 +35,9 @@ defmodule Mix.Tasks.Protox.Generate do
            ),
          {:ok, output_path} <- Keyword.fetch(opts, :output_path),
          {include_paths, opts} = pop_values(opts, :include_path),
-         {namespace, opts} = Keyword.pop(opts, :namespace),
          {multiple_files, opts} = Keyword.pop(opts, :multiple_files, false),
          {:ok, files_content} <-
-           generate(files, output_path, multiple_files, include_paths, namespace, opts) do
+           generate(files, output_path, multiple_files, include_paths, opts) do
       Enum.each(files_content, &generate_file/1)
     else
       err ->
@@ -64,13 +63,12 @@ defmodule Mix.Tasks.Protox.Generate do
     {Enum.reverse(values), Enum.reverse(new_opts)}
   end
 
-  defp generate(files, output_path, multiple_files, include_paths, namespace, opts) do
+  defp generate(files, output_path, multiple_files, include_paths, opts) do
     Protox.Generate.generate_module_code(
       files,
       Path.expand(output_path),
       multiple_files,
       include_paths,
-      namespace,
       opts
     )
   end
