@@ -19,16 +19,14 @@ defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.Timestamp do
 
     unix_timestamp = DateTime.to_unix(date_time, :nanosecond)
 
-    cond do
-      # 0001-01-01T00:00:00Z as UNIX date in nanoseconds
-      unix_timestamp < -62_135_596_800_000_000_000 ->
-        raise Protox.JsonDecodingError.new("timestamp is < 0001-01-01T00:00:00Z")
+    # 0001-01-01T00:00:00Z as UNIX date in nanoseconds
+    if unix_timestamp < -62_135_596_800_000_000_000 do
+      raise Protox.JsonDecodingError.new("timestamp is < 0001-01-01T00:00:00Z")
+    else
+      nanos = rem(unix_timestamp, 1_000_000_000)
+      seconds = div(unix_timestamp, 1_000_000_000)
 
-      true ->
-        nanos = rem(unix_timestamp, 1_000_000_000)
-        seconds = div(unix_timestamp, 1_000_000_000)
-
-        struct!(initial_message, seconds: seconds, nanos: nanos)
+      struct!(initial_message, seconds: seconds, nanos: nanos)
     end
   end
 end
