@@ -1,6 +1,7 @@
 defmodule Protox.Descriptor do
   @moduledoc false
-  # Transcription of descriptor.proto.
+  # Transcription of descriptor.proto. Used to bootstrap the generation process as protoc passes
+  # parsed protobuf files using binary protobuf.
   # https://raw.githubusercontent.com/google/protobuf/master/src/google/protobuf/descriptor.proto
 
   use Protox.Define,
