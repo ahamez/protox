@@ -31,10 +31,6 @@ defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.Value do
 
     struct!(initial_message, kind: {:struct_value, struct_value})
   end
-
-  def decode_message(_initial_message, _value) do
-    raise Protox.JsonDecodingError.new("invalid Value format")
-  end
 end
 
 defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.Value do

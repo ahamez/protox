@@ -15,12 +15,6 @@ defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.Duration do
       seconds > 315_576_000_000 ->
         raise Protox.JsonDecodingError.new("#{seconds} is > 315_576_000_000")
 
-      nanos < -999_999_999 ->
-        raise Protox.JsonDecodingError.new("#{nanos} is < -999_999_999")
-
-      nanos > 999_999_999 ->
-        raise Protox.JsonDecodingError.new("#{nanos} is > 999_999_999")
-
       true ->
         struct!(initial_message, seconds: seconds, nanos: nanos)
     end
