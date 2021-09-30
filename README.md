@@ -538,7 +538,7 @@ Protobuf   | Elixir
 
 ## Benchmarks
 
-You can launch benchmarks to see how Protox perform:
+You can launch benchmarks to see how `protox` perform:
 ```
 mix run ./benchmarks/generate_payloads.exs # first time only, generates random payloads
 mix run ./benchmarks/run.exs --lib=./benchmarks/protox.exs

@@ -23,14 +23,8 @@ defmodule Protox.Generate do
     case launch_protoc(files, paths) do
       {:ok, file_descriptor_set} ->
         %{enums: enums, messages: messages} = Protox.Parse.parse(file_descriptor_set, opts)
-
         code = quote do: unquote(Protox.Define.define(enums, messages, opts))
-
-        if multiple_files do
-          {:ok, multiple_file_content(output_path, code)}
-        else
-          {:ok, single_file_content(output_path, code)}
-        end
+        {:ok, generate_files(output_path, code, multiple_files)}
 
       {:error, msg} ->
         {:error, msg}
@@ -45,7 +39,7 @@ defmodule Protox.Generate do
     |> Protox.Protoc.run(paths)
   end
 
-  defp single_file_content(output_path, code) do
+  defp generate_files(output_path, code, false = _muliple_files) do
     [
       %FileContent{
         name: output_path,
@@ -54,7 +48,7 @@ defmodule Protox.Generate do
     ]
   end
 
-  defp multiple_file_content(output_path, code) do
+  defp generate_files(output_path, code, true = _muliple_files) do
     Enum.map(code, fn {:defmodule, _, [module_name | _]} = module_code ->
       snake_module_name =
         module_name |> to_string() |> String.replace(".", "") |> Macro.underscore()
