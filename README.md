@@ -36,33 +36,30 @@ You can find [here](https://github.com/ahamez/protox/blob/master/test/example_te
 
 ## Table of contents
 
-- [Protox](#protox)
-  - [Table of contents](#table-of-contents)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Usage with a textual description](#usage-with-a-textual-description)
-  - [Usage with files](#usage-with-files)
-  - [Encode](#encode)
-  - [Decode](#decode)
-  - [JSON](#json)
-  - [Packages and  namespaces](#packages-and--namespaces)
-  - [Specify import path](#specify-import-path)
-  - [Unknown fields](#unknown-fields)
-  - [Unsupported features](#unsupported-features)
-  - [Implementation choices](#implementation-choices)
-  - [Generated code reference](#generated-code-reference)
-  - [Files generation](#files-generation)
-  - [Conformance](#conformance)
-  - [Types mapping](#types-mapping)
-  - [Benchmarks](#benchmarks)
-  - [Credits](#credits)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Usage with a textual description](#usage-with-a-textual-description)
+- [Usage with files](#usage-with-files)
+- [Encode](#encode)
+- [Decode](#decode)
+- [JSON](#json)
+- [Packages and  namespaces](#packages-and--namespaces)
+- [Specify import path](#specify-import-path)
+- [Unknown fields](#unknown-fields)
+- [Unsupported features](#unsupported-features)
+- [Implementation choices](#implementation-choices)
+- [Generated code reference](#generated-code-reference)
+- [Files generation](#files-generation)
+- [Conformance](#conformance)
+- [Types mapping](#types-mapping)
+- [Benchmarks](#benchmarks)
+- [Credits](#credits)
 
 ## Prerequisites
 
 - Elixir >= 1.7
-- protoc >= 3.0
+- protoc >= 3.0 *This dependency is only required at compile-time*
   `protox` uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`. You can download it [here](https://github.com/google/protobuf) or you can install it with your favorite package manager (`brew install protobuf`, `apt install protobuf-compiler`, etc.).
-  *This dependency is only required at compile-time*.
 
 
 ## Installation
@@ -217,10 +214,7 @@ iex> Protox.json_encode!(msg, json_encoder: Poison)
 
 ### Well-known types
 
-Note that `protox` does not (yet) support the encoding of all [protobuf well-know types](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf): unsupported types will be encoded like a regular message, rather than with the custom encoding specified in the [JSON specification](https://developers.google.com/protocol-buffers/docs/proto3#json).
-The currently supported types are: [Duration](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#duration), [FieldMask](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#fieldmask) and [Timestamp](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#timestamp).
-
-If in a hurry, you can add the support of the missing type yourself by implementing the [`Protox.JsonMessageEncoder`](./lib/protox/json_message_encoder.ex) protocol.
+Note that `protox` does not (yet) support the encoding of the [Any](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#any) well-know type: it will be encoded like a regular message, rather than with the custom encoding specified in the [JSON specification](https://developers.google.com/protocol-buffers/docs/proto3#json).
 
 
 ## Packages and  namespaces
@@ -337,8 +331,8 @@ Note that protox will still correctly parse unknown fields, they just won't be a
 
 ## Unsupported features
 
-* Decoding from Protobuf 3 [JSON mapping](https://developers.google.com/protocol-buffers/docs/proto3#json)
-* Groups ([deprecated in protobuf](https://developers.google.com/protocol-buffers/docs/proto#groups))
+* The [Any](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#any) well-known type;
+* Groups ([deprecated in protobuf](https://developers.google.com/protocol-buffers/docs/proto#groups));
 * All [options](https://developers.google.com/protocol-buffers/docs/proto3#options) other than `packed` and `default` are ignored as they concern other languages implementation details.
 
 ## Implementation choices
@@ -453,7 +447,7 @@ The detailed reference of the generated code is available [here](documentation/r
 
 ## Files generation
 
-It's also possible to generate a file that will contain all code corresponding to the protobuf messages:
+It's possible to generate a file that will contain all code corresponding to the protobuf messages:
 
 ```shell
 MIX_ENV=prod mix protox.generate --output-path=/path/to/message.ex --include-path=./test/samples test/samples/messages.proto test/samples/proto2.proto
@@ -478,21 +472,21 @@ Finally, you can pass the option `--keep-unknown-fields=false` to remove support
 
 ## Conformance
 
-The protox library has been thoroughly tested using the [conformance checker provided by Google](https://github.com/protocolbuffers/protobuf/tree/master/conformance). Note that only the binary part is tested as protox supports only this format. For instance, JSON tests are skipped.
+The protox library has been thoroughly tested using the [conformance checker provided by Google](https://github.com/protocolbuffers/protobuf/tree/master/conformance).
 
-Here's how to launch the conformance test:
+Here's how to launch the conformance tests:
 
-* Get conformance-test-runner [sources](https://github.com/protocolbuffers/protobuf/archive/v3.17.3.tar.gz).
+* Get conformance-test-runner [sources](https://github.com/protocolbuffers/protobuf/archive/refs/tags/v3.18.0.tar.gz).
 * Compile conformance-test-runner ([macOS and Linux only](https://github.com/protocolbuffers/protobuf/tree/master/conformance#portability)):
-  `tar xf v3.17.3.tar.gz && cd protobuf-3.17.3 && ./autogen.sh && ./configure && make -j && cd conformance && make -j`.
-* Run `mix protox.conformance --runner=/path/to/protobuf-3.17.3/conformance/conformance-test-runner`.
+  `tar xf protobuf-3.18.0.tar.gz && cd protobuf-3.18.0 && ./autogen.sh && ./configure && make -j && cd conformance && make -j`.
+* Run `mix protox.conformance --runner=/path/to/protobuf-3.18.0/conformance/conformance-test-runner`.
   A report will be generated in a directory `conformance_report`.
   If everything's fine, the following text should be displayed:
 
   ```
   CONFORMANCE TEST BEGIN ====================================
 
-  CONFORMANCE SUITE PASSED: 1302 successes, 715 skipped, 0 expected failures, 0 unexpected failures.
+  CONFORMANCE SUITE PASSED: 1988 successes, 0 skipped, 29 expected failures, 0 unexpected failures.
 
 
   CONFORMANCE TEST BEGIN ====================================
@@ -502,8 +496,18 @@ Here's how to launch the conformance test:
 
 You can alternatively launch these conformance tests with `mix test` by setting the `PROTOBUF_CONFORMANCE_RUNNER` environment variable and including the `conformance` tag:
    ```
-   PROTOBUF_CONFORMANCE_RUNNER=./protobuf-3.17.3/conformance/conformance-test-runner MIX_ENV=test mix test --include conformance
+   PROTOBUF_CONFORMANCE_RUNNER=./protobuf-3.18.0/conformance/conformance-test-runner MIX_ENV=test mix test --include conformance
    ```
+
+### Skipped conformance tests
+
+You may have noticed that there are `29 expected failures`. Indeed, we removed on purpose some conformance tests that `protox` can't currently pass. Here are the reasons why:
+
+- Due to a limitation in the [`DateTime`](https://hexdocs.pm/elixir/1.12/DateTime.html) module, it's not possible to have the precision (nanosecond) required by the conformance tests when decoding from JSON;
+- [Any](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#any) is not yet supported by `protox`;
+- We could not find the specification for the protobuf2 case of field name extensions when decoding from JSON.
+
+The exact list of skipped tests is [here](conformance/failure_list.txt).
 
 ## Types mapping
 
