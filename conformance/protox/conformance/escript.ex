@@ -8,8 +8,8 @@ defmodule Protox.Conformance.Escript do
   use Protox,
     files: [
       "./conformance/protox/conformance/conformance.proto",
-      "./conformance/protox/conformance/test_messages_proto2.proto",
-      "./conformance/protox/conformance/test_messages_proto3.proto"
+      "./test/samples/test_messages_proto2.proto",
+      "./test/samples/test_messages_proto3.proto"
     ]
 
   def main(_args) do
