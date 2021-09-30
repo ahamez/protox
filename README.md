@@ -175,9 +175,9 @@ iex> msg = Fiz.Foo.decode!(<<8, 3, 18, 4, 8, 1, 18, 0>>)
 
 ## JSON
 
-### Encode
-
 `protox` implements the [Google's JSON specification](https://developers.google.com/protocol-buffers/docs/proto3#json) to encode to JSON.
+
+### Encode
 
 Here's how to encode a message to JSON, exported as IO data:
 
@@ -201,6 +201,10 @@ It's also possible to call `json_encode` and `json_encode!` directly on the gene
 iex> {:ok, iodata} = Fiz.Foo.json_encode(msg)
 iex> iodata = Fiz.Foo.json_encode!(msg)
 ```
+
+### Decode
+
+TODO
 
 ### JSON library configuration
 
