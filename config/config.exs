@@ -14,6 +14,7 @@ if Mix.env() != :prod do
       pre_push: [
         verbose: false,
         tasks: [
+          {:cmd, "mix deps.unlock --check-unused"},
           {:cmd, "mix credo"},
           {:cmd, "mix dialyzer"},
           {:cmd, "mix test --exclude properties"}
