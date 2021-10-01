@@ -55,7 +55,7 @@ Get the syntax of the protobuf message: `:proto2` or `:proto3`.
 default(field_name)
 ```
 
-Get the default value of a structure field. Note that for Protobuf 3, the default value is mandated by [the Google reference documentation](https://developers.google.com/protocol-buffers/docs/proto3#default).
+Get the default value of a message field. Note that for Protobuf 3, the default value is mandated by [the Google reference documentation](https://developers.google.com/protocol-buffers/docs/proto3#default).
 
 ### Unknown fields
 

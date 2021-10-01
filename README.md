@@ -5,31 +5,28 @@
 > **This README is for the current development version, which is not the currently published version [1.5.1](https://hex.pm/packages/protox)**. You can find the
 docs for the latest published version of `protox` [here](https://hexdocs.pm/protox/readme.html).
 
-`protox` is an Elixir library to work with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers) (aka *protobuf*), versions 2 and 3.
+`protox` is an Elixir library to work with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers), versions 2 and 3.
 
-The primary objective of `protox` is **reliability**: it uses [property based testing](https://github.com/alfert/propcheck) and has a [near 100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master). Also, using [mutation testing](https://en.wikipedia.org/wiki/Mutation_testing) with the invaluable help of [Muzak pro](https://devonestes.com/muzak), the quality of the `protox` test suite has been validated.
-Therefore, `protox` passes all the tests of the conformance checker provided by Google. See [Conformance](#conformance) section for more information.
+The primary objective of `protox` is **reliability**: it uses [property based testing](https://github.com/alfert/propcheck) and has a [near 100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master). Also, using [mutation testing](https://en.wikipedia.org/wiki/Mutation_testing) with the invaluable help of [Muzak pro](https://devonestes.com/muzak), the quality of the `protox` test suite has been validated. Therefore, `protox` passes all the tests of the conformance checker provided by Google. See [Conformance](#conformance) section for more information.
 
-This library is easy to use: you just point to the `*.proto` files or give the schema to the `Protox` macro, no need to generate any file! However, should you need to generate files, a mix task is available (see [Files generation](#files-generation)).
+It's also easy to use: just point to the `*.proto` files or give the schema to the `Protox` macro, no need to generate any file! However, should you need to generate files, a mix task is available (see [Files generation](#files-generation)).
 
-`protox` provides a full-blown Elixir experience with protobuf messages. For instance, given the following protobuf `msg.proto` file:
+Given the following protobuf definition, `protox` will generate a `Msg` struct:
 ```proto
-syntax = "proto3";
-
 message Msg{
   int32 a = 1;
   map<int32, string> b = 2;
 }
 ```
 
-You can interact with `Msg` as if it were a native Elixir structure. For example, note how the protobuf map `b` is translated into an Elixir [map](https://hexdocs.pm/elixir/Map.html):
+You can then interact with `Msg` like any Elixir structure:
 
 ```elixir
 iex> msg = %Msg{a: 42, b: %{1 => "a map entry"}}
-iex> {:ok, iodata} = Msg.encode(msg) # or Protox.encode(msg)
-...
+iex> {:ok, iodata} = Msg.encode(msg)
+
 iex> binary = # read binary from a socket, a file, etc.
-iex> {:ok, msg} = Msg.decode(binary) # or Protox.decode(binary, Msg)
+iex> {:ok, msg} = Msg.decode(binary)
 ```
 
 You can find [here](https://github.com/ahamez/protox/blob/master/test/example_test.exs) a more involved example with most types.
@@ -60,6 +57,7 @@ You can find [here](https://github.com/ahamez/protox/blob/master/test/example_te
 - Elixir >= 1.7
 - protoc >= 3.0 *This dependency is only required at compile-time*
   `protox` uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`. You can download it [here](https://github.com/google/protobuf) or you can install it with your favorite package manager (`brew install protobuf`, `apt install protobuf-compiler`, etc.).
+  ℹ️ If you choose to generate files, `protoc` won't be needed to compile these files.
 
 
 ## Installation
@@ -72,16 +70,14 @@ def deps do
 end
 ```
 
-## Usage with a textual description
+## Usage with an inlined textual description
 
-Here's how to generate the modules from a textual description:
+The following example generates two modules: `Baz` and `Foo` from a textual description:
 
 ```elixir
-defmodule Bar do
+defmodule MyModule do
   use Protox, schema: """
   syntax = "proto3";
-
-  package fiz;
 
   message Baz {
   }
@@ -94,15 +90,14 @@ defmodule Bar do
 end
 ```
 
-This example will generate two modules: `Fiz.Baz` and `Fiz.Foo`.
-Note that the module in which the `Protox` macro is called is completely ignored and therefore does not appear in the names of the generated modules.
+ℹ️ The module in which the `Protox` macro is called is completely ignored and therefore does not appear in the names of the generated modules.
 
 ## Usage with files
 
 Here's how to generate the modules from a set of files:
 
 ```elixir
-defmodule Foo do
+defmodule MyModule do
   use Protox, files: [
     "./defs/foo.proto",
     "./defs/bar.proto",
@@ -110,8 +105,6 @@ defmodule Foo do
   ]
 end
 ```
-
-Again, the module in which the `Protox` macro is called is completely ignored.
 
 ## Encode
 
@@ -133,8 +126,8 @@ iex> {:ok, iodata} = Fiz.Foo.encode(msg)
 iex> iodata = Fiz.Foo.encode!(msg)
 ```
 
-Note that `encode/1` returns an [IO data](https://hexdocs.pm/elixir/IO.html#module-use-cases-for-io-data), not a binary, for efficiency reasons. Such  IO data can be used
-directly with [files](https://hexdocs.pm/elixir/IO.html#binwrite/2) or sockets write operations, and therefore you don't need to transform them:
+ℹ️ Note that `encode/1` returns an [IO data](https://hexdocs.pm/elixir/IO.html#module-use-cases-for-io-data) for efficiency reasons. Such  IO data can be used
+directly with files or sockets write operations:
 ```elixir
 iex> {:ok, iodata} = Protox.encode(%Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}})
 [[[], <<18>>, <<4>>, "\b", <<1>>, <<18>>, <<0>>], "\b", <<3>>]
@@ -172,24 +165,24 @@ iex> msg = Fiz.Foo.decode!(<<8, 3, 18, 4, 8, 1, 18, 0>>)
 
 ## JSON
 
-`protox` implements the [Google's JSON specification](https://developers.google.com/protocol-buffers/docs/proto3#json) to encode to JSON.
+`protox` implements the [Google's JSON specification](https://developers.google.com/protocol-buffers/docs/proto3#json).
 
 ### Encode
 
 Here's how to encode a message to JSON, exported as IO data:
 
 ```elixir
-iex> msg = %Namespace.Fiz.Foo{a: :BAR}
+iex> msg = %Fiz.Foo{a: 42}
 iex> {:ok, iodata} = Protox.json_encode(msg)
-{:ok, ["{", ["\"a\"", ":", "\"BAR\""], "}"]}
+{:ok, ["{", ["\"a\"", ":", "42"], "}"]}
 ```
 
 Or, with throwing style:
 
 ```elixir
-iex> msg = %Namespace.Fiz.Foo{a: :BAR}
+iex> msg = %Fiz.Foo{a: 42}
 iex> iodata = Protox.json_encode!(msg)
-["{", ["\"a\"", ":", "\"BAR\""], "}"]
+["{", ["\"a\"", ":", "42"], "}"]
 ```
 
 It's also possible to call `json_encode` and `json_encode!` directly on the generated structures:
@@ -201,11 +194,31 @@ iex> iodata = Fiz.Foo.json_encode!(msg)
 
 ### Decode
 
-TODO
+Here's how to decode JSON to a message:
+
+```elixir
+iex> Protox.json_decode("{\"a\":42}", Fiz.Foo)
+{:ok, %Fiz.Foo{__uf__: [], a: 42, b: %{}}}
+```
+
+Or, with throwing style:
+
+```elixir
+iex> Protox.json_decode!("{\"a\":42}", Fiz.Foo)
+%Fiz.Foo{__uf__: [], a: 42, b: %{}}
+```
+
+It's also possible to call `json_decode` and `json_decode!` directly on the generated structures:
+
+```elixir
+iex> Fiz.Foo.json_decode("{\"a\":42}")
+iex> Fiz.Foo.json_decode!("{\"a\":42}")
+```
+
 
 ### JSON library configuration
 
-By default, `protox` uses [`Jason`](https://github.com/michalmuskala/jason) to encode values to JSON (i.e. mostly to escape strings). However, you can chose to use [`Poison`](https://github.com/devinus/poison) (or any other library that exports a `encode!` function):
+By default, `protox` uses [`Jason`](https://github.com/michalmuskala/jason) to encode values to JSON (mostly to escape strings). However, you can chose to use [`Poison`](https://github.com/devinus/poison) (or any other library that exports a `encode!` function):
 
 ```elixir
 iex> Protox.json_encode!(msg, json_encoder: Poison)
@@ -214,7 +227,7 @@ iex> Protox.json_encode!(msg, json_encoder: Poison)
 
 ### Well-known types
 
-Note that `protox` does not (yet) support the encoding of the [Any](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#any) well-know type: it will be encoded like a regular message, rather than with the custom encoding specified in the [JSON specification](https://developers.google.com/protocol-buffers/docs/proto3#json).
+Note that `protox` does not support the [Any](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#any) well-know type: it will be encoded and decoded like a regular message, rather than with the custom encoding specified in the [JSON specification](https://developers.google.com/protocol-buffers/docs/proto3#json).
 
 
 ## Packages and  namespaces
@@ -224,12 +237,8 @@ Note that `protox` does not (yet) support the encoding of the [Any](https://deve
 Protobuf provides a `package` [directive](https://developers.google.com/protocol-buffers/docs/proto#packages):
 
 ```proto
-syntax = "proto3";
-
 package abc.def;
-
-message Baz {
-}
+message Baz {}
 ```
 
 Modules generated by protox will include this package declaration. Thus, the example above will be translated to `Abc.Def.Baz` (note the [camelization](#implementation-choices) of package `abc.def` to `Abc.Def`).
@@ -255,10 +264,8 @@ end
 In this example, the module `MyApp.Abc.Msg` is generated:
 
 ```elixir
-iex> msg = %MyApp.Msg{a: 42}
+iex> msg = %MyApp.Abc.Msg{a: 42}
 ```
-
-It's useful to make the generated code appear as being part of your code structure.
 
 ## Specify import path
 
@@ -298,7 +305,7 @@ It corresponds to the `-I` option of `protoc`.
 
 [Unknown fields](https://developers.google.com/protocol-buffers/docs/proto3#unknowns) are fields that are present on the wire but which do not correspond to an entry in the protobuf definition. Typically, it occurs when the sender has a newer version of the protobuf definition. It makes possible to have backward compatibility as the receiver with an old version of the protobuf definition will still be able to decode old fields.
 
-When unknown fields are encountered at decoding time, they are kept in the decoded message. It's possible to access them with the function `unknown_fields/1` defined with the message.
+When unknown fields are encountered at decoding time, they are kept in the decoded message. It's possible to access them with the  `unknown_fields/1` function defined with the message.
 
 ```elixir
 iex> msg = Msg.decode!(<<8, 42, 42, 4, 121, 97, 121, 101, 136, 241, 4, 83>>)
@@ -312,7 +319,9 @@ You must always use `unknown_fields/1` as the name of the field (e.g. `__uf__` i
 
 When you encode a message that contains unknown fields, they will be reencoded in the serialized output.
 
-Finally, you can deactivate the support of unknown fields by setting the `:keep_unknown_fields` option to `false`:
+### Deactive support of unknown fields
+
+You can deactivate the support of unknown fields by setting the `:keep_unknown_fields` option to `false`:
 ```elixir
 defmodule Baz do
   use Protox,
@@ -327,7 +336,7 @@ defmodule Baz do
     keep_unknown_fields: false
 end
 ```
-Note that protox will still correctly parse unknown fields, they just won't be added to the structure and you won't be able to access them.
+ℹ️ `protox` will still correctly parse unknown fields, they just won't be added to the structure and you won't be able to access them. This also means that unkown fields won't be serialized back.
 
 ## Unsupported features
 
@@ -416,7 +425,7 @@ Note that protox will still correctly parse unknown fields, they just won't be a
         nil
         ```
 
-* Messages and enums names: names are converted using the [`Macro.camelize/1`](https://hexdocs.pm/elixir/Macro.html#camelize/1) function.
+* Messages and enums names: they are converted using the [`Macro.camelize/1`](https://hexdocs.pm/elixir/Macro.html#camelize/1) function.
   Thus, in the following example, `non_camel_message` becomes `NonCamelMessage`, but the field `non_camel_field` is left unchanged:
     ```elixir
     defmodule Bar do
@@ -453,51 +462,60 @@ It's possible to generate a file that will contain all code corresponding to the
 MIX_ENV=prod mix protox.generate --output-path=/path/to/message.ex --include-path=./test/samples test/samples/messages.proto test/samples/proto2.proto
 ```
 
-The `--include-path` option is the same as the option described in section [Specify import path](#specify-import-path). If multiple include paths are needed, simply add more `--include-path` options.
+The generated file will be usable in any project as long as `protox` is declared in the dependencies as it needs functions from the protox runtime.
 
-The generated file will be usable in any project as long as protox is declared in the dependencies (the generated file still needs functions from the protox runtime).
 
-If you have large protobuf files, you can use the `--multiple-files` option to generate one file per module.
+### Options
 
-```shell
-mkdir generated
-MIX_ENV=prod mix protox.generate --multiple-files --output-path=generated --include-path=./test/samples test/samples/messages.proto test/samples/proto2.proto
-```
+* `--output-path`
+  The path to the file to be generated or to the destination folder when generating multiple files.
 
-Doing so, Elixir will be able to parallelize the compilation of generated modules.
+* `--include-path`
+  Specifies the [import path](#specify-import-path). If multiple include paths are needed, add more `--include-path` options.
 
-It is also possible to prepend a namespace to all generated modules using the `--namespace` option. More information is available in section [Prepend namespaces](#prepend-namespaces).
 
-Finally, you can pass the option `--keep-unknown-fields=false` to remove support of unknown fields. See [this section](#unknown-fields) for more information.
+* `--multiple-files`
+  Generates one file per module. In this case, `--output-path` must point to a directory. It's useful for definitions with a lot of messages as Elixir will be able to parallelize the compilation of the generated modules.
+
+* `--namespace`
+  Prepends [a namespace](#prepend-namespaces) to all generated modules.
+
+* `--keep-unknown-fields=[true|false]`
+  Toggles support of [unknown fields](#unknown-fields). Default to `true`.
 
 ## Conformance
 
-The protox library has been thoroughly tested using the [conformance checker provided by Google](https://github.com/protocolbuffers/protobuf/tree/master/conformance).
+The protox library has been thoroughly tested using the conformance checker [provided by Google](https://github.com/protocolbuffers/protobuf/tree/master/conformance).
 
 Here's how to launch the conformance tests:
 
 * Get conformance-test-runner [sources](https://github.com/protocolbuffers/protobuf/archive/refs/tags/v3.18.0.tar.gz).
 * Compile conformance-test-runner ([macOS and Linux only](https://github.com/protocolbuffers/protobuf/tree/master/conformance#portability)):
-  `tar xf protobuf-3.18.0.tar.gz && cd protobuf-3.18.0 && ./autogen.sh && ./configure && make -j && cd conformance && make -j`.
-* Run `mix protox.conformance --runner=/path/to/protobuf-3.18.0/conformance/conformance-test-runner`.
-  A report will be generated in a directory `conformance_report`.
-  If everything's fine, the following text should be displayed:
+    ```
+    tar xf protobuf-3.18.0.tar.gz && cd protobuf-3.18.0 && ./autogen.sh && ./configure && make -j && cd conformance && make -j
+    ```
 
-  ```
-  CONFORMANCE TEST BEGIN ====================================
+* Launch the conformance tests:
+    ```
+    mix protox.conformance --runner=/path/to/protobuf-3.18.0/conformance/conformance-test-runner
+    ```
+* A report will be generated in the directory `conformance_report` and the following text should be displayed:
 
-  CONFORMANCE SUITE PASSED: 1988 successes, 0 skipped, 29 expected failures, 0 unexpected failures.
+    ```
+    CONFORMANCE TEST BEGIN ====================================
+
+    CONFORMANCE SUITE PASSED: 1988 successes, 0 skipped, 29 expected failures, 0 unexpected failures.
 
 
-  CONFORMANCE TEST BEGIN ====================================
+    CONFORMANCE TEST BEGIN ====================================
 
-  CONFORMANCE SUITE PASSED: 0 successes, 120 skipped, 0 expected failures, 0 unexpected failures.
-  ```
+    CONFORMANCE SUITE PASSED: 0 successes, 120 skipped, 0 expected failures, 0 unexpected failures.
+    ```
 
-You can alternatively launch these conformance tests with `mix test` by setting the `PROTOBUF_CONFORMANCE_RUNNER` environment variable and including the `conformance` tag:
-   ```
-   PROTOBUF_CONFORMANCE_RUNNER=./protobuf-3.18.0/conformance/conformance-test-runner MIX_ENV=test mix test --include conformance
-   ```
+* You can alternatively launch these conformance tests with `mix test` by setting the `PROTOBUF_CONFORMANCE_RUNNER` environment variable and including the `conformance` tag:
+     ```
+     PROTOBUF_CONFORMANCE_RUNNER=/path/to/conformance-test-runner MIX_ENV=test mix test --include conformance
+     ```
 
 ### Skipped conformance tests
 
