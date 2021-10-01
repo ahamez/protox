@@ -5,7 +5,7 @@
 > **This README is for the current development version, which is not the currently published version [1.5.1](https://hex.pm/packages/protox)**. You can find the
 docs for the latest published version of `protox` [here](https://hexdocs.pm/protox/readme.html).
 
-`protox` is an Elixir library to work with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers), versions 2 and 3.
+`protox` is an Elixir library to work with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers), versions 2 and 3. It supports both binary and JSON encoding and decoding.
 
 The primary objective of `protox` is **reliability**: it uses [property based testing](https://github.com/alfert/propcheck) and has a [near 100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master). Also, using [mutation testing](https://en.wikipedia.org/wiki/Mutation_testing) with the invaluable help of [Muzak pro](https://devonestes.com/muzak), the quality of the `protox` test suite has been validated. Therefore, `protox` passes all the tests of the conformance checker provided by Google. See [Conformance](#conformance) section for more information.
 
