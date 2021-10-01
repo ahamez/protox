@@ -93,7 +93,8 @@ defmodule Protox.DefineMessage do
         try do
           {:ok, json_encode!(msg, opts)}
         rescue
-          e -> {:error, e}
+          e in Protox.JsonEncodingError ->
+            {:error, e}
         end
       end
 

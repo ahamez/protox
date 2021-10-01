@@ -17,6 +17,23 @@ defmodule Protox.DecodingError do
   end
 end
 
+defmodule Protox.EncodingError do
+  @moduledoc """
+  This error is thrown when a message could not be encoded.
+  """
+
+  defexception message: "",
+               field: nil
+
+  @doc false
+  def new(field, reason) when is_atom(field) and is_binary(reason) do
+    %__MODULE__{
+      message: "Could not encode field #{inspect(field)} (#{reason})",
+      field: field
+    }
+  end
+end
+
 defmodule Protox.IllegalTagError do
   @moduledoc """
   This error is thrown when decoding data with a field which tag is 0.

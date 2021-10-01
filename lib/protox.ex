@@ -144,7 +144,7 @@ defmodule Protox do
       iex> msg = %Namespace.Fiz.Foo{a: "should not be a string"}
       iex> {:error, reason} = Protox.encode(msg)
       iex> reason
-      %ArgumentError{message: "argument error"}
+      %Protox.EncodingError{field: :a, message: "Could not encode field :a (invalid field value)"}
 
   """
   @doc since: "1.6.0"

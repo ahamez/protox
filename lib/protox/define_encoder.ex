@@ -48,7 +48,8 @@ defmodule Protox.DefineEncoder do
         try do
           {:ok, encode!(msg)}
         rescue
-          e -> {:error, e}
+          e in [Protox.EncodingError, Protox.RequiredFieldsError] ->
+            {:error, e}
         end
       end
 
@@ -131,7 +132,15 @@ defmodule Protox.DefineEncoder do
       fun_ast = make_encode_field_body(field, required, syntax, vars)
 
       quote do
-        defp unquote(fun_name)(unquote(vars.acc), unquote(vars.msg)), do: unquote(fun_ast)
+        defp unquote(fun_name)(unquote(vars.acc), unquote(vars.msg)) do
+          try do
+            unquote(fun_ast)
+          rescue
+            ArgumentError ->
+              reraise Protox.EncodingError.new(unquote(name), "invalid field value"),
+                      __STACKTRACE__
+          end
+        end
       end
     end
   end
