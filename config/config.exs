@@ -8,6 +8,7 @@ if Mix.env() != :prod do
     hooks: [
       pre_commit: [
         tasks: [
+          {:cmd, "mix credo"},
           {:cmd, "mix format"}
         ]
       ],
@@ -15,7 +16,6 @@ if Mix.env() != :prod do
         verbose: false,
         tasks: [
           {:cmd, "mix deps.unlock --check-unused"},
-          {:cmd, "mix credo"},
           {:cmd, "mix dialyzer"},
           {:cmd, "mix test --exclude properties"}
         ]
