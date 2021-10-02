@@ -8,7 +8,7 @@ defmodule Protox.Jason do
       Jason.decode!(iodata)
     rescue
       e in Jason.DecodeError ->
-        reraise Protox.JsonDecodingError.new(Jason.DecodeError.message(e)), __STACKTRACE__
+        reraise Protox.JsonDecodingError.new(Exception.message(e)), __STACKTRACE__
     end
   end
 
@@ -18,7 +18,7 @@ defmodule Protox.Jason do
       Jason.encode!(term)
     rescue
       e in Jason.EncodeError ->
-        reraise Protox.JsonEncodingError.new(Jason.EncodeError.message(e)), __STACKTRACE__
+        reraise Protox.JsonEncodingError.new(Exception.message(e)), __STACKTRACE__
     end
   end
 end
