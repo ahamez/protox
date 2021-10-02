@@ -4,15 +4,13 @@ defmodule Protox.DecodingError do
   """
 
   defexception message: "",
-               binary: <<>>,
-               reason: nil
+               binary: <<>>
 
   @doc false
-  def new(reason, binary) do
+  def new(binary, reason) when is_binary(binary) and is_binary(reason) do
     %__MODULE__{
-      message: "Could not decode data (#{inspect(reason)})",
-      binary: binary,
-      reason: reason
+      message: "Could not decode data (#{reason})",
+      binary: binary
     }
   end
 end
@@ -85,16 +83,12 @@ defmodule Protox.JsonEncodingError do
   This error is thrown when a protobuf message could not be encoded to JSON.
   """
 
-  defexception message: "",
-               protobuf_msg: nil,
-               reason: ""
+  defexception message: ""
 
   @doc false
-  def new(protobuf_msg, reason) do
+  def new(reason) when is_binary(reason) do
     %__MODULE__{
-      message: "Could not encode #{inspect(protobuf_msg.__struct__)} to JSON because #{reason}",
-      protobuf_msg: protobuf_msg,
-      reason: reason
+      message: "Could not encode to JSON because #{reason}"
     }
   end
 end

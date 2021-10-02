@@ -48,16 +48,16 @@ defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.Duration do
   def encode_message(msg, json_encode) do
     cond do
       msg.seconds < -315_576_000_000 ->
-        raise Protox.JsonEncodingError.new(msg, "#{msg.seconds} is < -315_576_000_000")
+        raise Protox.JsonEncodingError.new("#{msg.__struct__}.seconds is < -315_576_000_000")
 
       msg.seconds > 315_576_000_000 ->
-        raise Protox.JsonEncodingError.new(msg, "#{msg.seconds} is > 315_576_000_000")
+        raise Protox.JsonEncodingError.new("{msg.__struct__}.seconds is > 315_576_000_000")
 
       msg.nanos < -999_999_999 ->
-        raise Protox.JsonEncodingError.new(msg, "#{msg.nanos} is < -999_999_999")
+        raise Protox.JsonEncodingError.new("{msg.__struct__}.nanos is < -999_999_999")
 
       msg.nanos > 999_999_999 ->
-        raise Protox.JsonEncodingError.new(msg, "#{msg.nanos} is > 999_999_999")
+        raise Protox.JsonEncodingError.new("{msg.__struct__}.nanos is > 999_999_999")
 
       true ->
         duration =

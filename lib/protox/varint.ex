@@ -27,6 +27,6 @@ defmodule Protox.Varint do
   end
 
   defp do_decode(_result, _shift, binary) do
-    raise Protox.DecodingError.new(:invalid_varint, binary)
+    raise Protox.DecodingError.new(binary, "invalid varint")
   end
 end

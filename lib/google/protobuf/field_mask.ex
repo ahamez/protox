@@ -31,7 +31,7 @@ defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.FieldMask do
         |> json_encode.()
 
       :error ->
-        raise Protox.JsonEncodingError.new(msg, "path is invalid")
+        raise Protox.JsonEncodingError.new("#{msg.__struct__}.paths is invalid")
     end
   end
 
