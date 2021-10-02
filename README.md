@@ -218,10 +218,11 @@ iex> Fiz.Foo.json_decode!("{\"a\":42}")
 
 ### JSON library configuration
 
-By default, `protox` uses [`Jason`](https://github.com/michalmuskala/jason) to encode values to JSON (mostly to escape strings). However, you can chose to use [`Poison`](https://github.com/devinus/poison) (or any other library that exports a `encode!` function):
+By default, `protox` uses [`Jason`](https://github.com/michalmuskala/jason) to encode values to JSON (mostly to escape strings). However, you can use any other library by implementing the Protox.JsonLibrary behaviour. Then, you just have to set the `:json_library` library option:
 
 ```elixir
-iex> Protox.json_encode!(msg, json_encoder: Poison)
+iex> Protox.json_decode!(iodata, Fiz.Foo, json_library: MyJsonLibrary)
+iex> Protox.json_encode!(msg, json_library: MyJsonLibrary)
 ```
 
 

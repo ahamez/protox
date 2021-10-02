@@ -100,16 +100,16 @@ defmodule Protox.DefineMessage do
 
       @spec json_decode!(iodata(), keyword()) :: iodata() | no_return()
       def json_decode!(input, opts \\ []) do
-        {json_decoder, _opts} = Keyword.pop_first(opts, :json_decoder, Jason)
+        {json_library, _opts} = Keyword.pop_first(opts, :json_library, Protox.Jason)
 
-        Protox.JsonDecode.decode!(input, unquote(msg_name), &json_decoder.decode!(&1))
+        Protox.JsonDecode.decode!(input, unquote(msg_name), &json_library.decode!(&1))
       end
 
       @spec json_encode!(struct(), keyword()) :: iodata() | no_return()
       def json_encode!(msg, opts \\ []) do
-        {json_encoder, _opts} = Keyword.pop_first(opts, :json_encoder, Jason)
+        {json_library, _opts} = Keyword.pop_first(opts, :json_library, Protox.Jason)
 
-        Protox.JsonEncode.encode!(msg, &json_encoder.encode!(&1))
+        Protox.JsonEncode.encode!(msg, &json_library.encode!(&1))
       end
     end
   end

@@ -639,34 +639,4 @@ defmodule Protox.JsonDecodeTest do
       assert Protox.json_decode!(json, Msg) == msg
     end
   end
-
-  describe "JSON libraries" do
-    setup do
-      {
-        :ok,
-        %{
-          json: "{\"a\":null, \"b\":\"foo\", \"c\": 33}",
-          expected: %Sub{a: 0, b: "foo", c: 33}
-        }
-      }
-    end
-
-    test "Success: jason", %{json: json, expected: expected} do
-      assert Protox.json_decode!(json, Sub, json_decoder: Jason) == expected
-    end
-
-    test "Success: poison", %{json: json, expected: expected} do
-      assert Protox.json_decode!(json, Sub, json_decoder: Poison) == expected
-    end
-
-    test "Success: jiffy", %{json: json, expected: expected} do
-      defmodule Jiffy do
-        def decode!(input) do
-          :jiffy.decode(input, [:return_maps, :use_nil])
-        end
-      end
-
-      assert Protox.json_decode!(json, Sub, json_decoder: Protox.JsonDecodeTest.Jiffy) == expected
-    end
-  end
 end
