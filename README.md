@@ -7,9 +7,9 @@ docs for the latest published version of `protox` [here](https://hexdocs.pm/prot
 
 `protox` is an Elixir library to work with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers), versions 2 and 3. It supports both binary and JSON encoding and decoding.
 
-The primary objective of `protox` is **reliability**: it uses [property based testing](https://github.com/alfert/propcheck) and has a [near 100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master). Also, using [mutation testing](https://en.wikipedia.org/wiki/Mutation_testing) with the invaluable help of [Muzak pro](https://devonestes.com/muzak), the quality of the `protox` test suite has been validated. Therefore, `protox` passes all the tests of the conformance checker provided by Google. See [Conformance](#conformance) section for more information.
+The primary objective of `protox` is **reliability**: it uses [property based testing](https://github.com/alfert/propcheck) and has a [near 100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master). Also, using [mutation testing](https://en.wikipedia.org/wiki/Mutation_testing) with the invaluable help of [Muzak pro](https://devonestes.com/muzak), the quality of the `protox` test suite has been validated. Therefore, `protox` [passes all the tests](#conformance) of the conformance checker provided by Google.
 
-It's also easy to use: just point to the `*.proto` files or give the schema to the `Protox` macro, no need to generate any file! However, should you need to generate files, a mix task is available (see [Files generation](#files-generation)).
+It's also easy to use: just point to the `*.proto` files or give the schema to the `Protox` macro, no need to generate any file! However, should you need to generate files, a mix task is [available](#files-generation).
 
 Given the following protobuf definition, `protox` will generate a `Msg` struct:
 ```proto
