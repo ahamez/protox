@@ -84,7 +84,8 @@ defmodule Protox.DefineMessage do
         try do
           {:ok, json_decode!(input, opts)}
         rescue
-          e -> {:error, e}
+          e in Protox.JsonDecodingError ->
+            {:error, e}
         end
       end
 

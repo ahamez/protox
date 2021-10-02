@@ -17,7 +17,7 @@ defmodule Protox.JsonDecode do
 
   def decode_message(_initial_msg, nil), do: nil
 
-  def decode_message(initial_msg, json) do
+  def decode_message(initial_msg, json) when is_map(json) do
     Enum.reduce(json, initial_msg, fn {field_json_name, field_value}, msg_acc ->
       case get_field(initial_msg, field_json_name) do
         {:ok, field} ->
@@ -36,6 +36,10 @@ defmodule Protox.JsonDecode do
           msg_acc
       end
     end)
+  end
+
+  def decode_message(_initial_msg, _json) do
+    raise JsonDecodingError.new("Expected an object for message field")
   end
 
   def decode_enum(_enum, nil), do: nil
@@ -76,7 +80,12 @@ defmodule Protox.JsonDecode do
   end
 
   def decode_value(json_value, :bytes) when is_binary(json_value) do
-    Base.url_decode64!(json_value, padding: false)
+    try do
+      Base.url_decode64!(json_value, padding: false)
+    rescue
+      e in ArgumentError ->
+        reraise Protox.JsonDecodingError.new(Exception.message(e)), __STACKTRACE__
+    end
   end
 
   def decode_value(json_value, :string) when is_binary(json_value), do: json_value
@@ -230,6 +239,10 @@ defmodule Protox.JsonDecode do
     {field.name, map}
   end
 
+  defp decode_msg_field(%Field{kind: :map} = field, _json_value, _msg) do
+    raise JsonDecodingError.new("Expected a map for field #{field.name}")
+  end
+
   defp decode_msg_field(%Field{label: :repeated} = _field, nil = _json_value, _msg), do: nil
 
   defp decode_msg_field(%Field{label: :repeated} = field, json_value, _msg)
@@ -243,6 +256,10 @@ defmodule Protox.JsonDecode do
       end)
 
     {field.name, list}
+  end
+
+  defp decode_msg_field(%Field{label: :repeated} = field, _json_value, _msg) do
+    raise JsonDecodingError.new("Expected a list for field #{field.name}")
   end
 
   defp get_field(msg, json_name) do

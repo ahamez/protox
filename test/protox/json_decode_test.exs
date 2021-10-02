@@ -603,6 +603,26 @@ defmodule Protox.JsonDecodeTest do
       "null in array",
       "{\"repeatedInt32\": [null]}",
       ProtobufTestMessages.Proto3.TestAllTypesProto3
+    },
+    {
+      "RepeatedFieldWrongElementTypeExpectingMessagesGotBool",
+      "{\"repeatedNestedMessage\": [{\"a\": 1}, false]}",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
+    },
+    {
+      "invalid JSON",
+      "{\"",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
+    },
+    {
+      "integer instead of a list",
+      "{\"repeatedInt32\": 1}",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
+    },
+    {
+      "integer instead of a map",
+      "{\"mapInt32Int32\": 1}",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
     }
   ]
 
