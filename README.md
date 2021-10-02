@@ -59,7 +59,8 @@ You can find [here](https://github.com/ahamez/protox/blob/master/test/example_te
 
 - Elixir >= 1.7
 - protoc >= 3.0 *This dependency is only required at compile-time*
-  `protox` uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`. You can download it [here](https://github.com/google/protobuf) or you can install it with your favorite package manager (`brew install protobuf`, `apt install protobuf-compiler`, etc.).
+  `protox` uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`.
+  👉 You can download it [here](https://github.com/google/protobuf) or you can install it with your favorite package manager (`brew install protobuf`, `apt install protobuf-compiler`, etc.).
   ℹ️ If you choose to generate files, `protoc` won't be needed to compile these files.
 
 
@@ -78,8 +79,8 @@ If you plan to use the JSON encoding, you'll need to add [`Jason`](https://githu
 ```elixir
 def deps do
   [
-    {:jason, "~> 1.2"},
-    {:protox, "~> 1.5"}
+    {:protox, "~> 1.5"},
+    {:jason, "~> 1.2"}
   ]
 end
 ```
@@ -232,13 +233,16 @@ iex> Fiz.Foo.json_decode!("{\"a\":42}")
 
 ### JSON library configuration
 
-By default, `protox` uses [`Jason`](https://github.com/michalmuskala/jason) to encode values to JSON (mostly to escape strings). However, you can use any other library by implementing the Protox.JsonLibrary behaviour. Then, you just have to set the `:json_library` option:
+By default, `protox` uses [`Jason`](https://github.com/michalmuskala/jason) to encode values to JSON (mostly to escape strings). You can also use [`Poison`](https://github.com/devinus/poison):
 
 ```elixir
-iex> Protox.json_decode!(iodata, Fiz.Foo, json_library: MyJsonLibrary)
-iex> Protox.json_encode!(msg, json_library: MyJsonLibrary)
+iex> Protox.json_decode!(iodata, Fiz.Foo, json_library: Protox.Poison)
+iex> Protox.json_encode!(msg, json_library: Protox.Poison)
 ```
 
+ℹ️ You can use any other library by implementing the `Protox.JsonLibrary` behaviour.
+
+👉 Don't forget to add the chosen library to the list of dependencies in `mix.exs`.
 
 ### Well-known types
 

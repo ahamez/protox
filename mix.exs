@@ -47,6 +47,7 @@ defmodule Protox.Mixfile do
       {:git_hooks, "~> 0.5", only: [:test, :dev], runtime: false},
       {:jason, "~> 1.2", optional: true},
       {:mix_test_watch, "~> 1.0", only: [:dev], runtime: false},
+      {:poison, "~> 5.0", only: [:test, :dev], optional: true},
       {:propcheck, "~> 1.2", only: [:test, :dev]}
     ]
   end

@@ -623,6 +623,11 @@ defmodule Protox.JsonDecodeTest do
       "integer instead of a map",
       "{\"mapInt32Int32\": 1}",
       ProtobufTestMessages.Proto3.TestAllTypesProto3
+    },
+    {
+      "invalid bytes",
+      "{\"optionalBytes\": \"a\"}",
+      ProtobufTestMessages.Proto3.TestAllTypesProto3
     }
   ]
 
@@ -657,6 +662,26 @@ defmodule Protox.JsonDecodeTest do
       msg = %Msg{msg_e: true}
       json = "{\"msg_e\":true}"
       assert Protox.json_decode!(json, Msg) == msg
+    end
+  end
+
+  describe "JSON libraries" do
+    setup do
+      {
+        :ok,
+        %{
+          json: "{\"a\":null, \"b\":\"foo\", \"c\": 33}",
+          expected: %Sub{a: 0, b: "foo", c: 33}
+        }
+      }
+    end
+
+    test "Success: jason", %{json: json, expected: expected} do
+      assert Protox.json_decode!(json, Sub, json_library: Protox.Jason) == expected
+    end
+
+    test "Success: poison", %{json: json, expected: expected} do
+      assert Protox.json_decode!(json, Sub, json_library: Protox.Poison) == expected
     end
   end
 end

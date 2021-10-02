@@ -351,6 +351,30 @@ defmodule Protox.JsonEncodeTest do
     end
   end
 
+  describe "JSON libraries" do
+    test "success: jason" do
+      msg = %Msg{msg_k: %{1 => "a", 2 => "b"}}
+      json = Protox.json_encode!(msg, json_library: Protox.Jason)
+
+      assert json == [
+               "{",
+               ["\"msgK\"", ":", ["{", "\"2\"", ":", "\"b\"", ",", "\"1\"", ":", "\"a\"", "}"]],
+               "}"
+             ]
+    end
+
+    test "sucess: poison" do
+      msg = %Msg{msg_k: %{1 => "a", 2 => "b"}}
+      json = Protox.json_encode!(msg, json_library: Protox.Poison)
+
+      assert json == [
+               "{",
+               ["\"msgK\"", ":", ["{", "\"2\"", ":", "\"b\"", ",", "\"1\"", ":", "\"a\"", "}"]],
+               "}"
+             ]
+    end
+  end
+
   # -- Private
 
   defp encode!(msg) do
