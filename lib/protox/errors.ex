@@ -66,14 +66,12 @@ defmodule Protox.JsonDecodingError do
   This error is thrown when a JSON payload could not be decoded to a protobuf message.
   """
 
-  defexception message: "",
-               reason: ""
+  defexception message: ""
 
   @doc false
   def new(reason) do
     %__MODULE__{
-      message: "Could not decode JSON payload because #{reason}",
-      reason: reason
+      message: "Could not decode JSON payload: #{reason}"
     }
   end
 end
@@ -88,7 +86,7 @@ defmodule Protox.JsonEncodingError do
   @doc false
   def new(reason) when is_binary(reason) do
     %__MODULE__{
-      message: "Could not encode to JSON because #{reason}"
+      message: "Could not encode to JSON: #{reason}"
     }
   end
 end
