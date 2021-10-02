@@ -301,6 +301,12 @@ defmodule Protox.JsonEncodeTest do
     {
       "field_mask (3)",
       %Google.Protobuf.FieldMask{paths: ["foo__bar"]}
+    },
+    {
+      "invalid string",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{
+        optional_string: "\xFF"
+      }
     }
   ]
 
