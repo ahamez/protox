@@ -24,9 +24,12 @@ You can then interact with `Msg` like any Elixir structure:
 ```elixir
 iex> msg = %Msg{a: 42, b: %{1 => "a map entry"}}
 iex> {:ok, iodata} = Msg.encode(msg)
+iex> {:ok, iodata} = Msg.json_encode(msg)
 
 iex> binary = # read binary from a socket, a file, etc.
 iex> {:ok, msg} = Msg.decode(binary)
+iex> json = # read json from a socket, file, etc.
+iex> {:ok, msg} = Msg.json_decode(json)
 ```
 
 You can find [here](https://github.com/ahamez/protox/blob/master/test/example_test.exs) a more involved example with most types.
