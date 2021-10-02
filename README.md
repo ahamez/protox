@@ -73,6 +73,17 @@ def deps do
 end
 ```
 
+If you plan to use the JSON encoding, you'll need to add [`Jason`](https://github.com/michalmuskala/jason) to your dependencies:
+
+```elixir
+def deps do
+  [
+    {:jason, "~> 1.2"},
+    {:protox, "~> 1.5"}
+  ]
+end
+```
+
 ## Usage with an inlined textual description
 
 The following example generates two modules: `Baz` and `Foo` from a textual description:

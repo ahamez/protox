@@ -3,9 +3,18 @@ defmodule Protox.Jason do
   @behaviour Protox.JsonLibrary
 
   @impl true
-  def decode!(iodata) do
+  def load() do
+    if Code.ensure_loaded?(Jason) do
+      {:ok, Jason}
+    else
+      :error
+    end
+  end
+
+  @impl true
+  def decode!(jason_module, iodata) do
     try do
-      Jason.decode!(iodata)
+      jason_module.decode!(iodata)
     rescue
       e in Jason.DecodeError ->
         reraise Protox.JsonDecodingError.new(Exception.message(e)), __STACKTRACE__
@@ -13,9 +22,9 @@ defmodule Protox.Jason do
   end
 
   @impl true
-  def encode!(term) do
+  def encode!(jason_module, term) do
     try do
-      Jason.encode!(term)
+      jason_module.encode!(term)
     rescue
       e in Jason.EncodeError ->
         reraise Protox.JsonEncodingError.new(Exception.message(e)), __STACKTRACE__
