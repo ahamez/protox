@@ -525,7 +525,7 @@ You may have noticed that there are `29 expected failures`. Indeed, we removed o
 - [Any](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#any) is not yet supported by `protox`;
 - We could not find the specification for the protobuf2 case of field name extensions when decoding from JSON.
 
-The exact list of skipped tests is [here](conformance/failure_list.txt).
+The exact list of skipped tests is [here](https://github.com/ahamez/protox/blob/master/conformance/failure_list.txt).
 
 ## Types mapping
 
