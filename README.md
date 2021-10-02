@@ -40,9 +40,8 @@ You can find [here](https://github.com/ahamez/protox/blob/master/test/example_te
 - [Installation](#installation)
 - [Usage with a textual description](#usage-with-a-textual-description)
 - [Usage with files](#usage-with-files)
-- [Encode](#encode)
-- [Decode](#decode)
-- [JSON](#json)
+- [Protobuf binary format](#protobuf-binary-format)
+- [Protobuf JSON format](#protobuf-json-format)
 - [Packages and  namespaces](#packages-and--namespaces)
 - [Specify import path](#specify-import-path)
 - [Unknown fields](#unknown-fields)
@@ -121,9 +120,11 @@ defmodule MyModule do
 end
 ```
 
-## Encode
+## Protobuf binary format
 
-Here's how to create and encode a new message:
+### Encode
+
+Here's how to create and encode a new message to binary protobuf:
 
 ```elixir
 iex> msg = %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}}
@@ -152,16 +153,16 @@ iex> IO.binwrite(file, iodata)
 :ok
 ```
 
-However, you can use [`:binary.list_to_bin/1`](https://erlang.org/doc/man/binary.html#list_to_bin-1) or [`IO.iodata_to_binary`](https://hexdocs.pm/elixir/IO.html#iodata_to_binary/1) to get a binary should the need arises:
+👉 You can use [`:binary.list_to_bin/1`](https://erlang.org/doc/man/binary.html#list_to_bin-1) or [`IO.iodata_to_binary`](https://hexdocs.pm/elixir/IO.html#iodata_to_binary/1) to get a binary:
 
 ```elixir
 iex> %Fiz.Foo{a: 3, b: %{1 => %Fiz.Baz{}}} |> Protox.encode!() |> :binary.list_to_bin()
 <<8, 3, 18, 4, 8, 1, 18, 0>>
 ```
 
-## Decode
+### Decode
 
-Here's how to decode a message from a binary:
+Here's how to decode a message from binary protobuf:
 
 ```elixir
 iex> {:ok, msg} = Protox.decode(<<8, 3, 18, 4, 8, 1, 18, 0>>, Fiz.Foo)
@@ -178,7 +179,7 @@ iex> {:ok, msg} = Fiz.Foo.decode(<<8, 3, 18, 4, 8, 1, 18, 0>>)
 iex> msg = Fiz.Foo.decode!(<<8, 3, 18, 4, 8, 1, 18, 0>>)
 ```
 
-## JSON
+## Protobuf JSON format
 
 `protox` implements the [Google's JSON specification](https://developers.google.com/protocol-buffers/docs/proto3#json).
 
@@ -246,7 +247,7 @@ iex> Protox.json_encode!(msg, json_library: Protox.Poison)
 
 ### Well-known types
 
-Note that `protox` does not support the [Any](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#any) well-know type: it will be encoded and decoded like a regular message, rather than with the custom encoding specified in the [JSON specification](https://developers.google.com/protocol-buffers/docs/proto3#json).
+Note that `protox` does not completely support the [Any](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#any) well-know type: it will be encoded and decoded like a regular message, rather than with the custom encoding specified in the [JSON specification](https://developers.google.com/protocol-buffers/docs/proto3#json).
 
 
 ## Packages and  namespaces
@@ -359,7 +360,7 @@ end
 
 ## Unsupported features
 
-* The [Any](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#any) well-known type. However, when working with binary protobuf, you can manually unpack the embedded message right after decoding and conversely pack it right before encoding;
+* The [Any](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#any) well-known type is partially supported: you can manually unpack the embedded message right after decoding and conversely pack it right before encoding;
 * Groups ([deprecated in protobuf](https://developers.google.com/protocol-buffers/docs/proto#groups));
 * All [options](https://developers.google.com/protocol-buffers/docs/proto3#options) other than `packed` and `default` are ignored as they concern other languages implementation details.
 
