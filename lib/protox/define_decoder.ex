@@ -305,7 +305,6 @@ defmodule Protox.DefineDecoder do
   defp make_delimited_case_impl(msg_var, keep_set_fields, single_generated, %Field{} = field) do
     vars = %{
       bytes: quote(do: bytes),
-      value: quote(do: value),
       delimited: quote(do: delimited),
       msg: msg_var
     }
@@ -314,10 +313,10 @@ defmodule Protox.DefineDecoder do
     # it means that it's a repeated field of scalar elements (as non-scalar cannot be packed,
     # see https://developers.google.com/protocol-buffers/docs/encoding#optional).
     # Thus, it's useless to wrap in a list the result of the decoding as it means
-    # we're using a parse_repeated_* function that always return a list.
+    # we're using a parse_repeated_* function that always returns a list.
     update_field =
       if field.type == :string or field.type == :bytes do
-        make_update_field(vars.value, field, vars, _wrap_value = !single_generated)
+        make_update_field(vars.delimited, field, vars, _wrap_value = !single_generated)
       else
         parse_delimited = make_parse_delimited(vars.delimited, field.type)
         make_update_field(parse_delimited, field, vars, _wrap_value = !single_generated)
@@ -337,20 +336,11 @@ defmodule Protox.DefineDecoder do
         false -> quote do: _
       end
 
-    if field.type == :string or field.type == :bytes do
-      quote do
-        {unquote(field.tag), unquote(wire_type), unquote(vars.bytes)} ->
-          {len, unquote(vars.bytes)} = Protox.Varint.decode(unquote(vars.bytes))
-          <<unquote(vars.value)::binary-size(len), rest::binary>> = unquote(vars.bytes)
-          unquote(case_return)
-      end
-    else
-      quote do
-        {unquote(field.tag), unquote(wire_type), unquote(vars.bytes)} ->
-          {len, unquote(vars.bytes)} = Protox.Varint.decode(unquote(vars.bytes))
-          <<unquote(vars.delimited)::binary-size(len), rest::binary>> = unquote(vars.bytes)
-          unquote(case_return)
-      end
+    quote do
+      {unquote(field.tag), unquote(wire_type), unquote(vars.bytes)} ->
+        {len, unquote(vars.bytes)} = Protox.Varint.decode(unquote(vars.bytes))
+        <<unquote(vars.delimited)::binary-size(len), rest::binary>> = unquote(vars.bytes)
+        unquote(case_return)
     end
   end
 
