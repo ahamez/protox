@@ -48,12 +48,23 @@ defmodule Protox.Decode do
 
   def parse_unknown(tag, @wire_delimited, bytes) do
     {len, new_bytes} = Varint.decode(bytes)
-    <<unknown_bytes::binary-size(len), rest::binary>> = new_bytes
-    {{tag, @wire_delimited, unknown_bytes}, rest}
+
+    try do
+      <<unknown_bytes::binary-size(len), rest::binary>> = new_bytes
+      {{tag, @wire_delimited, unknown_bytes}, rest}
+    rescue
+      _ ->
+        reraise Protox.DecodingError.new(bytes, "invalid bytes for unknown delimited"),
+                __STACKTRACE__
+    end
   end
 
   def parse_unknown(tag, @wire_32bits, <<unknown_bytes::32, rest::binary>>) do
     {{tag, @wire_32bits, <<unknown_bytes::32>>}, rest}
+  end
+
+  def parse_unknown(_tag, _wire_type, bin) do
+    raise Protox.DecodingError.new(bin, "can't parse unknown bytes")
   end
 
   defp get_unknown_varint_bytes(acc, <<0::1, b::7, rest::binary>>) do
@@ -64,20 +75,33 @@ defmodule Protox.Decode do
     get_unknown_varint_bytes(<<acc::binary, 1::1, b::7>>, rest)
   end
 
+  defp get_unknown_varint_bytes(_acc, bin) do
+    raise Protox.DecodingError.new(bin, "can't parse unknown varint bytes")
+  end
+
   def parse_double(<<@positive_infinity_64, rest::binary>>), do: {:infinity, rest}
   def parse_double(<<@negative_infinity_64, rest::binary>>), do: {:"-infinity", rest}
   def parse_double(<<_::48, 0b1111::4, _::4, _::1, 0b1111111::7, rest::binary>>), do: {:nan, rest}
   def parse_double(<<value::float-little-64, rest::binary>>), do: {value, rest}
+  def parse_double(bin), do: raise(Protox.DecodingError.new(bin, "invalid double"))
 
   def parse_float(<<@positive_infinity_32, rest::binary>>), do: {:infinity, rest}
   def parse_float(<<@negative_infinity_32, rest::binary>>), do: {:"-infinity", rest}
   def parse_float(<<_::16, 1::1, _::7, _::1, 0b1111111::7, rest::binary>>), do: {:nan, rest}
   def parse_float(<<value::float-little-32, rest::binary>>), do: {value, rest}
+  def parse_float(bin), do: raise(Protox.DecodingError.new(bin, "invalid float"))
 
   def parse_sfixed64(<<value::signed-little-64, rest::binary>>), do: {value, rest}
+  def parse_sfixed64(bin), do: raise(Protox.DecodingError.new(bin, "invalid sfixed64"))
+
   def parse_fixed64(<<value::unsigned-little-64, rest::binary>>), do: {value, rest}
+  def parse_fixed64(bin), do: raise(Protox.DecodingError.new(bin, "invalid fixed64"))
+
   def parse_sfixed32(<<value::signed-little-32, rest::binary>>), do: {value, rest}
+  def parse_sfixed32(bin), do: raise(Protox.DecodingError.new(bin, "invalid sfixed32"))
+
   def parse_fixed32(<<value::unsigned-little-32, rest::binary>>), do: {value, rest}
+  def parse_fixed32(bin), do: raise(Protox.DecodingError.new(bin, "invalid fixed32"))
 
   def parse_bool(bytes) do
     {value, rest} = Varint.decode(bytes)
@@ -86,44 +110,79 @@ defmodule Protox.Decode do
 
   def parse_sint32(bytes) do
     {value, rest} = Varint.decode(bytes)
-    <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
-    {Zigzag.decode(res), rest}
+
+    try do
+      <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
+      {Zigzag.decode(res), rest}
+    rescue
+      _ -> reraise Protox.DecodingError.new(bytes, "invalid bytes for sint32"), __STACKTRACE__
+    end
   end
 
   def parse_sint64(bytes) do
     {value, rest} = Varint.decode(bytes)
-    <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
-    {Zigzag.decode(res), rest}
+
+    try do
+      <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
+      {Zigzag.decode(res), rest}
+    rescue
+      _ -> reraise Protox.DecodingError.new(bytes, "invalid bytes for sint64"), __STACKTRACE__
+    end
   end
 
   def parse_uint32(bytes) do
     {value, rest} = Varint.decode(bytes)
-    <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
-    {res, rest}
+
+    try do
+      <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
+      {res, rest}
+    rescue
+      _ -> reraise Protox.DecodingError.new(bytes, "invalid bytes for uint32"), __STACKTRACE__
+    end
   end
 
   def parse_uint64(bytes) do
     {value, rest} = Varint.decode(bytes)
-    <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
-    {res, rest}
+
+    try do
+      <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
+      {res, rest}
+    rescue
+      _ -> reraise Protox.DecodingError.new(bytes, "invalid bytes for uint64"), __STACKTRACE__
+    end
   end
 
   def parse_enum(bytes, mod) do
     {value, rest} = Varint.decode(bytes)
-    <<res::signed-native-32>> = <<value::signed-native-32>>
-    {mod.decode(res), rest}
+
+    try do
+      <<res::signed-native-32>> = <<value::signed-native-32>>
+      {mod.decode(res), rest}
+    rescue
+      _ -> reraise Protox.DecodingError.new(bytes, "invalid bytes for enum"), __STACKTRACE__
+    end
   end
 
   def parse_int32(bytes) do
     {value, rest} = Varint.decode(bytes)
-    <<res::signed-native-32>> = <<value::signed-native-32>>
-    {res, rest}
+
+    try do
+      <<res::signed-native-32>> = <<value::signed-native-32>>
+      {res, rest}
+    rescue
+      _ -> reraise Protox.DecodingError.new(bytes, "invalid bytes for int32"), __STACKTRACE__
+    end
   end
 
   def parse_int64(bytes) do
     {value, rest} = Varint.decode(bytes)
-    <<res::signed-native-64>> = <<value::signed-native-64>>
-    {res, rest}
+
+    try do
+      <<res::signed-native-64>> = <<value::signed-native-64>>
+      {res, rest}
+    rescue
+      _ -> reraise Protox.DecodingError.new(bytes, "invalid bytes for int64"), __STACKTRACE__
+    end
   end
 
   def parse_repeated_bool(acc, <<>>), do: Enum.reverse(acc)
@@ -222,5 +281,17 @@ defmodule Protox.Decode do
   def parse_repeated_double(acc, bytes) do
     {value, rest} = parse_double(bytes)
     parse_repeated_double([value | acc], rest)
+  end
+
+  def parse_delimited(bytes, len) do
+    try do
+      <<value::binary-size(len), rest::binary>> = bytes
+
+      {value, rest}
+    rescue
+      _ ->
+        reraise Protox.DecodingError.new(bytes, "invalid bytes for delimited field"),
+                __STACKTRACE__
+    end
   end
 end

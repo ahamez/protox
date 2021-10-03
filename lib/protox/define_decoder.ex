@@ -46,7 +46,8 @@ defmodule Protox.DefineDecoder do
         try do
           {:ok, decode!(bytes)}
         rescue
-          e -> {:error, e}
+          e in [Protox.DecodingError, Protox.IllegalTagError, Protox.RequiredFieldsError] ->
+            {:error, e}
         end
       end
 
@@ -339,7 +340,7 @@ defmodule Protox.DefineDecoder do
     quote do
       {unquote(field.tag), unquote(wire_type), unquote(vars.bytes)} ->
         {len, unquote(vars.bytes)} = Protox.Varint.decode(unquote(vars.bytes))
-        <<unquote(vars.delimited)::binary-size(len), rest::binary>> = unquote(vars.bytes)
+        {unquote(vars.delimited), rest} = Protox.Decode.parse_delimited(unquote(vars.bytes), len)
         unquote(case_return)
     end
   end
@@ -645,7 +646,8 @@ defmodule Protox.DefineDecoder do
     parse_delimited =
       quote do
         {len, new_rest} = Protox.Varint.decode(unquote(bytes_var))
-        <<unquote(delimited_var)::binary-size(len), new_rest::binary>> = new_rest
+        {unquote(delimited_var), new_rest} = Protox.Decode.parse_delimited(new_rest, len)
+
         {unquote(make_parse_delimited(delimited_var, type)), new_rest}
       end
 
