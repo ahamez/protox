@@ -124,7 +124,10 @@ defmodule Protox.DefineEncoder do
   end
 
   defp make_encode_field_funs(fields, required_fields, syntax) do
-    vars = %{acc: quote(do: acc), msg: quote(do: msg)}
+    vars = %{
+      acc: Macro.var(:acc, __MODULE__),
+      msg: Macro.var(:msg, __MODULE__)
+    }
 
     for %Field{name: name} = field <- fields do
       required = name in required_fields
@@ -145,12 +148,7 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_field_body(
-         %Field{kind: {:scalar, default}} = field,
-         required,
-         syntax,
-         vars
-       ) do
+  defp make_encode_field_body(%Field{kind: {:scalar, default}} = field, required, syntax, vars) do
     key = make_key_bytes(field.tag, field.type)
     var = quote do: unquote(vars.msg).unquote(field.name)
     encode_value_ast = get_encode_value_body(field.type, var)
@@ -193,7 +191,7 @@ defmodule Protox.DefineEncoder do
          vars
        ) do
     key = make_key_bytes(child_field.tag, child_field.type)
-    var = quote do: child_field_value
+    var = Macro.var(:child_field_value, __MODULE__)
     encode_value_ast = get_encode_value_body(child_field.type, var)
 
     case child_field.label do
@@ -233,12 +231,7 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_field_body(
-         %Field{kind: :unpacked} = field,
-         _required,
-         _syntax,
-         vars
-       ) do
+  defp make_encode_field_body(%Field{kind: :unpacked} = field, _required, _syntax, vars) do
     encode_repeated_ast = make_encode_repeated_body(field.tag, field.type)
 
     quote do
@@ -257,8 +250,9 @@ defmodule Protox.DefineEncoder do
 
     {map_key_type, map_value_type} = field.type
 
-    k_var = quote do: k
-    v_var = quote do: v
+    k_var = Macro.var(:k, __MODULE__)
+    v_var = Macro.var(:v, __MODULE__)
+
     encode_map_key_ast = get_encode_value_body(map_key_type, k_var)
     encode_map_value_ast = get_encode_value_body(map_value_type, v_var)
 
@@ -321,12 +315,12 @@ defmodule Protox.DefineEncoder do
   end
 
   defp make_encode_packed_body(type) do
-    var = quote do: value
-    encode_value_ast = get_encode_value_body(type, var)
+    value_var = Macro.var(:value, __MODULE__)
+    encode_value_ast = get_encode_value_body(type, value_var)
 
     quote do
       {bytes, len} =
-        Enum.reduce(values, {[], 0}, fn unquote(var), {acc, len} ->
+        Enum.reduce(values, {[], 0}, fn unquote(value_var), {acc, len} ->
           value_bytes = :binary.list_to_bin([unquote(encode_value_ast)])
           {[acc, value_bytes], len + byte_size(value_bytes)}
         end)
@@ -337,7 +331,7 @@ defmodule Protox.DefineEncoder do
 
   defp make_encode_repeated_body(tag, type) do
     key = make_key_bytes(tag, type)
-    value_var = quote do: value
+    value_var = Macro.var(:value, __MODULE__)
     encode_value_ast = get_encode_value_body(type, value_var)
 
     quote do

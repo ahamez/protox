@@ -11,7 +11,13 @@ defmodule Protox.DefineDecoder do
 
   def define(msg_name, fields, required_fields, opts \\ []) do
     vars = %{
-      set_fields: quote(do: set_fields)
+      bytes: Macro.var(:bytes, __MODULE__),
+      delimited: Macro.var(:delimited, __MODULE__),
+      field: Macro.var(:field, __MODULE__),
+      msg: Macro.var(:msg, __MODULE__),
+      rest: Macro.var(:rest, __MODULE__),
+      set_fields: Macro.var(:set_fields, __MODULE__),
+      value: Macro.var(:value, __MODULE__)
     }
 
     # The public function to decode the binary protobuf.
@@ -28,7 +34,7 @@ defmodule Protox.DefineDecoder do
       )
 
     # The functions that decode maps.
-    parse_map_entries = make_parse_map_entries_funs(fields)
+    parse_map_entries = make_parse_map_entries_funs(vars, fields)
 
     quote do
       unquote(decode_fun)
@@ -106,13 +112,6 @@ defmodule Protox.DefineDecoder do
   end
 
   defp make_parse_key_value_body(keep_set_fields, fields, vars, keep_unknown_fields) do
-    vars =
-      Map.merge(vars, %{
-        msg: quote(do: msg),
-        field: quote(do: field),
-        value: quote(do: value)
-      })
-
     # Fragment to handle the (invalid) field with tag 0.
     tag_0_case = make_parse_key_value_tag_0()
 
@@ -156,21 +155,17 @@ defmodule Protox.DefineDecoder do
   defp make_parse_key_value_known(vars, fields, keep_set_fields) do
     fields
     |> Enum.map(fn %Field{} = field ->
-      single = make_single_case(vars.msg, keep_set_fields, field)
+      single = make_single_case(vars, keep_set_fields, field)
 
       single_generated = single != []
-      delimited = make_delimited_case(vars.msg, keep_set_fields, single_generated, field)
+      delimited = make_delimited_case(vars, keep_set_fields, single_generated, field)
 
       delimited ++ single
     end)
     |> List.flatten()
   end
 
-  defp make_parse_key_value_unknown(
-         vars,
-         keep_set_fields,
-         true = _keep_unknown_fields
-       ) do
+  defp make_parse_key_value_unknown(vars, keep_set_fields, true = _keep_unknown_fields) do
     body =
       quote do
         {unquote(vars.msg).__struct__.unknown_fields_name,
@@ -195,11 +190,7 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_parse_key_value_unknown(
-         vars,
-         keep_set_fields,
-         false = _keep_unknown_fields
-       ) do
+  defp make_parse_key_value_unknown(vars, keep_set_fields, false = _keep_unknown_fields) do
     # No need to maintain a list of set fields when the list of required fields is empty
     case_return =
       case keep_set_fields do
@@ -215,25 +206,18 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_single_case(_msg_var, _keep_set_fields, %Field{type: {:message, _}}) do
+  defp make_single_case(_vars, _keep_set_fields, %Field{type: {:message, _}}) do
     quote(do: [])
   end
 
-  defp make_single_case(_msg_var, _keep_set_fields, %Field{type: :string}), do: quote(do: [])
-  defp make_single_case(_msg_var, _keep_set_fields, %Field{type: :bytes}), do: quote(do: [])
+  defp make_single_case(_vars, _keep_set_fields, %Field{type: :string}), do: quote(do: [])
+  defp make_single_case(_vars, _keep_set_fields, %Field{type: :bytes}), do: quote(do: [])
 
-  defp make_single_case(_msg_var, _keep_set_fields, %Field{type: {x, _}}) when x != :enum do
+  defp make_single_case(_vars, _keep_set_fields, %Field{type: {x, _}}) when x != :enum do
     quote(do: [])
   end
 
-  defp make_single_case(msg_var, keep_set_fields, %Field{} = field) do
-    vars = %{
-      bytes: quote(do: bytes),
-      field: quote(do: field),
-      value: quote(do: value),
-      msg: msg_var
-    }
-
+  defp make_single_case(vars, keep_set_fields, %Field{} = field) do
     parse_single = make_parse_single(vars.bytes, field.type)
     update_field = make_update_field(vars.value, field, vars, _wrap_value = true)
 
@@ -255,61 +239,35 @@ defmodule Protox.DefineDecoder do
   end
 
   defp make_delimited_case(
-         msg_var,
+         vars,
          keep_set_fields,
          single_generated,
          %Field{type: {:message, _}} = field
        ) do
-    make_delimited_case_impl(msg_var, keep_set_fields, single_generated, field)
+    make_delimited_case_impl(vars, keep_set_fields, single_generated, field)
   end
 
-  defp make_delimited_case(
-         msg_var,
-         keep_set_fields,
-         single_generated,
-         %Field{type: :bytes} = field
-       ) do
-    make_delimited_case_impl(msg_var, keep_set_fields, single_generated, field)
+  defp make_delimited_case(vars, keep_set_fields, single_generated, %Field{type: :bytes} = field) do
+    make_delimited_case_impl(vars, keep_set_fields, single_generated, field)
   end
 
-  defp make_delimited_case(
-         msg_var,
-         keep_set_fields,
-         single_generated,
-         %Field{type: :string} = field
-       ) do
-    make_delimited_case_impl(msg_var, keep_set_fields, single_generated, field)
+  defp make_delimited_case(vars, keep_set_fields, single_generated, %Field{type: :string} = field) do
+    make_delimited_case_impl(vars, keep_set_fields, single_generated, field)
   end
 
-  defp make_delimited_case(
-         _msg_var,
-         _keep_set_fields,
-         _single_generated,
-         %Field{kind: {:scalar, _}}
-       ) do
+  defp make_delimited_case(_vars, _keep_set_fields, _single_generated, %Field{kind: {:scalar, _}}) do
     []
   end
 
-  defp make_delimited_case(
-         _msg_var,
-         _keep_set_fields,
-         _single_generated,
-         %Field{kind: {:oneof, _}}
-       ) do
+  defp make_delimited_case(_vars, _keep_set_fields, _single_generated, %Field{kind: {:oneof, _}}) do
     []
   end
 
-  defp make_delimited_case(msg_var, keep_set_fields, single_generated, %Field{} = field) do
-    make_delimited_case_impl(msg_var, keep_set_fields, single_generated, field)
+  defp make_delimited_case(vars, keep_set_fields, single_generated, %Field{} = field) do
+    make_delimited_case_impl(vars, keep_set_fields, single_generated, field)
   end
 
-  defp make_delimited_case_impl(msg_var, keep_set_fields, single_generated, %Field{} = field) do
-    vars = %{
-      bytes: quote(do: bytes),
-      delimited: quote(do: delimited),
-      msg: msg_var
-    }
-
+  defp make_delimited_case_impl(vars, keep_set_fields, single_generated, %Field{} = field) do
     # If the case to decode single occurrences of repeated elements has been generated,
     # it means that it's a repeated field of scalar elements (as non-scalar cannot be packed,
     # see https://developers.google.com/protocol-buffers/docs/encoding#optional).
@@ -564,7 +522,7 @@ defmodule Protox.DefineDecoder do
     quote(do: Protox.Decode.parse_enum(unquote(bytes_var), unquote(mod)))
   end
 
-  defp make_parse_map_entries_funs(fields) do
+  defp make_parse_map_entries_funs(vars, fields) do
     {maps, _other_fields} = Protox.Defs.split_maps(fields)
 
     maps
@@ -572,12 +530,10 @@ defmodule Protox.DefineDecoder do
       key_type = elem(field.type, 0)
       value_type = elem(field.type, 1)
 
-      bytes_var = quote do: bytes
-      rest_var = quote do: rest
       fun_name = make_map_decode_fun_name(key_type, value_type)
 
-      key_parser = make_parse_map_entry(rest_var, key_type)
-      value_parser = make_parse_map_entry(rest_var, value_type)
+      key_parser = make_parse_map_entry(vars, key_type)
+      value_parser = make_parse_map_entry(vars, value_type)
 
       code =
         quote do
@@ -593,27 +549,27 @@ defmodule Protox.DefineDecoder do
           #   }
           # repeated MapFieldEntry map_field = N;
           #
-          defp unquote(fun_name)({entry_key, entry_value}, unquote(bytes_var)) do
-            {map_entry, unquote(rest_var)} =
-              case Protox.Decode.parse_key(unquote(bytes_var)) do
+          defp unquote(fun_name)({entry_key, entry_value}, unquote(vars.bytes)) do
+            {map_entry, unquote(vars.rest)} =
+              case Protox.Decode.parse_key(unquote(vars.bytes)) do
                 # key
-                {1, _, unquote(rest_var)} ->
-                  {res, unquote(rest_var)} = unquote(key_parser)
-                  {{res, entry_value}, unquote(rest_var)}
+                {1, _, unquote(vars.rest)} ->
+                  {res, unquote(vars.rest)} = unquote(key_parser)
+                  {{res, entry_value}, unquote(vars.rest)}
 
                 # value
-                {2, _, unquote(rest_var)} ->
-                  {res, unquote(rest_var)} = unquote(value_parser)
-                  {{entry_key, res}, unquote(rest_var)}
+                {2, _, unquote(vars.rest)} ->
+                  {res, unquote(vars.rest)} = unquote(value_parser)
+                  {{entry_key, res}, unquote(vars.rest)}
 
-                {tag, wire_type, unquote(rest_var)} ->
-                  {_, unquote(rest_var)} =
-                    Protox.Decode.parse_unknown(tag, wire_type, unquote(rest_var))
+                {tag, wire_type, unquote(vars.rest)} ->
+                  {_, unquote(vars.rest)} =
+                    Protox.Decode.parse_unknown(tag, wire_type, unquote(vars.rest))
 
-                  {{entry_key, entry_value}, unquote(rest_var)}
+                  {{entry_key, entry_value}, unquote(vars.rest)}
               end
 
-            unquote(fun_name)(map_entry, unquote(rest_var))
+            unquote(fun_name)(map_entry, unquote(vars.rest))
           end
         end
 
@@ -640,22 +596,20 @@ defmodule Protox.DefineDecoder do
     String.to_atom("parse_#{Atom.to_string(key_type)}_#{value_name}")
   end
 
-  defp make_parse_map_entry(bytes_var, type) do
-    delimited_var = quote do: delimited
-
+  defp make_parse_map_entry(vars, type) do
     parse_delimited =
       quote do
-        {len, new_rest} = Protox.Varint.decode(unquote(bytes_var))
-        {unquote(delimited_var), new_rest} = Protox.Decode.parse_delimited(new_rest, len)
+        {len, new_rest} = Protox.Varint.decode(unquote(vars.rest))
+        {unquote(vars.delimited), new_rest} = Protox.Decode.parse_delimited(new_rest, len)
 
-        {unquote(make_parse_delimited(delimited_var, type)), new_rest}
+        {unquote(make_parse_delimited(vars.delimited, type)), new_rest}
       end
 
     case type do
       :string -> parse_delimited
       :bytes -> parse_delimited
       {:message, _} -> parse_delimited
-      _ -> make_parse_single(bytes_var, type)
+      _ -> make_parse_single(vars.rest, type)
     end
   end
 end
