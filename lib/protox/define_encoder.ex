@@ -58,19 +58,18 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_fun_field(ast, [], true = _keep_unknown_fields) do
-    quote(do: unquote(ast) |> encode_unknown_fields(msg))
-  end
+  defp make_encode_fun_field(ast, fields, keep_unknown_fields) do
+    ast =
+      Enum.reduce(fields, ast, fn %Protox.Field{} = field, ast_acc ->
+        fun_name = String.to_atom("encode_#{field.name}")
 
-  defp make_encode_fun_field(ast, [], false = _keep_unknown_fields) do
-    quote(do: unquote(ast))
-  end
+        quote(do: unquote(ast_acc) |> unquote(fun_name)(msg))
+      end)
 
-  defp make_encode_fun_field(ast, [%Protox.Field{} = field | fields], keep_unknown_fields) do
-    fun_name = String.to_atom("encode_#{field.name}")
-    ast = quote(do: unquote(ast) |> unquote(fun_name)(msg))
-
-    make_encode_fun_field(ast, fields, keep_unknown_fields)
+    case keep_unknown_fields do
+      true -> quote(do: unquote(ast) |> encode_unknown_fields(msg))
+      false -> ast
+    end
   end
 
   defp make_encode_oneof_fun(ast, oneofs) do
