@@ -110,79 +110,45 @@ defmodule Protox.Decode do
 
   def parse_sint32(bytes) do
     {value, rest} = Varint.decode(bytes)
-
-    try do
-      <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
-      {Zigzag.decode(res), rest}
-    rescue
-      _ -> reraise Protox.DecodingError.new(bytes, "invalid bytes for sint32"), __STACKTRACE__
-    end
+    <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
+    {Zigzag.decode(res), rest}
   end
 
   def parse_sint64(bytes) do
     {value, rest} = Varint.decode(bytes)
-
-    try do
-      <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
-      {Zigzag.decode(res), rest}
-    rescue
-      _ -> reraise Protox.DecodingError.new(bytes, "invalid bytes for sint64"), __STACKTRACE__
-    end
+    <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
+    {Zigzag.decode(res), rest}
   end
 
   def parse_uint32(bytes) do
     {value, rest} = Varint.decode(bytes)
 
-    try do
-      <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
-      {res, rest}
-    rescue
-      _ -> reraise Protox.DecodingError.new(bytes, "invalid bytes for uint32"), __STACKTRACE__
-    end
+    <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
+    {res, rest}
   end
 
   def parse_uint64(bytes) do
     {value, rest} = Varint.decode(bytes)
-
-    try do
-      <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
-      {res, rest}
-    rescue
-      _ -> reraise Protox.DecodingError.new(bytes, "invalid bytes for uint64"), __STACKTRACE__
-    end
+    <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
+    {res, rest}
   end
 
   def parse_enum(bytes, mod) do
     {value, rest} = Varint.decode(bytes)
-
-    try do
-      <<res::signed-native-32>> = <<value::signed-native-32>>
-      {mod.decode(res), rest}
-    rescue
-      _ -> reraise Protox.DecodingError.new(bytes, "invalid bytes for enum"), __STACKTRACE__
-    end
+    <<res::signed-native-32>> = <<value::signed-native-32>>
+    {mod.decode(res), rest}
   end
 
   def parse_int32(bytes) do
     {value, rest} = Varint.decode(bytes)
-
-    try do
-      <<res::signed-native-32>> = <<value::signed-native-32>>
-      {res, rest}
-    rescue
-      _ -> reraise Protox.DecodingError.new(bytes, "invalid bytes for int32"), __STACKTRACE__
-    end
+    <<res::signed-native-32>> = <<value::signed-native-32>>
+    {res, rest}
   end
 
   def parse_int64(bytes) do
     {value, rest} = Varint.decode(bytes)
-
-    try do
-      <<res::signed-native-64>> = <<value::signed-native-64>>
-      {res, rest}
-    rescue
-      _ -> reraise Protox.DecodingError.new(bytes, "invalid bytes for int64"), __STACKTRACE__
-    end
+    <<res::signed-native-64>> = <<value::signed-native-64>>
+    {res, rest}
   end
 
   def parse_repeated_bool(acc, <<>>), do: Enum.reverse(acc)
