@@ -16,7 +16,7 @@ defmodule Protox.Poison do
     try do
       poison_module.decode!(iodata)
     rescue
-      e in Poison.DecodeError ->
+      e in [Poison.DecodeError, Poison.ParseError] ->
         reraise Protox.JsonDecodingError.new(Exception.message(e)), __STACKTRACE__
     end
   end

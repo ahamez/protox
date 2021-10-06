@@ -332,7 +332,7 @@ defmodule Protox.JsonEncodeTest do
   end
 
   describe "Google.Protobuf.Timestamp" do
-    test "failure" do
+    test "Failure" do
       assert_raise Protox.JsonEncodingError, fn ->
         {:ok, dt, 0} = DateTime.from_iso8601("9999-12-31T23:59:59.999999999Z")
         unix = DateTime.to_unix(dt, :nanosecond) + 1
@@ -352,7 +352,7 @@ defmodule Protox.JsonEncodeTest do
   end
 
   describe "JSON libraries" do
-    test "success: jason" do
+    test "Success: Jason" do
       msg = %Msg{msg_k: %{1 => "a", 2 => "b"}}
       json = Protox.json_encode!(msg, json_library: Protox.Jason)
 
@@ -363,7 +363,7 @@ defmodule Protox.JsonEncodeTest do
              ]
     end
 
-    test "sucess: poison" do
+    test "Success: Poison" do
       msg = %Msg{msg_k: %{1 => "a", 2 => "b"}}
       json = Protox.json_encode!(msg, json_library: Protox.Poison)
 
@@ -372,6 +372,14 @@ defmodule Protox.JsonEncodeTest do
                ["\"msgK\"", ":", ["{", "\"2\"", ":", "\"b\"", ",", "\"1\"", ":", "\"a\"", "}"]],
                "}"
              ]
+    end
+
+    test "Failure: Poison" do
+      invalid_field = %ProtobufTestMessages.Proto3.TestAllTypesProto3{optional_int32: make_ref()}
+
+      assert_raise Protox.JsonEncodingError, fn ->
+        Protox.json_encode!(invalid_field, json_library: Protox.Poison)
+      end
     end
   end
 
