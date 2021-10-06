@@ -339,7 +339,7 @@ You must always use `unknown_fields/1` as the name of the field (e.g. `__uf__` i
 
 When you encode a message that contains unknown fields, they will be reencoded in the serialized output.
 
-### Deactive support of unknown fields
+### Disable support of unknown fields
 
 You can deactivate the support of unknown fields by setting the `:keep_unknown_fields` option to `false`:
 ```elixir
