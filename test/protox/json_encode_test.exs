@@ -307,6 +307,10 @@ defmodule Protox.JsonEncodeTest do
       %ProtobufTestMessages.Proto3.TestAllTypesProto3{
         optional_string: "\xFF"
       }
+    },
+    {
+      "invalid :kind field for Value",
+      %Google.Protobuf.Value{kind: nil}
     }
   ]
 
