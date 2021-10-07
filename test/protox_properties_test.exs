@@ -8,16 +8,17 @@ defmodule Protox.PropertiesTest do
   @moduletag :slow
 
   @tag :properties
-  property "Binary: Upper" do
-    forall {msg, encoded, encoded_bin, decoded} <- generate_binary(Upper) do
+  property "Binary: ProtobufTestMessages.Proto3.TestAllTypesProto3" do
+    forall {msg, encoded, encoded_bin, decoded} <-
+             generate_binary(ProtobufTestMessages.Proto3.TestAllTypesProto3) do
       is_list(encoded) and is_binary(encoded_bin) and decoded == msg
     end
   end
 
   @tag :properties
-  property "JSON: Sub" do
-    # Use Sub as it doesn't contain any nestedd proto2 message
-    forall {msg, encoded, decoded} <- generate_json(Sub) do
+  property "JSON: ProtobufTestMessages.Proto3.TestAllTypesProto3" do
+    forall {msg, encoded, decoded} <-
+             generate_json(ProtobufTestMessages.Proto3.TestAllTypesProto3) do
       is_list(encoded) and decoded == msg
     end
   end
