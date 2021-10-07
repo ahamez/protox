@@ -56,4 +56,8 @@ defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.Value do
       ) do
     Protox.JsonMessageEncoder.encode_message(struct_value, json_encode)
   end
+
+  def encode_message(%Google.Protobuf.Value{kind: _}, _json_encode) do
+    raise Protox.JsonEncodingError.new("invalid field :kind for Value")
+  end
 end
