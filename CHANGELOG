@@ -1,8 +1,9 @@
 # 1.6.0 (unreleased)
-  - Add support of JSON protobuf encoding (https://developers.google.com/protocol-buffers/docs/proto3#json)
+  - Add support of JSON protobuf encoding and decoding (https://developers.google.com/protocol-buffers/docs/proto3#json), with support of well-known types (except for Any)
+  - More accurate error reporting
   - Fix decoding of fixed32 and fixed64 values (detected using JSON conformance tests)
   - Deprecate Protox.Encode.encode/1 and Protox.Encode.encode!/1; use Protox.encode/1 and Protox.encode!/1 instead
-  - Deprecate generated defs()/0 and defs_by_name()/0; use generated fields_defs()/0 instead
+  - Deprecate generated defs()/0 and defs_by_name()/0
   - Internal refactoring to hopefully make things more explicit (based on a initial work by https://github.com/sneako)
 
 # 1.5.1
