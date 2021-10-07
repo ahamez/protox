@@ -6,6 +6,7 @@ defmodule Protox.PropertiesTest do
   Code.require_file("test/support/random_init.exs")
 
   @moduletag :slow
+  @moduletag timeout: 60_000 * 5
 
   @tag :properties
   property "Binary: ProtobufTestMessages.Proto3.TestAllTypesProto3" do
