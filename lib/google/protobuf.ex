@@ -6,14 +6,14 @@ defmodule Google.Protobuf do
   # thus other usages of the Protox macro won't generate modules of well-known types
   # that would have to be compiled).
   use Protox,
-    schema: """
-    import "google/protobuf/any.proto";
-    import "google/protobuf/duration.proto";
-    import "google/protobuf/field_mask.proto";
-    import "google/protobuf/struct.proto";
-    import "google/protobuf/timestamp.proto";
-    import "google/protobuf/wrappers.proto";
-    """,
+    files: [
+      "./lib/google/any.proto",
+      "./lib/google/duration.proto",
+      "./lib/google/field_mask.proto",
+      "./lib/google/struct.proto",
+      "./lib/google/timestamp.proto",
+      "./lib/google/wrappers.proto"
+    ],
     __compile_well_known_types: true
 
   def well_known_types() do
