@@ -1,3 +1,6 @@
+# Unreleased
+  - Fix possible double compilation of Empty well-known type
+
 # 1.6.1
   - Fix compilation when protoc does not include well-known types
 

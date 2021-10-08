@@ -24,6 +24,7 @@ defmodule Google.Protobuf do
       Google.Protobuf.BytesValue,
       Google.Protobuf.DoubleValue,
       Google.Protobuf.Duration,
+      Google.Protobuf.Empty,
       Google.Protobuf.FieldMask,
       Google.Protobuf.FloatValue,
       Google.Protobuf.Int32Value,
