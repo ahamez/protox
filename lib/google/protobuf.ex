@@ -9,6 +9,7 @@ defmodule Google.Protobuf do
     files: [
       "./lib/google/any.proto",
       "./lib/google/duration.proto",
+      "./lib/google/empty.proto",
       "./lib/google/field_mask.proto",
       "./lib/google/struct.proto",
       "./lib/google/timestamp.proto",
