@@ -1,4 +1,7 @@
-# 1.6.0 (unreleased)
+# 1.6.1
+  - Fix compilation when protoc does not include well-known types
+
+# 1.6.0
   - Add support of JSON protobuf encoding and decoding (https://developers.google.com/protocol-buffers/docs/proto3#json), with support of well-known types (except for Any)
   - More accurate error reporting
   - Fix decoding of fixed32 and fixed64 values (detected using JSON conformance tests)
