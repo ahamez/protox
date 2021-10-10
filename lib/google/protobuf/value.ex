@@ -3,6 +3,63 @@
 # JSON encoding
 # https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#value
 
+defmodule Protox.Google.Protobuf.Value do
+  @moduledoc false
+
+  use Protox.Define,
+    enums: [],
+    messages: [
+      {
+        Google.Protobuf.Value,
+        :proto3,
+        [
+          Protox.Field.new!(
+            kind: {:oneof, :kind},
+            label: :optional,
+            name: :null_value,
+            tag: 1,
+            type: {:enum, Google.Protobuf.NullValue}
+          ),
+          Protox.Field.new!(
+            kind: {:oneof, :kind},
+            label: :optional,
+            name: :number_value,
+            tag: 2,
+            type: :double
+          ),
+          Protox.Field.new!(
+            kind: {:oneof, :kind},
+            label: :optional,
+            name: :string_value,
+            tag: 3,
+            type: :string
+          ),
+          Protox.Field.new!(
+            kind: {:oneof, :kind},
+            label: :optional,
+            name: :bool_value,
+            tag: 4,
+            type: :bool
+          ),
+          Protox.Field.new!(
+            kind: {:oneof, :kind},
+            label: :optional,
+            name: :struct_value,
+            tag: 5,
+            type: {:message, Google.Protobuf.Struct}
+          ),
+          Protox.Field.new!(
+            kind: {:oneof, :kind},
+            label: :optional,
+            name: :list_value,
+            tag: 6,
+            type: {:message, Google.Protobuf.ListValue}
+          )
+        ]
+      }
+    ]
+end
+
 defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.Value do
   def decode_message(initial_message, value) when is_boolean(value) do
     struct!(initial_message, kind: {:bool_value, value})

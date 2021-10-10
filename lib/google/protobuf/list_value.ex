@@ -3,6 +3,28 @@
 # JSON encoding
 # https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#listvalue
 
+defmodule Protox.Google.Protobuf.ListValue do
+  @moduledoc false
+
+  use Protox.Define,
+    enums: [],
+    messages: [
+      {
+        Google.Protobuf.ListValue,
+        :proto3,
+        [
+          Protox.Field.new!(
+            kind: :unpacked,
+            label: :repeated,
+            name: :values,
+            tag: 1,
+            type: {:message, Google.Protobuf.Value}
+          )
+        ]
+      }
+    ]
+end
+
 defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.ListValue do
   def decode_message(initial_message, value) when is_list(value) do
     values =

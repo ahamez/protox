@@ -1,3 +1,32 @@
+defmodule Protox.Google.Protobuf.Duration do
+  @moduledoc false
+
+  use Protox.Define,
+    enums: [],
+    messages: [
+      {
+        Google.Protobuf.Duration,
+        :proto3,
+        [
+          Protox.Field.new!(
+            kind: {:scalar, 0},
+            label: :optional,
+            name: :seconds,
+            tag: 1,
+            type: :int64
+          ),
+          Protox.Field.new!(
+            kind: {:scalar, 0},
+            label: :optional,
+            name: :nanos,
+            tag: 2,
+            type: :int32
+          )
+        ]
+      }
+    ]
+end
+
 defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.Duration do
   def decode_message(_initial_message, nil = _json) do
     nil

@@ -3,6 +3,21 @@
 # JSON encoding
 # https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#value
 
+defmodule Protox.Google.Protobuf.NullValue do
+  @moduledoc false
+
+  use Protox.Define,
+    enums: [
+      {
+        Google.Protobuf.NullValue,
+        [
+          {0, :NULL_VALUE}
+        ]
+      }
+    ],
+    messages: []
+end
+
 defimpl Protox.JsonEnumDecoder, for: Google.Protobuf.NullValue do
   def decode_enum(_enum, nil), do: :NULL_VALUE
   def decode_enum(_enum, "NULL_VALUE"), do: :NULL_VALUE

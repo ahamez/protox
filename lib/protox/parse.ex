@@ -19,19 +19,20 @@ defmodule Protox.Parse do
     {:ok, descriptor} = FileDescriptorSet.decode(file_descriptor_set)
 
     namespace_or_nil = Keyword.get(opts, :namespace)
-    compile_well_known_types = Keyword.get(opts, :__compile_well_known_types, false)
 
     %{enums: %{}, messages: %{}}
     |> parse_files(descriptor.file)
     |> post_process(namespace_or_nil)
-    |> maybe_remove_well_known_types(compile_well_known_types)
+    |> remove_well_known_types()
   end
 
   # -- Private
 
-  defp maybe_remove_well_known_types(acc, true = _compile_well_known_types), do: acc
-
-  defp maybe_remove_well_known_types(acc, false = _compile_well_known_types) do
+  # As not all protoc installations come with the well-known types (Any, Duration, etc.),
+  # protox provides these types automatically.
+  # However, as user code can include those well-known types, we have to get rid of them
+  # here to make sure they are now defined more than once.
+  defp remove_well_known_types(acc) do
     filtered_messages =
       Enum.reject(acc.messages, fn {message_name, _syntax, _fields} ->
         message_name in Google.Protobuf.well_known_types()

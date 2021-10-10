@@ -1,3 +1,25 @@
+defmodule Protox.Google.Protobuf.UInt64Value do
+  @moduledoc false
+
+  use Protox.Define,
+    enums: [],
+    messages: [
+      {
+        Google.Protobuf.UInt64Value,
+        :proto3,
+        [
+          Protox.Field.new!(
+            kind: {:scalar, 0},
+            label: :optional,
+            name: :value,
+            tag: 1,
+            type: :uint64
+          )
+        ]
+      }
+    ]
+end
+
 defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.UInt64Value do
   def decode_message(_initial_message, nil), do: nil
 

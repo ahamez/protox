@@ -1,3 +1,25 @@
+defmodule Protox.Google.Protobuf.StringValue do
+  @moduledoc false
+
+  use Protox.Define,
+    enums: [],
+    messages: [
+      {
+        Google.Protobuf.StringValue,
+        :proto3,
+        [
+          Protox.Field.new!(
+            kind: {:scalar, ""},
+            label: :optional,
+            name: :value,
+            tag: 1,
+            type: :string
+          )
+        ]
+      }
+    ]
+end
+
 defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.StringValue do
   def decode_message(_initial_message, nil), do: nil
 

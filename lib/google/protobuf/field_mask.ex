@@ -2,6 +2,28 @@
 # they cover everything, and the specification is a little light on details.
 # https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#json-encoding-of-field-masks
 
+defmodule Protox.Google.Protobuf.FieldMask do
+  @moduledoc false
+
+  use Protox.Define,
+    enums: [],
+    messages: [
+      {
+        Google.Protobuf.FieldMask,
+        :proto3,
+        [
+          Protox.Field.new!(
+            kind: :unpacked,
+            label: :repeated,
+            name: :paths,
+            tag: 1,
+            type: :string
+          )
+        ]
+      }
+    ]
+end
+
 defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.FieldMask do
   def decode_message(_initial_message, nil), do: nil
 

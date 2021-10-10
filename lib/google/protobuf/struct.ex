@@ -3,6 +3,28 @@
 # JSON encoding
 # https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#struct
 
+defmodule Protox.Google.Protobuf.Struct do
+  @moduledoc false
+
+  use Protox.Define,
+    enums: [],
+    messages: [
+      {
+        Google.Protobuf.Struct,
+        :proto3,
+        [
+          Protox.Field.new!(
+            kind: :map,
+            label: nil,
+            name: :fields,
+            tag: 1,
+            type: {:string, {:message, Google.Protobuf.Value}}
+          )
+        ]
+      }
+    ]
+end
+
 defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.Struct do
   def decode_message(initial_message, value) when is_map(value) do
     fields =
