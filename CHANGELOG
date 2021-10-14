@@ -1,3 +1,6 @@
+# 1.6.3
+  - Fix typespec of message's json_decode! function
+
 # 1.6.2
   - Fix possible double compilation of Empty well-known type
   - Fix dependency on protoc for generated code
