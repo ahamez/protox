@@ -311,6 +311,10 @@ defmodule Protox.JsonEncodeTest do
     {
       "invalid :kind field for Value",
       %Google.Protobuf.Value{kind: nil}
+    },
+    {
+      "invalid enum entry",
+      %ProtobufTestMessages.Proto3.TestAllTypesProto3{optional_aliased_enum: :ALIAS_BAZZ}
     }
   ]
 
