@@ -6,6 +6,7 @@ defmodule Protox.DefineEnum do
       default_fun = make_enum_default(constants)
       encode_constants_funs = make_encode_enum_constants(constants)
       decode_constants_funs = make_decode_enum_constants(constants)
+      has_constant_funs = make_has_constant_funs(constants)
 
       module_ast =
         quote do
@@ -25,6 +26,9 @@ defmodule Protox.DefineEnum do
 
           @spec constants() :: [{integer(), atom()}]
           def constants(), do: unquote(constants)
+
+          @spec has_constant?(any()) :: boolean()
+          unquote(has_constant_funs)
         end
 
       quote do
@@ -63,6 +67,20 @@ defmodule Protox.DefineEnum do
       quote do
         def decode(unquote(value)), do: unquote(constant)
       end
+    end
+  end
+
+  defp make_has_constant_funs(constant_values) do
+    constants =
+      for {_value, constant} <- constant_values do
+        quote do
+          def has_constant?(unquote(constant)), do: true
+        end
+      end
+
+    quote do
+      unquote(constants)
+      def has_constant?(_), do: false
     end
   end
 end
