@@ -31,8 +31,12 @@ defmodule Protox.JsonEncode do
     ["{" | body]
   end
 
-  def encode_enum(_enum, value, json_encode) when is_atom(value) do
-    json_encode.(value)
+  def encode_enum(enum, value, json_encode) when is_atom(value) do
+    if enum.__struct__.has_constant?(value) do
+      json_encode.(value)
+    else
+      raise Protox.JsonEncodingError.new("invalid enum entry value")
+    end
   end
 
   def encode_enum(enum, value, json_encode) do
