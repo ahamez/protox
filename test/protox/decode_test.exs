@@ -1030,7 +1030,7 @@ defmodule Protox.DecodeTest do
     m = CoRecursive.decode!(req)
 
     # https://developers.google.com/protocol-buffers/docs/encoding#optional
-    assert m == Protox.Message.merge(m1, m2)
+    assert m == Protox.MergeMessage.merge(m1, m2)
   end
 
   test "failure: missing required fields" do

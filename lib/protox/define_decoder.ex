@@ -322,7 +322,7 @@ defmodule Protox.DefineDecoder do
       case unquote(vars.msg).unquote(parent_field) do
         {unquote(field.name), previous_value} ->
           {unquote(parent_field),
-           {unquote(field.name), Protox.Message.merge(previous_value, unquote(value))}}
+           {unquote(field.name), Protox.MergeMessage.merge(previous_value, unquote(value))}}
 
         _ ->
           {unquote(parent_field), {unquote(field.name), unquote(value)}}
@@ -349,7 +349,7 @@ defmodule Protox.DefineDecoder do
     quote do
       {
         unquote(field.name),
-        Protox.Message.merge(unquote(vars.msg).unquote(field.name), unquote(value))
+        Protox.MergeMessage.merge(unquote(vars.msg).unquote(field.name), unquote(value))
       }
     end
   end

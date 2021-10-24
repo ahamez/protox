@@ -1,3 +1,6 @@
+# (unrelease)
+  - Renamed module Protox.Message into Protox.MergeMessage to reflect its real role
+
 # 1.6.3
   - Fix typespec of message's json_decode! function
 
@@ -97,7 +100,7 @@
   - (proto2) Always serialize required fields
   - Add defs_by_name/0 in generated modules for messages
   - Add syntax/0 in generated modules for messages
-  - Add Protox.Message.merge/2 to merge two messages of the same type
+  - Add Protox.MergeMessage.merge/2 to merge two messages of the same type
   - [Breaking change] (proto2) use nil for unset fields
   - [Breaking change] rename generated get_required_fields/0 into required_fields/0
   - [Breaking change] rename generated get_unknown_fields/0 into unknown_fields/0

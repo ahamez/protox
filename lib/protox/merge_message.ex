@@ -1,4 +1,4 @@
-defmodule Protox.Message do
+defmodule Protox.MergeMessage do
   @moduledoc """
   This module provides a helper function to merge messages.
   """
@@ -21,12 +21,12 @@ defmodule Protox.Message do
   # Example
       iex> r1 = %Protobuf2{a: 0, s: :ONE}
       iex> r2 = %Protobuf2{a: nil, s: :TWO}
-      iex> Protox.Message.merge(r1, r2)
+      iex> Protox.MergeMessage.merge(r1, r2)
       %Protobuf2{a: 0, s: :TWO}
-      iex> Protox.Message.merge(r2, r1)
+      iex> Protox.MergeMessage.merge(r2, r1)
       %Protobuf2{a: 0, s: :ONE}
   """
-  @spec merge(struct | nil, struct | nil) :: struct | nil
+  @spec merge(struct() | nil, struct() | nil) :: struct() | nil
   def merge(nil, from), do: from
   def merge(msg, nil), do: msg
 
