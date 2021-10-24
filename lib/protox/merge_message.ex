@@ -74,7 +74,7 @@ defmodule Protox.MergeMessage do
   end
 
   defp merge_scalar(:proto2, v1, nil, _default), do: v1
-  defp merge_scalar(:proto3, v1, v2, default) when v2 == default, do: v1
+  defp merge_scalar(:proto3, v1, v2, v2), do: v1
   defp merge_scalar(_syntax, _v1, v2, _default), do: v2
 
   defp merge_oneof(
