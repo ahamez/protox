@@ -1,6 +1,5 @@
 defmodule Protox.Guards do
   @moduledoc false
-  # Internal. Provides macros to be used as guards when checking types is needed.
 
   @integers_fixed32 [:fixed32, :sfixed32]
   @integers_fixed64 [:fixed64, :sfixed64]
@@ -11,9 +10,9 @@ defmodule Protox.Guards do
 
   @primitives_varint32 [:int32, :uint32, :sint32]
   @primitives_varint64 [:int64, :uint64, :sint64]
-  @primitive_varint @primitives_varint32 ++ @primitives_varint64 ++ [:bool]
+  @primitives_varint @primitives_varint32 ++ @primitives_varint64 ++ [:bool]
 
-  @primitives @primitive_varint ++ @primitives_fixed
+  @primitives @primitives_varint ++ @primitives_fixed
 
   @integers32 @integers_fixed32 ++ @primitives_varint32
   @integers64 @integers_fixed64 ++ @primitives_varint64
@@ -21,37 +20,13 @@ defmodule Protox.Guards do
 
   @floats [:float, :double]
 
-  defmacro is_primitive(type) do
-    quote do: unquote(type) in unquote(@primitives)
-  end
+  defguard is_primitive(type) when type in @primitives
+  defguard is_primitive_varint(type) when type in @primitives_varint
+  defguard is_primitive_fixed32(type) when type in @primitives_fixed32
+  defguard is_primitive_fixed64(type) when type in @primitives_fixed64
 
-  defmacro is_primitive_varint(type) do
-    quote do: unquote(type) in unquote(@primitive_varint)
-  end
+  defguard is_delimited(type) when type == :string or type == :bytes
 
-  defmacro is_primitive_fixed32(type) do
-    quote do: unquote(type) in unquote(@primitives_fixed32)
-  end
-
-  defmacro is_primitive_fixed64(type) do
-    quote do: unquote(type) in unquote(@primitives_fixed64)
-  end
-
-  defmacro is_delimited(type) do
-    quote do
-      unquote(type) == :string or unquote(type) == :bytes or unquote(type) == Protox.Message
-    end
-  end
-
-  defmacro is_protobuf_integer(type) do
-    quote do
-      unquote(type) in unquote(@integers)
-    end
-  end
-
-  defmacro is_protobuf_float(type) do
-    quote do
-      unquote(type) in unquote(@floats)
-    end
-  end
+  defguard is_protobuf_integer(type) when type in @integers
+  defguard is_protobuf_float(type) when type in @floats
 end
