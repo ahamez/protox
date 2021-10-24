@@ -31,12 +31,17 @@ defmodule Protox.Message do
   def merge(msg, nil), do: msg
 
   def merge(msg, from) do
-    Map.merge(msg, from, fn name, v1, v2 ->
-      if name == :__struct__ or name == msg.__struct__.unknown_fields_name() do
+    unknown_fields_name = msg.__struct__.unknown_fields_name()
+
+    Map.merge(msg, from, fn
+      :__struct__, v1, _v2 ->
         v1
-      else
+
+      ^unknown_fields_name, v1, _v2 ->
+        v1
+
+      name, v1, v2 ->
         merge_field(msg, name, v1, v2)
-      end
     end)
   end
 
