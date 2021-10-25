@@ -1,5 +1,7 @@
-# (unrelease)
+# 1.6.4
   - Renamed module Protox.Message into Protox.MergeMessage to reflect its real role
+  - Fix inconsistent behavior when encoding to JSON an enum with an unknown atom field
+    ⚠️ Requires to regenerate code from .proto definitions
 
 # 1.6.3
   - Fix typespec of message's json_decode! function
