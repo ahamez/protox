@@ -1,3 +1,6 @@
+# Unreleased
+  - Elixir 1.9 is now the minimal supported version
+
 # 1.6.4
   - Renamed module Protox.Message into Protox.MergeMessage to reflect its real role
   - Fix inconsistent behavior when encoding to JSON an enum with an unknown atom field
