@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 # Configure git hooks
 if Mix.env() != :prod do

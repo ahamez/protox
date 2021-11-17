@@ -22,11 +22,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - elixir: 1.7.4
-            otp: 22.3
-          - elixir: 1.8.2
-            otp: 22.3
-            dialyzer: true
           - elixir: 1.9.4
             otp: 22.3
             credo: true
