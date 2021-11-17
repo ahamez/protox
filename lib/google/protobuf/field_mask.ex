@@ -60,12 +60,11 @@ defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.FieldMask do
   defp lower_camel_case(string) do
     string
     |> String.split(".")
-    |> Enum.map(fn str ->
+    |> Enum.map_join(".", fn str ->
       <<first, rest::binary>> = Macro.camelize(str)
 
       <<String.downcase(<<first>>, :ascii)::binary, rest::binary>>
     end)
-    |> Enum.join(".")
   end
 
   defp check_paths(paths) do
