@@ -137,7 +137,6 @@ defmodule Protox.Conformance.Escript do
     end
   end
 
-  # All JSON and TEXT related tests are skipped.
   defp handle_request({:ok, req}, log_file) do
     skip_reason =
       case {req.requested_output_format, req.payload} do
