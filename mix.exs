@@ -40,14 +40,14 @@ defmodule Protox.Mixfile do
       {:benchee_html, "~> 1.0", only: [:dev], runtime: false},
       {:benchee_markdown, "~> 0.2", only: [:dev], runtime: false},
       {:credo, "~> 1.4", only: [:test, :dev], runtime: false},
-      {:decimal, "~> 2.0"},
+      {:decimal, "~> 1.9 or ~> 2.0"},
       {:dialyxir, "~> 1.0", only: [:test, :dev], runtime: false},
       {:excoveralls, "~> 0.13", only: [:test], runtime: false},
       {:ex_doc, "~> 0.22", only: [:dev], runtime: false},
       {:git_hooks, "~> 0.5", only: [:test, :dev], runtime: false},
       {:jason, "~> 1.2", optional: true},
       {:mix_test_watch, "~> 1.0", only: [:dev], runtime: false},
-      {:poison, "~> 5.0", only: [:test, :dev], optional: true},
+      {:poison, "~> 4.0 or ~> 5.0", only: [:test, :dev], optional: true},
       {:propcheck, "~> 1.2", only: [:test, :dev]}
     ]
   end
