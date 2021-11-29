@@ -51,6 +51,7 @@ defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.Duration do
 
   # -- Private
 
+  @dialyzer {:no_match, get_decimal: 1}
   defp get_decimal(json) do
     json_decimal =
       case String.split_at(json, -1) do
