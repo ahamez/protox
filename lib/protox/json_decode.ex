@@ -163,7 +163,7 @@ defmodule Protox.JsonDecode do
   def decode_value(json_value, type) when is_protobuf_integer(type) and is_float(json_value) do
     decimal_float = Decimal.from_float(json_value)
 
-    if Decimal.integer?(decimal_float) do
+    if Decimal.equal?(Decimal.round(decimal_float), decimal_float) do
       decode_value(Decimal.to_integer(decimal_float), type)
     else
       raise JsonDecodingError.new(
