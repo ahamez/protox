@@ -54,7 +54,7 @@ defmodule Protox.Conformance.Escript do
   defp handle_request(
          {
            :ok,
-           req = %Conformance.ConformanceRequest{
+           request = %Conformance.ConformanceRequest{
              requested_output_format: requested_output_format,
              payload: {payload_type, _}
            }
@@ -65,41 +65,11 @@ defmodule Protox.Conformance.Escript do
               payload_type in [:protobuf_payload, :json_payload] do
     IO.binwrite(log_file, "Will parse protobuf\n")
 
-    if Conformance.ConformanceRequest.unknown_fields(req) != [] do
+    if Conformance.ConformanceRequest.unknown_fields(request) != [] do
       IO.binwrite(log_file, "Warning, request contains unknown fields\n")
     end
 
-    IO.binwrite(log_file, "#{inspect(req)}\n")
-
-    {_payload_type, payload} = req.payload
-
-    IO.binwrite(
-      log_file,
-      "payload_type: #{payload_type}\npayload: #{inspect(payload, limit: :infinity)}\n"
-    )
-
-    proto_type =
-      case req.message_type do
-        "protobuf_test_messages.proto3.TestAllTypesProto3" ->
-          ProtobufTestMessages.Proto3.TestAllTypesProto3
-
-        "protobuf_test_messages.proto2.TestAllTypesProto2" ->
-          ProtobufTestMessages.Proto2.TestAllTypesProto2
-
-        "conformance.FailureSet" ->
-          Conformance.FailureSet
-
-        "" ->
-          ProtobufTestMessages.Proto3.TestAllTypesProto3
-      end
-
-    decode_payload_fun =
-      case payload_type do
-        :protobuf_payload -> fn -> proto_type.decode(payload) end
-        :json_payload -> fn -> proto_type.json_decode(payload) end
-      end
-
-    case decode_payload_fun.() do
+    case decode_payload(request, log_file) do
       {:ok, msg} ->
         IO.binwrite(log_file, "Parse: success.\n")
         IO.binwrite(log_file, "Message: #{inspect(msg, limit: :infinity)}\n")
@@ -137,9 +107,9 @@ defmodule Protox.Conformance.Escript do
     end
   end
 
-  defp handle_request({:ok, req}, log_file) do
+  defp handle_request({:ok, request}, log_file) do
     skip_reason =
-      case {req.requested_output_format, req.payload} do
+      case {request.requested_output_format, request.payload} do
         {:UNSPECIFIED, _} ->
           "unspecified input"
 
@@ -155,7 +125,8 @@ defmodule Protox.Conformance.Escript do
 
     IO.binwrite(log_file, "SKIPPED\n")
     IO.binwrite(log_file, "Reason: #{inspect(skip_reason)}\n")
-    IO.binwrite(log_file, "#{inspect(req)}\n")
+    IO.binwrite(log_file, "#{inspect(request)}\n")
+
     %Conformance.ConformanceResponse{result: {:skipped, "SKIPPED"}}
   end
 
@@ -167,8 +138,23 @@ defmodule Protox.Conformance.Escript do
     }
   end
 
+  defp decode_payload(%Conformance.ConformanceRequest{} = request, log_file) do
+    {payload_type, payload} = request.payload
+    proto_type = get_proto_type(request)
+
+    IO.binwrite(log_file, "#{inspect(request)}\n")
+    IO.binwrite(log_file, "payload_type: #{payload_type}\n")
+    IO.binwrite(log_file, "payload: #{inspect(payload, limit: :infinity)}\n")
+
+    case payload_type do
+      :protobuf_payload -> proto_type.decode(payload)
+      :json_payload -> proto_type.json_decode(payload)
+    end
+  end
+
   defp dump_data(data, log_file) do
     IO.binwrite(log_file, "Received #{inspect(data, limit: :infinity)}\n")
+
     data
   end
 
@@ -177,8 +163,25 @@ defmodule Protox.Conformance.Escript do
     IO.binwrite(:stdio, data)
   end
 
-  defp make_message_bytes(msg) do
+  defp make_message_bytes(%Conformance.ConformanceResponse{} = msg) do
     data = msg |> Protox.encode!() |> :binary.list_to_bin()
+
     <<byte_size(data)::unsigned-little-32, data::binary>>
+  end
+
+  defp get_proto_type(%Conformance.ConformanceRequest{} = request) do
+    case request.message_type do
+      "protobuf_test_messages.proto3.TestAllTypesProto3" ->
+        ProtobufTestMessages.Proto3.TestAllTypesProto3
+
+      "protobuf_test_messages.proto2.TestAllTypesProto2" ->
+        ProtobufTestMessages.Proto2.TestAllTypesProto2
+
+      "conformance.FailureSet" ->
+        Conformance.FailureSet
+
+      "" ->
+        ProtobufTestMessages.Proto3.TestAllTypesProto3
+    end
   end
 end
