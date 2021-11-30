@@ -1,5 +1,6 @@
-# Unreleased
+# 1.6.5
   - Elixir 1.9 is now the minimal supported version
+  - Relax constraint on Decimal version (thanks to https://github.com/ananthakumaran)
 
 # 1.6.4
   - Renamed module Protox.Message into Protox.MergeMessage to reflect its real role
@@ -22,7 +23,7 @@
   - Fix decoding of fixed32 and fixed64 values (detected using JSON conformance tests)
   - Deprecate Protox.Encode.encode/1 and Protox.Encode.encode!/1; use Protox.encode/1 and Protox.encode!/1 instead
   - Deprecate generated defs()/0 and defs_by_name()/0
-  - Internal refactoring to hopefully make things more explicit (based on a initial work by https://github.com/sneako)
+  - Internal refactoring to hopefully make things more explicit (based on a work initiated by https://github.com/sneako)
 
 # 1.5.1
   - Fix handling of multiple import paths (thanks to https://github.com/zolakeith)
