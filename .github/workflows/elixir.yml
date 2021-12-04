@@ -31,16 +31,23 @@ jobs:
             credo: true
             dialyzer: true
           - elixir: 1.11.4
-            otp: 23.2.5
+            otp: 23.3
             check_deps: true
             credo: true
             dialyzer: true
           - elixir: 1.12.1
-            otp: 24.0.2
+            otp: 24.1
             check_deps: true
             check_format: true
             credo: true
             dialyzer: true
+          - elixir: 1.13.0
+            otp: 24.1
+            check_deps: true
+            check_format: true
+            credo: true
+            dialyzer: true
+
 
     steps:
     - uses: actions/checkout@v2
