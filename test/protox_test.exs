@@ -142,117 +142,479 @@ defmodule ProtoxTest do
 
   test "from text" do
     assert Namespace.Fiz.Enum.constants() == [{0, :FOO}, {1, :BAR}]
-    assert Namespace.Fiz.Baz.defs() == %{}
+    assert Namespace.Fiz.Baz.fields_defs() == []
 
-    assert Namespace.Fiz.Foo.defs() == %{
-             1 => {:a, {:scalar, :FOO}, {:enum, Namespace.Fiz.Enum}},
-             2 => {:b, :map, {:int32, {:message, Namespace.Fiz.Baz}}}
-           }
+    assert Namespace.Fiz.Foo.fields_defs() == [
+             %Protox.Field{
+               json_name: "a",
+               kind: {:scalar, :FOO},
+               label: :optional,
+               name: :a,
+               tag: 1,
+               type: {:enum, Namespace.Fiz.Enum}
+             },
+             %Protox.Field{
+               json_name: "b",
+               kind: :map,
+               label: nil,
+               name: :b,
+               tag: 2,
+               type: {:int32, {:message, Namespace.Fiz.Baz}}
+             }
+           ]
 
-    assert Buz.defs() == %{}
+    assert Buz.fields_defs() == []
     assert Namespace.Enum.constants() == [{0, :FOO}, {1, :BAR}]
   end
 
   test "From files" do
     assert Proto2A.syntax() == :proto2
 
-    assert Proto2A.defs() == %{
-             1 => {:repeated_int32_packed, :packed, :int32},
-             2 => {:repeated_int32_unpacked, :unpacked, :int32},
-             3 => {:optional_nested_message, {:scalar, nil}, {:message, Proto2A.NestedMessage}},
-             4 => {:repeated_nested_enum, :unpacked, {:enum, Proto2A.NestedEnum}},
-             5 => {:repeated_nested_message, :unpacked, {:message, Proto2A.NestedMessage}},
-             6 => {:bytes, {:scalar, "`v"}, :bytes},
-             126 => {:extension_int32, {:scalar, 0}, :int32},
-             199 => {:extension_double, {:scalar, 42.42}, :double}
-           }
+    assert Proto2A.fields_defs() == [
+             %Protox.Field{
+               json_name: "repeatedInt32Packed",
+               kind: :packed,
+               label: :repeated,
+               name: :repeated_int32_packed,
+               tag: 1,
+               type: :int32
+             },
+             %Protox.Field{
+               json_name: "repeatedInt32Unpacked",
+               kind: :unpacked,
+               label: :repeated,
+               name: :repeated_int32_unpacked,
+               tag: 2,
+               type: :int32
+             },
+             %Protox.Field{
+               json_name: "optionalNestedMessage",
+               kind: {:scalar, nil},
+               label: :optional,
+               name: :optional_nested_message,
+               tag: 3,
+               type: {:message, Proto2A.NestedMessage}
+             },
+             %Protox.Field{
+               json_name: "repeatedNestedEnum",
+               kind: :unpacked,
+               label: :repeated,
+               name: :repeated_nested_enum,
+               tag: 4,
+               type: {:enum, Proto2A.NestedEnum}
+             },
+             %Protox.Field{
+               json_name: "repeatedNestedMessage",
+               kind: :unpacked,
+               label: :repeated,
+               name: :repeated_nested_message,
+               tag: 5,
+               type: {:message, Proto2A.NestedMessage}
+             },
+             %Protox.Field{
+               json_name: "bytes",
+               kind: {:scalar, "`v"},
+               label: :optional,
+               name: :bytes,
+               tag: 6,
+               type: :bytes
+             },
+             %Protox.Field{
+               json_name: "extensionInt32",
+               kind: {:scalar, 0},
+               label: :optional,
+               name: :extension_int32,
+               tag: 126,
+               type: :int32
+             },
+             %Protox.Field{
+               json_name: "extensionDouble",
+               kind: {:scalar, 42.42},
+               label: :optional,
+               name: :extension_double,
+               tag: 199,
+               type: :double
+             }
+           ]
 
     assert Proto2B.syntax() == :proto2
 
-    assert Proto2B.defs() == %{
-             1 =>
-               {:optional_proto2a_nested_enum, {:scalar, :N_ZERO}, {:enum, Proto2A.NestedEnum}},
-             2 =>
-               {:required_proto2a_nested_enum, {:scalar, :N_THREE}, {:enum, Proto2A.NestedEnum}}
-           }
+    assert Proto2B.fields_defs() == [
+             %Protox.Field{
+               json_name: "optionalProto2aNestedEnum",
+               kind: {:scalar, :N_ZERO},
+               label: :optional,
+               name: :optional_proto2a_nested_enum,
+               tag: 1,
+               type: {:enum, Proto2A.NestedEnum}
+             },
+             %Protox.Field{
+               json_name: "requiredProto2aNestedEnum",
+               kind: {:scalar, :N_THREE},
+               label: :required,
+               name: :required_proto2a_nested_enum,
+               tag: 2,
+               type: {:enum, Proto2A.NestedEnum}
+             }
+           ]
 
     assert Abc.Def.Proto3.syntax() == :proto3
 
-    assert Abc.Def.Proto3.defs() == %{
-             1 => {:repeated_int32, :packed, :int32},
-             2 => {:double, {:scalar, 0}, :double},
-             3 => {:map_sfixed32_fixed64, :map, {:sfixed32, :fixed64}},
-             4 => {:oneof_1_int32, {:oneof, :oneof_1}, :int32},
-             5 => {:oneof_1_double, {:oneof, :oneof_1}, :double},
-             6 => {:oneof_1_foreign_enum, {:oneof, :oneof_1}, {:enum, Abc.Def.ForeignEnum}},
-             7 => {:oneof_1_proto2a, {:oneof, :oneof_1}, {:message, Proto2A}},
-             8 => {:map_string_proto2a, :map, {:string, {:message, Proto2A}}},
-             9 => {:bytes, {:scalar, ""}, :bytes},
-             10 => {:map_int64_nested_enum, :map, {:int64, {:enum, Abc.Def.Proto3.NestedEnum}}},
-             134 => {:oneof_2_int32, {:oneof, :oneof_2}, :int32},
-             135 =>
-               {:oneof_2_nested_enum, {:oneof, :oneof_2}, {:enum, Abc.Def.Proto3.NestedEnum}},
-             9999 => {:nested_enum, {:scalar, :FOO}, {:enum, Abc.Def.Proto3.NestedEnum}},
-             200 => {:repeated_int32_packed, :packed, :int32},
-             201 => {:repeated_int32_unpacked, :unpacked, :int32},
-             51 => {:repeated_nested_enum, :packed, {:enum, Abc.Def.Proto3.NestedEnum}}
-           }
+    assert Abc.Def.Proto3.fields_defs() == [
+             %Protox.Field{
+               json_name: "repeatedInt32",
+               kind: :packed,
+               label: :repeated,
+               name: :repeated_int32,
+               tag: 1,
+               type: :int32
+             },
+             %Protox.Field{
+               json_name: "double",
+               kind: {:scalar, 0.0},
+               label: :optional,
+               name: :double,
+               tag: 2,
+               type: :double
+             },
+             %Protox.Field{
+               json_name: "mapSfixed32Fixed64",
+               kind: :map,
+               label: nil,
+               name: :map_sfixed32_fixed64,
+               tag: 3,
+               type: {:sfixed32, :fixed64}
+             },
+             %Protox.Field{
+               json_name: "oneof1Int32",
+               kind: {:oneof, :oneof_1},
+               label: :optional,
+               name: :oneof_1_int32,
+               tag: 4,
+               type: :int32
+             },
+             %Protox.Field{
+               json_name: "oneof1Double",
+               kind: {:oneof, :oneof_1},
+               label: :optional,
+               name: :oneof_1_double,
+               tag: 5,
+               type: :double
+             },
+             %Protox.Field{
+               json_name: "oneof1ForeignEnum",
+               kind: {:oneof, :oneof_1},
+               label: :optional,
+               name: :oneof_1_foreign_enum,
+               tag: 6,
+               type: {:enum, Abc.Def.ForeignEnum}
+             },
+             %Protox.Field{
+               json_name: "oneof1Proto2a",
+               kind: {:oneof, :oneof_1},
+               label: :optional,
+               name: :oneof_1_proto2a,
+               tag: 7,
+               type: {:message, Proto2A}
+             },
+             %Protox.Field{
+               json_name: "mapStringProto2a",
+               kind: :map,
+               label: nil,
+               name: :map_string_proto2a,
+               tag: 8,
+               type: {:string, {:message, Proto2A}}
+             },
+             %Protox.Field{
+               json_name: "bytes",
+               kind: {:scalar, ""},
+               label: :optional,
+               name: :bytes,
+               tag: 9,
+               type: :bytes
+             },
+             %Protox.Field{
+               json_name: "mapInt64NestedEnum",
+               kind: :map,
+               label: nil,
+               name: :map_int64_nested_enum,
+               tag: 10,
+               type: {:int64, {:enum, Abc.Def.Proto3.NestedEnum}}
+             },
+             %Protox.Field{
+               json_name: "repeatedNestedEnum",
+               kind: :packed,
+               label: :repeated,
+               name: :repeated_nested_enum,
+               tag: 51,
+               type: {:enum, Abc.Def.Proto3.NestedEnum}
+             },
+             %Protox.Field{
+               json_name: "oneof2Int32",
+               kind: {:oneof, :oneof_2},
+               label: :optional,
+               name: :oneof_2_int32,
+               tag: 134,
+               type: :int32
+             },
+             %Protox.Field{
+               json_name: "oneof2NestedEnum",
+               kind: {:oneof, :oneof_2},
+               label: :optional,
+               name: :oneof_2_nested_enum,
+               tag: 135,
+               type: {:enum, Abc.Def.Proto3.NestedEnum}
+             },
+             %Protox.Field{
+               json_name: "repeatedInt32Packed",
+               kind: :packed,
+               label: :repeated,
+               name: :repeated_int32_packed,
+               tag: 200,
+               type: :int32
+             },
+             %Protox.Field{
+               json_name: "repeatedInt32Unpacked",
+               kind: :unpacked,
+               label: :repeated,
+               name: :repeated_int32_unpacked,
+               tag: 201,
+               type: :int32
+             },
+             %Protox.Field{
+               json_name: "nestedEnum",
+               kind: {:scalar, :FOO},
+               label: :optional,
+               name: :nested_enum,
+               tag: 9999,
+               type: {:enum, Abc.Def.Proto3.NestedEnum}
+             }
+           ]
   end
 
   test "from files, with namespace" do
     assert Namespace.Proto2A.syntax() == :proto2
 
-    assert Namespace.Proto2A.defs() == %{
-             1 => {:repeated_int32_packed, :packed, :int32},
-             2 => {:repeated_int32_unpacked, :unpacked, :int32},
-             3 =>
-               {:optional_nested_message, {:scalar, nil},
-                {:message, Namespace.Proto2A.NestedMessage}},
-             4 => {:repeated_nested_enum, :unpacked, {:enum, Namespace.Proto2A.NestedEnum}},
-             5 =>
-               {:repeated_nested_message, :unpacked, {:message, Namespace.Proto2A.NestedMessage}},
-             6 => {:bytes, {:scalar, "`v"}, :bytes},
-             126 => {:extension_int32, {:scalar, 0}, :int32},
-             199 => {:extension_double, {:scalar, 42.42}, :double}
-           }
+    assert Namespace.Proto2A.fields_defs() == [
+             %Protox.Field{
+               json_name: "repeatedInt32Packed",
+               kind: :packed,
+               label: :repeated,
+               name: :repeated_int32_packed,
+               tag: 1,
+               type: :int32
+             },
+             %Protox.Field{
+               json_name: "repeatedInt32Unpacked",
+               kind: :unpacked,
+               label: :repeated,
+               name: :repeated_int32_unpacked,
+               tag: 2,
+               type: :int32
+             },
+             %Protox.Field{
+               json_name: "optionalNestedMessage",
+               kind: {:scalar, nil},
+               label: :optional,
+               name: :optional_nested_message,
+               tag: 3,
+               type: {:message, Namespace.Proto2A.NestedMessage}
+             },
+             %Protox.Field{
+               json_name: "repeatedNestedEnum",
+               kind: :unpacked,
+               label: :repeated,
+               name: :repeated_nested_enum,
+               tag: 4,
+               type: {:enum, Namespace.Proto2A.NestedEnum}
+             },
+             %Protox.Field{
+               json_name: "repeatedNestedMessage",
+               kind: :unpacked,
+               label: :repeated,
+               name: :repeated_nested_message,
+               tag: 5,
+               type: {:message, Namespace.Proto2A.NestedMessage}
+             },
+             %Protox.Field{
+               json_name: "bytes",
+               kind: {:scalar, "`v"},
+               label: :optional,
+               name: :bytes,
+               tag: 6,
+               type: :bytes
+             },
+             %Protox.Field{
+               json_name: "extensionInt32",
+               kind: {:scalar, 0},
+               label: :optional,
+               name: :extension_int32,
+               tag: 126,
+               type: :int32
+             },
+             %Protox.Field{
+               json_name: "extensionDouble",
+               kind: {:scalar, 42.42},
+               label: :optional,
+               name: :extension_double,
+               tag: 199,
+               type: :double
+             }
+           ]
 
     assert Namespace.Proto2B.syntax() == :proto2
 
-    assert Namespace.Proto2B.defs() == %{
-             1 =>
-               {:optional_proto2a_nested_enum, {:scalar, :N_ZERO},
-                {:enum, Namespace.Proto2A.NestedEnum}},
-             2 =>
-               {:required_proto2a_nested_enum, {:scalar, :N_THREE},
-                {:enum, Namespace.Proto2A.NestedEnum}}
-           }
+    assert Namespace.Proto2B.fields_defs() == [
+             %Protox.Field{
+               json_name: "optionalProto2aNestedEnum",
+               kind: {:scalar, :N_ZERO},
+               label: :optional,
+               name: :optional_proto2a_nested_enum,
+               tag: 1,
+               type: {:enum, Namespace.Proto2A.NestedEnum}
+             },
+             %Protox.Field{
+               json_name: "requiredProto2aNestedEnum",
+               kind: {:scalar, :N_THREE},
+               label: :required,
+               name: :required_proto2a_nested_enum,
+               tag: 2,
+               type: {:enum, Namespace.Proto2A.NestedEnum}
+             }
+           ]
 
     assert Namespace.Abc.Def.Proto3.syntax() == :proto3
 
-    assert Namespace.Abc.Def.Proto3.defs() == %{
-             1 => {:repeated_int32, :packed, :int32},
-             2 => {:double, {:scalar, 0}, :double},
-             3 => {:map_sfixed32_fixed64, :map, {:sfixed32, :fixed64}},
-             4 => {:oneof_1_int32, {:oneof, :oneof_1}, :int32},
-             5 => {:oneof_1_double, {:oneof, :oneof_1}, :double},
-             6 =>
-               {:oneof_1_foreign_enum, {:oneof, :oneof_1}, {:enum, Namespace.Abc.Def.ForeignEnum}},
-             7 => {:oneof_1_proto2a, {:oneof, :oneof_1}, {:message, Namespace.Proto2A}},
-             8 => {:map_string_proto2a, :map, {:string, {:message, Namespace.Proto2A}}},
-             9 => {:bytes, {:scalar, ""}, :bytes},
-             10 =>
-               {:map_int64_nested_enum, :map,
-                {:int64, {:enum, Namespace.Abc.Def.Proto3.NestedEnum}}},
-             134 => {:oneof_2_int32, {:oneof, :oneof_2}, :int32},
-             135 =>
-               {:oneof_2_nested_enum, {:oneof, :oneof_2},
-                {:enum, Namespace.Abc.Def.Proto3.NestedEnum}},
-             9999 =>
-               {:nested_enum, {:scalar, :FOO}, {:enum, Namespace.Abc.Def.Proto3.NestedEnum}},
-             200 => {:repeated_int32_packed, :packed, :int32},
-             201 => {:repeated_int32_unpacked, :unpacked, :int32},
-             51 => {:repeated_nested_enum, :packed, {:enum, Namespace.Abc.Def.Proto3.NestedEnum}}
-           }
+    assert Namespace.Abc.Def.Proto3.fields_defs() == [
+             %Protox.Field{
+               json_name: "repeatedInt32",
+               kind: :packed,
+               label: :repeated,
+               name: :repeated_int32,
+               tag: 1,
+               type: :int32
+             },
+             %Protox.Field{
+               json_name: "double",
+               kind: {:scalar, 0.0},
+               label: :optional,
+               name: :double,
+               tag: 2,
+               type: :double
+             },
+             %Protox.Field{
+               json_name: "mapSfixed32Fixed64",
+               kind: :map,
+               label: nil,
+               name: :map_sfixed32_fixed64,
+               tag: 3,
+               type: {:sfixed32, :fixed64}
+             },
+             %Protox.Field{
+               json_name: "oneof1Int32",
+               kind: {:oneof, :oneof_1},
+               label: :optional,
+               name: :oneof_1_int32,
+               tag: 4,
+               type: :int32
+             },
+             %Protox.Field{
+               json_name: "oneof1Double",
+               kind: {:oneof, :oneof_1},
+               label: :optional,
+               name: :oneof_1_double,
+               tag: 5,
+               type: :double
+             },
+             %Protox.Field{
+               json_name: "oneof1ForeignEnum",
+               kind: {:oneof, :oneof_1},
+               label: :optional,
+               name: :oneof_1_foreign_enum,
+               tag: 6,
+               type: {:enum, Namespace.Abc.Def.ForeignEnum}
+             },
+             %Protox.Field{
+               json_name: "oneof1Proto2a",
+               kind: {:oneof, :oneof_1},
+               label: :optional,
+               name: :oneof_1_proto2a,
+               tag: 7,
+               type: {:message, Namespace.Proto2A}
+             },
+             %Protox.Field{
+               json_name: "mapStringProto2a",
+               kind: :map,
+               label: nil,
+               name: :map_string_proto2a,
+               tag: 8,
+               type: {:string, {:message, Namespace.Proto2A}}
+             },
+             %Protox.Field{
+               json_name: "bytes",
+               kind: {:scalar, ""},
+               label: :optional,
+               name: :bytes,
+               tag: 9,
+               type: :bytes
+             },
+             %Protox.Field{
+               json_name: "mapInt64NestedEnum",
+               kind: :map,
+               label: nil,
+               name: :map_int64_nested_enum,
+               tag: 10,
+               type: {:int64, {:enum, Namespace.Abc.Def.Proto3.NestedEnum}}
+             },
+             %Protox.Field{
+               json_name: "repeatedNestedEnum",
+               kind: :packed,
+               label: :repeated,
+               name: :repeated_nested_enum,
+               tag: 51,
+               type: {:enum, Namespace.Abc.Def.Proto3.NestedEnum}
+             },
+             %Protox.Field{
+               json_name: "oneof2Int32",
+               kind: {:oneof, :oneof_2},
+               label: :optional,
+               name: :oneof_2_int32,
+               tag: 134,
+               type: :int32
+             },
+             %Protox.Field{
+               json_name: "oneof2NestedEnum",
+               kind: {:oneof, :oneof_2},
+               label: :optional,
+               name: :oneof_2_nested_enum,
+               tag: 135,
+               type: {:enum, Namespace.Abc.Def.Proto3.NestedEnum}
+             },
+             %Protox.Field{
+               json_name: "repeatedInt32Packed",
+               kind: :packed,
+               label: :repeated,
+               name: :repeated_int32_packed,
+               tag: 200,
+               type: :int32
+             },
+             %Protox.Field{
+               json_name: "repeatedInt32Unpacked",
+               kind: :unpacked,
+               label: :repeated,
+               name: :repeated_int32_unpacked,
+               tag: 201,
+               type: :int32
+             },
+             %Protox.Field{
+               json_name: "nestedEnum",
+               kind: {:scalar, :FOO},
+               label: :optional,
+               name: :nested_enum,
+               tag: 9999,
+               type: {:enum, Namespace.Abc.Def.Proto3.NestedEnum}
+             }
+           ]
   end
 
   test "Clear unknown fields" do
@@ -295,7 +657,7 @@ defmodule ProtoxTest do
     encoded_txt_cmdline =
       "protoc --decode=#{mod} -I ./test/samples ./test/samples/messages.proto ./test/samples/protobuf2.proto  < #{encoded_bin_path}"
 
-    # We use :os.cmd as we protoc can only read the content `encoded_bin_path` from stdin.
+    # We use :os.cmd as protoc can only read the content `encoded_bin_path` from stdin.
     # credo:disable-for-next-line Credo.Check.Warning.UnsafeExec
     encoded_txt = "#{:os.cmd(String.to_charlist(encoded_txt_cmdline))}"
 
