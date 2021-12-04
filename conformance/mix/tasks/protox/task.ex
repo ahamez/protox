@@ -13,7 +13,6 @@ defmodule Mix.Tasks.Protox.Conformance do
          :ok <- launch(runner, quiet) do
       {:ok, :conformance_successful}
     else
-      #
       {:error, :runner_failure} -> {:ok, :conformance_failure}
       e -> e
     end
