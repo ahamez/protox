@@ -107,7 +107,7 @@ defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.Duration do
           cond do
             rem(msg.nanos, 1_000_000_000) == 0 -> 0
             rem(msg.nanos, 1_000_000) == 0 -> 3
-            rem(msg.nanos, 1000) == 0 -> 6
+            rem(msg.nanos, 1_000) == 0 -> 6
             true -> 9
           end
 

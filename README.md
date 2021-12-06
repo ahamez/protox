@@ -521,7 +521,7 @@ Here's how to launch the conformance tests:
     ```
     CONFORMANCE TEST BEGIN ====================================
 
-    CONFORMANCE SUITE PASSED: 1988 successes, 0 skipped, 29 expected failures, 0 unexpected failures.
+    CONFORMANCE SUITE PASSED: 1996 successes, 0 skipped, 21 expected failures, 0 unexpected failures.
 
 
     CONFORMANCE TEST BEGIN ====================================
@@ -536,9 +536,8 @@ Here's how to launch the conformance tests:
 
 ### Skipped conformance tests
 
-You may have noticed that there are `29 expected failures`. Indeed, we removed on purpose some conformance tests that `protox` can't currently pass. Here are the reasons why:
+You may have noticed that there are `21 expected failures`. Indeed, we removed on purpose some conformance tests that `protox` can't currently pass. Here are the reasons why:
 
-- Due to a limitation in the [`DateTime`](https://hexdocs.pm/elixir/1.12/DateTime.html) module, it's not possible to have the precision (nanosecond) required by the conformance tests when decoding from JSON;
 - [Any](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#any) is not yet supported by `protox`;
 - We could not find the specification for the protobuf2 case of field name extensions when decoding from JSON.
 

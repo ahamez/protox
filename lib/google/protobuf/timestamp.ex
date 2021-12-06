@@ -25,9 +25,17 @@ defmodule Protox.Google.Protobuf.Timestamp do
         ]
       }
     ]
+
+  def max_timestamp_rfc(), do: "9999-12-31T23:59:59.999999999Z"
+  def max_timestamp_nanos(), do: 253_402_300_799_999_999_999
+
+  def min_timestamp_rfc(), do: "0001-01-01T00:00:00Z"
+  def min_timestamp_nanos(), do: -62_135_596_800_000_000_000
 end
 
 defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.Timestamp do
+  alias Protox.Google.Protobuf.Timestamp
+
   def decode_message(_initial_message, nil), do: nil
 
   def decode_message(initial_message, json) do
@@ -35,22 +43,22 @@ defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.Timestamp do
       raise Protox.JsonDecodingError.new("Missing 'T' in timestamp")
     end
 
-    date_time =
-      case DateTime.from_iso8601(json) do
-        {:ok, dt, _offset} ->
-          dt
+    # We only use DateTime to validate format as it does correctly parse timestamps
+    # with nanosecond precision, but the result has only a microsecond precision.
+    # It would have been preferable to use only :calendar.rfc3339_to_system_time,
+    # but it's too lax as it accepts 'z' (which should be uppercase)
+    # which is not accepted by the conformance tests.
+    if match?({:error, _}, DateTime.from_iso8601(json)) do
+      raise Protox.JsonDecodingError.new("Invalid timestamp format")
+    end
 
-        _ ->
-          raise Protox.JsonDecodingError.new(
-                  "invalid timestamp (format or greater than 9999-12-31T23:59:59.999999999Z)"
-                )
-      end
+    unix_timestamp =
+      json
+      |> String.to_charlist()
+      |> :calendar.rfc3339_to_system_time([{:unit, :nanosecond}])
 
-    unix_timestamp = DateTime.to_unix(date_time, :nanosecond)
-
-    # 0001-01-01T00:00:00Z as UNIX date in nanoseconds
-    if unix_timestamp < -62_135_596_800_000_000_000 do
-      raise Protox.JsonDecodingError.new("timestamp is < 0001-01-01T00:00:00Z")
+    if unix_timestamp < Timestamp.min_timestamp_nanos() do
+      raise Protox.JsonDecodingError.new("Timestamp < #{Timestamp.min_timestamp_rfc()}")
     else
       nanos = rem(unix_timestamp, 1_000_000_000)
       seconds = div(unix_timestamp, 1_000_000_000)
@@ -61,22 +69,32 @@ defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.Timestamp do
 end
 
 defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.Timestamp do
+  alias Protox.Google.Protobuf.Timestamp
+
   def encode_message(msg, json_encode) do
     unix_timestamp = msg.seconds * 1_000_000_000 + msg.nanos
 
     cond do
-      # 9999-12-31T23:59:59.999999999Z as UNIX date in nanoseconds
-      unix_timestamp > 253_402_300_799_999_999_000 ->
-        raise Protox.JsonEncodingError.new("{msg.__struct__} is > 9999-12-31T23:59:59.999999999Z")
+      unix_timestamp > Timestamp.max_timestamp_nanos() ->
+        raise Protox.JsonEncodingError.new("#{msg.__struct__} > #{Timestamp.max_timestamp_rfc()}")
 
-      # 0001-01-01T00:00:00Z as UNIX date in nanoseconds
-      unix_timestamp < -62_135_596_800_000_000_000 ->
-        raise Protox.JsonEncodingError.new("{msg.__struct__} is < 0001-01-01T00:00:00Z")
+      unix_timestamp < Timestamp.min_timestamp_nanos() ->
+        raise Protox.JsonEncodingError.new("#{msg.__struct__} < #{Timestamp.min_timestamp_rfc()}")
 
       true ->
+        # Conformance tests recommend to remove useless fractional part.
+        suffix_to_remove =
+          cond do
+            rem(msg.nanos, 1_000_000_000) == 0 -> ".000000000Z"
+            rem(msg.nanos, 1_000_000) == 0 -> "000000Z"
+            rem(msg.nanos, 1_000) == 0 -> "000Z"
+            true -> "Z"
+          end
+
         unix_timestamp
-        |> DateTime.from_unix!(:nanosecond)
-        |> DateTime.to_iso8601()
+        |> :calendar.system_time_to_rfc3339([{:unit, :nanosecond}, {:offset, 'Z'}])
+        |> List.to_string()
+        |> String.replace_trailing(suffix_to_remove, "Z")
         |> json_encode.()
     end
   end

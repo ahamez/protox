@@ -3,7 +3,6 @@ defmodule Protox.JsonEncodeTestMessages do
 end
 
 defmodule Protox.JsonEncodeTest do
-  # use ExUnit.Case
   use ExUnit.Case, async: false
   use Protox.Float
 
@@ -161,7 +160,27 @@ defmodule Protox.JsonEncodeTest do
     {
       "Google.Protobuf.Timestamp",
       %Google.Protobuf.Timestamp{seconds: 3000, nanos: 0},
-      "1970-01-01T00:50:00.000000Z"
+      "1970-01-01T00:50:00Z"
+    },
+    {
+      "Google.Protobuf.Timestamp 0 fractional digits",
+      %Google.Protobuf.Timestamp{seconds: 0, nanos: 0},
+      "1970-01-01T00:00:00Z"
+    },
+    {
+      "Google.Protobuf.Timestamp 3 fractional digits",
+      %Google.Protobuf.Timestamp{seconds: 0, nanos: 10_000_000},
+      "1970-01-01T00:00:00.010Z"
+    },
+    {
+      "Google.Protobuf.Timestamp 6 fractional digits",
+      %Google.Protobuf.Timestamp{seconds: 0, nanos: 10_000},
+      "1970-01-01T00:00:00.000010Z"
+    },
+    {
+      "Google.Protobuf.Timestamp 9 fractional digits",
+      %Google.Protobuf.Timestamp{seconds: 0, nanos: 10},
+      "1970-01-01T00:00:00.000000010Z"
     },
     {
       "Google.Protobuf.FieldMask",
@@ -341,14 +360,6 @@ defmodule Protox.JsonEncodeTest do
 
   describe "Google.Protobuf.Timestamp" do
     test "Failure" do
-      assert_raise Protox.JsonEncodingError, fn ->
-        {:ok, dt, 0} = DateTime.from_iso8601("9999-12-31T23:59:59.999999999Z")
-        unix = DateTime.to_unix(dt, :nanosecond) + 1
-
-        msg = %Google.Protobuf.Timestamp{nanos: unix}
-        encode!(msg)
-      end
-
       assert_raise Protox.JsonEncodingError, fn ->
         {:ok, dt, 0} = DateTime.from_iso8601("0001-01-01T00:00:00Z")
         unix = DateTime.to_unix(dt, :nanosecond) - 1
