@@ -9,62 +9,50 @@ defmodule Protox.DefineMessage do
 
     for {msg_name, syntax, fields} <- messages do
       fields = Enum.sort(fields, &(&1.tag < &2.tag))
-
+      required_fields = make_required_fields(fields)
       unknown_fields = make_unknown_fields(:__uf__, fields)
-      unknown_fields_funs = make_unknown_fields_funs(keep_unknown_fields, unknown_fields)
 
       struct_fields = make_struct_fields(fields, syntax, unknown_fields, keep_unknown_fields)
 
-      required_fields = make_required_fields(fields)
-      required_fields_typesecs = make_required_fields_typespec(required_fields)
-
+      unknown_fields_funs = make_unknown_fields_funs(unknown_fields, keep_unknown_fields)
+      required_fields_fun = make_required_fields_fun(required_fields)
       defs_funs = make_defs_funs(fields, generate_defs_funs)
-      field_def_funs = make_field_funs(fields)
+      fields_access_funs = make_fields_access_funs(fields)
+      json_funs = make_json_funs(msg_name)
+      default_fun = make_default_funs(fields)
+      syntax_fun = make_syntax_fun(syntax)
 
       encoder = Protox.DefineEncoder.define(fields, required_fields, syntax, opts)
       decoder = Protox.DefineDecoder.define(msg_name, fields, required_fields, opts)
 
-      json_funs = make_json_funs(msg_name)
+      quote do
+        defmodule unquote(msg_name) do
+          @moduledoc false
 
-      default_fun = make_default_funs(fields)
-
-      module_ast =
-        quote do
           defstruct unquote(struct_fields)
 
           unquote(encoder)
           unquote(decoder)
-
           unquote(json_funs)
-
           unquote(defs_funs)
-
-          @spec fields_defs() :: list(Protox.Field.t())
-          def fields_defs(), do: unquote(Macro.escape(fields))
-
-          unquote(field_def_funs)
-
+          unquote(fields_access_funs)
           unquote(unknown_fields_funs)
-
-          @spec required_fields() :: unquote(required_fields_typesecs)
-          def required_fields(), do: unquote(required_fields)
-
-          @spec syntax() :: atom
-          def syntax(), do: unquote(syntax)
-
+          unquote(required_fields_fun)
+          unquote(syntax_fun)
           unquote(default_fun)
-        end
-
-      quote do
-        defmodule unquote(msg_name) do
-          @moduledoc false
-          unquote(module_ast)
         end
       end
     end
   end
 
   # -- Private
+
+  defp make_syntax_fun(syntax) do
+    quote do
+      @spec syntax() :: atom()
+      def syntax(), do: unquote(syntax)
+    end
+  end
 
   defp make_defs_funs(_fields, false = _generate_defs_funs), do: []
 
@@ -129,7 +117,7 @@ defmodule Protox.DefineMessage do
     end
   end
 
-  defp make_unknown_fields_funs(true = _keep_unknown_fields, unknown_fields) do
+  defp make_unknown_fields_funs(unknown_fields, true = _keep_unknown_fields) do
     quote do
       @spec unknown_fields(struct) :: [{non_neg_integer, Protox.Types.tag(), binary}]
       def unknown_fields(msg), do: msg.unquote(unknown_fields)
@@ -142,7 +130,7 @@ defmodule Protox.DefineMessage do
     end
   end
 
-  defp make_unknown_fields_funs(false = _keep_unknown_fields, _unknown_fields) do
+  defp make_unknown_fields_funs(_unknown_fields, false = _keep_unknown_fields) do
     []
   end
 
@@ -174,7 +162,16 @@ defmodule Protox.DefineMessage do
     List.flatten([spec, ast, match_all])
   end
 
-  # Generate the functions that provide a direct access to a field defininition.
+  # Generate the functions that provide access to a field definition.
+  defp make_fields_access_funs(fields) do
+    quote do
+      @spec fields_defs() :: list(Protox.Field.t())
+      def fields_defs(), do: unquote(Macro.escape(fields))
+
+      unquote(make_field_funs(fields))
+    end
+  end
+
   defp make_field_funs(fields) do
     spec =
       quote do
@@ -255,6 +252,15 @@ defmodule Protox.DefineMessage do
   # Get the list of fields that are marked as `required`.
   defp make_required_fields(fields) do
     for %Field{label: :required, name: name} <- fields, do: name
+  end
+
+  defp make_required_fields_fun(required_fields) do
+    required_fields_typesecs = make_required_fields_typespec(required_fields)
+
+    quote do
+      @spec required_fields() :: unquote(required_fields_typesecs)
+      def required_fields(), do: unquote(required_fields)
+    end
   end
 
   defp make_required_fields_typespec([]), do: quote(do: [])
