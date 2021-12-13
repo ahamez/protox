@@ -99,6 +99,15 @@ defmodule ProtoxTest do
     namespace: NoUf,
     keep_unknown_fields: false
 
+  use Protox,
+    schema: """
+    syntax = "proto3";
+
+    message NoDefsFuns {
+    }
+    """,
+    generate_defs_funs: false
+
   doctest Protox
 
   setup_all do
@@ -627,6 +636,11 @@ defmodule ProtoxTest do
     msg = NoUf.Sub.decode!(bytes)
     assert msg == %NoUf.Sub{a: 42, b: "", z: -42}
     assert Map.get(msg, :__uf__) == nil
+  end
+
+  test "Dont generate defs funs when asked not to" do
+    refute function_exported?(NoDefsFuns, :defs, 0)
+    refute function_exported?(NoDefsFuns, :defs_by_name, 0)
   end
 
   test "Can export to protoc and read its output (Sub)" do

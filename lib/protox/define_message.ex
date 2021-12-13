@@ -4,7 +4,8 @@ defmodule Protox.DefineMessage do
   alias Protox.Field
 
   def define(messages, opts \\ []) do
-    {keep_unknown_fields, _opts} = Keyword.pop(opts, :keep_unknown_fields, true)
+    keep_unknown_fields = Keyword.get(opts, :keep_unknown_fields, true)
+    generate_defs_funs = Keyword.get(opts, :generate_defs_funs, true)
 
     for {msg_name, syntax, fields} <- messages do
       fields = Enum.sort(fields, &(&1.tag < &2.tag))
@@ -17,9 +18,7 @@ defmodule Protox.DefineMessage do
       required_fields = make_required_fields(fields)
       required_fields_typesecs = make_required_fields_typespec(required_fields)
 
-      fields_map = make_fields_map(fields)
-      fields_by_name_map = make_fields_by_name_map(fields)
-
+      defs_funs = make_defs_funs(fields, generate_defs_funs)
       field_def_funs = make_field_funs(fields)
 
       encoder = Protox.DefineEncoder.define(fields, required_fields, syntax, opts)
@@ -38,17 +37,7 @@ defmodule Protox.DefineMessage do
 
           unquote(json_funs)
 
-          @deprecated "Use fields_defs()/0 instead"
-          @spec defs() :: %{
-                  required(non_neg_integer) => {atom, Protox.Types.kind(), Protox.Types.type()}
-                }
-          def defs(), do: unquote(fields_map)
-
-          @deprecated "Use fields_defs()/0 instead"
-          @spec defs_by_name() :: %{
-                  required(atom) => {non_neg_integer, Protox.Types.kind(), Protox.Types.type()}
-                }
-          def defs_by_name(), do: unquote(fields_by_name_map)
+          unquote(defs_funs)
 
           @spec fields_defs() :: list(Protox.Field.t())
           def fields_defs(), do: unquote(Macro.escape(fields))
@@ -76,6 +65,27 @@ defmodule Protox.DefineMessage do
   end
 
   # -- Private
+
+  defp make_defs_funs(_fields, false = _generate_defs_funs), do: []
+
+  defp make_defs_funs(fields, true = _generate_defs_funs) do
+    fields_map = make_fields_map(fields)
+    fields_by_name_map = make_fields_by_name_map(fields)
+
+    quote do
+      @deprecated "Use fields_defs()/0 instead"
+      @spec defs() :: %{
+              required(non_neg_integer) => {atom, Protox.Types.kind(), Protox.Types.type()}
+            }
+      def defs(), do: unquote(fields_map)
+
+      @deprecated "Use fields_defs()/0 instead"
+      @spec defs_by_name() :: %{
+              required(atom) => {non_neg_integer, Protox.Types.kind(), Protox.Types.type()}
+            }
+      def defs_by_name(), do: unquote(fields_by_name_map)
+    end
+  end
 
   defp make_json_funs(msg_name) do
     quote do

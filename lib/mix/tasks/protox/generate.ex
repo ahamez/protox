@@ -25,7 +25,8 @@ defmodule Mix.Tasks.Protox.Generate do
     include_path: :keep,
     namespace: :string,
     multiple_files: :boolean,
-    keep_unknown_fields: :boolean
+    keep_unknown_fields: :boolean,
+    generate_defs_funs: :boolean
   ]
 
   @impl Mix.Task
