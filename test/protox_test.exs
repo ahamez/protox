@@ -635,6 +635,12 @@ defmodule ProtoxTest do
     assert Map.get(msg, :__uf__) == nil
   end
 
+  test "Can acess required fields" do
+    assert Required.required_fields() == [:a]
+    # proto3 messages don't have required fields
+    assert Sub.required_fields() == []
+  end
+
   test "Dont generate defs funs when asked not to" do
     refute function_exported?(NoDefsFuns, :defs, 0)
     refute function_exported?(NoDefsFuns, :defs_by_name, 0)
