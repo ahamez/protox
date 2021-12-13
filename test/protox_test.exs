@@ -124,10 +124,7 @@ defmodule ProtoxTest do
   end
 
   test "Symmetric float precision" do
-    msg = %FloatPrecision{
-      a: 8.73291669056208,
-      b: 0.1
-    }
+    msg = %FloatPrecision{a: 8.73291669056208, b: 0.1}
 
     decoded = msg |> FloatPrecision.encode!() |> :binary.list_to_bin() |> FloatPrecision.decode!()
     assert decoded.a == msg.a
@@ -669,7 +666,7 @@ defmodule ProtoxTest do
     File.write!(encoded_bin_path, encoded)
 
     encoded_txt_cmdline =
-      "protoc --decode=#{mod} -I ./test/samples ./test/samples/messages.proto ./test/samples/protobuf2.proto  < #{encoded_bin_path}"
+      "protoc --decode=#{mod} -I ./test/samples ./test/samples/messages.proto ./test/samples/protobuf2.proto < #{encoded_bin_path}"
 
     # We use :os.cmd as protoc can only read the content `encoded_bin_path` from stdin.
     # credo:disable-for-next-line Credo.Check.Warning.UnsafeExec
