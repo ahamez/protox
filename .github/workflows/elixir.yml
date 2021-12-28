@@ -84,9 +84,9 @@ jobs:
         wget https://github.com/protocolbuffers/protobuf/archive/v${{ env.PROTOBUF_VERSION }}.tar.gz
         tar xf v${{ env.PROTOBUF_VERSION }}.tar.gz
         cd protobuf-${{ env.PROTOBUF_VERSION }}
-        ./autogen.sh && ./configure --disable-maintainer-mode --disable-dependency-tracking --disable-static && make
-        cd conformance && make
-        cd ..
+        ./autogen.sh && ./configure --disable-maintainer-mode --disable-dependency-tracking --disable-static
+        make -C ./src protoc
+        make -C conformance
         cp ./conformance/.libs/conformance-test-runner ../conformance-bin
         cp ./src/.libs/libprotobuf.so.${{ env.PROTOBUF_LIB_VERSION_MAJOR }}.${{ env.PROTOBUF_LIB_VERSION_MINOR }} ../conformance-bin/.libs/libprotobuf.so.${{ env.PROTOBUF_LIB_VERSION_MAJOR }}
 
