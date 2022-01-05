@@ -320,7 +320,7 @@ It corresponds to the `-I` option of `protoc`.
 
 ## Unknown fields
 
-[Unknown fields](https://developers.google.com/protocol-buffers/docs/proto3#unknowns) are fields that are present on the wire but which do not correspond to an entry in the protobuf definition. Typically, it occurs when the sender has a newer version of the protobuf definition. It makes possible to have backward compatibility as the receiver with an old version of the protobuf definition will still be able to decode old fields.
+[Unknown fields](https://developers.google.com/protocol-buffers/docs/proto3#unknowns) are fields that are present on the wire but which do not correspond to an entry in the protobuf definition. Typically, it occurs when the sender has a newer version of the protobuf definition. It enables backwards compatibility as the receiver with an old version of the protobuf definition will still be able to decode old fields.
 
 When unknown fields are encountered at decoding time, they are kept in the decoded message. It's possible to access them with the  `unknown_fields/1` function defined with the message.
 
