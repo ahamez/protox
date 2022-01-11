@@ -1,3 +1,6 @@
+# 1.6.7
+  - New release to publish docs using the improved ex_doc 0.27
+
 # 1.6.6
   - Fix JSON conformance tests related to fractional part in Timestamp
   - Add an option to not generate deprecated functions `defs/0` and `defs_by_name/0`
