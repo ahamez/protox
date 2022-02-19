@@ -29,7 +29,13 @@ defmodule Protox.Protoc do
 
     cmd_args = ["--include_imports", "-o", outfile_path] ++ args ++ proto_files
 
-    case System.cmd("protoc", cmd_args, stderr_to_stdout: true) do
+    try do
+      System.cmd("protoc", cmd_args, stderr_to_stdout: true)
+    catch
+      :error, :enoent ->
+        raise "protoc executable is missing. Please make sure Protocol Buffers " <>
+                "is installed and available system wide"
+    else
       {_, 0} ->
         file_content = File.read!(outfile_path)
         :ok = File.rm(outfile_path)
