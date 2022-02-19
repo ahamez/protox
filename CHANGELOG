@@ -1,3 +1,6 @@
+# 1.6.8
+  - Raise clearer error message if protoc is missing (thanks to https://github.com/josevalim)
+
 # 1.6.7
   - New release to publish docs using the improved ex_doc 0.27
 
