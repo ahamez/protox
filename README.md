@@ -53,7 +53,7 @@ You can find [here](https://github.com/ahamez/protox/blob/master/test/example_te
 
 ## Prerequisites
 
-- Elixir >= 1.7
+- Elixir >= 1.9
 - protoc >= 3.0 *This dependency is only required at compile-time*
   `protox` uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`.
   👉 You can download it [here](https://github.com/google/protobuf) or you can install it with your favorite package manager (`brew install protobuf`, `apt install protobuf-compiler`, etc.).
