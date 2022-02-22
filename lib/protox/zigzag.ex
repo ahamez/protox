@@ -2,7 +2,7 @@ defmodule Protox.Zigzag do
   @moduledoc false
   # Internal. Map integers to positive integers as LEB128 can only work on the latters.
 
-  use Bitwise
+  import Bitwise
 
   @spec encode(integer) :: non_neg_integer
   def encode(v) when v >= 0, do: v * 2
