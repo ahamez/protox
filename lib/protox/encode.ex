@@ -4,7 +4,7 @@ defmodule Protox.Encode do
   """
 
   import Protox.Guards
-  use Bitwise
+  import Bitwise
 
   use Protox.{
     Float,

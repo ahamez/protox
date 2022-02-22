@@ -2,7 +2,7 @@ defmodule Protox.Decode do
   @moduledoc false
   # Helpers decoding functions that will be used by the generated code.
 
-  use Bitwise
+  import Bitwise
 
   use Protox.{
     Float,

@@ -2,7 +2,7 @@ defmodule Protox.Varint do
   @moduledoc false
   # Internal. Implement LEB128 compression.
 
-  use Bitwise
+  import Bitwise
 
   @spec encode(integer) :: iodata
   def encode(v) when v < 128, do: <<v>>
