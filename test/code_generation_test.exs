@@ -145,6 +145,18 @@ defmodule Protox.CodeGenerationTest do
       )
 
     assert credo_exit_status == 0
+
+    {_, mix_format_exit_status} =
+      System.cmd(
+        "mix",
+        [
+          "format",
+          "--check-formatted"
+        ],
+        cd: code_generation_path
+      )
+
+    assert mix_format_exit_status == 0
   end
 
   defp mix_exs() do
