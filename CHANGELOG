@@ -1,5 +1,8 @@
+# 1.6.10
+  - Fix format of generated files
+
 # 1.6.9
-  - Fixes deprecation warnings in Elixir >= 1.14 about Bitwise (thanks to https://github.com/moogle19)
+  - Fix deprecation warnings in Elixir >= 1.14 about Bitwise (thanks to https://github.com/moogle19)
 
 # 1.6.8
   - Raise clearer error message if protoc is missing (thanks to https://github.com/josevalim)
