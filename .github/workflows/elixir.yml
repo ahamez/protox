@@ -1,9 +1,9 @@
 name: Elixir CI
 
 env:
-  PROTOBUF_VERSION: '3.19.1'
-  PROTOBUF_LIB_VERSION_MAJOR: '30'
-  PROTOBUF_LIB_VERSION_MINOR: '0.1'
+  PROTOBUF_VERSION: '21.4'
+  PROTOBUF_LIB_VERSION_MAJOR: '32'
+  PROTOBUF_LIB_VERSION_MINOR: '0.4'
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   MIX_ENV: test
 
@@ -92,8 +92,8 @@ jobs:
 
     - name: Install protoc
       run: |
-        wget https://github.com/protocolbuffers/protobuf/releases/download/v3.19.1/protoc-3.19.1-linux-x86_64.zip
-        unzip -d protoc protoc-3.19.1-linux-x86_64.zip
+        wget https://github.com/protocolbuffers/protobuf/releases/download/v21.4/protoc-21.4-linux-x86_64.zip
+        unzip -d protoc protoc-21.4-linux-x86_64.zip
         echo "${PWD}/protoc/bin" >> $GITHUB_PATH
 
     - name: Install dependencies
