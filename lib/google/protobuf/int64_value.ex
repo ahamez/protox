@@ -4,10 +4,10 @@ defmodule Protox.Google.Protobuf.Int64Value do
   use Protox.Define,
     enums: [],
     messages: [
-      {
-        Google.Protobuf.Int64Value,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Google.Protobuf.Int64Value,
+        syntax: :proto3,
+        fields: [
           Protox.Field.new!(
             kind: {:scalar, 0},
             label: :optional,

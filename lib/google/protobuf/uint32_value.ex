@@ -4,10 +4,10 @@ defmodule Protox.Google.Protobuf.UInt32Value do
   use Protox.Define,
     enums: [],
     messages: [
-      {
-        Google.Protobuf.UInt32Value,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Google.Protobuf.UInt32Value,
+        syntax: :proto3,
+        fields: [
           Protox.Field.new!(
             kind: {:scalar, 0},
             label: :optional,

@@ -4,10 +4,10 @@ defmodule Protox.Google.Protobuf.FloatValue do
   use Protox.Define,
     enums: [],
     messages: [
-      {
-        Google.Protobuf.FloatValue,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Google.Protobuf.FloatValue,
+        syntax: :proto3,
+        fields: [
           Protox.Field.new!(
             kind: {:scalar, 0.0},
             label: :optional,

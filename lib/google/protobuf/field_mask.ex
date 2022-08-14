@@ -8,10 +8,10 @@ defmodule Protox.Google.Protobuf.FieldMask do
   use Protox.Define,
     enums: [],
     messages: [
-      {
-        Google.Protobuf.FieldMask,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Google.Protobuf.FieldMask,
+        syntax: :proto3,
+        fields: [
           Protox.Field.new!(
             kind: :unpacked,
             label: :repeated,

@@ -9,10 +9,10 @@ defmodule Protox.Google.Protobuf.Value do
   use Protox.Define,
     enums: [],
     messages: [
-      {
-        Google.Protobuf.Value,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Google.Protobuf.Value,
+        syntax: :proto3,
+        fields: [
           Protox.Field.new!(
             kind: {:oneof, :kind},
             label: :optional,

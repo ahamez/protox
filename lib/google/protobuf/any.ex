@@ -4,10 +4,10 @@ defmodule Protox.Google.Protobuf.Any do
   use Protox.Define,
     enums: [],
     messages: [
-      {
-        Google.Protobuf.Any,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Google.Protobuf.Any,
+        syntax: :proto3,
+        fields: [
           Protox.Field.new!(
             kind: {:scalar, ""},
             label: :optional,

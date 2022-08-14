@@ -4,10 +4,10 @@ defmodule Protox.Google.Protobuf.Duration do
   use Protox.Define,
     enums: [],
     messages: [
-      {
-        Google.Protobuf.Duration,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Google.Protobuf.Duration,
+        syntax: :proto3,
+        fields: [
           Protox.Field.new!(
             kind: {:scalar, 0},
             label: :optional,

@@ -4,10 +4,10 @@ defmodule Protox.Google.Protobuf.Empty do
   use Protox.Define,
     enums: [],
     messages: [
-      {
-        Google.Protobuf.Empty,
-        :proto3,
-        []
+      %Protox.Message{
+        name: Google.Protobuf.Empty,
+        syntax: :proto3,
+        fields: []
       }
     ]
 end

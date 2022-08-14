@@ -7,26 +7,26 @@ defmodule Protox.DefineMessage do
     keep_unknown_fields = Keyword.get(opts, :keep_unknown_fields, true)
     generate_defs_funs = Keyword.get(opts, :generate_defs_funs, true)
 
-    for {msg_name, syntax, fields} <- messages do
-      fields = Enum.sort(fields, &(&1.tag < &2.tag))
+    for msg = %Protox.Message{} <- messages do
+      fields = Enum.sort(msg.fields, &(&1.tag < &2.tag))
       required_fields = make_required_fields(fields)
       unknown_fields = make_unknown_fields(:__uf__, fields)
 
-      struct_fields = make_struct_fields(fields, syntax, unknown_fields, keep_unknown_fields)
+      struct_fields = make_struct_fields(fields, msg.syntax, unknown_fields, keep_unknown_fields)
 
       unknown_fields_funs = make_unknown_fields_funs(unknown_fields, keep_unknown_fields)
       required_fields_fun = make_required_fields_fun(required_fields)
       defs_funs = make_defs_funs(fields, generate_defs_funs)
       fields_access_funs = make_fields_access_funs(fields)
-      json_funs = make_json_funs(msg_name)
+      json_funs = make_json_funs(msg.name)
       default_fun = make_default_funs(fields)
-      syntax_fun = make_syntax_fun(syntax)
+      syntax_fun = make_syntax_fun(msg.syntax)
 
-      encoder = Protox.DefineEncoder.define(fields, required_fields, syntax, opts)
-      decoder = Protox.DefineDecoder.define(msg_name, fields, required_fields, opts)
+      encoder = Protox.DefineEncoder.define(fields, required_fields, msg.syntax, opts)
+      decoder = Protox.DefineDecoder.define(msg.name, fields, required_fields, opts)
 
       quote do
-        defmodule unquote(msg_name) do
+        defmodule unquote(msg.name) do
           @moduledoc false
 
           defstruct unquote(struct_fields)

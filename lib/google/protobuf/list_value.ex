@@ -9,10 +9,10 @@ defmodule Protox.Google.Protobuf.ListValue do
   use Protox.Define,
     enums: [],
     messages: [
-      {
-        Google.Protobuf.ListValue,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Google.Protobuf.ListValue,
+        syntax: :proto3,
+        fields: [
           Protox.Field.new!(
             kind: :unpacked,
             label: :repeated,

@@ -39,10 +39,10 @@ defmodule Protox.Descriptor do
       }
     ],
     messages: [
-      {
-        Protox.Google.Protobuf.FileDescriptorSet,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Protox.Google.Protobuf.FileDescriptorSet,
+        syntax: :proto3,
+        fields: [
           Protox.Field.new!(
             tag: 1,
             label: :repeated,
@@ -52,10 +52,10 @@ defmodule Protox.Descriptor do
           )
         ]
       },
-      {
-        Protox.Google.Protobuf.FileDescriptorProto,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Protox.Google.Protobuf.FileDescriptorProto,
+        syntax: :proto3,
+        fields: [
           # Ignored: 3, 6, 8, 9, 10, 11
           Protox.Field.new!(
             tag: 1,
@@ -108,10 +108,10 @@ defmodule Protox.Descriptor do
           )
         ]
       },
-      {
-        Protox.Google.Protobuf.DescriptorProto.ExtensionRange,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Protox.Google.Protobuf.DescriptorProto.ExtensionRange,
+        syntax: :proto3,
+        fields: [
           Protox.Field.new!(
             tag: 1,
             label: :none,
@@ -123,10 +123,10 @@ defmodule Protox.Descriptor do
         ]
       },
       # Protox.Google.Protobuf.DescriptorProto.ReservedRange ignored
-      {
-        Protox.Google.Protobuf.DescriptorProto,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Protox.Google.Protobuf.DescriptorProto,
+        syntax: :proto3,
+        fields: [
           # Ignored: 9, 10
           Protox.Field.new!(
             tag: 1,
@@ -186,10 +186,10 @@ defmodule Protox.Descriptor do
           )
         ]
       },
-      {
-        Protox.Google.Protobuf.FieldDescriptorProto,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Protox.Google.Protobuf.FieldDescriptorProto,
+        syntax: :proto3,
+        fields: [
           # Ignored: 10
           Protox.Field.new!(
             tag: 1,
@@ -263,10 +263,10 @@ defmodule Protox.Descriptor do
           )
         ]
       },
-      {
-        Protox.Google.Protobuf.FileOptions,
-        :proto2,
-        [
+      %Protox.Message{
+        name: Protox.Google.Protobuf.FileOptions,
+        syntax: :proto2,
+        fields: [
           # Ignored: 1,8,10,20,27,9,11,16,17,18,42,31,36,37,40,41,44,45
           Protox.Field.new!(
             tag: 23,
@@ -284,10 +284,10 @@ defmodule Protox.Descriptor do
           )
         ]
       },
-      {
-        Protox.Google.Protobuf.UninterpretedOption,
-        :proto2,
-        [
+      %Protox.Message{
+        name: Protox.Google.Protobuf.UninterpretedOption,
+        syntax: :proto2,
+        fields: [
           Protox.Field.new!(
             tag: 2,
             label: :repeated,
@@ -339,10 +339,10 @@ defmodule Protox.Descriptor do
           )
         ]
       },
-      {
-        Protox.Google.Protobuf.UninterpretedOption.NamePart,
-        :proto2,
-        [
+      %Protox.Message{
+        name: Protox.Google.Protobuf.UninterpretedOption.NamePart,
+        syntax: :proto2,
+        fields: [
           Protox.Field.new!(
             tag: 1,
             label: :none,
@@ -359,10 +359,10 @@ defmodule Protox.Descriptor do
           )
         ]
       },
-      {
-        Protox.Google.Protobuf.OneofDescriptorProto,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Protox.Google.Protobuf.OneofDescriptorProto,
+        syntax: :proto3,
+        fields: [
           # Ignored: 2
           Protox.Field.new!(
             tag: 1,
@@ -373,10 +373,10 @@ defmodule Protox.Descriptor do
           )
         ]
       },
-      {
-        Protox.Google.Protobuf.EnumDescriptorProto,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Protox.Google.Protobuf.EnumDescriptorProto,
+        syntax: :proto3,
+        fields: [
           # Ignored: 3
           Protox.Field.new!(
             tag: 1,
@@ -394,10 +394,10 @@ defmodule Protox.Descriptor do
           )
         ]
       },
-      {
-        Protox.Google.Protobuf.EnumValueDescriptorProto,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Protox.Google.Protobuf.EnumValueDescriptorProto,
+        syntax: :proto3,
+        fields: [
           # Ignored: 3
           Protox.Field.new!(
             tag: 1,
@@ -417,10 +417,10 @@ defmodule Protox.Descriptor do
       },
       # ServiceDescriptorProto ignored
       # MethodDescriptorProto ignored
-      {
-        Protox.Google.Protobuf.MessageOptions,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Protox.Google.Protobuf.MessageOptions,
+        syntax: :proto3,
+        fields: [
           # 1, 2, 999 ignored
           Protox.Field.new!(
             tag: 3,
@@ -438,10 +438,10 @@ defmodule Protox.Descriptor do
           )
         ]
       },
-      {
-        Protox.Google.Protobuf.FieldOptions,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Protox.Google.Protobuf.FieldOptions,
+        syntax: :proto3,
+        fields: [
           # 1, 6, 5, 10, 999 ignored
           Protox.Field.new!(
             tag: 2,
