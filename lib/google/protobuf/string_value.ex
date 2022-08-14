@@ -4,10 +4,10 @@ defmodule Protox.Google.Protobuf.StringValue do
   use Protox.Define,
     enums: [],
     messages: [
-      {
-        Google.Protobuf.StringValue,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Google.Protobuf.StringValue,
+        syntax: :proto3,
+        fields: [
           Protox.Field.new!(
             kind: {:scalar, ""},
             label: :optional,

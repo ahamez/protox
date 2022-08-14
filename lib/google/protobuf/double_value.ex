@@ -4,10 +4,10 @@ defmodule Protox.Google.Protobuf.DoubleValue do
   use Protox.Define,
     enums: [],
     messages: [
-      {
-        Google.Protobuf.DoubleValue,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Google.Protobuf.DoubleValue,
+        syntax: :proto3,
+        fields: [
           Protox.Field.new!(
             kind: {:scalar, 0.0},
             label: :optional,

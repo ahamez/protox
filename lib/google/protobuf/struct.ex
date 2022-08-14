@@ -9,10 +9,10 @@ defmodule Protox.Google.Protobuf.Struct do
   use Protox.Define,
     enums: [],
     messages: [
-      {
-        Google.Protobuf.Struct,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Google.Protobuf.Struct,
+        syntax: :proto3,
+        fields: [
           Protox.Field.new!(
             kind: :map,
             label: nil,

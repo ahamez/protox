@@ -4,10 +4,10 @@ defmodule Protox.Google.Protobuf.BoolValue do
   use Protox.Define,
     enums: [],
     messages: [
-      {
-        Google.Protobuf.BoolValue,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Google.Protobuf.BoolValue,
+        syntax: :proto3,
+        fields: [
           Protox.Field.new!(
             kind: {:scalar, false},
             label: :optional,

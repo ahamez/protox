@@ -108,13 +108,14 @@ defmodule Protox.ParseTest do
   end
 
   def syntax(messages, name) do
-    {_, syntax, _} = Enum.find(messages, fn {n, _, _} -> n == name end)
-    syntax
+    msg = Enum.find(messages, fn %Protox.Message{name: n} -> n == name end)
+
+    msg.syntax
   end
 
   defp fields(messages, name) do
-    {_, _, fs} = Enum.find(messages, fn {n, _, _} -> n == name end)
+    msg = Enum.find(messages, fn %Protox.Message{name: n} -> n == name end)
 
-    fs
+    msg.fields
   end
 end

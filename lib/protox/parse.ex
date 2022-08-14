@@ -4,7 +4,7 @@ defmodule Protox.Parse do
   # Creates definitions from a protobuf encoded description (Protox.Google.Protobuf.FileDescriptorSet)
   # of a set of .proto files. This description is produced by `protoc`.
 
-  alias Protox.Field
+  alias Protox.{Field, Message}
 
   alias Protox.Google.Protobuf.{
     DescriptorProto,
@@ -34,8 +34,8 @@ defmodule Protox.Parse do
   # here to make sure they are not defined more than once.
   defp remove_well_known_types(acc) do
     filtered_messages =
-      Enum.reject(acc.messages, fn {message_name, _syntax, _fields} ->
-        message_name in Google.Protobuf.well_known_types()
+      Enum.reject(acc.messages, fn msg = %Message{} ->
+        msg.name in Google.Protobuf.well_known_types()
       end)
 
     filtered_enums =
@@ -46,22 +46,23 @@ defmodule Protox.Parse do
     %{enums: filtered_enums, messages: filtered_messages}
   end
 
-  # canonization: camelization, fqdn, prepend with namespace
+  # Canonization: camelization, fqdn, prepend with namespace
   defp post_process(acc, namespace_or_nil) do
     processed_messages =
-      for {mname, {syntax, fields}} <- acc.messages, into: [] do
-        {
-          Module.concat([namespace_or_nil | Enum.map(mname, &Macro.camelize(&1))]),
-          syntax,
-          Enum.map(
-            fields,
-            fn %Field{} = field ->
-              field
-              |> resolve_types(acc.enums)
-              |> set_default_value(acc.enums)
-              |> concat_names(namespace_or_nil)
-            end
-          )
+      for {msg_name, msg = %Message{}} <- acc.messages, into: [] do
+        %Message{
+          name: Module.concat([namespace_or_nil | Enum.map(msg_name, &Macro.camelize(&1))]),
+          syntax: msg.syntax,
+          fields:
+            Enum.map(
+              msg.fields,
+              fn %Field{} = field ->
+                field
+                |> resolve_types(acc.enums)
+                |> set_default_value(acc.enums)
+                |> concat_names(namespace_or_nil)
+              end
+            )
         }
       end
 
@@ -203,7 +204,15 @@ defmodule Protox.Parse do
   end
 
   defp add_message(acc, syntax, name) do
-    %{acc | messages: Map.put_new(acc.messages, name, {syntax, []})}
+    %{
+      acc
+      | messages:
+          Map.put_new(acc.messages, name, %Message{
+            name: name,
+            syntax: syntax,
+            fields: []
+          })
+    }
   end
 
   defp add_extensions(acc, upper, syntax, fields) do
@@ -240,8 +249,8 @@ defmodule Protox.Parse do
       )
 
     new_messages =
-      Map.update!(acc.messages, msg_name, fn {syntax, fields} ->
-        {syntax, [field | fields]}
+      Map.update!(acc.messages, msg_name, fn msg = %Message{} ->
+        %{msg | fields: [field | msg.fields]}
       end)
 
     %{acc | messages: new_messages}

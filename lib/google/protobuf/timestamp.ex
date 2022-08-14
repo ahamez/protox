@@ -4,10 +4,10 @@ defmodule Protox.Google.Protobuf.Timestamp do
   use Protox.Define,
     enums: [],
     messages: [
-      {
-        Google.Protobuf.Timestamp,
-        :proto3,
-        [
+      %Protox.Message{
+        name: Google.Protobuf.Timestamp,
+        syntax: :proto3,
+        fields: [
           Protox.Field.new!(
             kind: {:scalar, 0},
             label: :optional,
