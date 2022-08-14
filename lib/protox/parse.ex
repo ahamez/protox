@@ -153,7 +153,7 @@ defmodule Protox.Parse do
     acc
     |> make_enums(prefix, descriptor.enum_type)
     |> make_messages(syntax, prefix, descriptor.message_type)
-    |> add_extensions(nil, syntax, descriptor.extension)
+    |> add_extensions(syntax, descriptor.extension)
   end
 
   defp make_enums(acc, prefix, descriptors) do
@@ -215,9 +215,9 @@ defmodule Protox.Parse do
     }
   end
 
-  defp add_extensions(acc, upper, syntax, fields) do
+  defp add_extensions(acc, syntax, fields) do
     Enum.reduce(fields, acc, fn field, acc ->
-      add_field(acc, syntax, upper, fully_qualified_name(field.extendee), field)
+      add_field(acc, syntax, _upper = nil, fully_qualified_name(field.extendee), field)
     end)
   end
 
