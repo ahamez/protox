@@ -31,7 +31,7 @@ defmodule Protox.Parse do
   # As not all protoc installations come with the well-known types (Any, Duration, etc.),
   # protox provides these types automatically.
   # However, as user code can include those well-known types, we have to get rid of them
-  # here to make sure they are now defined more than once.
+  # here to make sure they are not defined more than once.
   defp remove_well_known_types(acc) do
     filtered_messages =
       Enum.reject(acc.messages, fn {message_name, _syntax, _fields} ->
