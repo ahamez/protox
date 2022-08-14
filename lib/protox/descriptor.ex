@@ -93,6 +93,13 @@ defmodule Protox.Descriptor do
             type: {:message, Protox.Google.Protobuf.FieldDescriptorProto}
           ),
           Protox.Field.new!(
+            tag: 8,
+            label: :none,
+            name: :options,
+            kind: {:scalar, nil},
+            type: {:message, Protox.Google.Protobuf.FileOptions}
+          ),
+          Protox.Field.new!(
             tag: 12,
             label: :none,
             name: :syntax,
@@ -257,6 +264,102 @@ defmodule Protox.Descriptor do
         ]
       },
       {
+        Protox.Google.Protobuf.FileOptions,
+        :proto2,
+        [
+          # Ignored: 1,8,10,20,27,9,11,16,17,18,42,31,36,37,40,41,44,45
+          Protox.Field.new!(
+            tag: 23,
+            label: :none,
+            name: :deprecated,
+            kind: {:scalar, false},
+            type: :bool
+          ),
+          Protox.Field.new!(
+            tag: 999,
+            label: :repeated,
+            name: :uninterpreted_option,
+            kind: :unpacked,
+            type: {:message, Protox.Google.Protobuf.UninterpretedOption}
+          )
+        ]
+      },
+      {
+        Protox.Google.Protobuf.UninterpretedOption,
+        :proto2,
+        [
+          Protox.Field.new!(
+            tag: 2,
+            label: :repeated,
+            name: :name,
+            kind: :unpacked,
+            type: {:message, Protox.Google.Protobuf.UninterpretedOption.NamePart}
+          ),
+          Protox.Field.new!(
+            tag: 3,
+            label: :none,
+            name: :identifier_value,
+            kind: {:scalar, nil},
+            type: :string
+          ),
+          Protox.Field.new!(
+            tag: 4,
+            label: :none,
+            name: :positive_int_value,
+            kind: {:scalar, nil},
+            type: :uint64
+          ),
+          Protox.Field.new!(
+            tag: 5,
+            label: :none,
+            name: :negative_int_value,
+            kind: {:scalar, nil},
+            type: :int64
+          ),
+          Protox.Field.new!(
+            tag: 6,
+            label: :none,
+            name: :double_value,
+            kind: {:scalar, nil},
+            type: :double
+          ),
+          Protox.Field.new!(
+            tag: 7,
+            label: :none,
+            name: :string_value,
+            kind: {:scalar, nil},
+            type: :bytes
+          ),
+          Protox.Field.new!(
+            tag: 8,
+            label: :none,
+            name: :aggregate_value,
+            kind: {:scalar, nil},
+            type: :string
+          )
+        ]
+      },
+      {
+        Protox.Google.Protobuf.UninterpretedOption.NamePart,
+        :proto2,
+        [
+          Protox.Field.new!(
+            tag: 1,
+            label: :none,
+            name: :name_part,
+            kind: {:scalar, nil},
+            type: :string
+          ),
+          Protox.Field.new!(
+            tag: 2,
+            label: :none,
+            name: :is_extension,
+            kind: {:scalar, nil},
+            type: :bool
+          )
+        ]
+      },
+      {
         Protox.Google.Protobuf.OneofDescriptorProto,
         :proto3,
         [
@@ -314,7 +417,6 @@ defmodule Protox.Descriptor do
       },
       # ServiceDescriptorProto ignored
       # MethodDescriptorProto ignored
-      # FileOptions ignored
       {
         Protox.Google.Protobuf.MessageOptions,
         :proto3,
@@ -362,7 +464,6 @@ defmodule Protox.Descriptor do
       # EnumValueOptions ignored
       # ServiceOptions ignored
       # MethodOptions ignored
-      # UninterpretedOption ignored
       # SourceCodeInfo ignored
       # GeneratedCodeInfo ignored
     ]
