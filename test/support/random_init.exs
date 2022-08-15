@@ -108,7 +108,6 @@ defmodule Protox.RandomInit do
 
   # ------------------------------------------------------------------- #
 
-  # @well_known_types []
   @well_known_types [
     Google.Protobuf.BoolValue,
     Google.Protobuf.BytesValue,
