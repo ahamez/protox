@@ -21,6 +21,7 @@ defmodule Protox.DefineMessage do
       json_funs = make_json_funs(msg.name)
       default_fun = make_default_funs(fields)
       syntax_fun = make_syntax_fun(msg.syntax)
+      file_options_fun = make_file_options_fun(msg)
 
       encoder = Protox.DefineEncoder.define(fields, required_fields, msg.syntax, opts)
       decoder = Protox.DefineDecoder.define(msg.name, fields, required_fields, opts)
@@ -40,12 +41,43 @@ defmodule Protox.DefineMessage do
           unquote(required_fields_fun)
           unquote(syntax_fun)
           unquote(default_fun)
+          unquote(file_options_fun)
         end
       end
     end
   end
 
   # -- Private
+
+  defp make_file_options_fun(%Protox.Message{file_options: nil}) do
+    quote do
+      @spec file_options() :: nil
+      def file_options(), do: nil
+    end
+  end
+
+  defp make_file_options_fun(%Protox.Message{} = msg) do
+    quote do
+      @spec file_options() :: struct()
+      def file_options() do
+        # When parsing a proto file, we must use the hardcoded version of
+        # FileOptions contained in file descriptor.ex. However, it means that
+        # extensions added on top on FileOptions to describe new options can't
+        # be decoded at this moment (they will be stored in the __uf__ field).
+        #
+        # Thus, we first encode them back to a binary form, then they are decoded
+        # with Google.Protobuf.FileOptions (note the missing `Protox` in front
+        # of the module name) which contains the extensions.
+        bytes =
+          unquote(Macro.escape(msg.file_options))
+          |> Protox.Google.Protobuf.FileOptions.encode!()
+          |> :binary.list_to_bin()
+
+        # FileOptions may be unknown at compilation time as it's
+        apply(Google.Protobuf.FileOptions, :decode!, [bytes])
+      end
+    end
+  end
 
   defp make_syntax_fun(syntax) do
     quote do
