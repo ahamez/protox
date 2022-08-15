@@ -60,21 +60,31 @@ defmodule Protox.DefineMessage do
     quote do
       @spec file_options() :: struct()
       def file_options() do
-        # When parsing a proto file, we must use the hardcoded version of
-        # FileOptions contained in file descriptor.ex. However, it means that
-        # extensions added on top on FileOptions to describe new options can't
-        # be decoded at this moment (they will be stored in the __uf__ field).
-        #
-        # Thus, we first encode them back to a binary form, then they are decoded
-        # with Google.Protobuf.FileOptions (note the missing `Protox` in front
-        # of the module name) which contains the extensions.
-        bytes =
-          unquote(Macro.escape(msg.file_options))
-          |> Protox.Google.Protobuf.FileOptions.encode!()
-          |> :binary.list_to_bin()
+        file_options = unquote(Macro.escape(msg.file_options))
 
-        # FileOptions may be unknown at compilation time as it's
-        apply(Google.Protobuf.FileOptions, :decode!, [bytes])
+        # Google.Protobuf.FileOptions.FileOptions may be unknown at compilation time
+        # as it's only generated if a file import "google/protobuf/descriptor.proto".
+        case function_exported?(Google.Protobuf.FileOptions, :decode!, 1) do
+          true ->
+            # When parsing a proto file, we must use the hardcoded version of
+            # FileOptions contained in file descriptor.ex. However, it means that
+            # extensions added on top on FileOptions to describe custom options can't
+            # be decoded at this moment (they will be stored in the __uf__ field).
+            #
+            # Thus, we first encode them back to a binary form, then we decode them
+            # with Google.Protobuf.FileOptions which contains the extensions
+            # (note the missing `Protox` in front of the module name).
+
+            bytes =
+              file_options
+              |> Protox.Google.Protobuf.FileOptions.encode!()
+              |> :binary.list_to_bin()
+
+            apply(Google.Protobuf.FileOptions, :decode!, [bytes])
+
+          false ->
+            file_options
+        end
       end
     end
   end
