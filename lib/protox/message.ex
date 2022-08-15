@@ -2,7 +2,7 @@ defmodule Protox.Message do
   @moduledoc false
 
   @type t() :: %__MODULE__{
-          name: binary(),
+          name: atom(),
           syntax: atom(),
           fields: list(Protox.Field.t()),
           file_options: struct() | nil
