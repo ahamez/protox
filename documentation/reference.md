@@ -88,6 +88,13 @@ required_fields()
 ```
 Get the list of required fields.
 
+### Metadata
+```elixir
+@spec file_options() :: struct() | nil
+file_options()
+```
+Get the options set in `*.proto` files (see [the Google reference documentation](https://developers.google.com/protocol-buffers/docs/proto#options)). Returns a [`FileOption`](https://github.com/protocolbuffers/protobuf/blob/cac9765af0ace57ce00b6ea07b8829339a622b1d/src/google/protobuf/descriptor.proto#L346) structure. All messages of a same file share the same options.
+
 ## Enums
 
 ```elixir
