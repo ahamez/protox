@@ -36,6 +36,14 @@ defmodule Protox.Descriptor do
           {2, :required},
           {3, :repeated}
         ]
+      },
+      {
+        Protox.Google.Protobuf.FileOptions.OptimizeMode,
+        [
+          {1, :SPEED},
+          {2, :CODE_SIZE},
+          {3, :LITE_RUNTIME}
+        ]
       }
     ],
     messages: [
@@ -267,19 +275,151 @@ defmodule Protox.Descriptor do
         name: Protox.Google.Protobuf.FileOptions,
         syntax: :proto2,
         fields: [
-          # Ignored: 1,8,10,20,27,9,11,16,17,18,42,31,36,37,40,41,44,45
           Protox.Field.new!(
-            tag: 23,
-            label: :none,
-            name: :deprecated,
+            kind: {:scalar, ""},
+            label: :optional,
+            name: :java_package,
+            tag: 1,
+            type: :string
+          ),
+          Protox.Field.new!(
+            kind: {:scalar, ""},
+            label: :optional,
+            name: :java_outer_classname,
+            tag: 8,
+            type: :string
+          ),
+          Protox.Field.new!(
+            kind: {:scalar, :SPEED},
+            label: :optional,
+            name: :optimize_for,
+            tag: 9,
+            type: {:enum, Protox.Google.Protobuf.FileOptions.OptimizeMode}
+          ),
+          Protox.Field.new!(
             kind: {:scalar, false},
+            label: :optional,
+            name: :java_multiple_files,
+            tag: 10,
             type: :bool
           ),
           Protox.Field.new!(
-            tag: 999,
+            kind: {:scalar, ""},
+            label: :optional,
+            name: :go_package,
+            tag: 11,
+            type: :string
+          ),
+          Protox.Field.new!(
+            kind: {:scalar, false},
+            label: :optional,
+            name: :cc_generic_services,
+            tag: 16,
+            type: :bool
+          ),
+          Protox.Field.new!(
+            kind: {:scalar, false},
+            label: :optional,
+            name: :java_generic_services,
+            tag: 17,
+            type: :bool
+          ),
+          Protox.Field.new!(
+            kind: {:scalar, false},
+            label: :optional,
+            name: :py_generic_services,
+            tag: 18,
+            type: :bool
+          ),
+          Protox.Field.new!(
+            kind: {:scalar, false},
+            label: :optional,
+            name: :java_generate_equals_and_hash,
+            tag: 20,
+            type: :bool
+          ),
+          Protox.Field.new!(
+            kind: {:scalar, false},
+            label: :optional,
+            name: :deprecated,
+            tag: 23,
+            type: :bool
+          ),
+          Protox.Field.new!(
+            kind: {:scalar, false},
+            label: :optional,
+            name: :java_string_check_utf8,
+            tag: 27,
+            type: :bool
+          ),
+          Protox.Field.new!(
+            kind: {:scalar, true},
+            label: :optional,
+            name: :cc_enable_arenas,
+            tag: 31,
+            type: :bool
+          ),
+          Protox.Field.new!(
+            kind: {:scalar, ""},
+            label: :optional,
+            name: :objc_class_prefix,
+            tag: 36,
+            type: :string
+          ),
+          Protox.Field.new!(
+            kind: {:scalar, ""},
+            label: :optional,
+            name: :csharp_namespace,
+            tag: 37,
+            type: :string
+          ),
+          Protox.Field.new!(
+            kind: {:scalar, ""},
+            label: :optional,
+            name: :swift_prefix,
+            tag: 39,
+            type: :string
+          ),
+          Protox.Field.new!(
+            kind: {:scalar, ""},
+            label: :optional,
+            name: :php_class_prefix,
+            tag: 40,
+            type: :string
+          ),
+          Protox.Field.new!(
+            kind: {:scalar, ""},
+            label: :optional,
+            name: :php_namespace,
+            tag: 41,
+            type: :string
+          ),
+          Protox.Field.new!(
+            kind: {:scalar, false},
+            label: :optional,
+            name: :php_generic_services,
+            tag: 42,
+            type: :bool
+          ),
+          Protox.Field.new!(
+            kind: {:scalar, ""},
+            label: :optional,
+            name: :php_metadata_namespace,
+            tag: 44,
+            type: :string
+          ),
+          Protox.Field.new!(
+            kind: {:scalar, ""},
+            label: :optional,
+            name: :ruby_package,
+            tag: 45,
+            type: :string
+          ),
+          Protox.Field.new!(
+            kind: :unpacked,
             label: :repeated,
             name: :uninterpreted_option,
-            kind: :unpacked,
+            tag: 999,
             type: {:message, Protox.Google.Protobuf.UninterpretedOption}
           )
         ]
