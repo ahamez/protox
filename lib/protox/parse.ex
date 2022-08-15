@@ -51,18 +51,18 @@ defmodule Protox.Parse do
     processed_messages =
       for {msg_name, msg = %Message{}} <- acc.messages, into: [] do
         %Message{
-          name: Module.concat([namespace_or_nil | Enum.map(msg_name, &Macro.camelize(&1))]),
-          syntax: msg.syntax,
-          fields:
-            Enum.map(
-              msg.fields,
-              fn %Field{} = field ->
-                field
-                |> resolve_types(acc.enums)
-                |> set_default_value(acc.enums)
-                |> concat_names(namespace_or_nil)
-              end
-            )
+          msg
+          | name: Module.concat([namespace_or_nil | Enum.map(msg_name, &Macro.camelize(&1))]),
+            fields:
+              Enum.map(
+                msg.fields,
+                fn %Field{} = field ->
+                  field
+                  |> resolve_types(acc.enums)
+                  |> set_default_value(acc.enums)
+                  |> concat_names(namespace_or_nil)
+                end
+              )
         }
       end
 
@@ -154,6 +154,7 @@ defmodule Protox.Parse do
     |> make_enums(prefix, descriptor.enum_type)
     |> make_messages(syntax, prefix, descriptor.message_type)
     |> add_extensions(syntax, descriptor.extension)
+    |> add_metadata(descriptor)
   end
 
   defp make_enums(acc, prefix, descriptors) do
@@ -219,6 +220,17 @@ defmodule Protox.Parse do
     Enum.reduce(fields, acc, fn field, acc ->
       add_field(acc, syntax, _upper = nil, fully_qualified_name(field.extendee), field)
     end)
+  end
+
+  defp add_metadata(acc, descriptor) do
+    new_messages =
+      acc.messages
+      |> Enum.map(fn {msg_name, msg = %Message{}} ->
+        {msg_name, %Message{msg | file_options: descriptor.options}}
+      end)
+      |> Enum.into(%{})
+
+    %{acc | messages: new_messages}
   end
 
   defp add_fields(acc, upper, msg_name, syntax, fields) do

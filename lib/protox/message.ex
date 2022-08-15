@@ -4,10 +4,11 @@ defmodule Protox.Message do
   @type t() :: %__MODULE__{
           name: binary(),
           syntax: atom(),
-          fields: list(Protox.Field.t())
+          fields: list(Protox.Field.t()),
+          file_options: struct() | nil
         }
 
-  @keys [:name, :syntax, :fields]
-  @enforce_keys @keys
-  defstruct @keys
+  @enforced_keys [:name, :syntax, :fields]
+  @enforce_keys @enforced_keys
+  defstruct @enforced_keys ++ [:file_options]
 end
