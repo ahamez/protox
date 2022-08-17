@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+option java_package = "com.foo";
+
+message Foo {
+  string x = 1;
+}
