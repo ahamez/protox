@@ -152,9 +152,8 @@ defmodule Protox.Parse do
 
     acc
     |> make_enums(prefix, descriptor.enum_type)
-    |> make_messages(syntax, prefix, descriptor.message_type)
+    |> make_messages(syntax, prefix, descriptor.message_type, descriptor.options)
     |> add_extensions(syntax, descriptor.extension)
-    |> add_metadata(descriptor)
   end
 
   defp make_enums(acc, prefix, descriptors) do
@@ -179,39 +178,46 @@ defmodule Protox.Parse do
     )
   end
 
-  defp make_messages(acc, syntax, prefix, descriptors) do
+  defp make_messages(acc, syntax, prefix, descriptors, options) do
     Enum.reduce(descriptors, acc, fn descriptor, acc ->
-      make_message(acc, syntax, prefix, descriptor)
+      make_message(acc, syntax, prefix, descriptor, options)
     end)
   end
 
-  defp make_message(acc, _syntax, _prefix, %DescriptorProto{
-         options: %MessageOptions{map_entry: map_entry}
-       })
+  defp make_message(
+         acc,
+         _syntax,
+         _prefix,
+         %DescriptorProto{
+           options: %MessageOptions{map_entry: map_entry}
+         },
+         _options
+       )
        when map_entry do
     # This case has already been handled in the upper message with add_maps.
     acc
   end
 
-  defp make_message(acc, syntax, prefix, descriptor) do
+  defp make_message(acc, syntax, prefix, descriptor, options) do
     name = prefix ++ [descriptor.name]
 
     acc
-    |> add_message(syntax, name)
-    |> make_messages(syntax, name, descriptor.nested_type)
+    |> add_message(syntax, name, options)
+    |> make_messages(syntax, name, descriptor.nested_type, options)
     |> make_enums(name, descriptor.enum_type)
     |> add_fields(descriptor, name, syntax, descriptor.field)
     |> add_fields(descriptor, name, syntax, descriptor.extension)
   end
 
-  defp add_message(acc, syntax, name) do
+  defp add_message(acc, syntax, name, options) do
     %{
       acc
       | messages:
           Map.put_new(acc.messages, name, %Message{
             name: name,
             syntax: syntax,
-            fields: []
+            fields: [],
+            file_options: options
           })
     }
   end
@@ -220,17 +226,6 @@ defmodule Protox.Parse do
     Enum.reduce(fields, acc, fn field, acc ->
       add_field(acc, syntax, _upper = nil, fully_qualified_name(field.extendee), field)
     end)
-  end
-
-  defp add_metadata(acc, descriptor) do
-    new_messages =
-      acc.messages
-      |> Enum.map(fn {msg_name, msg = %Message{}} ->
-        {msg_name, %Message{msg | file_options: descriptor.options}}
-      end)
-      |> Enum.into(%{})
-
-    %{acc | messages: new_messages}
   end
 
   defp add_fields(acc, upper, msg_name, syntax, fields) do

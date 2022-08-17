@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+option java_package = "com.bar";
+
+message Bar {
+  string y = 1;
+}
