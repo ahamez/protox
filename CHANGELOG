@@ -1,3 +1,6 @@
+# 1.7.0
+  - Add support of FileOptions (which can be access with `Msg.file_options/0`)
+
 # 1.6.10
   - Fix format of generated files
 
