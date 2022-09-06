@@ -47,6 +47,12 @@ jobs:
             check_format: true
             credo: true
             dialyzer: true
+          - elixir: 1.14.0
+            otp: 25.0
+            check_deps: true
+            check_format: true
+            credo: true
+            dialyzer: true
 
 
     steps:
