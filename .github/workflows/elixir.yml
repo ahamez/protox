@@ -24,35 +24,20 @@ jobs:
         include:
           - elixir: 1.9.4
             otp: 22.3
-            credo: true
-            dialyzer: true
+            check_deps: false
+            check_format: false
           - elixir: 1.10.4
             otp: 22.3              
-            credo: true
-            dialyzer: true
+            check_format: false
           - elixir: 1.11.4
             otp: 23.3
-            check_deps: true
-            credo: true
-            dialyzer: true
+            check_format: false
           - elixir: 1.12.3
             otp: 24.1
-            check_deps: true
-            check_format: true
-            credo: true
-            dialyzer: true
           - elixir: 1.13.0
             otp: 24.1
-            check_deps: true
-            check_format: true
-            credo: true
-            dialyzer: true
           - elixir: 1.14.0
-            otp: 25.0
-            check_deps: true
-            check_format: true
-            credo: true
-            dialyzer: true
+            otp: 25.1
 
 
     steps:
@@ -109,7 +94,6 @@ jobs:
         mix deps.get
 
     - name: Compile prod with warnings as errors
-      # Will be fast as protox is the only thing to compile when MIX_ENV=prod
       run: MIX_ENV=prod mix compile --warnings-as-errors
 
     - name: Run tests
@@ -128,8 +112,6 @@ jobs:
 
     - name: Credo
       run: mix credo
-      if: ${{ matrix.credo }}
 
     - name: Dialyzer
       run: mix dialyzer
-      if: ${{ matrix.dialyzer }}
