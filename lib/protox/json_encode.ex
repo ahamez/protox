@@ -70,6 +70,21 @@ defmodule Protox.JsonEncode do
 
   defp encode_msg_field(
          msg,
+         %Field{label: :proto3_optional, name: name} = field,
+         json_encode
+       ) do
+    case Map.fetch!(msg, name) do
+      nil ->
+        <<>>
+
+      field_value ->
+        json_value = encode_value(field_value, field.type, json_encode)
+        [json_encode.(field.json_name), ":", json_value]
+    end
+  end
+
+  defp encode_msg_field(
+         msg,
          %Field{name: child_name, kind: {:oneof, parent_name}} = field,
          json_encode
        ) do
