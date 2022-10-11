@@ -440,6 +440,16 @@ defmodule Protox.JsonDecodeTest do
       "Unknown field",
       "{\"invalidField\": 1}",
       %ProtobufTestMessages.Proto3.TestAllTypesProto3{}
+    },
+    {
+      "Optional field",
+      "{\"optional\":42}",
+      %OptionalInt{optional: 42}
+    },
+    {
+      "Optional field, unset",
+      "{}",
+      %OptionalInt{}
     }
   ]
 

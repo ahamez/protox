@@ -289,6 +289,21 @@ defmodule Protox.JsonEncodeTest do
       "ListValue inside Value",
       %Google.Protobuf.Value{kind: {:list_value, %Google.Protobuf.ListValue{}}},
       []
+    },
+    {
+      "Optional",
+      %OptionalInt{optional: 42},
+      %{"optional" => 42}
+    },
+    {
+      "Optional, unset",
+      %OptionalInt{},
+      %{}
+    },
+    {
+      "Optional, explictly set to nil",
+      %OptionalInt{optional: nil},
+      %{}
     }
   ]
 

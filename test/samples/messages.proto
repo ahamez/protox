@@ -93,3 +93,7 @@ message NestedMessage {
   int32 a = 1;
   CoRecursive corecursive = 2;
 }
+
+message OptionalInt {
+  optional int32 optional = 1;
+}

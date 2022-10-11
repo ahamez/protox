@@ -195,6 +195,15 @@ defmodule Protox.JsonDecode do
     {field.name, decode_value(json_value, field.type)}
   end
 
+  defp decode_msg_field(%Field{label: :proto3_optional} = field, json_value, _msg) do
+    field_value = decode_value(json_value, field.type)
+
+    case field_value do
+      nil -> nil
+      field_value -> {field.name, field_value}
+    end
+  end
+
   defp decode_msg_field(%Field{kind: {:oneof, parent_name}} = field, json_value, msg) do
     field_value = decode_value(json_value, field.type)
 
