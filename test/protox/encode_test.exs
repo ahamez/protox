@@ -362,6 +362,16 @@ defmodule Protox.EncodeTest do
     assert %Protobuf2{t: nil} |> Protox.encode!() |> :binary.list_to_bin() == <<>>
   end
 
+  test "Optional sub message" do
+    assert %OptionalUpperMsg{sub: %OptionalSubMsg{a: 42}}
+           |> Protox.encode!()
+           |> :binary.list_to_bin() == <<10, 2, 8, 42>>
+  end
+
+  test "Optional sub message set to nil" do
+    assert %OptionalUpperMsg{sub: nil} |> Protox.encode!() |> :binary.list_to_bin() == <<>>
+  end
+
   test "Required" do
     assert %Required{a: 0} |> Protox.encode!() |> :binary.list_to_bin() == <<8, 0>>
     assert %Required{a: 1} |> Protox.encode!() |> :binary.list_to_bin() == <<8, 1>>

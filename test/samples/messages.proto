@@ -97,3 +97,10 @@ message NestedMessage {
 message OptionalInt {
   optional int32 optional = 1;
 }
+
+message OptionalUpperMsg {
+  optional OptionalSubMsg sub = 1;
+}
+message OptionalSubMsg {
+  int32 a = 1;
+}

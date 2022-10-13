@@ -450,6 +450,16 @@ defmodule Protox.JsonDecodeTest do
       "Optional field, unset",
       "{}",
       %OptionalInt{}
+    },
+    {
+      "Option sub message",
+      "{\"sub\":{\"a\":42}}",
+      %OptionalUpperMsg{sub: %OptionalSubMsg{a: 42}}
+    },
+    {
+      "Option sub message, set to nil",
+      "{}",
+      %OptionalUpperMsg{}
     }
   ]
 

@@ -914,6 +914,16 @@ defmodule Protox.DecodeTest do
       "Protobuf2.a, repeated scalar, select last",
       <<8, 150, 1, 8, 1>>,
       %Protobuf2{a: 1}
+    },
+    {
+      "Optional sub message",
+      <<10, 2, 8, 42>>,
+      %OptionalUpperMsg{sub: %OptionalSubMsg{a: 42}}
+    },
+    {
+      "Optional sub message set to nim",
+      <<>>,
+      %OptionalUpperMsg{sub: nil}
     }
   ]
 
