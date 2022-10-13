@@ -304,6 +304,16 @@ defmodule Protox.JsonEncodeTest do
       "Optional, explictly set to nil",
       %OptionalInt{optional: nil},
       %{}
+    },
+    {
+      "Optional sub message",
+      %OptionalUpperMsg{sub: %OptionalSubMsg{a: 42}},
+      %{"sub" => %{"a" => 42}}
+    },
+    {
+      "Optional sub message set to nil",
+      %OptionalUpperMsg{sub: nil},
+      %{}
     }
   ]
 

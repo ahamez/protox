@@ -314,6 +314,23 @@ defmodule Protox.DefineDecoder do
 
   defp make_update_field(
          value,
+         %Field{label: :proto3_optional, kind: {:oneof, _}, type: {:message, _}} = field,
+         vars,
+         _wrap_value
+       ) do
+    quote do
+      case unquote(vars.msg).unquote(field.name) do
+        {unquote(field.name), previous_value} ->
+          {unquote(field.name), Protox.MergeMessage.merge(previous_value, unquote(value))}
+
+        _ ->
+          {unquote(field.name), unquote(value)}
+      end
+    end
+  end
+
+  defp make_update_field(
+         value,
          %Field{kind: {:oneof, parent_field}, type: {:message, _}} = field,
          vars,
          _wrap_value
