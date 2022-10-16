@@ -128,7 +128,8 @@ defmodule Protox.CodeGenerationTest do
       System.cmd(
         "mix",
         [
-          "compile"
+          "compile",
+          "--warnings-as-errors"
         ],
         cd: code_generation_path
       )
