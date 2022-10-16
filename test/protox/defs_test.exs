@@ -44,11 +44,19 @@ defmodule Protox.DefsTest do
       name: :msg_oneof_double,
       kind: {:oneof, :msg_oneof_field},
       type: :double
+    ),
+    Field.new!(
+      kind: {:oneof, :_optional},
+      label: :proto3_optional,
+      name: :optional,
+      tag: 11,
+      type: :int32
     )
   ]
 
   test "split_oneofs" do
-    %{oneofs: oneofs_fields, others: other_fields} = Protox.Defs.split_oneofs(@defs)
+    %{oneofs: oneofs_fields, proto3_optionals: proto3_optionals, others: other_fields} =
+      Protox.Defs.split_oneofs(@defs)
 
     assert oneofs_fields == %{
              msg_m: [
@@ -77,6 +85,12 @@ defmodule Protox.DefsTest do
                )
              ]
            }
+
+    proto3_optionals_tags = [11]
+
+    Enum.each(proto3_optionals, fn %Field{} = field ->
+      assert field.tag in proto3_optionals_tags
+    end)
 
     other_fields_tags = [8, 9, 27, 28, 29, 1, 2, 3, 4, 5, 6, 7, 12, 13]
     Enum.each(other_fields, fn %Field{} = field -> assert field.tag in other_fields_tags end)

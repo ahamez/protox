@@ -7,9 +7,16 @@ defmodule Protox.DefineEncoder do
   def define(fields, required_fields, syntax, opts \\ []) do
     {keep_unknown_fields, _opts} = Keyword.pop(opts, :keep_unknown_fields, true)
 
-    %{oneofs: oneofs, others: fields_without_oneofs} = Protox.Defs.split_oneofs(fields)
+    %{oneofs: oneofs, proto3_optionals: proto3_optionals, others: fields_without_oneofs} =
+      Protox.Defs.split_oneofs(fields)
 
-    encode_fun = make_encode_fun(oneofs, fields_without_oneofs, keep_unknown_fields)
+    encode_fun =
+      make_top_level_encode_fun(
+        oneofs,
+        proto3_optionals ++ fields_without_oneofs,
+        keep_unknown_fields
+      )
+
     encode_oneof_funs = make_encode_oneof_funs(oneofs)
     encode_field_funs = make_encode_field_funs(fields, required_fields, syntax)
     encode_unknown_fields_fun = make_encode_unknown_fields_fun(keep_unknown_fields)
@@ -22,7 +29,7 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_fun(oneofs, fields, keep_unknown_fields) do
+  defp make_top_level_encode_fun(oneofs, fields, keep_unknown_fields) do
     quote(do: [])
     |> make_encode_oneof_fun(oneofs)
     |> make_encode_fun_field(fields, keep_unknown_fields)
@@ -79,15 +86,6 @@ defmodule Protox.DefineEncoder do
     end)
   end
 
-  defp parent_name(_, [%Protox.Field{label: :proto3_optional, kind: {_, name}}]), do: name
-  defp parent_name(name, _), do: name
-
-  defp parent_data_key(_, [%Protox.Field{label: :proto3_optional, name: child_name}]) do
-    child_name
-  end
-
-  defp parent_data_key(parent_name, _), do: parent_name
-
   defp make_encode_oneof_funs(oneofs) do
     for {parent_name, children} <- oneofs do
       nil_case =
@@ -108,13 +106,11 @@ defmodule Protox.DefineEncoder do
            end)
            |> List.flatten())
 
-      parent_name = parent_name(parent_name, children)
       encode_parent_fun_name = String.to_atom("encode_#{parent_name}")
-      parent_data_key = parent_data_key(parent_name, children)
 
       quote do
         defp unquote(encode_parent_fun_name)(acc, msg) do
-          case msg.unquote(parent_data_key) do
+          case msg.unquote(parent_name) do
             unquote(children_case_ast)
           end
         end
@@ -197,9 +193,6 @@ defmodule Protox.DefineEncoder do
       :proto3_optional ->
         quote do
           case unquote(vars.msg).unquote(child_field.name) do
-            {_, unquote(var)} ->
-              [unquote(vars.acc), unquote(key), unquote(encode_value_ast)]
-
             unquote(var) when not is_nil(unquote(var)) ->
               [unquote(vars.acc), unquote(key), unquote(encode_value_ast)]
 
