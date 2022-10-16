@@ -44,6 +44,8 @@ message Proto3 {
   repeated int32 repeated_int32_unpacked = 201 [packed = false];
 
   repeated NestedEnum repeated_nested_enum = 51;
+
+  optional int32 optional = 11;
 }
 
 message EmptyProto3 {
