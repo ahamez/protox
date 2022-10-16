@@ -193,11 +193,11 @@ defmodule Protox.DefineEncoder do
       :proto3_optional ->
         quote do
           case unquote(vars.msg).unquote(child_field.name) do
-            unquote(var) when not is_nil(unquote(var)) ->
-              [unquote(vars.acc), unquote(key), unquote(encode_value_ast)]
-
-            _ ->
+            nil ->
               [unquote(vars.acc)]
+
+            unquote(var) ->
+              [unquote(vars.acc), unquote(key), unquote(encode_value_ast)]
           end
         end
 
