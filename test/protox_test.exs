@@ -348,6 +348,14 @@ defmodule ProtoxTest do
                type: {:int64, {:enum, Abc.Def.Proto3.NestedEnum}}
              },
              %Protox.Field{
+               json_name: "optional",
+               kind: {:oneof, :_optional},
+               label: :proto3_optional,
+               name: :optional,
+               tag: 11,
+               type: :int32
+             },
+             %Protox.Field{
                json_name: "repeatedNestedEnum",
                kind: :packed,
                label: :repeated,
@@ -571,6 +579,14 @@ defmodule ProtoxTest do
                name: :map_int64_nested_enum,
                tag: 10,
                type: {:int64, {:enum, Namespace.Abc.Def.Proto3.NestedEnum}}
+             },
+             %Protox.Field{
+               json_name: "optional",
+               kind: {:oneof, :_optional},
+               label: :proto3_optional,
+               name: :optional,
+               tag: 11,
+               type: :int32
              },
              %Protox.Field{
                json_name: "repeatedNestedEnum",
