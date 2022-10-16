@@ -7,7 +7,7 @@ defmodule Protox.DefineEncoder do
   def define(fields, required_fields, syntax, opts \\ []) do
     {keep_unknown_fields, _opts} = Keyword.pop(opts, :keep_unknown_fields, true)
 
-    {oneofs, fields_without_oneofs} = Protox.Defs.split_oneofs(fields)
+    %{oneofs: oneofs, others: fields_without_oneofs} = Protox.Defs.split_oneofs(fields)
 
     encode_fun = make_encode_fun(oneofs, fields_without_oneofs, keep_unknown_fields)
     encode_oneof_funs = make_encode_oneof_funs(oneofs)

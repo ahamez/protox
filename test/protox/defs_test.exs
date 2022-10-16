@@ -48,9 +48,9 @@ defmodule Protox.DefsTest do
   ]
 
   test "split_oneofs" do
-    {oneofs_fields, other_fields} = Protox.Defs.split_oneofs(@defs)
+    %{oneofs: oneofs_fields, others: other_fields} = Protox.Defs.split_oneofs(@defs)
 
-    assert oneofs_fields == [
+    assert oneofs_fields == %{
              msg_m: [
                Field.new!(
                  tag: 10,
@@ -76,7 +76,7 @@ defmodule Protox.DefsTest do
                  type: :double
                )
              ]
-           ]
+           }
 
     other_fields_tags = [8, 9, 27, 28, 29, 1, 2, 3, 4, 5, 6, 7, 12, 13]
     Enum.each(other_fields, fn %Field{} = field -> assert field.tag in other_fields_tags end)
