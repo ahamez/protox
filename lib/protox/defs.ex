@@ -5,20 +5,16 @@ defmodule Protox.Defs do
   alias Protox.Field
 
   # Extract oneofs and regroup them by parent field.
-  @spec split_oneofs(list(Field.t())) :: {list(Field.t()), list(Field.t())}
   def split_oneofs(fields) do
-    {oneofs, fields} =
+    {oneofs, others} =
       Enum.split_with(fields, fn
         %Field{kind: {:oneof, _}} -> true
         %Field{} -> false
       end)
 
-    grouped_oneofs =
-      oneofs
-      |> Enum.group_by(fn field -> oneof_group_by(field) end)
-      |> Map.to_list()
+    grouped_oneofs = Enum.group_by(oneofs, &oneof_group_by/1)
 
-    {grouped_oneofs, fields}
+    %{oneofs: grouped_oneofs, others: others}
   end
 
   @spec split_maps(list(Field.t())) :: {list(Field.t()), list(Field.t())}
