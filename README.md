@@ -584,6 +584,13 @@ mix run ./benchmarks/run.exs --lib=./benchmarks/protox.exs
 mix run ./benchmarks/load.exs
 ```
 
+## Development
+
+`protox` uses [`pre-commit`](https://pre-commit.com/#install) to launch git hooks. Thus, it's strongly recommended to install it as follows:
+```sh
+pre-commit install && pre-commit install -t pre-push
+```
+
 ## Credits
 
 Both [gpb](https://github.com/tomas-abrahamsson/gpb) and [exprotobuf](https://github.com/bitwalker/exprotobuf) were very useful in understanding how to implement Protocol Buffers.

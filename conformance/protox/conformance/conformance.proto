@@ -173,4 +173,3 @@ message JspbEncodingConfig {
   // Encode the value field of Any as jspb array if true, otherwise binary.
   bool use_jspb_array_any_format = 1;
 }
-

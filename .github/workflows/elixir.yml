@@ -27,7 +27,7 @@ jobs:
             check_deps: false
             check_format: false
           - elixir: 1.10.4
-            otp: 22.3              
+            otp: 22.3
             check_format: false
           - elixir: 1.11.4
             otp: 23.3

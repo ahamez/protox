@@ -63,16 +63,18 @@
       |> Enum.reject(&String.starts_with?(&1, "test/"))
       |> Enum.reject(&String.starts_with?(&1, "conformance/"))
       |> Enum.reject(&String.starts_with?(&1, "lib/mix/tasks/"))
-      |> Enum.reject(fn file -> file in [
-        # Protox Exceptions are always constructed with new/1,2
-        "lib/protox/errors.ex",
-        # Always end up with "equivalent mutants"
-        "lib/protox/defs.ex",
-        # Always end up with "equivalent mutants"
-        "lib/protox/float.ex",
-        # Always end up with string mutations that do not impact code
-        "lib/protox/protoc.ex"
-        ] end)
+      |> Enum.reject(fn file ->
+        file in [
+          # Protox Exceptions are always constructed with new/1,2
+          "lib/protox/errors.ex",
+          # Always end up with "equivalent mutants"
+          "lib/protox/defs.ex",
+          # Always end up with "equivalent mutants"
+          "lib/protox/float.ex",
+          # Always end up with string mutations that do not impact code
+          "lib/protox/protoc.ex"
+        ]
+      end)
       |> Enum.filter(&String.ends_with?(&1, ".ex"))
       |> Enum.map(&{&1, nil})
       |> IO.inspect()
