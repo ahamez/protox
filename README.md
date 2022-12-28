@@ -586,7 +586,7 @@ mix run ./benchmarks/load.exs
 
 ## Development
 
-`protox` uses [`pre-commit`](https://pre-commit.com/#install) to launch git hooks. Thus, it's strongly recommended to install it as follows:
+`protox` uses [`pre-commit`](https://pre-commit.com/#install) to launch git hooks. Thus, it's strongly recommended to install it, and then to install hooks as follows:
 ```sh
 pre-commit install && pre-commit install -t pre-push
 ```
