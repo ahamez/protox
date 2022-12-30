@@ -9,7 +9,7 @@ repos:
       - id: check-merge-conflict
       - id: mixed-line-ending
   - repo: https://github.com/ahamez/pre-commit-elixir-hooks.git
-    rev: v0.2.0
+    rev: v1.0.0
     hooks:
       - id: elixir-mix-format
         stages: [commit]
