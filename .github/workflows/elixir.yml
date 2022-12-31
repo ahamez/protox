@@ -24,23 +24,18 @@ jobs:
         include:
           - elixir: 1.9.4
             otp: 22.3
-            check_deps: false
-            check_format: false
           - elixir: 1.10.4
             otp: 22.3
-            check_format: false
           - elixir: 1.11.4
             otp: 23.3
-            check_format: false
           - elixir: 1.12.3
             otp: 24.1
           - elixir: 1.13.0
             otp: 24.1
           - elixir: 1.14.1
-            check_deps: true
-            check_format: true
             otp: 25.1
-
+            check_format: true
+            check_deps: true
 
     steps:
     - uses: actions/checkout@v2

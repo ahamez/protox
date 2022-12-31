@@ -17,7 +17,8 @@ defmodule Protox.Mixfile do
       description: description(),
       package: package(),
       dialyzer: [plt_local_path: "priv/plts"],
-      docs: docs()
+      docs: docs(),
+      preferred_cli_env: [muzak: :test]
     ]
   end
 
@@ -49,6 +50,21 @@ defmodule Protox.Mixfile do
       {:poison, "~> 4.0 or ~> 5.0", only: [:test, :dev], optional: true},
       {:propcheck, "~> 1.2", only: [:test, :dev]}
     ]
+    |> maybe_add_muzak_pro()
+  end
+
+  defp maybe_add_muzak_pro(deps) do
+    case System.get_env("PROTOX_MUZAK_PRO_CREDS") do
+      nil ->
+        deps
+
+      creds ->
+        muzak_pro =
+          {:muzak,
+           git: "https://#{creds}@git.devonestes.com/muzak/muzak.git", tag: "1.1.0", only: [:test]}
+
+        [muzak_pro | deps]
+    end
   end
 
   defp description do

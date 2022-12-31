@@ -77,7 +77,6 @@
       end)
       |> Enum.filter(&String.ends_with?(&1, ".ex"))
       |> Enum.map(&{&1, nil})
-      |> IO.inspect()
     end,
 
     # If you would like to run fewer tests for each run, or run them in a certain order, you
@@ -104,30 +103,10 @@
     # being run.
     #
     mutation_filter: fn _ ->
-      split_pattern = ";;;"
-
-      {commits_and_authors, 0} =
-        System.cmd("git", [
-          "log",
-          "--pretty=format:%C(auto)%h#{split_pattern}%an",
-          "--date-order",
-          "-20"
-        ])
-
-      last_commit_by_a_different_author =
-        commits_and_authors
-        |> String.split("\n")
-        |> Enum.map(&String.split(&1, split_pattern))
-        |> Enum.reduce_while(nil, fn
-          [_, author], nil -> {:cont, author}
-          [_, author], author -> {:cont, author}
-          [commit, _], _ -> {:halt, commit}
-        end)
-
-      {diff, 0} = System.cmd("git", ["diff", "-U0", last_commit_by_a_different_author])
+      {diff, 0} = System.cmd("git", ["diff", "HEAD~25"])
 
       # All of this is to parse the git diff output to get the correct files and line numbers
-      # that have changed in the given diff since the last commit by a different author.
+      # that have changed in the given diff since the last 25 commits.
       first = ~r|---\ (a/)?.*|
       second = ~r|\+\+\+\ (b\/)?(.*)|
       third = ~r|@@\ -[0-9]+(,[0-9]+)?\ \+([0-9]+)(,[0-9]+)?\ @@.*|
