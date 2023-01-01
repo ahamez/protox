@@ -47,19 +47,19 @@ jobs:
         otp-version: ${{matrix.otp}}
 
     - name: Restore dependencies cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: deps
         key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
 
     - name: Restore PLT cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: priv/plts
         key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
 
     - name: Restore conformance-test-runner
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       id: compile-conformance-test-runner
       with:
         path: conformance-bin
