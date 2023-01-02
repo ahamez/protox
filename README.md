@@ -49,6 +49,7 @@ You can find [here](https://github.com/ahamez/protox/blob/master/test/example_te
 - [Conformance](#conformance)
 - [Types mapping](#types-mapping)
 - [Benchmarks](#benchmarks)
+- [Development](#development)
 - [Credits](#credits)
 
 ## Prerequisites
