@@ -5,3 +5,11 @@ import "proto2.proto";
 extend Proto2A {
   optional double extension_double = 199 [default = 42.42];
 }
+
+message Proto2AExtension {
+  optional int32 a = 1;
+
+  extend Proto2A {
+    optional Proto2AExtension ext_proto2a_extension = 102;
+  }
+}

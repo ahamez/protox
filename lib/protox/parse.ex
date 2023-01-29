@@ -229,12 +229,17 @@ defmodule Protox.Parse do
   end
 
   defp add_fields(acc, upper, msg_name, syntax, fields) do
-    Enum.reduce(fields, acc, fn field, acc ->
-      add_field(acc, syntax, upper, msg_name, field)
+    Enum.reduce(fields, acc, fn %FieldDescriptorProto{} = field, acc ->
+      case field.extendee do
+        nil -> add_field(acc, syntax, upper, msg_name, field)
+        # When extendee is not nil, it means this field is not part of `msg_name`, but of `extendee`,
+        # even though it was declared in `msg_name`.
+        extendee -> add_field(acc, syntax, _upper = nil, fully_qualified_name(extendee), field)
+      end
     end)
   end
 
-  defp add_field(acc, syntax, upper, msg_name, descriptor) do
+  defp add_field(acc, syntax, upper, msg_name, %FieldDescriptorProto{} = descriptor) do
     {label, kind, type} =
       case map_entry(upper, msg_name, descriptor) do
         nil ->

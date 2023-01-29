@@ -226,6 +226,14 @@ defmodule ProtoxTest do
                type: :bytes
              },
              %Protox.Field{
+               json_name: "extProto2aExtension",
+               kind: {:scalar, nil},
+               label: :optional,
+               name: :ext_proto2a_extension,
+               tag: 102,
+               type: {:message, Proto2AExtension}
+             },
+             %Protox.Field{
                json_name: "extensionInt32",
                kind: {:scalar, 0},
                label: :optional,
@@ -457,6 +465,14 @@ defmodule ProtoxTest do
                name: :bytes,
                tag: 6,
                type: :bytes
+             },
+             %Protox.Field{
+               json_name: "extProto2aExtension",
+               kind: {:scalar, nil},
+               label: :optional,
+               name: :ext_proto2a_extension,
+               type: {:message, Namespace.Proto2AExtension},
+               tag: 102
              },
              %Protox.Field{
                json_name: "extensionInt32",
