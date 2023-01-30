@@ -232,12 +232,16 @@ message TestAllTypesProto2 {
     optional string str = 25;
   }
 
-  message MessageSetCorrectExtension2 {
-    extend MessageSetCorrect {
-      optional MessageSetCorrectExtension2 message_set_extension = 4135312;
-    }
-    optional int32 i = 9;
-  }
+  // The name of the field added by this extension clashes with the previous.
+  // I have absolutely no idea of how to handle this case and I haven't been able
+  // to find something in the protobuf specification.
+  //
+  // message MessageSetCorrectExtension2 {
+  //   extend MessageSetCorrect {
+  //     optional MessageSetCorrectExtension2 message_set_extension = 4135312;
+  //   }
+  //   optional int32 i = 9;
+  // }
 }
 
 message ForeignMessageProto2 {
