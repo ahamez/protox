@@ -268,7 +268,7 @@ defmodule Protox.DefineMessage do
   # Generate fields of the struct which is created for a message.
   defp make_struct_fields(fields, syntax, unknown_fields, keep_unknown_fields) do
     struct_fields =
-      for %Field{label: label, name: name, kind: kind} <- fields do
+      for %Field{label: label, name: name, kind: kind, maybe_extender: nil} <- fields do
         case kind do
           :map -> {name, Macro.escape(%{})}
           {:oneof, parent} -> make_oneof_field(label, name, parent)
@@ -280,12 +280,19 @@ defmodule Protox.DefineMessage do
       end
 
     struct_fields =
-      case keep_unknown_fields do
-        true -> struct_fields ++ [{unknown_fields, []}]
-        false -> struct_fields
+      if keep_unknown_fields do
+        struct_fields ++ [{unknown_fields, []}]
+      else
+        struct_fields
       end
 
-    Enum.uniq(struct_fields)
+    struct_fields_with_extender =
+      for %Field{name: name, maybe_extender: maybe_extender} <- fields, maybe_extender != nil do
+        {name, nil}
+      end
+
+    # Some fields can appear more than once (nested extensions).
+    Enum.uniq(struct_fields ++ struct_fields_with_extender)
   end
 
   defp make_oneof_field(:proto3_optional, name, _), do: {name, nil}

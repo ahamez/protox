@@ -61,6 +61,7 @@ defmodule Protox.Parse do
                   |> resolve_types(acc.enums)
                   |> set_default_value(acc.enums)
                   |> concat_names(namespace_or_nil)
+                  |> concat_maybe_extender(namespace_or_nil)
                 end
               )
         }
@@ -129,6 +130,12 @@ defmodule Protox.Parse do
   end
 
   defp concat_names(%Field{} = field, _), do: field
+
+  defp concat_maybe_extender(%Field{maybe_extender: nil} = field, _namespace_or_nil), do: field
+
+  defp concat_maybe_extender(%Field{maybe_extender: maybe_extender} = field, namespace_or_nil) do
+    %Field{field | maybe_extender: Module.concat([namespace_or_nil | maybe_extender])}
+  end
 
   defp parse_files(acc, descriptors) do
     Enum.reduce(descriptors, acc, fn descriptor, acc ->
@@ -229,17 +236,34 @@ defmodule Protox.Parse do
   end
 
   defp add_fields(acc, upper, msg_name, syntax, fields) do
-    Enum.reduce(fields, acc, fn %FieldDescriptorProto{} = field, acc ->
-      case field.extendee do
-        nil -> add_field(acc, syntax, upper, msg_name, field)
+    Enum.reduce(fields, acc, fn %FieldDescriptorProto{} = descriptor, acc ->
+      case descriptor.extendee do
+        nil ->
+          add_field(acc, syntax, upper, msg_name, descriptor)
+
         # When extendee is not nil, it means this field is not part of `msg_name`, but of `extendee`,
-        # even though it was declared in `msg_name`.
-        extendee -> add_field(acc, syntax, _upper = nil, fully_qualified_name(extendee), field)
+        # even though it was declared in `msg_name` -> it's a nested extension.
+        extendee ->
+          add_field(
+            acc,
+            syntax,
+            _upper = nil,
+            fully_qualified_name(extendee),
+            descriptor,
+            _maybe_extender = msg_name
+          )
       end
     end)
   end
 
-  defp add_field(acc, syntax, upper, msg_name, %FieldDescriptorProto{} = descriptor) do
+  defp add_field(
+         acc,
+         syntax,
+         upper,
+         msg_name,
+         %FieldDescriptorProto{} = descriptor,
+         maybe_extender \\ nil
+       ) do
     {label, kind, type} =
       case map_entry(upper, msg_name, descriptor) do
         nil ->
@@ -257,7 +281,8 @@ defmodule Protox.Parse do
         label: label,
         name: String.to_atom(descriptor.name),
         kind: kind,
-        type: type
+        type: type,
+        maybe_extender: maybe_extender
       )
 
     new_messages =

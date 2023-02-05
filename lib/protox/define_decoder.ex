@@ -303,6 +303,9 @@ defmodule Protox.DefineDecoder do
     end
   end
 
+  # Note: extensions can't be of `map` nor `oneof` type. Thus, the `maybe_extender` field
+  # is not tested for those cases.
+
   defp make_update_field(value, %Field{kind: :map} = field, vars, _wrap_value) do
     quote do
       {entry_key, entry_value} = unquote(value)
@@ -363,29 +366,65 @@ defmodule Protox.DefineDecoder do
          vars,
          _wrap_value
        ) do
-    quote do
-      {
-        unquote(field.name),
-        Protox.MergeMessage.merge(unquote(vars.msg).unquote(field.name), unquote(value))
-      }
+    case field.maybe_extender do
+      nil ->
+        quote do
+          {
+            unquote(field.name),
+            Protox.MergeMessage.merge(unquote(vars.msg).unquote(field.name), unquote(value))
+          }
+        end
+
+      maybe_extender ->
+        quote do
+          {
+            unquote(field.name),
+            {unquote(maybe_extender),
+             Protox.MergeMessage.merge(unquote(vars.msg).unquote(field.name), unquote(value))}
+          }
+        end
     end
   end
 
   defp make_update_field(value, %Field{kind: {:scalar, _}} = field, _vars, _wrap_value) do
-    quote(do: {unquote(field.name), unquote(value)})
-  end
+    case field.maybe_extender do
+      nil ->
+        quote(do: {unquote(field.name), unquote(value)})
 
-  defp make_update_field(value, %Field{} = field, vars, true = _wrap_value) do
-    quote do
-      {unquote(field.name), unquote(vars.msg).unquote(field.name) ++ [unquote(value)]}
+      maybe_extender ->
+        quote(do: {unquote(field.name), {unquote(maybe_extender), unquote(value)}})
     end
   end
 
-  defp make_update_field(value, %Field{} = field, vars, false = _wrap_value) do
-    quote do
-      {unquote(field.name), unquote(vars.msg).unquote(field.name) ++ unquote(value)}
+  defp make_update_field(value, %Field{} = field, vars, wrap_value) do
+    maybe_wrapped_value = maybe_wrap(value, wrap_value)
+
+    case field.maybe_extender do
+      nil ->
+        quote do
+          {unquote(field.name),
+           unquote(vars.msg).unquote(field.name) ++ unquote(maybe_wrapped_value)}
+        end
+
+      maybe_extender ->
+        quote do
+          value =
+            case unquote(vars.msg).unquote(field.name) do
+              {unquote(maybe_extender), previous_value} ->
+                previous_value ++ unquote(maybe_wrapped_value)
+
+              _ ->
+                # It was previously not set or it was set with a different extender.
+                unquote(maybe_wrapped_value)
+            end
+
+          {unquote(field.name), {unquote(maybe_extender), value}}
+        end
     end
   end
+
+  defp maybe_wrap(value, true = _wrap_value), do: [value]
+  defp maybe_wrap(value, false = _wrap_value), do: value
 
   defp make_parse_delimited(bytes_var, :bytes) do
     quote(do: unquote(bytes_var))

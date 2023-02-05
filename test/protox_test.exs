@@ -229,6 +229,7 @@ defmodule ProtoxTest do
                json_name: "extProto2aExtension",
                kind: {:scalar, nil},
                label: :optional,
+               maybe_extender: Proto2AExtension,
                name: :ext_proto2a_extension,
                tag: 102,
                type: {:message, Proto2AExtension}
@@ -470,6 +471,7 @@ defmodule ProtoxTest do
                json_name: "extProto2aExtension",
                kind: {:scalar, nil},
                label: :optional,
+               maybe_extender: Namespace.Proto2AExtension,
                name: :ext_proto2a_extension,
                type: {:message, Namespace.Proto2AExtension},
                tag: 102

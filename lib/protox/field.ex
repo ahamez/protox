@@ -9,12 +9,13 @@ defmodule Protox.Field do
           name: atom(),
           kind: Protox.Types.kind(),
           type: Protox.Types.type(),
-          json_name: binary()
+          json_name: binary(),
+          maybe_extender: nil | atom()
         }
 
   @keys [:tag, :label, :name, :kind, :type, :json_name]
   @enforce_keys @keys
-  defstruct @keys
+  defstruct @enforce_keys ++ [:maybe_extender]
 
   @doc false
   @spec new!(keyword()) :: %__MODULE__{} | no_return()
@@ -29,7 +30,8 @@ defmodule Protox.Field do
       name: name,
       kind: Keyword.fetch!(attrs, :kind),
       type: Keyword.fetch!(attrs, :type),
-      json_name: make_json_name(name, Keyword.get(attrs, :json_name, &lower_camel_case/1))
+      json_name: make_json_name(name, Keyword.get(attrs, :json_name, &lower_camel_case/1)),
+      maybe_extender: Keyword.get(attrs, :maybe_extender, nil)
     }
   end
 
