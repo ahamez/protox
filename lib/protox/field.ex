@@ -13,8 +13,7 @@ defmodule Protox.Field do
           maybe_extender: nil | atom()
         }
 
-  @keys [:tag, :label, :name, :kind, :type, :json_name]
-  @enforce_keys @keys
+  @enforce_keys [:tag, :label, :name, :kind, :type, :json_name]
   defstruct @enforce_keys ++ [:maybe_extender]
 
   @doc false
