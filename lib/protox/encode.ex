@@ -149,7 +149,8 @@ defmodule Protox.Encode do
   def encode_enum(value), do: encode_varint_32(value)
 
   @doc false
-  @spec encode_string(String.t()) :: iodata
+  @spec encode_string(String.t() | atom) :: iodata
+  def encode_string(value) when is_atom(value), do: encode_string("#{value}")
   def encode_string(value) do
     [Varint.encode(byte_size(value)), value]
   end
