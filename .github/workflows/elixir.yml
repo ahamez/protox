@@ -34,6 +34,8 @@ jobs:
             otp: 24.1
           - elixir: 1.14.1
             otp: 25.1
+          - elixir: 1.15.4
+            otp: 26.0.2
             check_format: true
             check_deps: true
 
