@@ -2,7 +2,9 @@
 
 opts =
   with {options, _, []} <-
-         OptionParser.parse(System.argv(), strict: [lib: :string, selector: :string, tag: :string]),
+         OptionParser.parse(System.argv(),
+           strict: [lib: :string, selector: :string, tag: :string]
+         ),
        {:ok, lib} <- Keyword.fetch(options, :lib) do
     Code.compile_file(lib)
 

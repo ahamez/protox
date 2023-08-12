@@ -92,7 +92,7 @@ defimpl Protox.JsonMessageEncoder, for: Google.Protobuf.Timestamp do
           end
 
         unix_timestamp
-        |> :calendar.system_time_to_rfc3339([{:unit, :nanosecond}, {:offset, 'Z'}])
+        |> :calendar.system_time_to_rfc3339([{:unit, :nanosecond}, {:offset, ~c"Z"}])
         |> List.to_string()
         |> String.replace_trailing(suffix_to_remove, "Z")
         |> json_encode.()
