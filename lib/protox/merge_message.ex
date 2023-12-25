@@ -86,7 +86,7 @@ defmodule Protox.MergeMessage do
     {:ok, v1_child_field_def} = msg.__struct__.field_def(v1_child_field)
     {:ok, v2_child_field_def} = msg.__struct__.field_def(v2_child_field)
 
-    if is_oneof_message(v1_child_field_def) and is_oneof_message(v2_child_field_def) do
+    if oneof_message?(v1_child_field_def) and oneof_message?(v2_child_field_def) do
       {v1_child_field, merge(v1_child_value, v2_child_value)}
     else
       v2
@@ -96,6 +96,6 @@ defmodule Protox.MergeMessage do
   defp merge_oneof(_msg, v1, nil), do: v1
   defp merge_oneof(_msg, _v1, v2), do: v2
 
-  defp is_oneof_message(%Field{kind: {:oneof, _}, type: {:message, _}}), do: true
-  defp is_oneof_message(_), do: false
+  defp oneof_message?(%Field{kind: {:oneof, _}, type: {:message, _}}), do: true
+  defp oneof_message?(_), do: false
 end
