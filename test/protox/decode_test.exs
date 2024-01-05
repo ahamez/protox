@@ -947,8 +947,8 @@ defmodule Protox.DecodeTest do
     },
     {
       "Largest valid string (tests-specific limit of 1 MiB)",
-      <<10, 128, 128, 64>> <> <<0::integer-size(1024 * 1024)-unit(8)>>,
-      %StringsAreUTF8{a: <<0::integer-size(1024 * 1024)-unit(8)>>}
+      <<10, 128, 128, 64>> <> <<0::integer-size(1_048_576)-unit(8)>>,
+      %StringsAreUTF8{a: <<0::integer-size(1_048_576)-unit(8)>>}
     }
   ]
 
@@ -1109,7 +1109,7 @@ defmodule Protox.DecodeTest do
     },
     {
       "too large a string (tests-specific limit of 1 MiB)",
-      <<10, 129, 128, 64>> <> <<0::integer-size(1024 * 1024 + 1)-unit(8)>>,
+      <<10, 129, 128, 64>> <> <<0::integer-size(1_048_576 + 1)-unit(8)>>,
       StringsAreUTF8,
       {Protox.DecodingError,
        quote do
