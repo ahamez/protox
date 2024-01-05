@@ -392,4 +392,64 @@ defmodule Protox.EncodeTest do
 
     assert exception.missing_fields == [:a]
   end
+
+  test "UTF-8 strings" do
+    [
+      {
+        "",
+        <<>>
+      },
+      {
+        "hello, 漢字, 💻, 🏁, working fine",
+        <<10, 39, "hello, 漢字, 💻, 🏁, working fine">>
+      }
+    ]
+    |> Enum.each(fn {string, expected_encoded_msg} ->
+      assert %StringsAreUTF8{a: string} |> Protox.encode!() |> IO.iodata_to_binary() ==
+               expected_encoded_msg
+    end)
+  end
+
+  test "Largest valid string" do
+    # Tests-specific limit of 1 MiB
+    assert %StringsAreUTF8{a: <<0::integer-size(1024 * 1024)-unit(8)>>}
+           |> Protox.encode!()
+           |> IO.iodata_to_binary() ==
+             <<10, 128, 128, 64>> <> <<0::integer-size(1024 * 1024)-unit(8)>>
+  end
+
+  test "Raise when string is not valid UTF-8" do
+    [
+      <<128>>,
+      <<?a, 128>>,
+      <<128, ?a>>,
+      <<?a, 255, ?b>>,
+      :crypto.strong_rand_bytes(64)
+    ]
+    |> Enum.each(fn string ->
+      assert_raise Protox.EncodingError, ~r/Could not encode field :a /, fn ->
+        %StringsAreUTF8{a: string} |> Protox.encode!()
+      end
+    end)
+  end
+
+  test "Raise when repeated string is not valid UTF-8" do
+    [
+      [<<128>>, "hello"],
+      ["hello", <<128>>]
+    ]
+    |> Enum.each(fn strings ->
+      assert_raise Protox.EncodingError, ~r/Could not encode field :b /, fn ->
+        %StringsAreUTF8{b: strings} |> Protox.encode!()
+      end
+    end)
+  end
+
+  test "Raise when string is too large" do
+    # Tests-specific limit of 1 MiB
+    assert_raise(Protox.EncodingError, ~r/Could not encode field :a /, fn ->
+      %StringsAreUTF8{a: <<0::integer-size(1024 * 1024 + 1)-unit(8)>>}
+      |> Protox.encode!()
+    end)
+  end
 end

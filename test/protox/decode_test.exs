@@ -944,6 +944,11 @@ defmodule Protox.DecodeTest do
       "Empty repeated string (second occurence)",
       <<18, 5, "hello", 18, 0>>,
       %StringsAreUTF8{b: ["hello", ""]}
+    },
+    {
+      "Largest valid string (tests-specific limit of 1 MiB)",
+      <<10, 128, 128, 64>> <> <<0::integer-size(1024 * 1024)-unit(8)>>,
+      %StringsAreUTF8{a: <<0::integer-size(1024 * 1024)-unit(8)>>}
     }
   ]
 
@@ -1100,6 +1105,15 @@ defmodule Protox.DecodeTest do
       {Protox.DecodingError,
        quote do
          ~r/string is not valid UTF-8/
+       end}
+    },
+    {
+      "too large a string (tests-specific limit of 1 MiB)",
+      <<10, 129, 128, 64>> <> <<0::integer-size(1024 * 1024 + 1)-unit(8)>>,
+      StringsAreUTF8,
+      {Protox.DecodingError,
+       quote do
+         ~r/string is too large/
        end}
     }
   ]
