@@ -1,5 +1,5 @@
-# [Unreleased]
-  - Raise DecodingError and EncodingError for invalid strings
+# 1.7.3
+  - Raise DecodingError and EncodingError for invalid strings (thanks to https://github.com/g-andrade)
 
 # 1.7.2
   - Fix typespec of enum encode function (thanks to https://github.com/wingyplus)
