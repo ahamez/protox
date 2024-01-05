@@ -151,7 +151,16 @@ defmodule Protox.Encode do
   @doc false
   @spec encode_string(String.t()) :: iodata
   def encode_string(value) do
-    [Varint.encode(byte_size(value)), value]
+    case Protox.String.validate(value) do
+      :ok ->
+        [Varint.encode(byte_size(value)), value]
+
+      {:error, :invalid_utf8} ->
+        raise ArgumentError, message: "String is not valid UTF-8"
+
+      {:error, :too_large} ->
+        raise ArgumentError, message: "String is too large"
+    end
   end
 
   @doc false

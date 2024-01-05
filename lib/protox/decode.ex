@@ -151,6 +151,19 @@ defmodule Protox.Decode do
     {res, rest}
   end
 
+  def validate_string(bytes) do
+    case Protox.String.validate(bytes) do
+      :ok ->
+        bytes
+
+      {:error, :invalid_utf8} ->
+        raise Protox.DecodingError.new(bytes, "string is not valid UTF-8")
+
+      {:error, :too_large} ->
+        raise Protox.DecodingError.new(bytes, "string is too large")
+    end
+  end
+
   def parse_repeated_bool(acc, <<>>), do: Enum.reverse(acc)
 
   def parse_repeated_bool(acc, bytes) do
