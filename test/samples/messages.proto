@@ -104,3 +104,8 @@ message OptionalUpperMsg {
 message OptionalSubMsg {
   int32 a = 1;
 }
+
+message StringsAreUTF8 {
+  string a = 1;
+  repeated string b = 2;
+}

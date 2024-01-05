@@ -274,7 +274,7 @@ defmodule Protox.DefineDecoder do
     # Thus, it's useless to wrap in a list the result of the decoding as it means
     # we're using a parse_repeated_* function that always returns a list.
     update_field =
-      if field.type == :string or field.type == :bytes do
+      if field.type == :bytes do
         make_update_field(vars.delimited, field, vars, _wrap_value = !single_generated)
       else
         parse_delimited = make_parse_delimited(vars.delimited, field.type)
@@ -392,7 +392,7 @@ defmodule Protox.DefineDecoder do
   end
 
   defp make_parse_delimited(bytes_var, :string) do
-    quote(do: unquote(bytes_var))
+    quote(do: Protox.Decode.validate_string(unquote(bytes_var)))
   end
 
   defp make_parse_delimited(bytes_var, {:enum, mod}) do

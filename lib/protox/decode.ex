@@ -2,6 +2,9 @@ defmodule Protox.Decode do
   @moduledoc false
   # Helpers decoding functions that will be used by the generated code.
 
+  # Reference: https://protobuf.dev/programming-guides/proto3/#scalar
+  @max_string_size Bitwise.<<<(1, 32)
+
   import Bitwise
 
   use Protox.{
@@ -149,6 +152,14 @@ defmodule Protox.Decode do
     {value, rest} = Varint.decode(bytes)
     <<res::signed-native-64>> = <<value::signed-native-64>>
     {res, rest}
+  end
+
+  def validate_string(bytes) do
+    if String.valid?(bytes) and byte_size(bytes) <= @max_string_size do
+      bytes
+    else
+      raise Protox.DecodingError.new(bytes, "string is not valid UTF-8")
+    end
   end
 
   def parse_repeated_bool(acc, <<>>), do: Enum.reverse(acc)

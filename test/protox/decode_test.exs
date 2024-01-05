@@ -924,6 +924,26 @@ defmodule Protox.DecodeTest do
       "Optional sub message set to nim",
       <<>>,
       %OptionalUpperMsg{sub: nil}
+    },
+    {
+      "Empty string",
+      <<10, 0>>,
+      %StringsAreUTF8{}
+    },
+    {
+      "Non-ascii string",
+      <<10, 39, "hello, 漢字, 💻, 🏁, working fine">>,
+      %StringsAreUTF8{a: "hello, 漢字, 💻, 🏁, working fine"}
+    },
+    {
+      "Empty repeated string (first occurence)",
+      <<18, 0, 18, 5, "hello">>,
+      %StringsAreUTF8{b: ["", "hello"]}
+    },
+    {
+      "Empty repeated string (second occurence)",
+      <<18, 5, "hello", 18, 0>>,
+      %StringsAreUTF8{b: ["hello", ""]}
     }
   ]
 
@@ -1007,6 +1027,80 @@ defmodule Protox.DecodeTest do
       <<8, 128>>,
       Empty,
       Protox.DecodingError
+    },
+    {
+      "invalid string (incomplete prefix)",
+      # We set field nr 1 to the length delimited value <<128, ?a>>
+      <<10, 2, 128, ?a>>,
+      StringsAreUTF8,
+      {Protox.DecodingError,
+       quote do
+         ~r/string is not valid UTF-8/
+       end}
+    },
+    {
+      "invalid string (incomplete suffix)",
+      # We set field nr 1 to the length delimited value <<?a, 128>>
+      <<10, 2, ?a, 128>>,
+      StringsAreUTF8,
+      {Protox.DecodingError,
+       quote do
+         ~r/string is not valid UTF-8/
+       end}
+    },
+    {
+      "invalid string (incomplete infix)",
+      # We set field nr 1 to the length delimited value <<?a, 255, ?b>>
+      <<10, 3, ?a, 255, ?b>>,
+      StringsAreUTF8,
+      {Protox.DecodingError,
+       quote do
+         ~r/string is not valid UTF-8/
+       end}
+    },
+    {
+      "invalid string (random data)",
+      # We set field nr 1 to length delimited 64 bytes of random data
+      <<10, 64>> <> :crypto.strong_rand_bytes(64),
+      StringsAreUTF8,
+      {Protox.DecodingError,
+       quote do
+         ~r/string is not valid UTF-8/
+       end}
+    },
+    {
+      "invalid repeated string (1st occurence)",
+      # We set first occurence of field nr 2 to the length delimited value <<128>>
+      <<
+        18,
+        2,
+        128,
+        18,
+        1,
+        "hello"
+      >>,
+      StringsAreUTF8,
+      {Protox.DecodingError,
+       quote do
+         ~r/string is not valid UTF-8/
+       end}
+    },
+    {
+      "invalid repeated string (2nd occurance)",
+      # We set second occurence of field nr 2 to the length delimited value <<128>>
+      <<
+        18,
+        5,
+        "hello",
+        18,
+        1,
+        128
+      >>,
+      StringsAreUTF8,
+      {Protox.DecodingError,
+       quote do
+         ~r/string is not valid UTF-8/
+       end}
     }
   ]
 
@@ -1024,8 +1118,16 @@ defmodule Protox.DecodeTest do
       bytes = unquote(bytes)
       mod = unquote(mod)
 
-      assert_raise unquote(exception), fn ->
-        Protox.decode!(bytes, mod)
+      case unquote(exception) do
+        {exception_mod, exception_msg} ->
+          assert_raise exception_mod, exception_msg, fn ->
+            Protox.decode!(bytes, mod)
+          end
+
+        exception_mod ->
+          assert_raise exception_mod, fn ->
+            Protox.decode!(bytes, mod)
+          end
       end
     end
   end
