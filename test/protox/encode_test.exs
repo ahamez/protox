@@ -411,11 +411,12 @@ defmodule Protox.EncodeTest do
   end
 
   test "Largest valid string" do
-    # Tests-specific limit of 1 MiB
-    assert %StringsAreUTF8{a: <<0::integer-size(1_048_576)-unit(8)>>}
+    string_size = Protox.String.max_size()
+
+    assert %StringsAreUTF8{a: <<0::integer-size(string_size)-unit(8)>>}
            |> Protox.encode!()
            |> IO.iodata_to_binary() ==
-             <<10, 128, 128, 64>> <> <<0::integer-size(1_048_576)-unit(8)>>
+             <<10, 128, 128, 64>> <> <<0::integer-size(string_size)-unit(8)>>
   end
 
   test "Raise when string is not valid UTF-8" do
@@ -446,9 +447,10 @@ defmodule Protox.EncodeTest do
   end
 
   test "Raise when string is too large" do
-    # Tests-specific limit of 1 MiB
+    string_size = Protox.String.max_size() + 1
+
     assert_raise(Protox.EncodingError, ~r/Could not encode field :a /, fn ->
-      %StringsAreUTF8{a: <<0::integer-size(1_048_576 + 1)-unit(8)>>}
+      %StringsAreUTF8{a: <<0::integer-size(string_size)-unit(8)>>}
       |> Protox.encode!()
     end)
   end
