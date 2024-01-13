@@ -34,7 +34,7 @@ jobs:
             check_deps: true
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Set up Elixir
       uses: erlef/setup-beam@v1
