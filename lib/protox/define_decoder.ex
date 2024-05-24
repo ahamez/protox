@@ -168,7 +168,7 @@ defmodule Protox.DefineDecoder do
   defp make_parse_key_value_unknown(vars, keep_set_fields, true = _keep_unknown_fields) do
     body =
       quote do
-        {unquote(vars.msg).__struct__.unknown_fields_name,
+        {unquote(vars.msg).__struct__.unknown_fields_name(),
          [
            unquote(vars.value)
            | unquote(vars.msg).__struct__.unknown_fields(unquote(vars.msg))
