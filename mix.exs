@@ -47,7 +47,7 @@ defmodule Protox.Mixfile do
       {:excoveralls, "~> 0.13", only: [:test], runtime: false},
       {:ex_doc, "~> 0.22", only: [:dev], runtime: false},
       {:jason, "~> 1.2", optional: true},
-      {:poison, "~> 4.0 or ~> 5.0", only: [:test, :dev], optional: true},
+      {:poison, "~> 4.0 or ~> 5.0 or ~> 6.0", only: [:test, :dev], optional: true},
       {:propcheck, "~> 1.2", only: [:test, :dev]}
     ]
     |> maybe_add_muzak_pro()
