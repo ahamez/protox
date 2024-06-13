@@ -95,7 +95,7 @@ defmodule Protox.Conformance.Escript do
           end
         rescue
           e ->
-            %Conformance.ConformanceResponse{result: {:serialize_error, e.message}}
+            %Conformance.ConformanceResponse{result: {:serialize_error, Exception.message(e)}}
         end
 
       {:error, reason} ->
