@@ -30,7 +30,8 @@ defmodule Protox.Mixfile do
     [
       extra_applications: [
         :crypto,
-        :mix
+        :mix,
+        :propcheck
       ]
     ]
   end
