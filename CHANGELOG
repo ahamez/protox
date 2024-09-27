@@ -1,3 +1,6 @@
+# 1.7.5
+  - Use origin repository for propchek rather than a fork
+
 # 1.7.4
   - Fix handling of enum in snake case
 
