@@ -82,7 +82,10 @@ defmodule Protox.Parse do
     end
   end
 
-  defp resolve_types(%Field{kind: :map, type: {key_type, {:type_to_resolve, tname}}} = field, enums) do
+  defp resolve_types(
+         %Field{kind: :map, type: {key_type, {:type_to_resolve, tname}}} = field,
+         enums
+       ) do
     if Map.has_key?(enums, tname) do
       %Field{field | type: {key_type, {:enum, tname}}}
     else
