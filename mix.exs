@@ -48,7 +48,7 @@ defmodule Protox.Mixfile do
       {:ex_doc, "~> 0.22", only: [:dev], runtime: false},
       {:jason, "~> 1.2", optional: true},
       {:poison, "~> 4.0 or ~> 5.0 or ~> 6.0", only: [:test, :dev], optional: true},
-      {:propcheck, github: "ahamez/propcheck", only: [:test, :dev]}
+      {:propcheck, github: "alfert/propcheck", ref: "c564e89d", only: [:test, :dev]}
     ]
     |> maybe_add_muzak_pro()
   end
