@@ -50,20 +50,17 @@ defmodule Protox.Parse do
   defp post_process(acc, namespace_or_nil) do
     processed_messages =
       for {msg_name, msg = %Message{}} <- acc.messages, into: [] do
-        %Message{
-          msg
-          | name: Module.concat([namespace_or_nil | Enum.map(msg_name, &Macro.camelize(&1))]),
-            fields:
-              Enum.map(
-                msg.fields,
-                fn %Field{} = field ->
-                  field
-                  |> resolve_types(acc.enums)
-                  |> set_default_value(acc.enums)
-                  |> concat_names(namespace_or_nil)
-                end
-              )
-        }
+        name = Module.concat([namespace_or_nil | Enum.map(msg_name, &Macro.camelize/1)])
+
+        fields =
+          Enum.map(msg.fields, fn %Field{} = field ->
+            field
+            |> resolve_types(acc.enums)
+            |> set_default_value(acc.enums)
+            |> concat_names(namespace_or_nil)
+          end)
+
+        %Message{msg | name: name, fields: fields}
       end
 
     processsed_enums =
