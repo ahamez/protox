@@ -96,7 +96,7 @@ defmodule Protox.Parse do
   defp resolve_types(%Field{} = field, _enums), do: field
 
   defp set_default_value(
-         %Field{kind: {:scalar, :default_to_resolve}, type: {:enum, ename}} = field,
+         %Field{kind: {:scalar, :enum_default_to_resolve}, type: {:enum, ename}} = field,
          enums
        ) do
     # proto2: the first entry is always the default value
@@ -360,7 +360,7 @@ defmodule Protox.Parse do
   defp get_type(descriptor), do: descriptor.type
 
   defp get_default_value(%FieldDescriptorProto{type: :enum, default_value: nil}) do
-    :default_to_resolve
+    :enum_default_to_resolve
   end
 
   defp get_default_value(%FieldDescriptorProto{type: :enum} = f) do
