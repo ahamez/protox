@@ -78,7 +78,7 @@ If you plan to use the JSON encoding, you'll need to add [`Jason`](https://githu
 ```elixir
 def deps do
   [
-    {:protox, "~> 1.6"},
+    {:protox, "~> 1.7"},
     {:jason, "~> 1.2"}
   ]
 end
