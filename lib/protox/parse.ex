@@ -49,7 +49,7 @@ defmodule Protox.Parse do
   # Canonization: camelization, fqdn, prepend with namespace
   defp post_process(acc, namespace_or_nil) do
     processed_messages =
-      for {msg_name, msg = %Message{}} <- acc.messages, into: [] do
+      for {msg_name, msg = %Message{}} <- acc.messages do
         name = Module.concat([namespace_or_nil | Enum.map(msg_name, &Macro.camelize/1)])
 
         fields =
@@ -64,7 +64,7 @@ defmodule Protox.Parse do
       end
 
     processsed_enums =
-      for {ename, constants} <- acc.enums, into: [] do
+      for {ename, constants} <- acc.enums do
         {
           Module.concat([namespace_or_nil | Enum.map(ename, &Macro.camelize(&1))]),
           constants
