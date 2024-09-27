@@ -74,7 +74,7 @@ defmodule Protox.Parse do
     %{enums: processsed_enums, messages: processed_messages}
   end
 
-  defp resolve_types(%Field{type: {:to_resolve, tname}} = field, enums) do
+  defp resolve_types(%Field{type: {:type_to_resolve, tname}} = field, enums) do
     if Map.has_key?(enums, tname) do
       %Field{field | type: {:enum, tname}}
     else
@@ -82,7 +82,7 @@ defmodule Protox.Parse do
     end
   end
 
-  defp resolve_types(%Field{kind: :map, type: {key_type, {:to_resolve, tname}}} = field, enums) do
+  defp resolve_types(%Field{kind: :map, type: {key_type, {:type_to_resolve, tname}}} = field, enums) do
     if Map.has_key?(enums, tname) do
       %Field{field | type: {key_type, {:enum, tname}}}
     else
@@ -351,7 +351,7 @@ defmodule Protox.Parse do
   defp get_type(%FieldDescriptorProto{type_name: tyname}) when tyname != nil do
     # Documentation in descriptor.proto says that it's possible that `type_name` is set, but not
     # `type`. The type will be resolved in a post-process pass.
-    {:to_resolve, fully_qualified_name(tyname)}
+    {:type_to_resolve, fully_qualified_name(tyname)}
   end
 
   defp get_type(descriptor), do: descriptor.type
