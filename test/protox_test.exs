@@ -108,6 +108,35 @@ defmodule ProtoxTest do
     """,
     generate_defs_funs: false
 
+  use Protox,
+    schema: """
+    syntax = "proto3";
+
+    message MsgWithNonCamelEnum {
+      snake_case snake_case = 2;
+    }
+
+    enum snake_case {
+      c = 0;
+      d = 1;
+    }
+    """
+
+  use Protox,
+    schema: """
+    syntax = "proto3";
+
+    message MsgWithNonCamelEnum {
+      snake_case snake_case = 2;
+    }
+
+    enum snake_case {
+      c = 0;
+      d = 1;
+    }
+    """,
+    namespace: AnotherNamespace
+
   doctest Protox
 
   setup_all do
@@ -681,6 +710,35 @@ defmodule ProtoxTest do
     msg = Protox.RandomInit.generate_msg(Camel)
     assert msg == msg |> Camel.encode!() |> :binary.list_to_bin() |> Camel.decode!()
   end
+
+  test "Non CamelCase enums" do
+    msg = Protox.RandomInit.generate_msg(MsgWithNonCamelEnum)
+
+    assert msg ==
+             msg
+             |> MsgWithNonCamelEnum.encode!()
+             |> :binary.list_to_bin()
+             |> MsgWithNonCamelEnum.decode!()
+
+    namespaced_msg = Protox.RandomInit.generate_msg(AnotherNamespace.MsgWithNonCamelEnum)
+
+    assert [
+             %Protox.Field{
+               name: :snake_case,
+               kind: {:scalar, :c},
+               type: {:enum, SnakeCase},
+               json_name: "snakeCase"
+             }
+           ] = MsgWithNonCamelEnum.fields_defs()
+
+    assert namespaced_msg ==
+             namespaced_msg
+             |> AnotherNamespace.MsgWithNonCamelEnum.encode!()
+             |> :binary.list_to_bin()
+             |> AnotherNamespace.MsgWithNonCamelEnum.decode!()
+  end
+
+  # -- Helper functions
 
   defp reencode_with_protoc(encoded, mod) do
     encoded_bin_path = Path.join([Mix.Project.build_path(), "protox_test_sub.bin"])

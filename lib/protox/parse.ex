@@ -46,11 +46,11 @@ defmodule Protox.Parse do
     %{enums: filtered_enums, messages: filtered_messages}
   end
 
-  # Canonization: camelization, fqdn, prepend with namespace
+  # Prepend with namespace, resolve pending types and set default values
   defp post_process(acc, namespace_or_nil) do
     processed_messages =
       for {msg_name, msg = %Message{}} <- acc.messages do
-        name = Module.concat([namespace_or_nil | Enum.map(msg_name, &Macro.camelize/1)])
+        name = Module.concat([namespace_or_nil | msg_name])
 
         fields =
           Enum.map(msg.fields, fn %Field{} = field ->
@@ -65,10 +65,7 @@ defmodule Protox.Parse do
 
     processsed_enums =
       for {ename, constants} <- acc.enums do
-        {
-          Module.concat([namespace_or_nil | Enum.map(ename, &Macro.camelize(&1))]),
-          constants
-        }
+        {Module.concat([namespace_or_nil | ename]), constants}
       end
 
     %{enums: processsed_enums, messages: processed_messages}
@@ -147,7 +144,7 @@ defmodule Protox.Parse do
     prefix =
       case descriptor.package do
         "" -> []
-        p -> p |> String.split(".") |> Enum.map(&Macro.camelize(&1))
+        p -> p |> String.split(".") |> camelize()
       end
 
     acc
@@ -163,7 +160,7 @@ defmodule Protox.Parse do
   end
 
   defp make_enum(acc, prefix, descriptor) do
-    enum_name = prefix ++ [descriptor.name]
+    enum_name = prefix ++ camelize([descriptor.name])
     enum_constants = [] |> make_enum_constants(descriptor.value) |> Enum.reverse()
 
     %{acc | enums: Map.put(acc.enums, enum_name, enum_constants)}
@@ -199,7 +196,7 @@ defmodule Protox.Parse do
   end
 
   defp make_message(acc, syntax, prefix, descriptor, options) do
-    name = prefix ++ [descriptor.name]
+    name = prefix ++ camelize([descriptor.name])
 
     acc
     |> add_message(syntax, name, options)
@@ -310,7 +307,7 @@ defmodule Protox.Parse do
     name
     |> String.split(".")
     |> tl()
-    |> Enum.map(&Macro.camelize(&1))
+    |> camelize()
   end
 
   import Protox.Guards
@@ -389,5 +386,9 @@ defmodule Protox.Parse do
 
   defp get_default_value(f) do
     f.default_value |> Integer.parse() |> elem(0)
+  end
+
+  defp camelize(name) when is_list(name) do
+    Enum.map(name, &Macro.camelize/1)
   end
 end
