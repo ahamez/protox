@@ -185,7 +185,9 @@ defmodule Protox.CodeGenerationTest do
         [
           {:protox, path: "#{File.cwd!()}"},
           {:dialyxir, "~> 1.0", only: [:test, :dev], runtime: false},
-          {:credo, "~> 1.4", only: [:test, :dev], runtime: false}
+          {:credo, "~> 1.4", only: [:test, :dev], runtime: false},
+          {:jason, "~> 1.2", optional: true},
+          {:poison, "~> 4.0 or ~> 5.0 or ~> 6.0", optional: true}
         ]
       end
     end
