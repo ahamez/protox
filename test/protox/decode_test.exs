@@ -1,8 +1,3 @@
-# A dedicated module to make sure all messages are compiled before Protox.DecodeTest.
-defmodule Protox.DecodeTestMessages do
-  Code.require_file("./test/support/messages.exs")
-end
-
 defmodule Protox.DecodeTest do
   use ExUnit.Case
 

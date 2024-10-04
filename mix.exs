@@ -24,7 +24,7 @@ defmodule Protox.Mixfile do
 
   # Do not compile conformance and benchmarks related files when in production
   defp elixirc_paths(:prod), do: ["lib"]
-  defp elixirc_paths(_), do: ["lib", "conformance", "benchmarks"]
+  defp elixirc_paths(_), do: ["lib", "conformance", "benchmarks", "test/support"]
 
   def application do
     [

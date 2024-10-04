@@ -4,7 +4,7 @@ import "proto2.proto";
 
 package abc.def;
 
-enum ForeignEnum {
+enum MyForeignEnum {
   option allow_alias = true;
   FOREIGN_ZERO    = 0;
   FOREIGN_ONE     = 1;
@@ -25,7 +25,7 @@ message Proto3 {
   oneof oneof_1 {
     int32 oneof_1_int32 = 4;
     double oneof_1_double = 5;
-    ForeignEnum oneof_1_foreign_enum = 6;
+    MyForeignEnum oneof_1_foreign_enum = 6;
     Proto2A oneof_1_proto2a = 7;
   }
 

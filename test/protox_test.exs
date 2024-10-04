@@ -1,9 +1,6 @@
 defmodule ProtoxTest do
   use ExUnit.Case
 
-  Code.require_file("test/support/messages.exs")
-  Code.require_file("test/support/random_init.exs")
-
   use Protox,
     schema: """
       syntax = "proto3";
@@ -342,7 +339,7 @@ defmodule ProtoxTest do
                label: :optional,
                name: :oneof_1_foreign_enum,
                tag: 6,
-               type: {:enum, Abc.Def.ForeignEnum}
+               type: {:enum, Abc.Def.MyForeignEnum}
              },
              %Protox.Field{
                json_name: "oneof1Proto2a",
@@ -575,7 +572,7 @@ defmodule ProtoxTest do
                label: :optional,
                name: :oneof_1_foreign_enum,
                tag: 6,
-               type: {:enum, Namespace.Abc.Def.ForeignEnum}
+               type: {:enum, Namespace.Abc.Def.MyForeignEnum}
              },
              %Protox.Field{
                json_name: "oneof1Proto2a",

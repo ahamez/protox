@@ -1,8 +1,3 @@
-# A dedicated module to make sure all messages are compiled before Protox.JsonDecodeTest.
-defmodule Protox.JsonDecodeTestMessages do
-  Code.require_file("./test/support/messages.exs")
-end
-
 defmodule Protox.JsonDecodeTest do
   use ExUnit.Case
   use Protox.Float

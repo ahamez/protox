@@ -2,9 +2,6 @@ defmodule Protox.PropertiesTest do
   use ExUnit.Case
   use PropCheck
 
-  Code.require_file("test/support/messages.exs")
-  Code.require_file("test/support/random_init.exs")
-
   @moduletag :slow
   @moduletag timeout: 60_000 * 5
 
