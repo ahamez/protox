@@ -1,21 +1,20 @@
 name: Elixir CI
 
 env:
-  PROTOBUF_VERSION: '21.4'
-  PROTOBUF_LIB_VERSION_MAJOR: '32'
-  PROTOBUF_LIB_VERSION_MINOR: '0.4'
+  PROTOBUF_VERSION: "21.4"
+  PROTOBUF_LIB_VERSION_MAJOR: "32"
+  PROTOBUF_LIB_VERSION_MINOR: "0.4"
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   MIX_ENV: test
 
 on:
   push:
-    branches: [ "**" ]
+    branches: ["**"]
   pull_request:
-    branches: [ "**" ]
+    branches: ["**"]
 
 jobs:
   build:
-
     runs-on: ubuntu-20.04
     name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
     strategy:
@@ -38,77 +37,77 @@ jobs:
             check_deps: true
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Elixir
-      uses: erlef/setup-beam@v1
-      with:
-        elixir-version: ${{matrix.elixir}}
-        otp-version: ${{matrix.otp}}
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{matrix.elixir}}
+          otp-version: ${{matrix.otp}}
 
-    - name: Restore dependencies cache
-      uses: actions/cache@v3
-      with:
-        path: deps
-        key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
+      - name: Restore dependencies cache
+        uses: actions/cache@v3
+        with:
+          path: deps
+          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
 
-    - name: Restore PLT cache
-      uses: actions/cache@v3
-      with:
-        path: priv/plts
-        key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
+      - name: Restore PLT cache
+        uses: actions/cache@v3
+        with:
+          path: priv/plts
+          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
 
-    - name: Restore conformance-test-runner
-      uses: actions/cache@v3
-      id: compile-conformance-test-runner
-      with:
-        path: conformance-bin
-        key: ${{ runner.os }}-protobuf-${{ env.PROTOBUF_VERSION }}
+      - name: Restore conformance-test-runner
+        uses: actions/cache@v3
+        id: compile-conformance-test-runner
+        with:
+          path: conformance-bin
+          key: ${{ runner.os }}-protobuf-${{ env.PROTOBUF_VERSION }}
 
-    - name: Compile conformance-test-runner
-      if: steps.compile-conformance-test-runner.outputs.cache-hit != 'true'
-      run: |
-        mkdir -p ./conformance-bin/.libs
-        wget https://github.com/protocolbuffers/protobuf/archive/v${{ env.PROTOBUF_VERSION }}.tar.gz
-        tar xf v${{ env.PROTOBUF_VERSION }}.tar.gz
-        cd protobuf-${{ env.PROTOBUF_VERSION }}
-        ./autogen.sh && ./configure --disable-maintainer-mode --disable-dependency-tracking --disable-static
-        make -C ./src protoc
-        make -C conformance
-        cp ./conformance/.libs/conformance-test-runner ../conformance-bin
-        cp ./src/.libs/libprotobuf.so.${{ env.PROTOBUF_LIB_VERSION_MAJOR }}.${{ env.PROTOBUF_LIB_VERSION_MINOR }} ../conformance-bin/.libs/libprotobuf.so.${{ env.PROTOBUF_LIB_VERSION_MAJOR }}
+      - name: Compile conformance-test-runner
+        if: steps.compile-conformance-test-runner.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ./conformance-bin/.libs
+          wget https://github.com/protocolbuffers/protobuf/archive/v${{ env.PROTOBUF_VERSION }}.tar.gz
+          tar xf v${{ env.PROTOBUF_VERSION }}.tar.gz
+          cd protobuf-${{ env.PROTOBUF_VERSION }}
+          ./autogen.sh && ./configure --disable-maintainer-mode --disable-dependency-tracking --disable-static
+          make -C ./src protoc
+          make -C conformance
+          cp ./conformance/.libs/conformance-test-runner ../conformance-bin
+          cp ./src/.libs/libprotobuf.so.${{ env.PROTOBUF_LIB_VERSION_MAJOR }}.${{ env.PROTOBUF_LIB_VERSION_MINOR }} ../conformance-bin/.libs/libprotobuf.so.${{ env.PROTOBUF_LIB_VERSION_MAJOR }}
 
-    - name: Install protoc
-      run: |
-        wget https://github.com/protocolbuffers/protobuf/releases/download/v24.4/protoc-24.4-linux-x86_64.zip
-        unzip -d protoc protoc-24.4-linux-x86_64.zip
-        echo "${PWD}/protoc/bin" >> $GITHUB_PATH
+      - name: Install protoc
+        run: |
+          wget https://github.com/protocolbuffers/protobuf/releases/download/v24.4/protoc-24.4-linux-x86_64.zip
+          unzip -d protoc protoc-24.4-linux-x86_64.zip
+          echo "${PWD}/protoc/bin" >> $GITHUB_PATH
 
-    - name: Install dependencies
-      run: |
-        mix local.rebar --force
-        mix local.hex --force
-        mix deps.get
+      - name: Install dependencies
+        run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
 
-    - name: Compile prod with warnings as errors
-      run: MIX_ENV=prod mix compile --warnings-as-errors
+      - name: Compile prod with warnings as errors
+        run: MIX_ENV=prod mix compile --warnings-as-errors
 
-    - name: Run tests
-      env:
-        PROTOBUF_CONFORMANCE_RUNNER: conformance-bin/conformance-test-runner
-        LD_LIBRARY_PATH: conformance-bin/.libs
-      run: mix coveralls.github --include conformance
+      - name: Run tests
+        env:
+          PROTOBUF_CONFORMANCE_RUNNER: conformance-bin/conformance-test-runner
+          LD_LIBRARY_PATH: conformance-bin/.libs
+        run: mix coveralls.github --include conformance
 
-    - name: Check formatting
-      run: mix format --check-formatted
-      if: ${{ matrix.check_format }}
+      - name: Check formatting
+        run: mix format --check-formatted
+        if: ${{ matrix.check_format }}
 
-    - name: Check dependencies
-      run: mix deps.unlock --check-unused
-      if: ${{ matrix.check_deps }}
+      - name: Check dependencies
+        run: mix deps.unlock --check-unused
+        if: ${{ matrix.check_deps }}
 
-    - name: Credo
-      run: mix credo
+      - name: Credo
+        run: mix credo
 
-    - name: Dialyzer
-      run: mix dialyzer
+      - name: Dialyzer
+        run: mix dialyzer

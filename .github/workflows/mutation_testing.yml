@@ -5,11 +5,10 @@ env:
 
 on:
   push:
-    branches: [ "**" ]
+    branches: ["**"]
 
 jobs:
   build:
-
     runs-on: ubuntu-20.04
     name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
     strategy:
@@ -20,34 +19,34 @@ jobs:
             otp: 25.1
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-       fetch-depth: 30
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 30
 
-    - name: Set up Elixir
-      uses: erlef/setup-beam@v1
-      with:
-        elixir-version: ${{matrix.elixir}}
-        otp-version: ${{matrix.otp}}
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{matrix.elixir}}
+          otp-version: ${{matrix.otp}}
 
-    - name: Restore dependencies cache
-      uses: actions/cache@v3
-      with:
-        path: deps
-        key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
+      - name: Restore dependencies cache
+        uses: actions/cache@v3
+        with:
+          path: deps
+          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
 
-    - name: Install protoc
-      run: |
-        wget https://github.com/protocolbuffers/protobuf/releases/download/v21.4/protoc-21.4-linux-x86_64.zip
-        unzip -d protoc protoc-21.4-linux-x86_64.zip
-        echo "${PWD}/protoc/bin" >> $GITHUB_PATH
+      - name: Install protoc
+        run: |
+          wget https://github.com/protocolbuffers/protobuf/releases/download/v21.4/protoc-21.4-linux-x86_64.zip
+          unzip -d protoc protoc-21.4-linux-x86_64.zip
+          echo "${PWD}/protoc/bin" >> $GITHUB_PATH
 
-    - name: Run mutation testing
-      env:
-        PROTOX_MUZAK_PRO_CREDS: ${{ secrets.PROTOX_MUZAK_PRO_CREDS }}
-        MIX_ENV: test
-      run: |
-        mix local.rebar --force
-        mix local.hex --force
-        mix deps.get
-        mix muzak --profile ci
+      - name: Run mutation testing
+        env:
+          PROTOX_MUZAK_PRO_CREDS: ${{ secrets.PROTOX_MUZAK_PRO_CREDS }}
+          MIX_ENV: test
+        run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+          mix muzak --profile ci
