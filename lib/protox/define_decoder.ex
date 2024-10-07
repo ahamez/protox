@@ -2,6 +2,8 @@ defmodule Protox.DefineDecoder do
   @moduledoc false
   # Internal. Generates the decoder of a message.
 
+  @default_keep_unknown_field true
+
   alias Protox.Field
 
   use Protox.{
@@ -23,17 +25,11 @@ defmodule Protox.DefineDecoder do
     # The public function to decode the binary protobuf.
     decode_fun = make_decode_fun(required_fields, msg_name, vars)
 
-    # The function that decoded the binary protobuf and possibly dispatches to other decoding
+    # The function that decodes the binary protobuf and possibly dispatches to other decoding
     # functions.
-    parse_key_value_fun =
-      make_parse_key_value_fun(
-        required_fields,
-        fields,
-        vars,
-        Keyword.get(opts, :keep_unknown_fields, true)
-      )
+    parse_key_value_fun = make_parse_key_value_fun(required_fields, fields, vars, opts)
 
-    # The functions that decode maps.
+    # The functions that decodes maps.
     parse_map_entries = make_parse_map_entries_funs(vars, fields)
 
     quote do
@@ -84,11 +80,11 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_parse_key_value_fun(required_fields, fields, vars, keep_unknown_fields) do
+  defp make_parse_key_value_fun(required_fields, fields, vars, opts) do
     keep_set_fields = required_fields != []
 
     parse_key_value_body =
-      make_parse_key_value_body(keep_set_fields, fields, vars, keep_unknown_fields)
+      make_parse_key_value_body(keep_set_fields, fields, vars, opts)
 
     if keep_set_fields do
       quote do
@@ -111,11 +107,12 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_parse_key_value_body(keep_set_fields, fields, vars, keep_unknown_fields) do
+  defp make_parse_key_value_body(keep_set_fields, fields, vars, opts) do
     # Fragment to handle the (invalid) field with tag 0.
     tag_0_case = make_parse_key_value_tag_0()
 
     # Fragment to parse unknown fields. Those are identified with an unknown tag.
+    keep_unknown_fields = Keyword.get(opts, :keep_unknown_fields, @default_keep_unknown_field)
     unknown_tag_case = make_parse_key_value_unknown(vars, keep_set_fields, keep_unknown_fields)
 
     # Fragment to parse known fields.
