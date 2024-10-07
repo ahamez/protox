@@ -392,7 +392,7 @@ defmodule Protox.DefineDecoder do
   end
 
   defp make_parse_delimited(bytes_var, :string) do
-    quote(do: Protox.Decode.validate_string(unquote(bytes_var)))
+    quote(do: Protox.Decode.validate_string!(unquote(bytes_var)))
   end
 
   defp make_parse_delimited(bytes_var, {:enum, mod}) do

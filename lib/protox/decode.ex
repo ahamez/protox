@@ -151,7 +151,7 @@ defmodule Protox.Decode do
     {res, rest}
   end
 
-  def validate_string(bytes) do
+  def validate_string!(bytes) do
     case Protox.String.validate(bytes) do
       :ok ->
         bytes
