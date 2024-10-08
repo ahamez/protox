@@ -12,13 +12,13 @@ repos:
     rev: v1.0.0
     hooks:
       - id: elixir-mix-format
-        stages: [commit]
+        stages: [pre-commit]
       - id: elixir-mix-credo
-        stages: [commit]
+        stages: [pre-commit]
       - id: elixir-mix-deps-check-unused
-        stages: [push]
+        stages: [pre-push]
       - id: elixir-mix-dialyzer
-        stages: [push]
+        stages: [pre-push]
       - id: elixir-mix-test
         args: ["--exclude", "properties"]
-        stages: [push]
+        stages: [pre-push]
