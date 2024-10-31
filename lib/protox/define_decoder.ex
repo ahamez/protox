@@ -150,8 +150,7 @@ defmodule Protox.DefineDecoder do
   end
 
   defp make_parse_key_value_known(vars, fields, keep_set_fields) do
-    fields
-    |> Enum.map(fn %Field{} = field ->
+    Enum.flat_map(fields, fn %Field{} = field ->
       single = make_single_case(vars, keep_set_fields, field)
 
       single_generated = single != []
@@ -159,7 +158,6 @@ defmodule Protox.DefineDecoder do
 
       delimited ++ single
     end)
-    |> List.flatten()
   end
 
   defp make_parse_key_value_unknown(vars, keep_set_fields, true = _keep_unknown_fields) do
