@@ -7,7 +7,7 @@ defmodule Protox.JsonDecode do
 
   use Protox.{Float, Integer}
 
-  @spec decode!(iodata(), atom(), fun()) :: any() | no_return()
+  @spec decode!(iodata(), atom(), fun()) :: struct() | no_return()
   def decode!(input, mod, json_decode) do
     case json_decode.(input) do
       nil -> raise JsonDecodingError.new("invalid top-level null")
