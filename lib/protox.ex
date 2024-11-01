@@ -182,7 +182,7 @@ defmodule Protox do
   Throwing version of `json_decode/2`.
   """
   @doc since: "1.6.0"
-  @spec json_decode!(iodata(), atom(), keyword()) :: iodata() | no_return()
+  @spec json_decode!(iodata(), atom(), keyword()) :: struct() | no_return()
   def json_decode!(input, message_module, opts \\ []) do
     message_module.json_decode!(input, opts)
   end
