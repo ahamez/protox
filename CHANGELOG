@@ -1,3 +1,6 @@
+# 1.7.6
+  - Fix typespecs for JSON decoding (thanks to https://github.com/squirmy)
+
 # 1.7.5
   - Use origin repository for propchek rather than a fork
 
