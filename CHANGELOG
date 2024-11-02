@@ -1,3 +1,6 @@
+# 1.7.7
+  - Fix launch by removing :propcheck from extra applications
+
 # 1.7.6
   - Fix typespecs for JSON decoding (thanks to https://github.com/squirmy)
 
