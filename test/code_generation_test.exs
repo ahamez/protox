@@ -34,13 +34,6 @@ defmodule Protox.CodeGenerationTest do
     launch(path, protox_path, "single_without_unknown_fields.ex", ["--keep-unknown-fields=false"])
   end
 
-  test "Generate single file, without defs funs", %{
-    code_generation_path: path,
-    protox_path: protox_path
-  } do
-    launch(path, protox_path, "single_without_defs_funs.ex", ["--generate-defs-funs=false"])
-  end
-
   test "Generate multiple files, with unknown fields", %{
     code_generation_path: path,
     protox_path: protox_path
