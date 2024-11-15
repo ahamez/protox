@@ -692,11 +692,11 @@ defmodule Protox.JsonDecodeTest do
     end
 
     test "Success: jason", %{json: json, expected: expected} do
-      assert Protox.json_decode!(json, Sub, json_library: Protox.Jason) == expected
+      assert Protox.json_decode!(json, Sub, json_library: Jason) == expected
     end
 
     test "Success: poison", %{json: json, expected: expected} do
-      assert Protox.json_decode!(json, Sub, json_library: Protox.Poison) == expected
+      assert Protox.json_decode!(json, Sub, json_library: Poison) == expected
     end
 
     test "Failure: poison", %{} do
@@ -704,7 +704,7 @@ defmodule Protox.JsonDecodeTest do
         Protox.json_decode!(
           "{\"mapInt32Int32\": 1",
           ProtobufTestMessages.Proto3.TestAllTypesProto3,
-          json_library: Protox.Poison
+          json_library: Poison
         )
       end
     end
