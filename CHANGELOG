@@ -1,5 +1,6 @@
 # 2.0.0 (unreleased)
   - BREAKING CHANGE: Remove generated defs/0 function
+  - Drop support for Elixir < 1.15
 
 # 1.7.8
   - Fix warnings of unknown JSON modules when a JSON library is not installed
