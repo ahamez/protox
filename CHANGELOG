@@ -1,5 +1,6 @@
 # 2.0.0 (unreleased)
   - BREAKING CHANGE: Remove generated defs/0 function
+  - BREAKING CHANGE: Remove Protox.Encode.encode/1 and Protox.Encode.encode!/1
   - Drop support for Elixir < 1.15
 
 # 1.7.8
