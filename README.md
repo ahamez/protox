@@ -505,9 +505,6 @@ The generated file will be usable in any project as long as `protox` is declared
 * `--keep-unknown-fields=[true|false]`
   Toggles support of [unknown fields](#unknown-fields). Default to `true`.
 
-* `--generate-defs-funs=[true|false]`
-  Generates deprecated functions `defs/0` and `defs_by_name/0`. Default to `true` for backward compatibility, but it's safe to set it to `false` if you don't use these functions (and it reduces the size of the generated code).
-
 ## Conformance
 
 The protox library has been thoroughly tested using the conformance checker [provided by Google](https://github.com/protocolbuffers/protobuf/tree/master/conformance).
