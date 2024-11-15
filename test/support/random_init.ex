@@ -5,6 +5,8 @@ defmodule Protox.RandomInit do
 
   use PropCheck
 
+  alias Protox.Field
+
   def generate_msg(mod) do
     gen =
       let fields <- generate_fields(mod) do
@@ -25,7 +27,7 @@ defmodule Protox.RandomInit do
     sub_msgs =
       mod.fields_defs()
       # Get all sub messages
-      |> Enum.filter(fn %Protox.Field{} = field ->
+      |> Enum.filter(fn %Field{} = field ->
         case {field.kind, field.type} do
           {:map, {_, {:message, _}}} -> true
           {_, {:message, _}} -> true
@@ -33,7 +35,7 @@ defmodule Protox.RandomInit do
         end
       end)
       # Transform into a map for lookup
-      |> Enum.reduce(%{}, fn %Protox.Field{} = field, acc ->
+      |> Enum.reduce(%{}, fn %Field{} = field, acc ->
         case field.kind do
           {:scalar, _} ->
             {:message, sub_msg} = field.type
@@ -130,34 +132,34 @@ defmodule Protox.RandomInit do
   ]
 
   def generate_fields(mod, depth \\ 2) do
-    do_generate([], Map.to_list(mod.defs()), depth)
+    do_generate([], mod.fields_defs(), depth)
   end
 
   defp do_generate(acc, _fields, 0), do: acc
   defp do_generate(acc, [], _depth), do: acc
 
-  defp do_generate(acc, [{_field, {_name, {:oneof, oneof_name}, _ty}} | _] = xs, depth) do
-    {oneof_list, xs} =
-      Enum.split_with(xs, fn {_field, x} ->
-        case x do
-          {_name, {:oneof, ^oneof_name}, _ty} -> true
+  defp do_generate(acc, [%Field{kind: {:oneof, oneof_name}} | _] = fields, depth) do
+    {oneof_list, fields} =
+      Enum.split_with(fields, fn field = %Field{} ->
+        case field.kind do
+          {:oneof, ^oneof_name} -> true
           _ -> false
         end
       end)
 
     acc
     |> do_generate_oneof(oneof_name, oneof_list, depth)
-    |> do_generate(xs, depth)
+    |> do_generate(fields, depth)
   end
 
-  defp do_generate(acc, [{_field, {name, kind, type}} | xs], depth) do
-    do_generate([{name, get_gen(depth, kind, type)} | acc], xs, depth)
+  defp do_generate(acc, [field | fields], depth) do
+    do_generate([{field.name, get_gen(depth, field.kind, field.type)} | acc], fields, depth)
   end
 
   defp do_generate_oneof(acc, oneof_name, oneof_list, depth) do
     generators =
-      Enum.map(oneof_list, fn {_field, {field_name, {:oneof, _}, ty}} ->
-        {field_name, get_gen(depth, {:scalar, :dummy}, ty)}
+      Enum.map(oneof_list, fn field = %Field{kind: {:oneof, _}} ->
+        {field.name, get_gen(depth, {:scalar, :dummy}, field.type)}
       end)
 
     [{oneof_name, oneof([nil | generators])} | acc]
