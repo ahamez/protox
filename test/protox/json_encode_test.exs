@@ -394,7 +394,7 @@ defmodule Protox.JsonEncodeTest do
   describe "JSON libraries" do
     test "Success: Jason" do
       msg = %Msg{msg_k: %{1 => "a", 2 => "b"}}
-      json = Protox.json_encode!(msg, json_library: Protox.Jason)
+      json = Protox.json_encode!(msg, json_library: Jason)
 
       assert json == [
                "{",
@@ -405,7 +405,7 @@ defmodule Protox.JsonEncodeTest do
 
     test "Success: Poison" do
       msg = %Msg{msg_k: %{1 => "a", 2 => "b"}}
-      json = Protox.json_encode!(msg, json_library: Protox.Poison)
+      json = Protox.json_encode!(msg, json_library: Poison)
 
       assert json == [
                "{",
@@ -418,7 +418,7 @@ defmodule Protox.JsonEncodeTest do
       invalid_field = %ProtobufTestMessages.Proto3.TestAllTypesProto3{optional_int32: make_ref()}
 
       assert_raise Protox.JsonEncodingError, fn ->
-        Protox.json_encode!(invalid_field, json_library: Protox.Poison)
+        Protox.json_encode!(invalid_field, json_library: Poison)
       end
     end
   end
