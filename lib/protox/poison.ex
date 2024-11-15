@@ -4,14 +4,12 @@ defmodule Protox.Poison do
 
   if Code.ensure_loaded?(Poison) do
     @impl true
-    def load() do
-      {:ok, Poison}
-    end
+    def load(), do: :ok
 
     @impl true
-    def decode!(poison_module, iodata) do
+    def decode!(iodata) do
       try do
-        poison_module.decode!(iodata)
+        Poison.decode!(iodata)
       rescue
         e in [Poison.DecodeError, Poison.ParseError] ->
           reraise Protox.JsonDecodingError.new(Exception.message(e)), __STACKTRACE__
@@ -19,9 +17,9 @@ defmodule Protox.Poison do
     end
 
     @impl true
-    def encode!(poison_module, term) do
+    def encode!(term) do
       try do
-        poison_module.encode!(term)
+        Poison.encode!(term)
       rescue
         e in Poison.EncodeError ->
           reraise Protox.JsonEncodingError.new(Exception.message(e)), __STACKTRACE__
@@ -29,19 +27,17 @@ defmodule Protox.Poison do
     end
   else
     @impl true
-    def load() do
-      :error
-    end
+    def load(), do: :error
 
     @impl true
-    def decode!(_poison_module, _iodata) do
+    def decode!(_iodata) do
       raise Protox.JsonDecodingError.new(
               "Poison library not loaded. Please check your project dependencies."
             )
     end
 
     @impl true
-    def encode!(_poison_module, _term) do
+    def encode!(_term) do
       raise Protox.JsonEncodingError.new(
               "Poison library not loaded. Please check your project dependencies."
             )
