@@ -5,7 +5,6 @@ defmodule Protox.DefineMessage do
 
   def define(messages, opts \\ []) do
     keep_unknown_fields = Keyword.get(opts, :keep_unknown_fields, true)
-    generate_defs_funs = Keyword.get(opts, :generate_defs_funs, true)
 
     for msg = %Protox.Message{} <- messages do
       fields = Enum.sort(msg.fields, &(&1.tag < &2.tag))
@@ -16,7 +15,6 @@ defmodule Protox.DefineMessage do
 
       unknown_fields_funs = make_unknown_fields_funs(unknown_fields, keep_unknown_fields)
       required_fields_fun = make_required_fields_fun(required_fields)
-      defs_funs = make_defs_funs(fields, generate_defs_funs)
       fields_access_funs = make_fields_access_funs(fields)
       json_funs = make_json_funs(msg.name)
       default_fun = make_default_funs(fields)
@@ -35,7 +33,6 @@ defmodule Protox.DefineMessage do
           unquote(encoder)
           unquote(decoder)
           unquote(json_funs)
-          unquote(defs_funs)
           unquote(fields_access_funs)
           unquote(unknown_fields_funs)
           unquote(required_fields_fun)
@@ -93,27 +90,6 @@ defmodule Protox.DefineMessage do
     quote do
       @spec syntax() :: atom()
       def syntax(), do: unquote(syntax)
-    end
-  end
-
-  defp make_defs_funs(_fields, false = _generate_defs_funs), do: []
-
-  defp make_defs_funs(fields, true = _generate_defs_funs) do
-    fields_map = make_fields_map(fields)
-    fields_by_name_map = make_fields_by_name_map(fields)
-
-    quote do
-      @deprecated "Use fields_defs()/0 instead"
-      @spec defs() :: %{
-              required(non_neg_integer) => {atom, Protox.Types.kind(), Protox.Types.type()}
-            }
-      def defs(), do: unquote(fields_map)
-
-      @deprecated "Use fields_defs()/0 instead"
-      @spec defs_by_name() :: %{
-              required(atom) => {non_neg_integer, Protox.Types.kind(), Protox.Types.type()}
-            }
-      def defs_by_name(), do: unquote(fields_by_name_map)
     end
   end
 
@@ -318,27 +294,4 @@ defmodule Protox.DefineMessage do
 
     quote(do: [unquote(specs)])
   end
-
-  # Generate a map used to store a message's definitions.
-  defp make_fields_map(fields) do
-    fields
-    |> Enum.reduce(%{}, fn %Field{tag: tag, name: name, kind: kind, type: type}, acc ->
-      Map.put(acc, tag, {name, kind, make_type_field(kind, type)})
-    end)
-    |> Macro.escape()
-  end
-
-  defp make_fields_by_name_map(fields) do
-    fields
-    |> Enum.reduce(%{}, fn %Field{tag: tag, name: name, kind: kind, type: type}, acc ->
-      Map.put(acc, name, {tag, kind, make_type_field(kind, type)})
-    end)
-    |> Macro.escape()
-  end
-
-  defp make_type_field(:map, {key_type, {:message, msg}}), do: {key_type, {:message, msg}}
-  defp make_type_field(:map, {key_type, {:enum, enum}}), do: {key_type, {:enum, enum}}
-  defp make_type_field(_, {:enum, enum}), do: {:enum, enum}
-  defp make_type_field(_, {:message, enum}), do: {:message, enum}
-  defp make_type_field(_, ty), do: ty
 end

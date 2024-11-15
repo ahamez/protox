@@ -102,8 +102,7 @@ defmodule ProtoxTest do
 
     message NoDefsFuns {
     }
-    """,
-    generate_defs_funs: false
+    """
 
   use Protox,
     schema: """
