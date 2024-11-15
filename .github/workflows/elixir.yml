@@ -29,12 +29,15 @@ jobs:
             otp: "25"
           - elixir: "1.15"
             otp: "26"
+            dialyzer: true
           - elixir: "1.16"
             otp: "26"
+            dialyzer: true
           - elixir: "1.17"
             otp: "27"
             check_format: true
             check_deps: true
+            dialyzer: true
 
     steps:
       - uses: actions/checkout@v4
@@ -111,3 +114,4 @@ jobs:
 
       - name: Dialyzer
         run: mix dialyzer
+        if: ${{ matrix.dialyzer }}
