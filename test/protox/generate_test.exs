@@ -60,11 +60,11 @@ defmodule Protox.GenerateTest do
 
     assert [
              %Protox.Generate.FileContent{
-               name: "generated_code/elixir_bar.ex",
+               name: "generated_code/bar.ex",
                content: bar_content
              },
              %Protox.Generate.FileContent{
-               name: "generated_code/elixir_foo.ex",
+               name: "generated_code/foo.ex",
                content: foo_content
              }
            ] = files_content
@@ -98,11 +98,11 @@ defmodule Protox.GenerateTest do
 
     assert [
              %Protox.Generate.FileContent{
-               name: "generated_code/elixir_namespace_bar.ex",
+               name: "generated_code/namespace_bar.ex",
                content: bar_content
              },
              %Protox.Generate.FileContent{
-               name: "generated_code/elixir_namespace_foo.ex",
+               name: "generated_code/namespace_foo.ex",
                content: foo_content
              }
            ] = files_content
