@@ -6,13 +6,7 @@ defmodule Protox.Generate do
     defstruct([:name, :content])
   end
 
-  def generate_module_code(
-        files,
-        output_path,
-        multiple_files,
-        include_paths,
-        opts \\ []
-      )
+  def generate_module_code(files, output_path, multiple_files, include_paths, opts \\ [])
       when is_list(files) and is_binary(output_path) and is_boolean(multiple_files) do
     paths =
       case include_paths do
