@@ -45,7 +45,9 @@ defmodule Protox.Generate do
   defp generate_files(output_path, code, true = _muliple_files) do
     Enum.map(code, fn {:defmodule, _, [module_name | _]} = module_code ->
       snake_module_name =
-        module_name |> to_string() |> String.replace(".", "") |> Macro.underscore()
+        module_name
+        |> Module.split()
+        |> Enum.map_join("_", &Macro.underscore/1)
 
       %FileContent{
         name: Path.join(output_path, snake_module_name <> ".ex"),
