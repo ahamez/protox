@@ -396,11 +396,7 @@ defmodule Protox.JsonEncodeTest do
       msg = %WithJason.Msg{msg_k: %{1 => "a", 2 => "b"}}
       json = Protox.json_encode!(msg)
 
-      assert json == [
-               "{",
-               ["\"msgK\"", ":", ["{", "\"2\"", ":", "\"b\"", ",", "\"1\"", ":", "\"a\"", "}"]],
-               "}"
-             ]
+      assert IO.iodata_to_binary(json) == "{\"msgK\":{\"2\":\"b\",\"1\":\"a\"}}"
     end
 
     test "Success: Poison" do
