@@ -9,7 +9,7 @@ defmodule Protox.ParseTest do
   end
 
   test "Parse FileDescriptorSet, protobuf 3 enums", %{enums: enums} do
-    {_, constants} = Enum.find(enums, fn {name, _} -> name == Abc.Def.ForeignEnum end)
+    {_, constants} = Enum.find(enums, fn {name, _} -> name == Abc.Def.MyForeignEnum end)
     assert constants == [{0, :FOREIGN_ZERO}, {1, :FOREIGN_ONE}, {1, :FOREIGN_ONE_BIS}]
 
     {_, constants} = Enum.find(enums, fn {name, _} -> name == Abc.Def.Proto3.NestedEnum end)
@@ -26,7 +26,8 @@ defmodule Protox.ParseTest do
     assert field(fs, 5) == {:optional, :oneof_1_double, {:oneof, :oneof_1}, :double}
 
     assert field(fs, 6) ==
-             {:optional, :oneof_1_foreign_enum, {:oneof, :oneof_1}, {:enum, Abc.Def.ForeignEnum}}
+             {:optional, :oneof_1_foreign_enum, {:oneof, :oneof_1},
+              {:enum, Abc.Def.MyForeignEnum}}
 
     assert field(fs, 7) == {:optional, :oneof_1_proto2a, {:oneof, :oneof_1}, {:message, Proto2A}}
 
