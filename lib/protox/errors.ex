@@ -91,6 +91,21 @@ defmodule Protox.JsonEncodingError do
   end
 end
 
+defmodule Protox.JsonLibraryError do
+  @moduledoc """
+  This error is thrown when the configured JSON library is not available.
+  """
+
+  defexception message: ""
+
+  @doc false
+  def new() do
+    %__MODULE__{
+      message: "Cannot load JSON library. Please check your project dependencies."
+    }
+  end
+end
+
 defmodule Protox.RequiredFieldsError do
   @moduledoc """
   This error is thrown when encoding or decoding a Protobuf 2 message
