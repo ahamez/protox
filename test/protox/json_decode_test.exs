@@ -685,26 +685,24 @@ defmodule Protox.JsonDecodeTest do
       {
         :ok,
         %{
-          json: "{\"a\":null, \"b\":\"foo\", \"c\": 33}",
-          expected: %Sub{a: 0, b: "foo", c: 33}
+          json: "{\"a\":null, \"b\":\"foo\", \"c\": 33}"
         }
       }
     end
 
-    test "Success: jason", %{json: json, expected: expected} do
-      assert Protox.json_decode!(json, Sub, json_library: Jason) == expected
+    test "Success: Jason", %{json: json} do
+      assert Protox.json_decode!(json, WithJason.Sub) == %WithJason.Sub{a: 0, b: "foo", c: 33}
     end
 
-    test "Success: poison", %{json: json, expected: expected} do
-      assert Protox.json_decode!(json, Sub, json_library: Poison) == expected
+    test "Success: Poison", %{json: json} do
+      assert Protox.json_decode!(json, WithPoison.Sub) == %WithPoison.Sub{a: 0, b: "foo", c: 33}
     end
 
-    test "Failure: poison", %{} do
+    test "Failure: Poison", %{} do
       assert_raise Protox.JsonDecodingError, fn ->
         Protox.json_decode!(
           "{\"mapInt32Int32\": 1",
-          ProtobufTestMessages.Proto3.TestAllTypesProto3,
-          json_library: Poison
+          WithPoison.ProtobufTestMessages.Proto3.TestAllTypesProto3
         )
       end
     end
