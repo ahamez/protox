@@ -15,7 +15,7 @@ defmodule Protox.Jason do
   @impl true
   def encode!(term) do
     try do
-      Jason.encode!(term)
+      Jason.encode_to_iodata!(term)
     rescue
       e in Jason.EncodeError ->
         reraise Protox.JsonEncodingError.new(Exception.message(e)), __STACKTRACE__
