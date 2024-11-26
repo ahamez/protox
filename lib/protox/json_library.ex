@@ -3,8 +3,6 @@ defmodule Protox.JsonLibrary do
   The behaviour to implement when wrapping a JSON library.
   """
 
-  @callback load() :: :ok | :error
-
   @doc """
   Should wrap any exception of the underlying library in Protox.JsonDecodingError.
   """
@@ -16,21 +14,11 @@ defmodule Protox.JsonLibrary do
   @callback encode!(term()) :: iodata() | no_return()
 
   @doc false
-  def get_library(opts, decoding_or_encoding) do
-    json_library_name = Keyword.get(opts, :json_library, Jason)
-    json_library_wrapper = Module.concat(Protox, json_library_name)
-
-    case json_library_wrapper.load() do
-      :ok ->
-        json_library_wrapper
-
-      :error ->
-        message = "cannot load JSON library. Please check your project dependencies."
-
-        case decoding_or_encoding do
-          :decode -> raise Protox.JsonDecodingError.new(message)
-          :encode -> raise Protox.JsonEncodingError.new(message)
-        end
+  def get_wrapper(json_library) do
+    if Code.ensure_loaded?(json_library) do
+      Module.concat(Protox, json_library)
+    else
+      raise Protox.JsonLibraryError.new()
     end
   end
 end
