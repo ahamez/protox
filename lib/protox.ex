@@ -159,32 +159,21 @@ defmodule Protox do
   - `input` could not be decoded to JSON; `reason` is a `Protox.JsonDecodingError` error
 
   ## JSON library configuration
-  The default library to decode JSON is [`Jason`](https://github.com/michalmuskala/jason).
-  However, you can chose to use [`Poison`](https://github.com/devinus/poison):
-      iex> Protox.json_decode("{\\"a\\":\\"BAR\\"}", Namespace.Fiz.Foo, json_decoder: Poison)
-      {:ok, %Namespace.Fiz.Foo{__uf__: [], a: :BAR, b: %{}}}
-
-  You can also use another library as long as it exports an `decode!` function. You can easily
-  create a module to wrap a library that would not have this interface (like [`jiffy`](https://github.com/davisp/jiffy)):
-      defmodule Jiffy do
-        def decode!(input) do
-          :jiffy.decode(input, [:return_maps, :use_nil])
-        end
-      end
+  TODO: document json library configuration
   """
-  @doc since: "1.6.0"
-  @spec json_decode(iodata(), atom(), keyword()) :: {:ok, struct()} | {:error, any()}
-  def json_decode(input, message_module, opts \\ []) do
-    message_module.json_decode(input, opts)
+  @doc since: "2.0.0"
+  @spec json_decode(iodata(), atom()) :: {:ok, struct()} | {:error, any()}
+  def json_decode(input, message_module) do
+    message_module.json_decode(input)
   end
 
   @doc """
   Throwing version of `json_decode/2`.
   """
-  @doc since: "1.6.0"
-  @spec json_decode!(iodata(), atom(), keyword()) :: struct() | no_return()
-  def json_decode!(input, message_module, opts \\ []) do
-    message_module.json_decode!(input, opts)
+  @doc since: "2.0.0"
+  @spec json_decode!(iodata(), atom()) :: struct() | no_return()
+  def json_decode!(input, message_module) do
+    message_module.json_decode!(input)
   end
 
   @doc """
@@ -211,36 +200,25 @@ defmodule Protox do
       "{\\"msgK\\":{\\"2\\":\\"bar\\",\\"1\\":\\"foo\\"}}"
 
   ## JSON library configuration
-  The default library to encode values (i.e. mostly to escape strings) to JSON  is [`Jason`](https://github.com/michalmuskala/jason).
-  However, you can chose to use [`Poison`](https://github.com/devinus/poison):
-      iex> msg = %Namespace.Fiz.Foo{a: :BAR}
-      iex> Protox.json_encode(msg, json_encoder: Poison)
-      {:ok, ["{", ["\\"a\\"", ":", "\\"BAR\\""], "}"]}
-
-  You can also use another library as long as it exports an `encode!` function, which is expected to return objects as maps and `nil`
-  to represent `null`.
-  You can easily create a module to wrap a library that would not have this interface (like [`jiffy`](https://github.com/davisp/jiffy)):
-      defmodule Jiffy do
-        defdelegate encode!(msg), to: :jiffy, as: :encode
-      end
+  TODO: document the json library configuration
 
   ## Encoding specifications
   See https://developers.google.com/protocol-buffers/docs/proto3#json for the specifications
   of the encoding.
   """
-  @doc since: "1.6.0"
-  @spec json_encode(struct(), keyword()) :: {:ok, iodata()} | {:error, any()}
-  def json_encode(msg, opts \\ []) do
-    msg.__struct__.json_encode(msg, opts)
+  @doc since: "2.0.0"
+  @spec json_encode(struct()) :: {:ok, iodata()} | {:error, any()}
+  def json_encode(msg) do
+    msg.__struct__.json_encode(msg)
   end
 
   @doc """
   Throwing version of `json_encode/1`.
   """
-  @doc since: "1.6.0"
-  @spec json_encode!(struct(), keyword()) :: iodata() | no_return()
-  def json_encode!(msg, opts \\ []) do
-    msg.__struct__.json_encode!(msg, opts)
+  @doc since: "2.0.0"
+  @spec json_encode!(struct()) :: iodata() | no_return()
+  def json_encode!(msg) do
+    msg.__struct__.json_encode!(msg)
   end
 
   # -- Private

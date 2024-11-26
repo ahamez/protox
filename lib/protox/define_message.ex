@@ -5,6 +5,7 @@ defmodule Protox.DefineMessage do
 
   def define(messages, opts \\ []) do
     keep_unknown_fields = Keyword.get(opts, :keep_unknown_fields, true)
+    json_library = Keyword.get(opts, :json_library, Jason)
 
     for msg = %Protox.Message{} <- messages do
       fields = Enum.sort(msg.fields, &(&1.tag < &2.tag))
@@ -16,7 +17,7 @@ defmodule Protox.DefineMessage do
       unknown_fields_funs = make_unknown_fields_funs(unknown_fields, keep_unknown_fields)
       required_fields_fun = make_required_fields_fun(required_fields)
       fields_access_funs = make_fields_access_funs(fields)
-      json_funs = make_json_funs(msg.name)
+      json_funs = make_json_funs(msg.name, json_library)
       default_fun = make_default_funs(fields)
       syntax_fun = make_syntax_fun(msg.syntax)
       file_options_fun = make_file_options_fun(msg)
@@ -93,44 +94,42 @@ defmodule Protox.DefineMessage do
     end
   end
 
-  defp make_json_funs(msg_name) do
+  defp make_json_funs(msg_name, json_library) do
+    json_library_wrapper = Protox.JsonLibrary.get_wrapper(json_library)
+
     quote do
-      @spec json_decode(iodata(), keyword()) :: {:ok, struct()} | {:error, any()}
-      def json_decode(input, opts \\ []) do
+      @spec json_decode(iodata()) :: {:ok, struct()} | {:error, any()}
+      def json_decode(input) do
         try do
-          {:ok, json_decode!(input, opts)}
+          {:ok, json_decode!(input)}
         rescue
           e in Protox.JsonDecodingError ->
             {:error, e}
         end
       end
 
-      @spec json_decode!(iodata(), keyword()) :: struct() | no_return()
-      def json_decode!(input, opts \\ []) do
-        json_library_wrapper = Protox.JsonLibrary.get_library(opts, :decode)
-
+      @spec json_decode!(iodata()) :: struct() | no_return()
+      def json_decode!(input) do
         Protox.JsonDecode.decode!(
           input,
           unquote(msg_name),
-          &json_library_wrapper.decode!(&1)
+          &unquote(json_library_wrapper).decode!(&1)
         )
       end
 
-      @spec json_encode(struct(), keyword()) :: {:ok, iodata()} | {:error, any()}
-      def json_encode(msg, opts \\ []) do
+      @spec json_encode(struct()) :: {:ok, iodata()} | {:error, any()}
+      def json_encode(msg) do
         try do
-          {:ok, json_encode!(msg, opts)}
+          {:ok, json_encode!(msg)}
         rescue
           e in Protox.JsonEncodingError ->
             {:error, e}
         end
       end
 
-      @spec json_encode!(struct(), keyword()) :: iodata() | no_return()
-      def json_encode!(msg, opts \\ []) do
-        json_library_wrapper = Protox.JsonLibrary.get_library(opts, :encode)
-
-        Protox.JsonEncode.encode!(msg, &json_library_wrapper.encode!(&1))
+      @spec json_encode!(struct()) :: iodata() | no_return()
+      def json_encode!(msg) do
+        Protox.JsonEncode.encode!(msg, &unquote(json_library_wrapper).encode!(&1))
       end
     end
   end
