@@ -38,6 +38,12 @@ jobs:
             check_format: true
             check_deps: true
             dialyzer: true
+          - elixir: "1.17"
+            otp: "27"
+            check_format: true
+            check_deps: true
+            dialyzer: true
+            unlock_deps: true
 
     steps:
       - uses: actions/checkout@v4
@@ -85,6 +91,10 @@ jobs:
           wget https://github.com/protocolbuffers/protobuf/releases/download/v24.4/protoc-24.4-linux-x86_64.zip
           unzip -d protoc protoc-24.4-linux-x86_64.zip
           echo "${PWD}/protoc/bin" >> $GITHUB_PATH
+
+      - name: Unlock all dependencies
+        run: mix deps.unlock --all
+        if: ${{ matrix.unlock_deps }}
 
       - name: Install dependencies
         run: |
