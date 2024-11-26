@@ -187,12 +187,12 @@ defmodule Protox do
       iex> msg = %Namespace.Fiz.Foo{a: :BAR}
       iex> {:ok, iodata} = Protox.json_encode(msg)
       iex> iodata
-      ["{", ["\\"a\\"", ":", "\\"BAR\\""], "}"]
+      ["{", [[34, [[] | "a"], 34], ":", [34, [[] | "BAR"], 34]], "}"]
 
       iex> msg = %Sub{a: 42}
       iex> {:ok, iodata} = Protox.json_encode(msg)
       iex> iodata
-      ["{", ["\\"a\\"", ":", "42"], "}"]
+      ["{", [[34, [[] | "a"], 34], ":", "42"], "}"]
 
       iex> msg = %Msg{msg_k: %{1 => "foo", 2 => "bar"}}
       iex> {:ok, iodata} = msg |> Protox.json_encode()
