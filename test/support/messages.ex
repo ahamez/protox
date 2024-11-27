@@ -16,6 +16,13 @@ defmodule Protox.Messages do
 
   use Protox,
     files: [
+      "./test/samples/messages.proto"
+    ],
+    namespace: WithDummyJsonLibrary,
+    json_library: DummyJsonLibrary
+
+  use Protox,
+    files: [
       "./test/samples/messages.proto",
       "./test/samples/test_messages_proto3.proto"
     ],
