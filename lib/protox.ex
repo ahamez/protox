@@ -241,7 +241,7 @@ defmodule Protox do
     case Keyword.pop(opts, :schema) do
       {<<text::binary>>, opts} ->
         filename = "#{Base.encode16(:crypto.hash(:sha, text))}.proto"
-        filepath = [Mix.Project.build_path(), filename] |> Path.join() |> Path.expand()
+        filepath = [System.tmp_dir!(), filename] |> Path.join() |> Path.expand()
         File.write!(filepath, text)
         {[filepath], opts}
 
