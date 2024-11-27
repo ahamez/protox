@@ -706,5 +706,11 @@ defmodule Protox.JsonDecodeTest do
         )
       end
     end
+
+    test "Failure: DummyJsonLibrary", %{} do
+      assert_raise Protox.JsonLibraryError, fn ->
+        Protox.json_decode!("", WithDummyJsonLibrary.Msg)
+      end
+    end
   end
 end
