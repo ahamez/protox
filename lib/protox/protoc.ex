@@ -25,7 +25,7 @@ defmodule Protox.Protoc do
 
   defp do_run(proto_files, args) do
     outfile_name = "protox_#{random_string()}"
-    outfile_path = Path.join([Mix.Project.build_path(), outfile_name])
+    outfile_path = Path.join([System.tmp_dir!(), outfile_name])
 
     cmd_args = ["--include_imports", "-o", outfile_path] ++ args ++ proto_files
 
