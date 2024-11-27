@@ -1,13 +1,10 @@
 defmodule Protox.DefineMessage do
   @moduledoc false
 
-  @default_json_library Jason
-
   alias Protox.Field
 
   def define(messages, opts \\ []) do
     keep_unknown_fields = Keyword.get(opts, :keep_unknown_fields, true)
-    json_library = Keyword.get(opts, :json_library, @default_json_library)
 
     for msg = %Protox.Message{} <- messages do
       fields = Enum.sort(msg.fields, &(&1.tag < &2.tag))
@@ -19,7 +16,7 @@ defmodule Protox.DefineMessage do
       unknown_fields_funs = make_unknown_fields_funs(unknown_fields, keep_unknown_fields)
       required_fields_fun = make_required_fields_fun(required_fields)
       fields_access_funs = make_fields_access_funs(fields)
-      json_funs = make_json_funs(msg.name, json_library)
+      json_funs = make_json_funs(msg.name, Protox.JsonLibrary.get_wrapper(opts))
       default_fun = make_default_funs(fields)
       syntax_fun = make_syntax_fun(msg.syntax)
       file_options_fun = make_file_options_fun(msg)
@@ -96,9 +93,31 @@ defmodule Protox.DefineMessage do
     end
   end
 
-  defp make_json_funs(msg_name, json_library) do
-    json_library_wrapper = Protox.JsonLibrary.get_wrapper(json_library)
+  defp make_json_funs(_msg_name, nil = _json_library_wrapper) do
+    quote do
+      @spec json_decode(iodata()) :: {:error, any()}
+      def json_decode(_input) do
+        {:error, Protox.JsonLibraryError.new()}
+      end
 
+      @spec json_decode!(iodata()) :: no_return()
+      def json_decode!(_input) do
+        raise Protox.JsonLibraryError.new()
+      end
+
+      @spec json_encode(struct()) :: {:error, any()}
+      def json_encode(_msg) do
+        {:error, Protox.JsonLibraryError.new()}
+      end
+
+      @spec json_encode!(struct()) :: no_return()
+      def json_encode!(_msg) do
+        raise Protox.JsonLibraryError.new()
+      end
+    end
+  end
+
+  defp make_json_funs(msg_name, json_library_wrapper) do
     quote do
       @spec json_decode(iodata()) :: {:ok, struct()} | {:error, any()}
       def json_decode(input) do
