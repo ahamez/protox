@@ -1,11 +1,13 @@
 defmodule Protox.DefineMessage do
   @moduledoc false
 
+  @default_json_library Jason
+
   alias Protox.Field
 
   def define(messages, opts \\ []) do
     keep_unknown_fields = Keyword.get(opts, :keep_unknown_fields, true)
-    json_library = Keyword.get(opts, :json_library, Jason)
+    json_library = Keyword.get(opts, :json_library, @default_json_library)
 
     for msg = %Protox.Message{} <- messages do
       fields = Enum.sort(msg.fields, &(&1.tag < &2.tag))
