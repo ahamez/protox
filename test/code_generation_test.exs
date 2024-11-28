@@ -151,6 +151,17 @@ defmodule Protox.CodeGenerationTest do
       )
 
     assert mix_format_exit_status == 0
+
+    {_, mix_dialyzer_exit_status} =
+      System.cmd(
+        "mix",
+        [
+          "dialyzer"
+        ],
+        cd: code_generation_path
+      )
+
+    assert mix_dialyzer_exit_status == 0
   end
 
   defp mix_exs() do
