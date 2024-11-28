@@ -502,8 +502,8 @@ The generated file will be usable in any project as long as `protox` is declared
 * `--namespace`
   Prepends a [namespace](#prepend-namespaces) to all generated modules.
 
-* `--keep-unknown-fields=[true|false]`
-  Toggles support of [unknown fields](#unknown-fields). Default to `true`.
+* `--generate=none|all|unknown_fields`
+  Toggles support of features to generate. Currently, only `unknown_fields` is supported.
 
 ## Conformance
 
