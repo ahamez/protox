@@ -25,8 +25,20 @@ defmodule Mix.Tasks.Protox.Generate do
     include_path: :keep,
     namespace: :string,
     multiple_files: :boolean,
-    keep_unknown_fields: :boolean
+    generate: :string
   ]
+
+  @default_generate_opt_all [
+    keep_unknown_fields: true
+  ]
+
+  @default_generate_opt_none [
+    keep_unknown_fields: false
+  ]
+
+  @map_generate_opts %{
+    "unknown_fields" => {:keep_unknown_fields, true}
+  }
 
   @impl Mix.Task
   @spec run(any) :: any
@@ -35,8 +47,9 @@ defmodule Mix.Tasks.Protox.Generate do
          {:ok, output_path} <- Keyword.fetch(opts, :output_path),
          {include_paths, opts} = Keyword.pop_values(opts, :include_path),
          {multiple_files, opts} = Keyword.pop(opts, :multiple_files, false),
-         {:ok, files_content} <-
-           generate(files, output_path, multiple_files, include_paths, opts) do
+         {generate_opts, opts} = Keyword.pop(opts, :generate, "all"),
+         opts <- transform_generate_opts(generate_opts, opts),
+         {:ok, files_content} <- generate(files, output_path, multiple_files, include_paths, opts) do
       Enum.each(files_content, &generate_file/1)
     else
       err ->
@@ -46,6 +59,16 @@ defmodule Mix.Tasks.Protox.Generate do
   end
 
   # -- Private
+
+  defp transform_generate_opts("all", opts), do: opts ++ @default_generate_opt_all
+  defp transform_generate_opts("none", opts), do: opts ++ @default_generate_opt_none
+
+  defp transform_generate_opts(generate_opts, opts) when is_binary(generate_opts) do
+    generate_opts
+    |> String.split(",")
+    |> Enum.map(&Map.fetch!(@map_generate_opts, &1))
+    |> Enum.concat(opts)
+  end
 
   defp generate_file(%Protox.Generate.FileContent{name: file_name, content: content}) do
     File.write!(file_name, content)

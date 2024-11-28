@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - BREAKING CHANGE: The JSON library is now configurable via the `:json_library` option at compile time
+- BREAKING CHANGE: Configuration of features to generate via the CLI mix task is done with the `--generate` argument
 - Drop support for Elixir < 1.15
 - Use `Jason.encode_to_iodata!` rather than `Jason.encode!` for default JSON encoding
 
