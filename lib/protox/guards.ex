@@ -4,8 +4,8 @@ defmodule Protox.Guards do
   @integers_fixed32 [:fixed32, :sfixed32]
   @integers_fixed64 [:fixed64, :sfixed64]
 
-  @primitives_fixed32 @integers_fixed32 ++ [:float]
-  @primitives_fixed64 @integers_fixed64 ++ [:double]
+  @primitives_fixed32 [:float | @integers_fixed32]
+  @primitives_fixed64 [:double | @integers_fixed64]
   @primitives_fixed @primitives_fixed32 ++ @primitives_fixed64
 
   @primitives_varint32 [:int32, :uint32, :sint32]
