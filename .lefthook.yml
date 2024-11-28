@@ -1,0 +1,24 @@
+pre-commit:
+  parallel: true
+  commands:
+    mix_format:
+      glob: "**/*.{ex,exs}"
+      run: mix format {staged_files}
+    mix_credo:
+      glob: "**/*.{ex,exs}"
+      run: mix credo
+    trailing_whitespaces_and_merge_conflicts:
+      run: git diff --check --cached
+
+pre-push:
+  parallel: true
+  commands:
+    mix_check_deps:
+      glob: "**/*.{ex,exs}"
+      run: mix deps.unlock --check-unused
+    mix_dialyzer:
+      glob: "**/*.{ex,exs}"
+      run: mix dialyzer
+    mix_test:
+      glob: "**/*.{ex,exs}"
+      run: mix test
