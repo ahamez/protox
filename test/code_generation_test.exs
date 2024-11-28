@@ -31,7 +31,7 @@ defmodule Protox.CodeGenerationTest do
     code_generation_path: path,
     protox_path: protox_path
   } do
-    launch(path, protox_path, "single_without_unknown_fields.ex", ["--keep-unknown-fields=false"])
+    launch(path, protox_path, "single_without_unknown_fields.ex", ["--generate=none"])
   end
 
   test "Generate multiple files, with unknown fields", %{
@@ -45,7 +45,7 @@ defmodule Protox.CodeGenerationTest do
     code_generation_path: path,
     protox_path: protox_path
   } do
-    launch(path, protox_path, ".", ["--multiple-files", "--keep-unknown-fields=false"])
+    launch(path, protox_path, ".", ["--multiple-files", "--generate=none"])
   end
 
   test "Generate single file, with namespace", %{
