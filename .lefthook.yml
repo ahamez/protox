@@ -8,7 +8,7 @@ pre-commit:
       glob: "**/*.{ex,exs}"
       run: mix credo
     trailing_whitespaces_and_merge_conflicts:
-      run: git diff --check --cached
+      run: git --no-pager diff --check --cached
 
 pre-push:
   parallel: true
