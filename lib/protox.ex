@@ -157,9 +157,6 @@ defmodule Protox do
   ## Errors
   This function returns a tuple `{:error, reason}` if:
   - `input` could not be decoded to JSON; `reason` is a `Protox.JsonDecodingError` error
-
-  ## JSON library configuration
-  TODO: document json library configuration
   """
   @doc since: "2.0.0"
   @spec json_decode(iodata(), atom()) :: {:ok, struct()} | {:error, any()}
@@ -198,13 +195,6 @@ defmodule Protox do
       iex> {:ok, iodata} = msg |> Protox.json_encode()
       iex> :binary.list_to_bin(iodata)
       "{\\"msgK\\":{\\"2\\":\\"bar\\",\\"1\\":\\"foo\\"}}"
-
-  ## JSON library configuration
-  TODO: document the json library configuration
-
-  ## Encoding specifications
-  See https://developers.google.com/protocol-buffers/docs/proto3#json for the specifications
-  of the encoding.
   """
   @doc since: "2.0.0"
   @spec json_encode(struct()) :: {:ok, iodata()} | {:error, any()}
