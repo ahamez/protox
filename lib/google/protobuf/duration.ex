@@ -60,7 +60,6 @@ defimpl Protox.JsonMessageDecoder, for: Google.Protobuf.Duration do
       end
 
     case Decimal.parse(json_decimal) do
-      {:ok, dec} -> dec
       {dec, ""} -> dec
       {_dec, _suffix} -> raise Protox.JsonDecodingError.new("invalid duration format")
       :error -> raise Protox.JsonDecodingError.new("invalid duration format")
