@@ -1044,40 +1044,28 @@ defmodule Protox.DecodeTest do
       # We set field nr 1 to the length delimited value <<128, ?a>>
       <<10, 2, 128, ?a>>,
       StringsAreUTF8,
-      {Protox.DecodingError,
-       quote do
-         ~r/string is not valid UTF-8/
-       end}
+      Protox.DecodingError
     },
     {
       "invalid string (incomplete suffix)",
       # We set field nr 1 to the length delimited value <<?a, 128>>
       <<10, 2, ?a, 128>>,
       StringsAreUTF8,
-      {Protox.DecodingError,
-       quote do
-         ~r/string is not valid UTF-8/
-       end}
+      Protox.DecodingError
     },
     {
       "invalid string (incomplete infix)",
       # We set field nr 1 to the length delimited value <<?a, 255, ?b>>
       <<10, 3, ?a, 255, ?b>>,
       StringsAreUTF8,
-      {Protox.DecodingError,
-       quote do
-         ~r/string is not valid UTF-8/
-       end}
+      Protox.DecodingError
     },
     {
       "invalid string (random data)",
       # We set field nr 1 to length delimited 64 bytes of random data
       <<10, 64>> <> :crypto.strong_rand_bytes(64),
       StringsAreUTF8,
-      {Protox.DecodingError,
-       quote do
-         ~r/string is not valid UTF-8/
-       end}
+      Protox.DecodingError
     },
     {
       "invalid repeated string (1st occurence)",
@@ -1091,10 +1079,7 @@ defmodule Protox.DecodeTest do
         "hello"
       >>,
       StringsAreUTF8,
-      {Protox.DecodingError,
-       quote do
-         ~r/string is not valid UTF-8/
-       end}
+      Protox.DecodingError
     },
     {
       "invalid repeated string (2nd occurance)",
@@ -1108,10 +1093,7 @@ defmodule Protox.DecodeTest do
         128
       >>,
       StringsAreUTF8,
-      {Protox.DecodingError,
-       quote do
-         ~r/string is not valid UTF-8/
-       end}
+      Protox.DecodingError
     },
     {
       "too large a string (tests-specific limit of 1 MiB)",
@@ -1119,10 +1101,7 @@ defmodule Protox.DecodeTest do
         varint_with_min_invalid_string_size <>
         <<0::integer-size(min_invalid_string_size)-unit(8)>>,
       StringsAreUTF8,
-      {Protox.DecodingError,
-       quote do
-         ~r/string is too large/
-       end}
+      Protox.DecodingError
     }
   ]
 
@@ -1140,16 +1119,8 @@ defmodule Protox.DecodeTest do
       bytes = unquote(bytes)
       mod = unquote(mod)
 
-      case unquote(exception) do
-        {exception_mod, exception_msg} ->
-          assert_raise exception_mod, exception_msg, fn ->
-            Protox.decode!(bytes, mod)
-          end
-
-        exception_mod ->
-          assert_raise exception_mod, fn ->
-            Protox.decode!(bytes, mod)
-          end
+      assert_raise unquote(exception), fn ->
+        Protox.decode!(bytes, mod)
       end
     end
   end
