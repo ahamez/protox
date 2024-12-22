@@ -6,7 +6,8 @@ defmodule Protox.EncodeTest do
   end
 
   test "Empty, with non throwing encode/1" do
-    assert {:ok, []} == Protox.encode(%Sub{})
+    {status, bytes} = Protox.encode(%Sub{})
+    assert {:ok, []} == {status, List.flatten(bytes)}
   end
 
   test "Empty, unknown fields are encoded back" do
