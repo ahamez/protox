@@ -30,10 +30,15 @@ defmodule Protox.DefineEncoder do
   end
 
   defp make_top_level_encode_fun(oneofs, fields, keep_unknown_fields) do
-    quote(do: [])
-    |> make_encode_oneof_fun(oneofs)
-    |> make_encode_fun_field(fields, keep_unknown_fields)
-    |> make_encode_fun_body()
+    ast =
+      quote do
+        [
+          unquote_splicing(make_encode_oneof_fun(oneofs)),
+          unquote_splicing(make_encode_fun_field(fields, keep_unknown_fields))
+        ]
+      end
+
+    make_encode_fun_body(ast)
   end
 
   defp make_encode_fun_body([] = _ast) do
@@ -65,24 +70,24 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_fun_field(ast, fields, keep_unknown_fields) do
+  defp make_encode_fun_field(fields, keep_unknown_fields) do
     ast =
-      Enum.reduce(fields, ast, fn %Protox.Field{} = field, ast_acc ->
+      Enum.map(fields, fn %Protox.Field{} = field ->
         fun_name = String.to_atom("encode_#{field.name}")
 
-        quote(do: unquote(ast_acc) |> unquote(fun_name)(msg))
+        quote(do: unquote(fun_name)(msg))
       end)
 
     case keep_unknown_fields do
-      true -> quote(do: unquote(ast) |> encode_unknown_fields(msg))
+      true -> quote(do: [unquote_splicing(ast), encode_unknown_fields(msg)])
       false -> ast
     end
   end
 
-  defp make_encode_oneof_fun(ast, oneofs) do
-    Enum.reduce(oneofs, ast, fn {parent_name, _children}, ast_acc ->
+  defp make_encode_oneof_fun(oneofs) do
+    Enum.map(oneofs, fn {parent_name, _children} ->
       fun_name = String.to_atom("encode_#{parent_name}")
-      quote(do: unquote(ast_acc) |> unquote(fun_name)(msg))
+      quote(do: unquote(fun_name)(msg))
     end)
   end
 
@@ -90,7 +95,7 @@ defmodule Protox.DefineEncoder do
     for {parent_name, children} <- oneofs do
       nil_case =
         quote do
-          nil -> acc
+          nil -> []
         end
 
       children_case_ast =
@@ -101,7 +106,7 @@ defmodule Protox.DefineEncoder do
 
              quote do
                {unquote(child_field.name), _field_value} ->
-                 unquote(encode_child_fun_name)(acc, msg)
+                 unquote(encode_child_fun_name)(msg)
              end
            end)
            |> List.flatten())
@@ -109,7 +114,7 @@ defmodule Protox.DefineEncoder do
       encode_parent_fun_name = String.to_atom("encode_#{parent_name}")
 
       quote do
-        defp unquote(encode_parent_fun_name)(acc, msg) do
+        defp unquote(encode_parent_fun_name)(msg) do
           case msg.unquote(parent_name) do
             unquote(children_case_ast)
           end
@@ -120,7 +125,6 @@ defmodule Protox.DefineEncoder do
 
   defp make_encode_field_funs(fields, required_fields, syntax) do
     vars = %{
-      acc: Macro.var(:acc, __MODULE__),
       msg: Macro.var(:msg, __MODULE__)
     }
 
@@ -130,7 +134,7 @@ defmodule Protox.DefineEncoder do
       fun_ast = make_encode_field_body(field, required, syntax, vars)
 
       quote do
-        defp unquote(fun_name)(unquote(vars.acc), unquote(vars.msg)) do
+        defp unquote(fun_name)(unquote(vars.msg)) do
           try do
             unquote(fun_ast)
           rescue
@@ -154,14 +158,14 @@ defmodule Protox.DefineEncoder do
           quote do
             case unquote(vars.msg).unquote(field.name) do
               nil -> raise Protox.RequiredFieldsError.new([unquote(field.name)])
-              _ -> [unquote(vars.acc), unquote(key), unquote(encode_value_ast)]
+              _ -> [unquote(key), unquote(encode_value_ast)]
             end
           end
         else
           quote do
             case unquote(var) do
-              nil -> unquote(vars.acc)
-              _ -> [unquote(vars.acc), unquote(key), unquote(encode_value_ast)]
+              nil -> []
+              _ -> [unquote(key), unquote(encode_value_ast)]
             end
           end
         end
@@ -170,9 +174,9 @@ defmodule Protox.DefineEncoder do
         quote do
           # Use == rather than pattern match for float comparison
           if unquote(var) == unquote(default) do
-            unquote(vars.acc)
+            []
           else
-            [unquote(vars.acc), unquote(key), unquote(encode_value_ast)]
+            [unquote(key), unquote(encode_value_ast)]
           end
         end
     end
@@ -193,11 +197,8 @@ defmodule Protox.DefineEncoder do
       :proto3_optional ->
         quote do
           case unquote(vars.msg).unquote(child_field.name) do
-            nil ->
-              [unquote(vars.acc)]
-
-            unquote(var) ->
-              [unquote(vars.acc), unquote(key), unquote(encode_value_ast)]
+            nil -> []
+            unquote(var) -> [unquote(key), unquote(encode_value_ast)]
           end
         end
 
@@ -206,7 +207,7 @@ defmodule Protox.DefineEncoder do
         # this is why we don't check if the child is set.
         quote do
           {_, unquote(var)} = unquote(vars.msg).unquote(parent_field)
-          [unquote(vars.acc), unquote(key), unquote(encode_value_ast)]
+          [unquote(key), unquote(encode_value_ast)]
         end
     end
   end
@@ -217,8 +218,12 @@ defmodule Protox.DefineEncoder do
 
     quote do
       case unquote(vars.msg).unquote(field.name) do
-        [] -> unquote(vars.acc)
-        values -> [unquote(vars.acc), unquote(key), unquote(encode_packed_ast)]
+        [] ->
+          []
+
+        values ->
+          {bytes, len} = unquote(encode_packed_ast)
+          [unquote(key), Protox.Varint.encode(len), bytes]
       end
     end
   end
@@ -228,8 +233,8 @@ defmodule Protox.DefineEncoder do
 
     quote do
       case unquote(vars.msg).unquote(field.name) do
-        [] -> unquote(vars.acc)
-        values -> [unquote(vars.acc), unquote(encode_repeated_ast)]
+        [] -> []
+        values -> unquote(encode_repeated_ast)
       end
     end
   end
@@ -255,8 +260,7 @@ defmodule Protox.DefineEncoder do
     quote do
       map = Map.fetch!(unquote(vars.msg), unquote(field.name))
 
-      Enum.reduce(map, unquote(vars.acc), fn {unquote(k_var), unquote(v_var)},
-                                             unquote(vars.acc) ->
+      Enum.map(map, fn {unquote(k_var), unquote(v_var)} ->
         map_key_value_bytes = :binary.list_to_bin([unquote(encode_map_key_ast)])
         map_key_value_len = byte_size(map_key_value_bytes)
 
@@ -267,7 +271,6 @@ defmodule Protox.DefineEncoder do
           Protox.Varint.encode(unquote(map_keys_len) + map_key_value_len + map_value_value_len)
 
         [
-          unquote(vars.acc),
           unquote(key),
           len,
           unquote(map_key_key_bytes),
@@ -281,21 +284,21 @@ defmodule Protox.DefineEncoder do
 
   defp make_encode_unknown_fields_fun(true = _keep_unknown_fields) do
     quote do
-      defp encode_unknown_fields(acc, msg) do
-        Enum.reduce(msg.__struct__.unknown_fields(msg), acc, fn {tag, wire_type, bytes}, acc ->
+      defp encode_unknown_fields(msg) do
+        Enum.map(msg.__struct__.unknown_fields(msg), fn {tag, wire_type, bytes} ->
           case wire_type do
             0 ->
-              [acc, Protox.Encode.make_key_bytes(tag, :int32), bytes]
+              [Protox.Encode.make_key_bytes(tag, :int32), bytes]
 
             1 ->
-              [acc, Protox.Encode.make_key_bytes(tag, :double), bytes]
+              [Protox.Encode.make_key_bytes(tag, :double), bytes]
 
             2 ->
               len_bytes = bytes |> byte_size() |> Protox.Varint.encode()
-              [acc, Protox.Encode.make_key_bytes(tag, :packed), len_bytes, bytes]
+              [Protox.Encode.make_key_bytes(tag, :packed), len_bytes, bytes]
 
             5 ->
-              [acc, Protox.Encode.make_key_bytes(tag, :float), bytes]
+              [Protox.Encode.make_key_bytes(tag, :float), bytes]
           end
         end)
       end
@@ -311,13 +314,10 @@ defmodule Protox.DefineEncoder do
     encode_value_ast = get_encode_value_body(type, value_var)
 
     quote do
-      {bytes, len} =
-        Enum.reduce(values, {[], 0}, fn unquote(value_var), {acc, len} ->
-          value_bytes = :binary.list_to_bin([unquote(encode_value_ast)])
-          {[acc, value_bytes], len + byte_size(value_bytes)}
-        end)
-
-      [Protox.Varint.encode(len), bytes]
+      Enum.reduce(values, {[], 0}, fn unquote(value_var), {acc, len} ->
+        value_bytes = :binary.list_to_bin([unquote(encode_value_ast)])
+        {[acc, value_bytes], len + byte_size(value_bytes)}
+      end)
     end
   end
 
