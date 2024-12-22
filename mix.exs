@@ -42,7 +42,7 @@ defmodule Protox.Mixfile do
       {:benchee_markdown, "~> 0.2", only: [:dev], runtime: false},
       {:castore, "~> 1.0", only: :test},
       {:credo, "~> 1.4", only: [:test, :dev], runtime: false},
-      {:decimal, "~> 1.9 or ~> 2.0"},
+      {:decimal, "~> 2.0"},
       {:dialyxir, "~> 1.0", only: [:test, :dev], runtime: false},
       {:excoveralls, "~> 0.13", only: [:test], runtime: false},
       {:ex_doc, "~> 0.22", only: [:dev], runtime: false},
