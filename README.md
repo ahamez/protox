@@ -6,9 +6,11 @@
 
 The primary objective of `protox` is **reliability**: it uses [property based testing](https://github.com/alfert/propcheck) and has a [near 100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master). Also, using [mutation testing](https://en.wikipedia.org/wiki/Mutation_testing) with the invaluable help of [Muzak pro](https://devonestes.com/muzak), the quality of the `protox` test suite has been validated. Therefore, `protox` [passes all the tests](#conformance) of the conformance checker provided by Google.
 
-It's also easy to use: just point to the `*.proto` files or give the schema to the `Protox` macro, no need to generate any file! However, should you need to generate files, a mix task is [available](#files-generation).
+You can use `protox` in two ways:
+- either give the protobuf schema (as a list of files or directly as inlined schema) to the `Protox` macro, resulting in the generation of a Elixir module for each message (no files are generated);
+- or use the `protox.generate` [mix task](#files-generation) to generate files that will contain all code corresponding to the protobuf messages.
 
-Given the following protobuf definition, `protox` will generate a `Msg` struct:
+Given the following protobuf definition, `protox` will create a `Msg` struct:
 ```proto
 message Msg{
   int32 a = 1;
