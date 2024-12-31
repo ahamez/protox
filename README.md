@@ -516,16 +516,10 @@ The protox library has been thoroughly tested using the conformance checker [pro
 
 Here's how to launch the conformance tests:
 
-* Get conformance-test-runner [sources](https://github.com/protocolbuffers/protobuf/archive/refs/tags/v3.18.0.tar.gz).
-* Compile conformance-test-runner ([macOS and Linux only](https://github.com/protocolbuffers/protobuf/tree/master/conformance#portability)):
-    ```
-    tar xf protobuf-3.18.0.tar.gz && cd protobuf-3.18.0 && ./autogen.sh && ./configure && make -j && cd conformance && make -j
-    ```
+```
+mix protox.conformance
+```
 
-* Launch the conformance tests:
-    ```
-    mix protox.conformance --runner=/path/to/protobuf-3.18.0/conformance/conformance-test-runner
-    ```
 * A report will be generated in the directory `conformance_report` and the following text should be displayed:
 
     ```
