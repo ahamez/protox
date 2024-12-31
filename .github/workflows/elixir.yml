@@ -1,9 +1,7 @@
 name: Elixir CI
 
 env:
-  PROTOBUF_VERSION: "21.4"
-  PROTOBUF_LIB_VERSION_MAJOR: "32"
-  PROTOBUF_LIB_VERSION_MINOR: "0.4"
+  PROTOX_PROTOBUF_VERSION: "29.2"
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   MIX_ENV: test
 
@@ -60,31 +58,12 @@ jobs:
           path: priv/plts
           key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
 
-      - name: Restore conformance-test-runner
+      - name: Restore conformance_test_runner cache
         uses: actions/cache@v4
-        id: compile-conformance-test-runner
+        id: restore_conformance_test_runner
         with:
-          path: conformance-bin
-          key: ${{ runner.os }}-protobuf-${{ env.PROTOBUF_VERSION }}
-
-      - name: Compile conformance-test-runner
-        if: steps.compile-conformance-test-runner.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p ./conformance-bin/.libs
-          wget https://github.com/protocolbuffers/protobuf/archive/v${{ env.PROTOBUF_VERSION }}.tar.gz
-          tar xf v${{ env.PROTOBUF_VERSION }}.tar.gz
-          cd protobuf-${{ env.PROTOBUF_VERSION }}
-          ./autogen.sh && ./configure --disable-maintainer-mode --disable-dependency-tracking --disable-static
-          make -C ./src protoc
-          make -C conformance
-          cp ./conformance/.libs/conformance-test-runner ../conformance-bin
-          cp ./src/.libs/libprotobuf.so.${{ env.PROTOBUF_LIB_VERSION_MAJOR }}.${{ env.PROTOBUF_LIB_VERSION_MINOR }} ../conformance-bin/.libs/libprotobuf.so.${{ env.PROTOBUF_LIB_VERSION_MAJOR }}
-
-      - name: Install protoc
-        run: |
-          wget https://github.com/protocolbuffers/protobuf/releases/download/v24.4/protoc-24.4-linux-x86_64.zip
-          unzip -d protoc protoc-24.4-linux-x86_64.zip
-          echo "${PWD}/protoc/bin" >> $GITHUB_PATH
+          path: conformance_test_runner
+          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-protobuf-${{ env.PROTOX_PROTOBUF_VERSION }}
 
       - name: Unlock all dependencies
         run: mix deps.unlock --all
@@ -96,13 +75,28 @@ jobs:
           mix local.hex --force
           mix deps.get
 
+      - name: Install protoc
+        run: |
+          wget https://github.com/protocolbuffers/protobuf/releases/download/v${{ env.PROTOX_PROTOBUF_VERSION }}/protoc-${{ env.PROTOX_PROTOBUF_VERSION }}-linux-x86_64.zip
+          unzip -d protoc protoc-${{ env.PROTOX_PROTOBUF_VERSION }}-linux-x86_64.zip
+          echo "${PWD}/protoc/bin" >> $GITHUB_PATH
+
       - name: Compile prod with warnings as errors
         run: MIX_ENV=prod mix compile --warnings-as-errors
 
+      - name: Compile conformance-test-runner
+        if: steps.restore_conformance_test_runner.outputs.cache-hit != 'true'
+        run: |
+          mix protox.conformance --compile-only
+          cp ./deps/protobuf/conformance_test_runner ./conformance_test_runner
+
+      - name: Restore conformance-test-runner from cache
+        if: steps.restore_conformance_test_runner.outputs.cache-hit == 'true'
+        run: |
+          mkdir -p ./deps/protobuf
+          cp ./conformance_test_runner ./deps/protobuf/conformance_test_runner
+
       - name: Run tests
-        env:
-          PROTOBUF_CONFORMANCE_RUNNER: conformance-bin/conformance-test-runner
-          LD_LIBRARY_PATH: conformance-bin/.libs
         run: mix coveralls.github --include conformance
 
       - name: Check formatting

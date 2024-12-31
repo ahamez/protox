@@ -51,6 +51,7 @@ defmodule Protox.Mixfile do
       {:propcheck, github: "alfert/propcheck", ref: "c564e89d", only: [:test, :dev]}
     ]
     |> maybe_add_muzak_pro()
+    |> maybe_download_protobuf()
   end
 
   defp maybe_add_muzak_pro(deps) do
@@ -64,6 +65,25 @@ defmodule Protox.Mixfile do
            git: "https://#{creds}@git.devonestes.com/muzak/muzak.git", tag: "1.1.0", only: [:test]}
 
         [muzak_pro | deps]
+    end
+  end
+
+  defp maybe_download_protobuf(deps) do
+    case System.get_env("PROTOX_PROTOBUF_VERSION") do
+      nil ->
+        deps
+
+      version ->
+        protobuf =
+          {:protobuf,
+           github: "protocolbuffers/protobuf",
+           tag: "v#{version}",
+           submodules: true,
+           app: false,
+           compile: false,
+           only: [:dev, :test]}
+
+        [protobuf | deps]
     end
   end
 
