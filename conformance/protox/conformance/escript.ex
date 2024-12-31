@@ -7,9 +7,9 @@ defmodule Protox.Conformance.Escript do
 
   use Protox,
     files: [
-      "./conformance/protox/conformance/conformance.proto",
+      "./deps/protobuf/conformance/conformance.proto",
       "./test/samples/test_messages_proto2.proto",
-      "./test/samples/test_messages_proto3.proto"
+      "./deps/protobuf/src/google/protobuf/test_messages_proto3.proto"
     ]
 
   def main(_args) do
