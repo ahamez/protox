@@ -1,0 +1,5 @@
+[env]
+PROTOX_PROTOBUF_VERSION = "29.2"
+
+[tools]
+elixir = "1.17.3-otp-27"
