@@ -6,8 +6,11 @@ defmodule Protox.ConformanceTest do
     {:ok, _} = File.rm_rf("./failing_tests.txt")
 
     runner = Path.expand("#{Mix.Project.deps_paths().protobuf}/conformance_test_runner")
-
     assert File.exists?(runner)
+
+    assert {:ok, _} = Mix.Tasks.Protox.Conformance.run(["--quiet", "--compile-only"])
+    protox_conformance = Path.expand("./protox_conformance")
+    assert File.exists?(protox_conformance)
 
     # {:ok, _} here just means that the runner could be launched, not that the conformance
     # test performed correctly. We'll check the absence of the "failing_tests.txt" file
