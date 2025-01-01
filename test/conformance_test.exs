@@ -5,10 +5,11 @@ defmodule Protox.ConformanceTest do
   test "Launch conformance" do
     {:ok, _} = File.rm_rf("./failing_tests.txt")
 
+    assert {:ok, _} = Mix.Tasks.Protox.Conformance.run(["--quiet", "--compile-only"])
+
     runner = Path.expand("#{Mix.Project.deps_paths().protobuf}/conformance_test_runner")
     assert File.exists?(runner)
 
-    assert {:ok, _} = Mix.Tasks.Protox.Conformance.run(["--quiet", "--compile-only"])
     protox_conformance = Path.expand("./protox_conformance")
     assert File.exists?(protox_conformance)
 
