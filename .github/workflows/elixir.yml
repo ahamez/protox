@@ -58,12 +58,12 @@ jobs:
           path: priv/plts
           key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
 
-      - name: Restore conformance_test_runner cache
-        uses: actions/cache@v4
-        id: restore_conformance_test_runner
-        with:
-          path: conformance_test_runner
-          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-protobuf-${{ env.PROTOX_PROTOBUF_VERSION }}
+      # - name: Restore conformance_test_runner cache
+      #   uses: actions/cache@v4
+      #   id: restore_conformance_test_runner
+      #   with:
+      #     path: conformance_test_runner
+      #     key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-protobuf-${{ env.PROTOX_PROTOBUF_VERSION }}
 
       - name: Unlock all dependencies
         run: mix deps.unlock --all
@@ -84,17 +84,17 @@ jobs:
       - name: Compile prod with warnings as errors
         run: MIX_ENV=prod mix compile --warnings-as-errors
 
-      - name: Compile conformance-test-runner
-        if: steps.restore_conformance_test_runner.outputs.cache-hit != 'true'
-        run: |
-          mix protox.conformance --compile-only
-          cp ./deps/protobuf/conformance_test_runner ./conformance_test_runner
+      # - name: Compile conformance-test-runner
+      #   if: steps.restore_conformance_test_runner.outputs.cache-hit != 'true'
+      #   run: |
+      #     mix protox.conformance --compile-only
+      #     cp ./deps/protobuf/conformance_test_runner ./conformance_test_runner
 
-      - name: Restore conformance-test-runner from cache
-        if: steps.restore_conformance_test_runner.outputs.cache-hit == 'true'
-        run: |
-          mkdir -p ./deps/protobuf
-          cp ./conformance_test_runner ./deps/protobuf/conformance_test_runner
+      # - name: Restore conformance-test-runner from cache
+      #   if: steps.restore_conformance_test_runner.outputs.cache-hit == 'true'
+      #   run: |
+      #     mkdir -p ./deps/protobuf
+      #     cp ./conformance_test_runner ./deps/protobuf/conformance_test_runner
 
       - name: Run tests
         run: mix coveralls.github --include conformance
