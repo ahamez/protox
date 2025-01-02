@@ -51,12 +51,12 @@ You can find [here](https://github.com/ahamez/protox/blob/master/test/example_te
 - [Conformance](#conformance)
 - [Types mapping](#types-mapping)
 - [Benchmarks](#benchmarks)
-- [Development](#development)
+- [Contributing](#contributing)
 - [Credits](#credits)
 
 ## Prerequisites
 
-- Elixir >= 1.12
+- Elixir >= 1.15
 - protoc >= 3.0 *This dependency is only required at compile-time*
   `protox` uses Google's `protoc` (>= 3.0) to parse `.proto` files. It must be available in `$PATH`.
 
@@ -540,7 +540,7 @@ mix protox.conformance
 
 ### Skipped conformance tests
 
-You may have noticed that there are `21 expected failures`. Indeed, we removed on purpose some conformance tests that `protox` can't currently pass. Here are the reasons why:
+You may have noticed that there are `XXX expected failures`. Indeed, we removed on purpose some conformance tests that `protox` can't currently pass. Here are the reasons why:
 
 - [Any](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#any) is not yet supported by `protox`;
 - We could not find the specification for the protobuf2 case of field name extensions when decoding from JSON.
@@ -583,12 +583,9 @@ mix run ./benchmarks/run.exs --lib=./benchmarks/protox.exs
 mix run ./benchmarks/load.exs
 ```
 
-## Development
+## Contributing
 
-`protox` uses [`pre-commit`](https://pre-commit.com/#install) to launch git hooks. Thus, it's strongly recommended to install it, and then to install hooks as follows:
-```sh
-pre-commit install && pre-commit install -t pre-push
-```
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
 
 ## Credits
 
