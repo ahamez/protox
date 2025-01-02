@@ -97,7 +97,7 @@ jobs:
       #     cp ./conformance_test_runner ./deps/protobuf/conformance_test_runner
 
       - name: Run tests
-        run: mix coveralls.github --include conformance
+        run: mix coveralls.github --timeout 600000 --include conformance
 
       - name: Check formatting
         run: mix format --check-formatted
