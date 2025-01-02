@@ -19,3 +19,4 @@ erl_crash.dump
 /benchmarks/payloads.bin
 /benchmarks/output
 /failing_tests.txt
+.lefthook-local.yml
