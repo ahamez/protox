@@ -55,14 +55,12 @@ defmodule Protox.Conformance.Escript do
          {
            :ok,
            request = %Conformance.ConformanceRequest{
-             requested_output_format: requested_output_format,
-             payload: {payload_type, _}
+             requested_output_format: :PROTOBUF,
+             payload: {:protobuf_payload, _}
            }
          },
          log_file
-       )
-       when requested_output_format in [:PROTOBUF, :JSON] and
-              payload_type in [:protobuf_payload, :json_payload] do
+       ) do
     IO.binwrite(log_file, "Will parse protobuf\n")
 
     if Conformance.ConformanceRequest.unknown_fields(request) != [] do
@@ -75,24 +73,14 @@ defmodule Protox.Conformance.Escript do
         IO.binwrite(log_file, "Message: #{inspect(msg, limit: :infinity)}\n")
 
         try do
-          encoded_payload =
-            case requested_output_format do
-              :JSON -> msg |> Protox.json_encode!() |> :binary.list_to_bin()
-              :PROTOBUF -> msg |> Protox.encode!() |> :binary.list_to_bin()
-            end
+          encoded_payload = msg |> Protox.encode!() |> :binary.list_to_bin()
 
           IO.binwrite(
             log_file,
             "Encoded payload: #{inspect(encoded_payload, limit: :infinity)}\n"
           )
 
-          case requested_output_format do
-            :JSON ->
-              %Conformance.ConformanceResponse{result: {:json_payload, encoded_payload}}
-
-            :PROTOBUF ->
-              %Conformance.ConformanceResponse{result: {:protobuf_payload, encoded_payload}}
-          end
+          %Conformance.ConformanceResponse{result: {:protobuf_payload, encoded_payload}}
         rescue
           e ->
             %Conformance.ConformanceResponse{result: {:serialize_error, Exception.message(e)}}
@@ -115,6 +103,12 @@ defmodule Protox.Conformance.Escript do
 
         {_, nil} ->
           "unset payload"
+
+        {_, {:json_payload, _}} ->
+          "JSON input"
+
+        {:JSON, _} ->
+          "JSON output"
 
         {_, {:text_payload, _}} ->
           "text input"
@@ -148,7 +142,6 @@ defmodule Protox.Conformance.Escript do
 
     case payload_type do
       :protobuf_payload -> proto_type.decode(payload)
-      :json_payload -> proto_type.json_decode(payload)
     end
   end
 
