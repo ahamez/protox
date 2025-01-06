@@ -2,6 +2,6 @@ syntax = "proto3";
 
 option java_package = "com.foo";
 
-message Foo {
+message JavaFoo {
   string x = 1;
 }
