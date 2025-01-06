@@ -66,7 +66,6 @@ defmodule Protox.DefineTest do
 
       assert fields == [
                %Protox.Field{
-                 json_name: "a",
                  kind: {:scalar, :FOO},
                  label: :optional,
                  name: :a,
@@ -74,7 +73,6 @@ defmodule Protox.DefineTest do
                  type: {:enum, DefineFoo3Enum}
                },
                %Protox.Field{
-                 json_name: "b",
                  kind: :map,
                  label: nil,
                  name: :b,
@@ -82,7 +80,6 @@ defmodule Protox.DefineTest do
                  type: {:int32, :string}
                },
                %Protox.Field{
-                 json_name: "c",
                  kind: {:scalar, 0},
                  label: :optional,
                  name: :c,
@@ -90,7 +87,6 @@ defmodule Protox.DefineTest do
                  type: :int32
                },
                %Protox.Field{
-                 json_name: "d",
                  kind: {:scalar, nil},
                  label: :optional,
                  name: :d,
@@ -104,7 +100,6 @@ defmodule Protox.DefineTest do
       assert DefineFoo3.field_def(:a) ==
                {:ok,
                 %Protox.Field{
-                  json_name: "a",
                   kind: {:scalar, :FOO},
                   label: :optional,
                   name: :a,
@@ -113,11 +108,10 @@ defmodule Protox.DefineTest do
                 }}
     end
 
-    test "By field json_name" do
+    test "By field name as string" do
       assert DefineFoo3.field_def("a") ==
                {:ok,
                 %Protox.Field{
-                  json_name: "a",
                   kind: {:scalar, :FOO},
                   label: :optional,
                   name: :a,

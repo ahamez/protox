@@ -153,64 +153,6 @@ defmodule Protox do
     msg.__struct__.encode(msg)
   end
 
-  @doc """
-  ## Errors
-  This function returns a tuple `{:error, reason}` if:
-  - `input` could not be decoded to JSON; `reason` is a `Protox.JsonDecodingError` error
-  """
-  @doc since: "2.0.0"
-  @spec json_decode(iodata(), atom()) :: {:ok, struct()} | {:error, any()}
-  def json_decode(input, message_module) do
-    message_module.json_decode(input)
-  end
-
-  @doc """
-  Throwing version of `json_decode/2`.
-  """
-  @doc since: "2.0.0"
-  @spec json_decode!(iodata(), atom()) :: struct() | no_return()
-  def json_decode!(input, message_module) do
-    message_module.json_decode!(input)
-  end
-
-  @doc """
-  Export a proto3 message to JSON as IO data.
-
-  ## Errors
-  This function returns a tuple `{:error, reason}` if:
-  - `msg` could not be encoded to JSON; `reason` is a `Protox.JsonEncodingError` error
-
-  ## Examples
-      iex> msg = %Namespace.Fiz.Foo{a: :BAR}
-      iex> {:ok, iodata} = Protox.json_encode(msg)
-      iex> iodata
-      ["{", [[34, [[] | "a"], 34], ":", [34, [[] | "BAR"], 34]], "}"]
-
-      iex> msg = %Sub{a: 42}
-      iex> {:ok, iodata} = Protox.json_encode(msg)
-      iex> iodata
-      ["{", [[34, [[] | "a"], 34], ":", "42"], "}"]
-
-      iex> msg = %Msg{msg_k: %{1 => "foo", 2 => "bar"}}
-      iex> {:ok, iodata} = msg |> Protox.json_encode()
-      iex> :binary.list_to_bin(iodata)
-      "{\\"msgK\\":{\\"2\\":\\"bar\\",\\"1\\":\\"foo\\"}}"
-  """
-  @doc since: "2.0.0"
-  @spec json_encode(struct()) :: {:ok, iodata()} | {:error, any()}
-  def json_encode(msg) do
-    msg.__struct__.json_encode(msg)
-  end
-
-  @doc """
-  Throwing version of `json_encode/1`.
-  """
-  @doc since: "2.0.0"
-  @spec json_encode!(struct()) :: iodata() | no_return()
-  def json_encode!(msg) do
-    msg.__struct__.json_encode!(msg)
-  end
-
   # -- Private
 
   defp get_paths(opts) do
