@@ -2,7 +2,7 @@
 
 [![Elixir CI](https://github.com/ahamez/protox/actions/workflows/elixir.yml/badge.svg)](https://github.com/ahamez/protox/actions/workflows/elixir.yml) [![Coverage Status](https://coveralls.io/repos/github/ahamez/protox/badge.svg?branch=master)](https://coveralls.io/github/ahamez/protox?branch=master) [![Hex.pm Version](http://img.shields.io/hexpm/v/protox.svg)](https://hex.pm/packages/protox) [![Hex Docs](https://img.shields.io/badge/hex-docs-brightgreen.svg)](https://hexdocs.pm/protox/) [![License](https://img.shields.io/hexpm/l/protox.svg)](https://github.com/ahamez/protox/blob/master/LICENSE)
 
-`protox` is an Elixir library to work with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers), versions 2 and 3. It supports both binary and JSON encoding and decoding ([well-known types](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf) included, except the Any type for the time being).
+`protox` is an Elixir library to work with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers), versions 2 and 3. It only supports binary encoding and decoding.
 
 The primary objective of `protox` is **reliability**: it uses [property based testing](https://github.com/alfert/propcheck) and has a [near 100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master). Also, using [mutation testing](https://en.wikipedia.org/wiki/Mutation_testing) with the invaluable help of [Muzak pro](https://devonestes.com/muzak), the quality of the `protox` test suite has been validated. Therefore, `protox` [passes all the tests](#conformance) of the conformance checker provided by Google.
 
@@ -23,12 +23,9 @@ You can then interact with `Msg` like any Elixir structure:
 ```elixir
 iex> msg = %Msg{a: 42, b: %{1 => "a map entry"}}
 iex> {:ok, iodata} = Msg.encode(msg)
-iex> {:ok, iodata} = Msg.json_encode(msg)
 
 iex> binary = # read binary from a socket, a file, etc.
 iex> {:ok, msg} = Msg.decode(binary)
-iex> json = # read json from a socket, file, etc.
-iex> {:ok, msg} = Msg.json_decode(json)
 ```
 
 You can find [here](https://github.com/ahamez/protox/blob/master/test/example_test.exs) a more involved example with most types.
@@ -40,7 +37,6 @@ You can find [here](https://github.com/ahamez/protox/blob/master/test/example_te
 - [Usage with a textual description](#usage-with-a-textual-description)
 - [Usage with files](#usage-with-files)
 - [Protobuf binary format](#protobuf-binary-format)
-- [Protobuf JSON format](#protobuf-json-format)
 - [Packages and  namespaces](#packages-and--namespaces)
 - [Specify import path](#specify-import-path)
 - [Unknown fields](#unknown-fields)
@@ -72,17 +68,6 @@ Add `:protox` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [{:protox, "~> 1.7"}]
-end
-```
-
-If you plan to use the JSON encoding, you'll need to add [`Jason`](https://github.com/michalmuskala/jason) to your dependencies:
-
-```elixir
-def deps do
-  [
-    {:protox, "~> 1.7"},
-    {:jason, "~> 1.2"}
-  ]
 end
 ```
 
@@ -180,82 +165,6 @@ It's also possible to call `decode/1` and `decode!/1` directly on the generated 
 iex> {:ok, msg} = Fiz.Foo.decode(<<8, 3, 18, 4, 8, 1, 18, 0>>)
 iex> msg = Fiz.Foo.decode!(<<8, 3, 18, 4, 8, 1, 18, 0>>)
 ```
-
-## Protobuf JSON format
-
-`protox` implements the [Google's JSON specification](https://developers.google.com/protocol-buffers/docs/proto3#json).
-
-### Encode
-
-Here's how to encode a message to JSON, exported as IO data:
-
-```elixir
-iex> msg = %Fiz.Foo{a: 42}
-iex> {:ok, iodata} = Protox.json_encode(msg)
-{:ok, ["{", ["\"a\"", ":", "42"], "}"]}
-```
-
-Or, with throwing style:
-
-```elixir
-iex> msg = %Fiz.Foo{a: 42}
-iex> iodata = Protox.json_encode!(msg)
-["{", ["\"a\"", ":", "42"], "}"]
-```
-
-It's also possible to call `json_encode` and `json_encode!` directly on the generated structures:
-
-```elixir
-iex> {:ok, iodata} = Fiz.Foo.json_encode(msg)
-iex> iodata = Fiz.Foo.json_encode!(msg)
-```
-
-### Decode
-
-Here's how to decode JSON to a message:
-
-```elixir
-iex> Protox.json_decode("{\"a\":42}", Fiz.Foo)
-{:ok, %Fiz.Foo{__uf__: [], a: 42, b: %{}}}
-```
-
-Or, with throwing style:
-
-```elixir
-iex> Protox.json_decode!("{\"a\":42}", Fiz.Foo)
-%Fiz.Foo{__uf__: [], a: 42, b: %{}}
-```
-
-It's also possible to call `json_decode` and `json_decode!` directly on the generated structures:
-
-```elixir
-iex> Fiz.Foo.json_decode("{\"a\":42}")
-iex> Fiz.Foo.json_decode!("{\"a\":42}")
-```
-
-### JSON library configuration
-
-By default, `protox` uses [`Jason`](https://github.com/michalmuskala/jason) to encode values to JSON. You can also use [`Poison`](https://github.com/devinus/poison) by configuring the `json_library` option:
-
-```elixir
-defmodule MyModule do
-  use Protox, schema: """
-  syntax = "proto3";
-
-  message Foo {}
-  """,
-  json_library: Poison # or Jason
-end
-```
-
-ℹ️ You can use any other library by implementing the `Protox.JsonLibrary` behaviour.
-
-👉 Don't forget to add the chosen library to the list of dependencies in `mix.exs`.
-
-### Well-known types
-
-Note that `protox` does not completely support the [Any](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#any) well-know type: it will be encoded and decoded like a regular message, rather than with the custom encoding specified in the [JSON specification](https://developers.google.com/protocol-buffers/docs/proto3#json).
-
 
 ## Packages and  namespaces
 
@@ -543,7 +452,6 @@ mix protox.conformance
 You may have noticed that there are `XXX expected failures`. Indeed, we removed on purpose some conformance tests that `protox` can't currently pass. Here are the reasons why:
 
 - [Any](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#any) is not yet supported by `protox`;
-- We could not find the specification for the protobuf2 case of field name extensions when decoding from JSON.
 
 The exact list of skipped tests is [here](https://github.com/ahamez/protox/blob/master/conformance/failure_list.txt).
 

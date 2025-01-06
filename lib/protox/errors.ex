@@ -61,51 +61,6 @@ defmodule Protox.InvalidFieldAttribute do
   end
 end
 
-defmodule Protox.JsonDecodingError do
-  @moduledoc """
-  This error is thrown when a JSON payload could not be decoded to a protobuf message.
-  """
-
-  defexception message: ""
-
-  @doc false
-  def new(reason) do
-    %__MODULE__{
-      message: "Could not decode JSON payload: #{reason}"
-    }
-  end
-end
-
-defmodule Protox.JsonEncodingError do
-  @moduledoc """
-  This error is thrown when a protobuf message could not be encoded to JSON.
-  """
-
-  defexception message: ""
-
-  @doc false
-  def new(reason) when is_binary(reason) do
-    %__MODULE__{
-      message: "Could not encode to JSON: #{reason}"
-    }
-  end
-end
-
-defmodule Protox.JsonLibraryError do
-  @moduledoc """
-  This error is thrown when the configured JSON library is not available.
-  """
-
-  defexception message: ""
-
-  @doc false
-  def new() do
-    %__MODULE__{
-      message: "Cannot load JSON library. Please check your project dependencies."
-    }
-  end
-end
-
 defmodule Protox.RequiredFieldsError do
   @moduledoc """
   This error is thrown when encoding or decoding a Protobuf 2 message
