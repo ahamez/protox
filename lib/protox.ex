@@ -136,12 +136,12 @@ defmodule Protox do
   Encode a protobuf message into IO data.
 
   ## Examples
-      iex> msg = %Namespace.Fiz.Foo{a: 3, b: %{1 => %Namespace.Fiz.Baz{}}}
+      iex> msg = %EncodeExample{a: 3, b: %{1 => "some string"}}
       iex> {:ok, iodata} = Protox.encode(msg)
       iex> :binary.list_to_bin(iodata)
-      <<8, 3, 18, 4, 8, 1, 18, 0>>
+      <<8, 3, 18, 15, 8, 1, 18, 11, 115, 111, 109, 101, 32, 115, 116, 114, 105, 110, 103>>
 
-      iex> msg = %Namespace.Fiz.Foo{a: "should not be a string"}
+      iex> msg = %EncodeExample{a: "should not be a string"}
       iex> {:error, reason} = Protox.encode(msg)
       iex> reason
       %Protox.EncodingError{field: :a, message: "Could not encode field :a (invalid field value)"}

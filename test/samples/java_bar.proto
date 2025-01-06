@@ -2,6 +2,6 @@ syntax = "proto3";
 
 option java_package = "com.bar";
 
-message Bar {
+message JavaBar {
   string y = 1;
 }

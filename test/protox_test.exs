@@ -1,138 +1,6 @@
 defmodule ProtoxTest do
   use ExUnit.Case
 
-  use Protox,
-    schema: """
-      syntax = "proto3";
-      package fiz;
-
-      message Baz {
-      }
-
-      message Foo {
-        Enum a = 1;
-        map<int32, Baz> b = 2;
-      }
-
-      enum Enum {
-        FOO = 0;
-        BAR = 1;
-      }
-    """,
-    namespace: Namespace
-
-  use Protox,
-    schema: """
-    syntax = "proto3";
-
-    message Buz{
-    }
-    """
-
-  use Protox,
-    schema: """
-    syntax = "proto3";
-
-    enum Enum {
-        FOO = 0;
-        BAR = 1;
-      }
-    """,
-    namespace: Namespace
-
-  use Protox,
-    files: [
-      Path.join(__DIR__, "test/samples/proto2.proto"),
-      "./test/samples/proto2_extension.proto",
-      "./test/samples/proto3.proto"
-    ]
-
-  use Protox,
-    files: [
-      "./test/samples/proto2.proto",
-      "./test/samples/proto2_extension.proto",
-      "./test/samples/proto3.proto"
-    ],
-    namespace: Namespace
-
-  use Protox,
-    files: [
-      "./test/samples/prefix/foo.proto",
-      "./test/samples/prefix/bar/bar.proto"
-    ],
-    namespace: TestPrefix,
-    path: Path.join(__DIR__, "test/samples")
-
-  use Protox,
-    files: [
-      "./test/samples/prefix/baz.proto"
-    ],
-    namespace: TestPrefix,
-    path: "./test/samples"
-
-  use Protox,
-    schema: """
-    syntax = "proto3";
-
-    message non_camel {
-      int32 x = 1;
-    }
-
-    message Camel {
-      non_camel x = 1;
-    }
-    """
-
-  use Protox,
-    schema: """
-    syntax = "proto3";
-
-    message Sub {
-      int32 a = 1;
-      string b = 2;
-      sint32 z = 10001;
-    }
-    """,
-    namespace: NoUf,
-    keep_unknown_fields: false
-
-  use Protox,
-    schema: """
-    syntax = "proto3";
-
-    message NoDefsFuns {
-    }
-    """
-
-  use Protox,
-    schema: """
-    syntax = "proto3";
-
-    message MsgWithNonCamelEnum {
-      snake_case snake_case = 2;
-    }
-
-    enum snake_case {
-      c = 0;
-      d = 1;
-    }
-    """
-
-  use Protox,
-    schema: """
-    syntax = "proto3";
-
-    message MsgWithNonCamelEnum {
-      snake_case snake_case = 2;
-    }
-
-    enum snake_case {
-      c = 0;
-      d = 1;
-    }
-    """,
-    namespace: AnotherNamespace
-
   doctest Protox
 
   setup_all do
@@ -171,29 +39,27 @@ defmodule ProtoxTest do
     assert msg |> Upper.encode!() |> :binary.list_to_bin() |> Upper.decode!() == msg
   end
 
-  test "from text" do
-    assert Namespace.Fiz.Enum.constants() == [{0, :FOO}, {1, :BAR}]
-    assert Namespace.Fiz.Baz.fields_defs() == []
+  test "From text" do
+    assert FooBarEnum.constants() == [{0, :FOO}, {1, :BAR}]
 
-    assert Namespace.Fiz.Foo.fields_defs() == [
+    assert EncodeExample.fields_defs() == [
              %Protox.Field{
-               kind: {:scalar, :FOO},
+               kind: {:scalar, 0},
                label: :optional,
                name: :a,
                tag: 1,
-               type: {:enum, Namespace.Fiz.Enum}
+               type: :int32
              },
              %Protox.Field{
                kind: :map,
                label: nil,
                name: :b,
                tag: 2,
-               type: {:int32, {:message, Namespace.Fiz.Baz}}
+               type: {:int32, :string}
              }
            ]
 
-    assert Buz.fields_defs() == []
-    assert Namespace.Enum.constants() == [{0, :FOO}, {1, :BAR}]
+    assert Empty.fields_defs() == []
   end
 
   test "From files" do
