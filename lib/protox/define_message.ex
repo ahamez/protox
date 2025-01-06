@@ -16,7 +16,6 @@ defmodule Protox.DefineMessage do
       unknown_fields_funs = make_unknown_fields_funs(unknown_fields, keep_unknown_fields)
       required_fields_fun = make_required_fields_fun(required_fields)
       fields_access_funs = make_fields_access_funs(fields)
-      json_funs = make_json_funs(msg.name, Protox.JsonLibrary.get_wrapper(opts))
       default_fun = make_default_funs(fields)
       syntax_fun = make_syntax_fun(msg.syntax)
       file_options_fun = make_file_options_fun(msg)
@@ -32,7 +31,6 @@ defmodule Protox.DefineMessage do
 
           unquote(encoder)
           unquote(decoder)
-          unquote(json_funs)
           unquote(fields_access_funs)
           unquote(unknown_fields_funs)
           unquote(required_fields_fun)
@@ -90,68 +88,6 @@ defmodule Protox.DefineMessage do
     quote do
       @spec syntax() :: atom()
       def syntax(), do: unquote(syntax)
-    end
-  end
-
-  defp make_json_funs(_msg_name, nil = _json_library_wrapper) do
-    quote do
-      @spec json_decode(iodata()) :: {:error, any()}
-      def json_decode(_input) do
-        {:error, Protox.JsonLibraryError.new()}
-      end
-
-      @spec json_decode!(iodata()) :: no_return()
-      def json_decode!(_input) do
-        raise Protox.JsonLibraryError.new()
-      end
-
-      @spec json_encode(struct()) :: {:error, any()}
-      def json_encode(_msg) do
-        {:error, Protox.JsonLibraryError.new()}
-      end
-
-      @spec json_encode!(struct()) :: no_return()
-      def json_encode!(_msg) do
-        raise Protox.JsonLibraryError.new()
-      end
-    end
-  end
-
-  defp make_json_funs(msg_name, json_library_wrapper) do
-    quote do
-      @spec json_decode(iodata()) :: {:ok, struct()} | {:error, any()}
-      def json_decode(input) do
-        try do
-          {:ok, json_decode!(input)}
-        rescue
-          e in Protox.JsonDecodingError ->
-            {:error, e}
-        end
-      end
-
-      @spec json_decode!(iodata()) :: struct() | no_return()
-      def json_decode!(input) do
-        Protox.JsonDecode.decode!(
-          input,
-          unquote(msg_name),
-          &unquote(json_library_wrapper).decode!(&1)
-        )
-      end
-
-      @spec json_encode(struct()) :: {:ok, iodata()} | {:error, any()}
-      def json_encode(msg) do
-        try do
-          {:ok, json_encode!(msg)}
-        rescue
-          e in Protox.JsonEncodingError ->
-            {:error, e}
-        end
-      end
-
-      @spec json_encode!(struct()) :: iodata() | no_return()
-      def json_encode!(msg) do
-        Protox.JsonEncode.encode!(msg, &unquote(json_library_wrapper).encode!(&1))
-      end
     end
   end
 
@@ -216,7 +152,7 @@ defmodule Protox.DefineMessage do
         @spec field_def(atom) :: {:ok, Protox.Field.t()} | {:error, :no_such_field}
       end
 
-    match_all =
+    no_such_field_case =
       quote do
         def field_def(_), do: {:error, :no_such_field}
       end
@@ -225,23 +161,13 @@ defmodule Protox.DefineMessage do
       Enum.map(fields, fn %Field{} = field ->
         atom_name_as_string = Atom.to_string(field.name)
 
-        maybe_fun_by_atom_name_as_string =
-          if atom_name_as_string == field.json_name do
-            []
-          else
-            quote do
-              def field_def(unquote(atom_name_as_string)), do: {:ok, unquote(Macro.escape(field))}
-            end
-          end
-
         quote do
           def field_def(unquote(field.name)), do: {:ok, unquote(Macro.escape(field))}
-          def field_def(unquote(field.json_name)), do: {:ok, unquote(Macro.escape(field))}
-          unquote(maybe_fun_by_atom_name_as_string)
+          def field_def(unquote(atom_name_as_string)), do: {:ok, unquote(Macro.escape(field))}
         end
       end)
 
-    List.flatten([spec, ast, match_all])
+    List.flatten([spec, ast, no_such_field_case])
   end
 
   # Make sure the name chosen for the struct fields that stores the unknow fields

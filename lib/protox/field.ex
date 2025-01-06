@@ -8,11 +8,10 @@ defmodule Protox.Field do
           label: Protox.Types.label(),
           name: atom(),
           kind: Protox.Types.kind(),
-          type: Protox.Types.type(),
-          json_name: binary()
+          type: Protox.Types.type()
         }
 
-  @keys [:tag, :label, :name, :kind, :type, :json_name]
+  @keys [:tag, :label, :name, :kind, :type]
   @enforce_keys @keys
   defstruct @keys
 
@@ -28,8 +27,7 @@ defmodule Protox.Field do
       label: label,
       name: name,
       kind: Keyword.fetch!(attrs, :kind),
-      type: Keyword.fetch!(attrs, :type),
-      json_name: make_json_name(name, Keyword.get(attrs, :json_name, &lower_camel_case/1))
+      type: Keyword.fetch!(attrs, :type)
     }
   end
 
@@ -54,21 +52,5 @@ defmodule Protox.Field do
     else
       raise Protox.InvalidFieldAttribute.new(:label, @labels, label)
     end
-  end
-
-  defp make_json_name(name, fun) when is_function(fun) do
-    fun.(name)
-  end
-
-  defp make_json_name(_name, string) when is_binary(string) do
-    string
-  end
-
-  defp lower_camel_case(atom) do
-    [first_word | last_words] = atom |> Atom.to_string() |> String.split("_")
-
-    camel_last_words = Enum.map(last_words, &Macro.camelize/1)
-
-    Enum.join([first_word | camel_last_words])
   end
 end

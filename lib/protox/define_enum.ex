@@ -10,8 +10,7 @@ defmodule Protox.DefineEnum do
 
       module_ast =
         quote do
-          # We need to be able to instanciate a struct in order to make protocol
-          # dispatch work (e.g. for JsonEnumDecoder).
+          # We need to be able to instanciate a struct in order to make protocol dispatch work.
           defstruct []
 
           unquote(default_fun)

@@ -1,41 +1,4 @@
-# We'll implement Any support later.
-Required.Proto3.JsonInput.Any.JsonOutput
-Required.Proto3.JsonInput.Any.ProtobufOutput
-Required.Proto3.JsonInput.AnyNested.JsonOutput
-Required.Proto3.JsonInput.AnyNested.ProtobufOutput
-Required.Proto3.JsonInput.AnyUnorderedTypeTag.JsonOutput
-Required.Proto3.JsonInput.AnyUnorderedTypeTag.ProtobufOutput
-Required.Proto3.JsonInput.AnyWithDuration.JsonOutput
-Required.Proto3.JsonInput.AnyWithDuration.ProtobufOutput
-Required.Proto3.JsonInput.AnyWithFieldMask.JsonOutput
-Required.Proto3.JsonInput.AnyWithFieldMask.ProtobufOutput
-Required.Proto3.JsonInput.AnyWithInt32ValueWrapper.JsonOutput
-Required.Proto3.JsonInput.AnyWithInt32ValueWrapper.ProtobufOutput
-Required.Proto3.JsonInput.AnyWithStruct.JsonOutput
-Required.Proto3.JsonInput.AnyWithStruct.ProtobufOutput
-Required.Proto3.JsonInput.AnyWithTimestamp.JsonOutput
-Required.Proto3.JsonInput.AnyWithTimestamp.ProtobufOutput
-Required.Proto3.JsonInput.AnyWithValueForInteger.JsonOutput
-Required.Proto3.JsonInput.AnyWithValueForInteger.ProtobufOutput
-Required.Proto3.JsonInput.AnyWithValueForJsonObject.JsonOutput
-Required.Proto3.JsonInput.AnyWithValueForJsonObject.ProtobufOutput
-
-# Could not find the specs for this one
-Recommended.Proto2.JsonInput.FieldNameExtension.Validator
-
 # TMP
-Recommended.Proto2.JsonInput.IgnoreUnknownEnumStringValueInMapPart.ProtobufOutput
-Recommended.Proto2.JsonInput.IgnoreUnknownEnumStringValueInMapValue.ProtobufOutput
-Recommended.Proto2.JsonInput.IgnoreUnknownEnumStringValueInOptionalField.ProtobufOutput
-Recommended.Proto2.JsonInput.IgnoreUnknownEnumStringValueInRepeatedField.ProtobufOutput
-Recommended.Proto2.JsonInput.IgnoreUnknownEnumStringValueInRepeatedPart.ProtobufOutput
-Recommended.Proto3.JsonInput.IgnoreUnknownEnumStringValueInMapPart.ProtobufOutput
-Recommended.Proto3.JsonInput.IgnoreUnknownEnumStringValueInMapValue.ProtobufOutput
-Recommended.Proto3.JsonInput.IgnoreUnknownEnumStringValueInOptionalField.ProtobufOutput
-Recommended.Proto3.JsonInput.IgnoreUnknownEnumStringValueInRepeatedField.ProtobufOutput
-Recommended.Proto3.JsonInput.IgnoreUnknownEnumStringValueInRepeatedPart.ProtobufOutput
-Recommended.Proto3.ValueRejectInfNumberValue.JsonOutput
-Recommended.Proto3.ValueRejectNanNumberValue.JsonOutput
 Required.Proto2.ProtobufInput.UnknownOrdering.ProtobufOutput
 Required.Proto2.ProtobufInput.UnknownWireType6_Field1_Verion0
 Required.Proto2.ProtobufInput.UnknownWireType6_Field1_Verion1
