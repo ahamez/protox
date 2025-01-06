@@ -1,31 +1,6 @@
 defmodule OptionalProto3Test do
   use ExUnit.Case
 
-  use Protox,
-    schema: """
-      syntax = "proto3";
-
-      message Msg1 {
-        optional int32 foo = 1;
-      }
-
-      message Msg2 {
-        oneof _foo {
-          int32 foo = 1;
-        }
-      }
-
-      message Msg3 {
-        optional Msg1 foo = 1;
-      }
-
-      message Msg4 {
-        oneof _foo {
-          Msg1 foo = 1;
-        }
-      }
-    """
-
   test "A proto3 optional field is encoded as a oneof" do
     msg1 = %Msg1{foo: 1}
     msg2 = %Msg2{_foo: {:foo, 1}}
