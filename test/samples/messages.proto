@@ -40,6 +40,7 @@ message Sub {
   map<sfixed64, bytes> map1 = 12345;
   map<sfixed64, bytes> map2 = 12346;
 }
+
 message Msg {
   repeated sint64 msg_a = 27;
   repeated fixed32 msg_b = 28;
@@ -74,15 +75,6 @@ message Upper {
 message Empty {
 }
 
-message FloatPrecision {
-  double a = 1;
-  float b = 2;
-}
-
-message NoNameClash {
-  int32 __uf__ = 1;
-}
-
 message CoRecursive {
   oneof oneof_field {
     NestedMessage oneof_nested_message = 112;
@@ -92,20 +84,4 @@ message CoRecursive {
 message NestedMessage {
   int32 a = 1;
   CoRecursive corecursive = 2;
-}
-
-message OptionalInt {
-  optional int32 optional = 1;
-}
-
-message OptionalUpperMsg {
-  optional OptionalSubMsg sub = 1;
-}
-message OptionalSubMsg {
-  int32 a = 1;
-}
-
-message StringsAreUTF8 {
-  string a = 1;
-  repeated string b = 2;
 }
