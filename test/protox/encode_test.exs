@@ -435,7 +435,7 @@ defmodule Protox.EncodeTest do
       <<?a, 128>>,
       <<128, ?a>>,
       <<?a, 255, ?b>>,
-      :crypto.strong_rand_bytes(64)
+      <<255, 255, 255, 255>>
     ]
     |> Enum.each(fn string ->
       assert_raise Protox.EncodingError, ~r/Could not encode field :optional_string /, fn ->
