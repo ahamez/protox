@@ -24,8 +24,7 @@ defmodule Protox.Protoc do
   end
 
   defp do_run(proto_files, args) do
-    outfile_name = "protox_#{random_string()}"
-    outfile_path = Path.join([System.tmp_dir!(), outfile_name])
+    outfile_path = Protox.TmpFs.tmp_file_path!(".proto.bin")
 
     cmd_args = ["--include_imports", "-o", outfile_path] ++ args ++ proto_files
 
@@ -57,10 +56,5 @@ defmodule Protox.Protoc do
     |> Enum.take_while(fn {a, b} -> a == b end)
     |> Enum.map(fn {x, _} -> x end)
     |> Path.join()
-  end
-
-  @spec random_string(non_neg_integer) :: String.t()
-  defp random_string(len \\ 16) do
-    "#{Enum.take_random(?a..?z, len)}"
   end
 end
