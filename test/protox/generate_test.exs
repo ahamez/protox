@@ -13,8 +13,7 @@ defmodule Protox.GenerateTest do
     assert [%Protox.Generate.FileContent{name: ^generated_file_name, content: content}] =
              files_content
 
-    tmp_dir = System.tmp_dir!()
-    tmp_file = Path.join(tmp_dir, generated_file_name)
+    tmp_file = Protox.TmpFs.tmp_file_path!(generated_file_name)
     File.write!(tmp_file, content)
 
     # To avoid warning conflicts with other tests compiling code
@@ -39,8 +38,7 @@ defmodule Protox.GenerateTest do
     assert [%Protox.Generate.FileContent{name: ^generated_file_name, content: content}] =
              files_content
 
-    tmp_dir = System.tmp_dir!()
-    tmp_file = Path.join(tmp_dir, generated_file_name)
+    tmp_file = Protox.TmpFs.tmp_file_path!(generated_file_name)
     File.write!(tmp_file, content)
 
     # To avoid warning conflicts with other tests compiling code
@@ -69,9 +67,8 @@ defmodule Protox.GenerateTest do
              }
            ] = files_content
 
-    tmp_dir = System.tmp_dir!()
-    sub_directory_message_tmp_file = Path.join(tmp_dir, "sub_directory_message.ex")
-    directory_message_1_tmp_file = Path.join(tmp_dir, "directory_message_1.ex")
+    sub_directory_message_tmp_file = Protox.TmpFs.tmp_file_path!("sub_directory_message.ex")
+    directory_message_1_tmp_file = Protox.TmpFs.tmp_file_path!("directory_message_1.ex")
     File.write!(sub_directory_message_tmp_file, sub_directory_message)
     File.write!(directory_message_1_tmp_file, directory_message_1)
 
@@ -107,12 +104,12 @@ defmodule Protox.GenerateTest do
              }
            ] = files_content
 
-    tmp_dir = System.tmp_dir!()
-
     namespace_sub_directory_message_tmp_file =
-      Path.join(tmp_dir, "namespace_sub_directory_message.ex")
+      Protox.TmpFs.tmp_file_path!("namespace_sub_directory_message.ex")
 
-    namespace_directory_message1_tmp_file = Path.join(tmp_dir, "namespace_directory_message1.ex")
+    namespace_directory_message1_tmp_file =
+      Protox.TmpFs.tmp_file_path!("namespace_directory_message1.ex")
+
     File.write!(namespace_sub_directory_message_tmp_file, namespace_sub_directory_message_content)
     File.write!(namespace_directory_message1_tmp_file, namespace_directory_message1_content)
 

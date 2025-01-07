@@ -174,8 +174,7 @@ defmodule ProtoxTest do
   # -- Helper functions
 
   defp reencode_with_protoc(encoded, mod) do
-    tmp_dir = Path.join([System.tmp_dir!(), "protoc_test"])
-    File.mkdir_p!(tmp_dir)
+    tmp_dir = Protox.TmpFs.tmp_dir!("protoc_test")
 
     encoded_bin_path = Path.join([tmp_dir, "protoc_test.bin"])
 
