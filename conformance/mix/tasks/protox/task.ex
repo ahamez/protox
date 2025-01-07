@@ -53,7 +53,7 @@ defmodule Mix.Tasks.Protox.Conformance do
     case Keyword.get(options, :runner) do
       nil ->
         runner_path =
-          Path.expand("#{Mix.Project.deps_paths().protobuf}/conformance_test_runner")
+          Path.expand("#{Mix.Project.deps_paths().protobuf}/bin/conformance_test_runner")
 
         force_runner_build = Keyword.get(options, :force_runner_build, false)
 
