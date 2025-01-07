@@ -34,4 +34,5 @@ defmodule Protox.Default do
   def default(:bytes), do: <<>>
   def default({:enum, e}), do: e.default()
   def default({:message, _}), do: nil
+  def default(:group), do: nil
 end

@@ -8,7 +8,7 @@ defmodule Protox.Conformance.Escript do
   use Protox,
     files: [
       "./deps/protobuf/conformance/conformance.proto",
-      "./test/samples/test_messages_proto2.proto",
+      "./deps/protobuf/src/google/protobuf/test_messages_proto2.proto",
       "./deps/protobuf/src/google/protobuf/test_messages_proto3.proto"
     ]
 
