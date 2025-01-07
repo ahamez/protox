@@ -1,10 +1,29 @@
 syntax = "proto3";
 
-message Msg1 {
-  Msg2 foo = 1;
-  optional Msg2 bar = 2;
+message OptionalMsg1 {
+  optional int32 foo = 1;
 }
 
-message Msg2 {
-  int32 buz = 1;
+message OptionalMsg2 {
+  oneof _foo {
+    int32 foo = 1;
+  }
+}
+
+message OptionalMsg3 {
+  optional OptionalMsg1 foo = 1;
+}
+
+message OptionalMsg4 {
+  oneof _foo {
+    OptionalMsg1 foo = 1;
+  }
+}
+
+message OptionalUpperMsg {
+  optional OptionalSubMsg sub = 1;
+}
+
+message OptionalSubMsg {
+  int32 a = 1;
 }

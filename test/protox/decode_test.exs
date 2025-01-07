@@ -1,10 +1,12 @@
 defmodule Protox.DecodeTest do
   use ExUnit.Case
 
-  max_valid_string_size = Protox.String.max_size()
+  alias ProtobufTestMessages.Proto3.{NullHypothesisProto3, TestAllTypesProto3}
 
-  varint_with_max_valid_string_size =
-    Protox.Varint.encode(max_valid_string_size) |> IO.iodata_to_binary()
+  varint_of_max_string_size =
+    Protox.String.max_size()
+    |> Protox.Varint.encode()
+    |> IO.iodata_to_binary()
 
   @success_tests [
     {
@@ -867,12 +869,12 @@ defmodule Protox.DecodeTest do
     {
       "Empty",
       <<>>,
-      %Empty{}
+      %NullHypothesisProto3{}
     },
     {
       "Empty, unknown fields",
       <<8, 42, 25, 246, 40, 92, 143, 194, 53, 69, 64, 136, 241, 4, 83>>,
-      %Empty{
+      %NullHypothesisProto3{
         __uf__: [
           {10_001, 0, "S"},
           {3, 1, <<246, 40, 92, 143, 194, 53, 69, 64>>},
@@ -893,7 +895,7 @@ defmodule Protox.DecodeTest do
     {
       "No name clash for __uf__",
       <<>>,
-      %NoNameClash{__uf__: 0}
+      %NoUfNameClash{__uf__: 0}
     },
     {
       "Protobuf2, all fields unset",
@@ -921,72 +923,79 @@ defmodule Protox.DecodeTest do
       %OptionalUpperMsg{sub: %OptionalSubMsg{a: 42}}
     },
     {
-      "Optional sub message set to nim",
+      "Optional sub message set to nil",
       <<>>,
       %OptionalUpperMsg{sub: nil}
     },
     {
       "Empty string",
-      <<10, 0>>,
-      %StringsAreUTF8{}
+      <<114, 0>>,
+      %TestAllTypesProto3{}
     },
     {
-      "Non-ascii string",
-      <<10, 39, "hello, 漢字, 💻, 🏁, working fine">>,
-      %StringsAreUTF8{a: "hello, 漢字, 💻, 🏁, working fine"}
+      "Non-ASCII string",
+      <<114, 39, "hello, 漢字, 💻, 🏁, working fine">>,
+      %TestAllTypesProto3{
+        optional_string: "hello, 漢字, 💻, 🏁, working fine"
+      }
     },
     {
       "Empty repeated string (first occurence)",
-      <<18, 0, 18, 5, "hello">>,
-      %StringsAreUTF8{b: ["", "hello"]}
+      <<226, 2, 0, 226, 2, 5, "hello">>,
+      %TestAllTypesProto3{repeated_string: ["", "hello"]}
     },
     {
       "Empty repeated string (second occurence)",
-      <<18, 5, "hello", 18, 0>>,
-      %StringsAreUTF8{b: ["hello", ""]}
+      <<226, 2, 5, "hello", 226, 2, 0>>,
+      %TestAllTypesProto3{repeated_string: ["hello", ""]}
     },
     {
       "Largest valid string (tests-specific limit of 1 MiB)",
-      <<10>> <>
-        varint_with_max_valid_string_size <> <<0::integer-size(max_valid_string_size)-unit(8)>>,
-      %StringsAreUTF8{a: <<0::integer-size(max_valid_string_size)-unit(8)>>}
+      <<114>> <>
+        varint_of_max_string_size <>
+        <<0::integer-size(Protox.String.max_size())-unit(8)>>,
+      %TestAllTypesProto3{
+        optional_string: <<0::integer-size(Protox.String.max_size())-unit(8)>>
+      }
     }
   ]
 
-  min_invalid_string_size = max_valid_string_size + 1
+  min_invalid_string_size = Protox.String.max_size() + 1
 
-  varint_with_min_invalid_string_size =
-    Protox.Varint.encode(min_invalid_string_size) |> IO.iodata_to_binary()
+  varint_of_min_invalid_string_size =
+    min_invalid_string_size
+    |> Protox.Varint.encode()
+    |> IO.iodata_to_binary()
 
   @failure_tests [
     {
       "decoding a field with tag 0 raises IllegalTagError",
       <<0>>,
-      Msg,
+      TestAllTypesProto3,
       Protox.IllegalTagError
     },
     {
       "decoding a empty struct field with tag 0 raises IllegalTagError",
       <<0>>,
-      Empty,
+      NullHypothesisProto3,
       Protox.IllegalTagError
     },
     {
       "decoding a dummy varint returns an error",
       <<255, 255, 255, 255>>,
-      Empty,
+      NullHypothesisProto3,
       Protox.DecodingError
     },
     {
       "invalid bytes for unknown delimited (len doesn't match)",
       <<18, 7, 116, 101, 115, 116>>,
-      Empty,
+      NullHypothesisProto3,
       Protox.DecodingError
     },
     {
       "can't parse unknown bytes",
       <<41, 246, 40, 92, 181, 64, 192>>,
-      Empty,
+      NullHypothesisProto3,
       Protox.DecodingError
     },
     {
@@ -997,38 +1006,39 @@ defmodule Protox.DecodeTest do
     },
     {
       "invalid float",
-      <<21, 0, 0, 128>>,
-      FloatPrecision,
+      # Last byte `63` of float is missing.
+      <<93, 0, 0, 128>>,
+      TestAllTypesProto3,
       Protox.DecodingError
     },
     {
       "invalid sfixed64",
       <<81, 0, 0, 0, 0, 0, 0, 0>>,
-      ProtobufTestMessages.Proto3.TestAllTypesProto3,
+      TestAllTypesProto3,
       Protox.DecodingError
     },
     {
       "invalid fixed64",
       <<65, 0, 0, 0, 0, 0, 0, 0>>,
-      ProtobufTestMessages.Proto3.TestAllTypesProto3,
+      TestAllTypesProto3,
       Protox.DecodingError
     },
     {
       "invalid sfixed32",
       <<73, 0, 0, 0>>,
-      ProtobufTestMessages.Proto3.TestAllTypesProto3,
+      TestAllTypesProto3,
       Protox.DecodingError
     },
     {
       "invalid fixed32",
       <<57, 0, 0, 0>>,
-      ProtobufTestMessages.Proto3.TestAllTypesProto3,
+      TestAllTypesProto3,
       Protox.DecodingError
     },
     {
       "invalid delimited (string)",
       <<114, 3, 0, 0>>,
-      ProtobufTestMessages.Proto3.TestAllTypesProto3,
+      TestAllTypesProto3,
       Protox.DecodingError
     },
     {
@@ -1036,71 +1046,57 @@ defmodule Protox.DecodeTest do
       # malformed varint as the first bit of 128 is '1', which
       # indicated that another byte should follow
       <<8, 128>>,
-      Empty,
+      NullHypothesisProto3,
       Protox.DecodingError
     },
     {
       "invalid string (incomplete prefix)",
-      # We set field nr 1 to the length delimited value <<128, ?a>>
-      <<10, 2, 128, ?a>>,
-      StringsAreUTF8,
+      # We set field to the length delimited value <<128, ?a>>
+      <<114, 2, 128, ?a>>,
+      TestAllTypesProto3,
       Protox.DecodingError
     },
     {
       "invalid string (incomplete suffix)",
-      # We set field nr 1 to the length delimited value <<?a, 128>>
-      <<10, 2, ?a, 128>>,
-      StringsAreUTF8,
+      # We set field to the length delimited value <<?a, 128>>
+      <<114, 2, ?a, 128>>,
+      TestAllTypesProto3,
       Protox.DecodingError
     },
     {
       "invalid string (incomplete infix)",
-      # We set field nr 1 to the length delimited value <<?a, 255, ?b>>
-      <<10, 3, ?a, 255, ?b>>,
-      StringsAreUTF8,
+      # We set field to the length delimited value <<?a, 255, ?b>>
+      <<114, 3, ?a, 255, ?b>>,
+      TestAllTypesProto3,
       Protox.DecodingError
     },
     {
       "invalid string (random data)",
-      # We set field nr 1 to length delimited 64 bytes of random data
-      <<10, 64>> <> :crypto.strong_rand_bytes(64),
-      StringsAreUTF8,
+      # We set field to length delimited 64 bytes of random data
+      <<114, 64>> <> :crypto.strong_rand_bytes(64),
+      TestAllTypesProto3,
       Protox.DecodingError
     },
     {
       "invalid repeated string (1st occurence)",
       # We set first occurence of field nr 2 to the length delimited value <<128>>
-      <<
-        18,
-        2,
-        128,
-        18,
-        1,
-        "hello"
-      >>,
-      StringsAreUTF8,
+      <<226, 2, 2, 128, 226, 2, 1, "hello">>,
+      TestAllTypesProto3,
       Protox.DecodingError
     },
     {
       "invalid repeated string (2nd occurance)",
       # We set second occurence of field nr 2 to the length delimited value <<128>>
-      <<
-        18,
-        5,
-        "hello",
-        18,
-        1,
-        128
-      >>,
-      StringsAreUTF8,
+      <<226, 2, 5, "hello", 226, 2, 1, 128>>,
+      TestAllTypesProto3,
       Protox.DecodingError
     },
     {
       "too large a string (tests-specific limit of 1 MiB)",
-      <<10>> <>
-        varint_with_min_invalid_string_size <>
+      <<114>> <>
+        varint_of_min_invalid_string_size <>
         <<0::integer-size(min_invalid_string_size)-unit(8)>>,
-      StringsAreUTF8,
+      TestAllTypesProto3,
       Protox.DecodingError
     }
   ]
