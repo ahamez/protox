@@ -275,7 +275,7 @@ end
 ## Unsupported features
 
 * The [Any](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#any) well-known type is partially supported: you can manually unpack the embedded message right after decoding and conversely pack it right before encoding;
-* Groups ([deprecated in protobuf](https://developers.google.com/protocol-buffers/docs/proto#groups));
+* Groups ([deprecated in protobuf](https://protobuf.dev/programming-guides/proto2/#groups));
 * All [options](https://developers.google.com/protocol-buffers/docs/proto3#options) other than `packed` and `default` are ignored as they concern other languages implementation details.
 
 ## Implementation choices
