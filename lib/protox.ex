@@ -107,13 +107,13 @@ defmodule Protox do
   Decode a binary into a protobuf message.
 
   ## Examples
-      iex> binary = <<66, 7, 8, 1, 18, 3, 102, 111, 111, 66, 7, 8, 2, 18, 3, 98, 97, 114>>
-      iex> {:ok, msg} = Protox.decode(binary, Msg)
+      iex> binary = <<8, 42, 18, 7, 8, 1, 18, 3, 102, 111, 111>>
+      iex> {:ok, msg} = Protox.decode(binary, ProtoxExample)
       iex> msg
-      %Msg{msg_k: %{1 => "foo", 2 => "bar"}}
+      %ProtoxExample{a: 42, b: %{1 => "foo"}}
 
       iex> binary = <<66, 7, 8, 1, 18, 3, 102, 111, 66, 7, 8, 2, 18, 3, 98, 97, 114>>
-      iex> {:error, reason} = Protox.decode(binary, Msg)
+      iex> {:error, reason} = Protox.decode(binary, ProtoxExample)
       iex> reason
       %Protox.IllegalTagError{message: "Field with illegal tag 0"}
   """
@@ -136,12 +136,12 @@ defmodule Protox do
   Encode a protobuf message into IO data.
 
   ## Examples
-      iex> msg = %EncodeExample{a: 3, b: %{1 => "some string"}}
+      iex> msg = %ProtoxExample{a: 3, b: %{1 => "some string"}}
       iex> {:ok, iodata} = Protox.encode(msg)
       iex> :binary.list_to_bin(iodata)
       <<8, 3, 18, 15, 8, 1, 18, 11, 115, 111, 109, 101, 32, 115, 116, 114, 105, 110, 103>>
 
-      iex> msg = %EncodeExample{a: "should not be a string"}
+      iex> msg = %ProtoxExample{a: "should not be a string"}
       iex> {:error, reason} = Protox.encode(msg)
       iex> reason
       %Protox.EncodingError{field: :a, message: "Could not encode field :a (invalid field value)"}

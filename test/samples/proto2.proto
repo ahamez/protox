@@ -27,17 +27,6 @@ message Proto2A {
   extensions 100 to 199;
 }
 
-message Proto2B {
-  optional Proto2A.NestedEnum optional_proto2a_nested_enum = 1;
-  required Proto2A.NestedEnum required_proto2a_nested_enum = 2 [default = N_THREE];
-}
-
 extend Proto2A {
   optional int32 extension_int32 = 126;
-}
-
-message SeveralRequired {
-  required uint32 one = 1;
-  required uint32 two = 2;
-  required string three = 3;
 }

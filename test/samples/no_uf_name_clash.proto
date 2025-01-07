@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+message NoUfNameClash {
+  int32 __uf__ = 1;
+}

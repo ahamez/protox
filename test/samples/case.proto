@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+message MsgWithNonCamelEnum {
+  snake_case snake_case = 2;
+}
+
+enum snake_case {
+  c = 0;
+  d = 1;
+}
+
+message non_camel {
+  int32 x = 1;
+}
+
+message Camel {
+  non_camel x = 1;
+}

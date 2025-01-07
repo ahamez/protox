@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+import "directory/directory_message_1.proto";
+
+message SubDirectoryMessage {
+  DirectoryMessage1 msg1 = 1;
+}
