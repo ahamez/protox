@@ -5,7 +5,7 @@ defmodule Protox.CodeGenerationTest do
   @moduletag timeout: 600_000
 
   setup_all _context do
-    tmp_dir = System.tmp_dir!()
+    tmp_dir = Protox.TmpFs.tmp_dir!()
     code_generation_path = "#{tmp_dir}/code_generation"
 
     # Remove possible leftovers
@@ -66,8 +66,7 @@ defmodule Protox.CodeGenerationTest do
   test "Mix task generates a file that can be compiled", %{
     protox_path: protox_path
   } do
-    tmp_dir = System.tmp_dir!()
-    tmp_file = Path.join(tmp_dir, "file.ex")
+    tmp_file = Protox.TmpFs.tmp_file_path!(".ex")
 
     Mix.Tasks.Protox.Generate.run([
       "--output-path=#{tmp_file}",

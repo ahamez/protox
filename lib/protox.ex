@@ -172,8 +172,7 @@ defmodule Protox do
   defp get_files(opts) do
     case Keyword.pop(opts, :schema) do
       {<<text::binary>>, opts} ->
-        filename = "#{Base.encode16(:crypto.hash(:sha, text))}.proto"
-        filepath = [System.tmp_dir!(), filename] |> Path.join() |> Path.expand()
+        filepath = Protox.TmpFs.tmp_file_path!(".proto")
         File.write!(filepath, text)
         {[filepath], opts}
 
