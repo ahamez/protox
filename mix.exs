@@ -28,10 +28,7 @@ defmodule Protox.Mixfile do
 
   def application do
     [
-      extra_applications: [
-        :crypto,
-        :mix
-      ]
+      extra_applications: [:mix]
     ]
   end
 
