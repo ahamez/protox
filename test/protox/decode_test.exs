@@ -1091,7 +1091,7 @@ defmodule Protox.DecodeTest do
       Protox.DecodingError
     },
     {
-      "too large a string (tests-specific limit of 1 MiB)",
+      "string too large (tests-specific limit of 1 MiB)",
       <<114>> <>
         varint_of_min_invalid_string_size <>
         <<0::integer-size(min_invalid_string_size)-unit(8)>>,
