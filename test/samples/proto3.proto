@@ -1,7 +1,5 @@
 syntax = "proto3";
 
-import "proto2.proto";
-
 package abc.def;
 
 enum MyForeignEnum {
@@ -26,10 +24,8 @@ message Proto3 {
     int32 oneof_1_int32 = 4;
     double oneof_1_double = 5;
     MyForeignEnum oneof_1_foreign_enum = 6;
-    Proto2A oneof_1_proto2a = 7;
   }
 
-  map<string, Proto2A> map_string_proto2a = 8;
   bytes bytes = 9;
   map<int64, NestedEnum> map_int64_nested_enum = 10;
 

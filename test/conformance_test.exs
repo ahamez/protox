@@ -7,7 +7,7 @@ defmodule Protox.ConformanceTest do
 
     assert {:ok, _} = Mix.Tasks.Protox.Conformance.run(["--quiet", "--compile-only"])
 
-    runner = Path.expand("#{Mix.Project.deps_paths().protobuf}/conformance_test_runner")
+    runner = Path.expand("#{Mix.Project.deps_paths().protobuf}/bin/conformance_test_runner")
     assert File.exists?(runner)
 
     protox_conformance = Path.expand("./protox_conformance")
