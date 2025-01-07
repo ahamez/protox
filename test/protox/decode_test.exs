@@ -1071,9 +1071,8 @@ defmodule Protox.DecodeTest do
       Protox.DecodingError
     },
     {
-      "invalid string (random data)",
-      # We set field to length delimited 64 bytes of random data
-      <<114, 64>> <> :crypto.strong_rand_bytes(64),
+      "invalid UTF-8 string",
+      <<114, 8, 255, 255, 255, 255, 255, 255, 255, 255>>,
       TestAllTypesProto3,
       Protox.DecodingError
     },
