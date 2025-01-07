@@ -157,15 +157,8 @@ defmodule Protox do
 
   defp get_paths(opts) do
     case Keyword.pop(opts, :paths) do
-      {nil, opts} -> get_path(opts)
-      {ps, opts} -> {Enum.map(ps, &Path.expand/1), opts}
-    end
-  end
-
-  defp get_path(opts) do
-    case Keyword.pop(opts, :path) do
       {nil, opts} -> {nil, opts}
-      {p, opts} -> {[Path.expand(p)], opts}
+      {paths, opts} -> {Enum.map(paths, &Path.expand/1), opts}
     end
   end
 

@@ -203,20 +203,7 @@ iex> msg = %MyApp.Abc.Msg{a: 42}
 
 ## Specify import path
 
-An import path can be specified using the `path:` or `paths:` options that respectively specify the directory or directories in which to search for imports:
-
-```elixir
-defmodule Baz do
-  use Protox,
-    files: [
-      "./defs/prefix/foo.proto",
-      "./defs/prefix/bar/bar.proto",
-    ],
-    path: "./defs"
-end
-```
-
-If multiple search paths are needed:
+An import path can be specified using the `paths:` option that specify the directories in which to search for imports:
 
 ```elixir
 defmodule Baz do
