@@ -4,7 +4,6 @@ defmodule Protox.Messages do
   use Protox,
     files: [
       "./test/samples/case.proto",
-      "./test/samples/custom_file_options.proto",
       "./test/samples/google/test_messages_proto2.proto",
       "./test/samples/google/test_messages_proto3.proto",
       "./test/samples/java_bar.proto",
