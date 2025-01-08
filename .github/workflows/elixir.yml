@@ -14,7 +14,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
+    name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}} ${{matrix.name_suffix}}
     strategy:
       fail-fast: false
       matrix:
@@ -30,12 +30,18 @@ jobs:
             check_format: true
             check_deps: true
             dialyzer: true
-          - elixir: "1.17"
+          - elixir: "1.18"
+            otp: "27"
+            check_format: true
+            check_deps: true
+            dialyzer: true
+          - elixir: "1.18"
             otp: "27"
             check_format: true
             check_deps: true
             dialyzer: true
             unlock_deps: true
+            name_suffix: "(unlock deps)"
 
     steps:
       - uses: actions/checkout@v4
