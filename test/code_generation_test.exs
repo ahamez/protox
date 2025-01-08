@@ -70,7 +70,7 @@ defmodule Protox.CodeGenerationTest do
 
     Mix.Tasks.Protox.Generate.run([
       "--output-path=#{tmp_file}",
-      "#{protox_path}/test/samples/proto3.proto"
+      "#{protox_path}/test/samples/google/test_messages_proto3.proto"
     ])
 
     assert File.exists?(tmp_file)
@@ -110,7 +110,7 @@ defmodule Protox.CodeGenerationTest do
         [
           "protox.generate",
           "--output-path=./lib/output/#{output}",
-          "#{protox_path}/test/samples/proto3.proto"
+          "#{protox_path}/test/samples/google/test_messages_proto3.proto"
         ] ++ args,
         cd: code_generation_path
       )

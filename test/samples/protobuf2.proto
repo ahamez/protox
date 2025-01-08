@@ -1,17 +1,17 @@
 syntax = "proto2";
 
-enum F {
+enum Protobuf2Enum {
   ONE = 1;
   TWO = 2;
 }
 
-message Protobuf2 {
+message Protobuf2Message {
   optional int32 a = 1;
-  optional F s = 25 [default = TWO];
-  optional F t = 26;
+  optional Protobuf2Enum b = 2 [default = TWO];
+  optional Protobuf2Enum c = 3;
 }
 
-message Required {
+message Protobuf2Required {
   required int32 a = 1;
   optional int32 b = 2;
 }

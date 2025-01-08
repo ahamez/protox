@@ -135,7 +135,7 @@ defmodule ProtoxTest do
   end
 
   test "Protobuf 3 don't have required fields" do
-    assert Sub.required_fields() == []
+    assert TestAllTypesProto3.required_fields() == []
   end
 
   test "Can export to protoc and read its output for protobuf3 messages" do
