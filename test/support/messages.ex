@@ -20,6 +20,7 @@ defmodule Protox.Messages do
       Path.join(__DIR__, "./test/samples")
     ]
 
+  # To test the :keep_unknown_fields option.
   use Protox,
     schema: """
     syntax = "proto3";
@@ -27,7 +28,7 @@ defmodule Protox.Messages do
     """,
     keep_unknown_fields: false
 
-  # For Protox.encode doctests
+  # For Protox.encode/1 and Protox.decode/2 doctests.
   use Protox,
     schema: """
       syntax = "proto3";
