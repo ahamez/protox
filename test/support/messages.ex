@@ -15,9 +15,6 @@ defmodule Protox.Messages do
       "./test/samples/proto2.proto",
       "./test/samples/proto2_extension.proto",
       "./test/samples/proto3.proto"
-    ],
-    paths: [
-      Path.join(__DIR__, "./test/samples")
     ]
 
   # To test the :keep_unknown_fields option.
