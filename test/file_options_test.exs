@@ -2,9 +2,9 @@ defmodule FileOptionsTest do
   use ExUnit.Case
 
   test "Can read custom option from FileOptions" do
-    file_options_1 = MessageWithCustomFileOptions.file_options()
-    assert Map.has_key?(file_options_1, :custom_field)
-    assert Map.get(file_options_1, :custom_field) == "bar"
+    file_options = MessageWithCustomFileOptions.file_options()
+    assert Map.has_key?(file_options, :custom_field)
+    assert Map.get(file_options, :custom_field) == "bar"
   end
 
   test "Multiple files don't share the same FileOptions" do
