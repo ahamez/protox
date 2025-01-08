@@ -21,14 +21,6 @@ defmodule Protox.Messages do
     ]
 
   use Protox,
-    files: [
-      "./test/samples/proto2.proto",
-      "./test/samples/proto2_extension.proto",
-      "./test/samples/proto3.proto"
-    ],
-    namespace: Namespace
-
-  use Protox,
     schema: """
     syntax = "proto3";
     message NoUf {}
