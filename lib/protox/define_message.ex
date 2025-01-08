@@ -57,8 +57,8 @@ defmodule Protox.DefineMessage do
       def file_options() do
         file_options = unquote(Macro.escape(msg.file_options))
 
-        # Google.Protobuf.FileOptions.FileOptions may be unknown at compilation time
-        # as it's only generated if a file import "google/protobuf/descriptor.proto".
+        # Google.Protobuf.FileOptions may be unknown at compilation time
+        # as it's only generated if a file imports "google/protobuf/descriptor.proto".
         case function_exported?(Google.Protobuf.FileOptions, :decode!, 1) do
           true ->
             # When parsing a proto file, we must use the hardcoded version of
