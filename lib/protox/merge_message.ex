@@ -19,12 +19,12 @@ defmodule Protox.MergeMessage do
   - both are `nil`: `nil` is returned
 
   # Example
-      iex> r1 = %Protobuf2{a: 0, s: :ONE}
-      iex> r2 = %Protobuf2{a: nil, s: :TWO}
+      iex> r1 = %Protobuf2Message{a: 0, b: :ONE}
+      iex> r2 = %Protobuf2Message{a: nil, b: :TWO}
       iex> Protox.MergeMessage.merge(r1, r2)
-      %Protobuf2{a: 0, s: :TWO}
+      %Protobuf2Message{a: 0, b: :TWO}
       iex> Protox.MergeMessage.merge(r2, r1)
-      %Protobuf2{a: 0, s: :ONE}
+      %Protobuf2Message{a: 0, b: :ONE}
   """
   @spec merge(struct() | nil, struct() | nil) :: struct() | nil
   def merge(nil, from), do: from
