@@ -2,7 +2,6 @@ defmodule Protox.PropertiesTest do
   use ExUnit.Case
   use PropCheck
 
-  @moduletag :slow
   @moduletag timeout: 60_000 * 5
 
   @tag :properties
