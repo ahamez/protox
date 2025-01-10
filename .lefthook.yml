@@ -22,3 +22,11 @@ pre-push:
     mix_test:
       glob: "**/*.{ex,exs}"
       run: mix test
+    mix_format:
+      glob: "**/*.{ex,exs}"
+      run: mix format {staged_files}
+    mix_credo:
+      glob: "**/*.{ex,exs}"
+      run: mix credo
+    trailing_whitespaces_and_merge_conflicts:
+      run: git --no-pager diff --check --cached
