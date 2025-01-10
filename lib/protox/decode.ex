@@ -31,7 +31,7 @@ defmodule Protox.Decode do
             parse_sfixed64: 1}
 
   # Get the key's tag and wire type.
-  @spec parse_key(binary) :: {non_neg_integer, non_neg_integer, binary}
+  @spec parse_key(binary()) :: {non_neg_integer(), non_neg_integer(), binary()}
   def parse_key(bytes) do
     {key, rest} = Varint.decode(bytes)
     {key >>> 3, key &&& 0b111, rest}
