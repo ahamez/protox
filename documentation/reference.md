@@ -7,7 +7,7 @@ This documentation lists the functions generated with each Elixir structure asso
 ### Encode
 
 ```elixir
-@spec encode(struct) :: {:ok, iodata} | {:error, any}
+@spec encode(struct() :: {:ok, iodata()} | {:error, any()}
 encode(msg)
 ```
 
@@ -16,7 +16,7 @@ Returns `{:ok, iodata}` when the encoding was successful and `{:error, descripti
 
 
 ```elixir
-@spec encode!(struct) :: iodata | no_return
+@spec encode!(struct() :: iodata() | no_return()
 encode!(msg)
 ```
 
@@ -25,7 +25,7 @@ Throwing version of `encode/1`.
 ### Decode
 
 ```elixir
-@spec decode(binary) :: {:ok, struct} | {:error, any}
+@spec decode(binary() :: {:ok, struct()} | {:error, any()}
 decode(data)
 ```
 
@@ -34,7 +34,7 @@ Returns `{:ok, msg}` when the decoding was successful and `{:error, description}
 
 
 ```elixir
-@spec decode!(binary) :: struct | no_return
+@spec decode!(binary() :: struct() | no_return()
 decode!(data)
 ```
 
@@ -43,7 +43,7 @@ Throwing version of `decode/1`.
 ### Syntax
 
 ```elixir
-@spec syntax() :: atom
+@spec syntax() :: atom()
 syntax()
 ```
 Get the syntax of the protobuf message: `:proto2` or `:proto3`.
@@ -51,7 +51,7 @@ Get the syntax of the protobuf message: `:proto2` or `:proto3`.
 ### Default values
 
 ```elixir
-@spec default(atom) :: {:ok, boolean | integer | String.t() | binary | float} | {:error, atom}
+@spec default(atom() :: {:ok, boolean() | integer() | String.t() | binary() | float()} | {:error, atom()}
 default(field_name)
 ```
 
@@ -62,20 +62,20 @@ Get the default value of a message field. Note that for Protobuf 3, the default 
 _Note_: these functions are not available when the option `:keep_unknown_fields` is set to `false`.
 
 ```elixir
-@spec clear_unknown_fields(struct) :: struct
+@spec clear_unknown_fields(struct() :: struct()
 clear_unknown_fields(msg)
 ```
 Returns a copy of `msg` with all unknown fields removed.
 
 ```elixir
-@spec unknown_fields(struct) :: [{non_neg_integer, Protox.Types.tag(), binary}]
+@spec unknown_fields(struct() :: [{non_neg_integer(), Protox.Types.tag(), binary()}]
 unknown_fields(msg)
 ```
 Get the unknown fields that may have been encountered when decoding data.
 See [Types](documentation/reference.md#types) section to get a description of `Protox.Types.tag`.
 
 ```elixir
-@spec unknown_fields_name() :: atom
+@spec unknown_fields_name() :: atom()
 unknown_fields_name(msg)
 ```
 Get the name of the field that stores unknown fields.
@@ -83,7 +83,7 @@ Get the name of the field that stores unknown fields.
 ### Required fields
 
 ```elixir
-@spec required_fields() :: [atom]
+@spec required_fields() :: [atom()]
 required_fields()
 ```
 Get the list of required fields.
@@ -98,74 +98,27 @@ Get the options set in `*.proto` files (see [the Google reference documentation]
 ## Enums
 
 ```elixir
-@spec default() :: atom
+@spec default() :: atom()
 default()
 ```
 Get the default value of an enum.
 
 ```elixir
-@spec encode(atom) :: integer | atom
+@spec encode(atom() :: integer() | atom()
 encode(enum_entry)
 ```
 Get the integer value of an enum entry. If `enum_entry` does not exist in the enum, it is returned as is.
 
 
 ```elixir
-@spec decode(integer) :: atom | integer
+@spec decode(integer() :: atom() | integer()
 decode(value)
 ```
 Get the enum entry of an integer value. If `value` does not correpond to any entry in the enum, it is returned as is.
 
 ```elixir
-@spec constants() :: [{integer, atom}]
+@spec constants() :: [{integer(), atom()}]
 constants()
 ```
 Get the list of all the constants of the enum that correponds to the module on which this function has been called.
-
-## Types
-
-Types `Protox.Types.tag`, `Protox.Types.kind` and `Protox.Types.type` are defined as follows
-(see [here](https://developers.google.com/protocol-buffers/docs/encoding#structure) for more details):
-
-```elixir
-@type wire_varint :: 0
-@type wire_64bits :: 1
-@type wire_delimited :: 2
-@type wire_32bits :: 5
-
-@type tag :: wire_varint | wire_64bits | wire_delimited | wire_32bits
-@type kind :: {:scalar, any} | :packed | :unpacked | :map | {:oneof, atom}
-@type map_key_type ::
-        :int32
-        | :int64
-        | :uint32
-        | :uint64
-        | :sint32
-        | :sint64
-        | :fixed32
-        | :fixed64
-        | :sfixed32
-        | :sfixed64
-        | :bool
-        | :string
-@type type ::
-        :fixed32
-        | :sfixed32
-        | :float
-        | :fixed64
-        | :sfixed64
-        | :double
-        | :int32
-        | :uint32
-        | :sint32
-        | :int64
-        | :uint64
-        | :sint64
-        | :bool
-        | :string
-        | :bytes
-        | {:enum, atom}
-        | {:message, atom}
-        | {map_key_type, type}
-
 ```
