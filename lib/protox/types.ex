@@ -1,6 +1,6 @@
 defmodule Protox.Types do
   @moduledoc """
-  This module describes types that define a protobuf message.
+  This module describes the types that define a protobuf message.
 
   See https://developers.google.com/protocol-buffers/docs/encoding#structure.
   """
@@ -29,17 +29,28 @@ defmodule Protox.Types do
   The wire type of a field: it tells how a field is encoded (32 or 64 bits scalar, repeated or
   variable-length integer).
   """
-  @type tag :: wire_varint | wire_64bits | wire_delimited | wire_32bits
+  @type tag :: wire_varint() | wire_64bits() | wire_delimited() | wire_32bits()
 
   @typedoc """
-  This type give more details on how a field is encoded.
+  This type indicates how a field is encoded.
   """
-  @type kind :: {:scalar, any()} | :packed | :unpacked | :map | {:oneof, atom()}
+  @type kind :: {:scalar, scalar_default_value()} | :packed | :unpacked | :map | {:oneof, atom()}
 
   @typedoc """
-  All types that can be used as a key in map field.
+  All the possible types that can be used as a default value for a scalar.
   """
-  @type map_key_type ::
+  @type scalar_default_value ::
+          binary()
+          | boolean()
+          | integer()
+          | float()
+          | atom()
+          | nil
+
+  @typedoc """
+  All types that can be used as a key in a map field.
+  """
+  @type map_key ::
           :int32
           | :int64
           | :uint32
@@ -54,7 +65,7 @@ defmodule Protox.Types do
           | :string
 
   @typedoc """
-  All types that can be stored in a protobuf message.
+  All the types that can be stored in a protobuf message.
   """
   @type type ::
           :fixed32
@@ -74,7 +85,7 @@ defmodule Protox.Types do
           | :bytes
           | {:enum, atom()}
           | {:message, atom()}
-          | {map_key_type(), type()}
+          | {map_key(), type()}
 
   @typedoc """
   This type gives more information on the field presence (if applicable).
