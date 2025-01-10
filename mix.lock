@@ -18,6 +18,6 @@
   "poison": {:hex, :poison, "6.0.0", "9bbe86722355e36ffb62c51a552719534257ba53f3271dacd20fbbd6621a583a", [:mix], [{:decimal, "~> 2.1", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm", "bb9064632b94775a3964642d6a78281c07b7be1319e0016e1643790704e739a2"},
   "propcheck": {:git, "https://github.com/alfert/propcheck.git", "c564e89d3873caf9c6bf64a2af4bb3890e24ecf1", [ref: "c564e89d"]},
   "proper": {:git, "https://github.com/proper-testing/proper.git", "a5ae5669f01143b0828fc21667d4f5e344aa760b", [ref: "a5ae5669f01143b0828fc21667d4f5e344aa760b"]},
-  "protobuf": {:git, "https://github.com/protocolbuffers/protobuf.git", "233098326bc268fc03b28725c941519fc77703e6", [tag: "v29.2", submodules: true]},
+  "protobuf": {:git, "https://github.com/protocolbuffers/protobuf.git", "b407e8416e3893036aee5af9a12bd9b6a0e2b2e6", [tag: "v29.3", submodules: true]},
   "statistex": {:hex, :statistex, "1.0.0", "f3dc93f3c0c6c92e5f291704cf62b99b553253d7969e9a5fa713e5481cd858a5", [:mix], [], "hexpm", "ff9d8bee7035028ab4742ff52fc80a2aa35cece833cf5319009b52f1b5a86c27"},
 }
