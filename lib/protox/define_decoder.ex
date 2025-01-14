@@ -178,7 +178,8 @@ defmodule Protox.DefineDecoder do
       quote do
         {
           unquote(unknown_fields_name),
-          [unquote(vars.value) | unquote(vars.msg).unquote(unknown_fields_name)]
+          # Order is important here, we want to keep the order of the unknown fields.
+          unquote(vars.msg).unquote(unknown_fields_name) ++ [unquote(vars.value)]
         }
       end
 
