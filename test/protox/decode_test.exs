@@ -1,6 +1,8 @@
 defmodule Protox.DecodeTest do
   use ExUnit.Case
 
+  import Bitwise
+
   alias ProtobufTestMessages.Proto3.{
     NullHypothesisProto3,
     TestAllTypesProto3,
@@ -395,6 +397,17 @@ defmodule Protox.DecodeTest do
       <<114>> <>
         varint_of_min_invalid_string_size <>
         <<0::integer-size(min_invalid_string_size)-unit(8)>>,
+      TestAllTypesProto3,
+      Protox.DecodingError
+    },
+    {
+      "invalid wire type",
+      <<
+        # Field  |  Invalid wire type
+        1 <<< 3 ||| 6,
+        # Dummy value
+        1
+      >>,
       TestAllTypesProto3,
       Protox.DecodingError
     }

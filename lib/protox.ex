@@ -115,7 +115,10 @@ defmodule Protox do
       iex> binary = <<66, 7, 8, 1, 18, 3, 102, 111, 66, 7, 8, 2, 18, 3, 98, 97, 114>>
       iex> {:error, reason} = Protox.decode(binary, ProtoxExample)
       iex> reason
-      %Protox.IllegalTagError{message: "Field with illegal tag 0"}
+      %Protox.DecodingError{
+                    message: "Could not decode data (invalid wire type 7)",
+                    binary: <<7, 8, 2, 18, 3, 98, 97, 114>>
+                  }
   """
   @doc since: "1.6.0"
   @spec decode(binary(), atom()) :: {:ok, struct()} | {:error, any()}
