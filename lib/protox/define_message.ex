@@ -9,11 +9,13 @@ defmodule Protox.DefineMessage do
     for msg = %Protox.Message{} <- messages do
       fields = Enum.sort(msg.fields, &(&1.tag < &2.tag))
       required_fields = make_required_fields(fields)
-      unknown_fields = make_unknown_fields(:__uf__, fields)
+      unknown_fields_name = make_unknown_fields(:__uf__, fields)
+      opts = Keyword.put(opts, :unknown_fields_name, unknown_fields_name)
 
-      struct_fields = make_struct_fields(fields, msg.syntax, unknown_fields, keep_unknown_fields)
+      struct_fields =
+        make_struct_fields(fields, msg.syntax, unknown_fields_name, keep_unknown_fields)
 
-      unknown_fields_funs = make_unknown_fields_funs(unknown_fields, keep_unknown_fields)
+      unknown_fields_funs = make_unknown_fields_funs(unknown_fields_name, keep_unknown_fields)
       required_fields_fun = make_required_fields_fun(required_fields)
       fields_access_funs = make_fields_access_funs(fields)
       default_fun = make_default_funs(fields)
@@ -100,7 +102,7 @@ defmodule Protox.DefineMessage do
       def unknown_fields_name(), do: unquote(unknown_fields)
 
       @spec clear_unknown_fields(struct) :: struct
-      def clear_unknown_fields(msg), do: struct!(msg, [{unknown_fields_name(), []}])
+      def clear_unknown_fields(msg), do: struct!(msg, [{unquote(unknown_fields), []}])
     end
   end
 
