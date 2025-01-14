@@ -5,7 +5,8 @@ defmodule Protox.DefineEncoder do
   alias Protox.Field
 
   def define(fields, required_fields, syntax, opts \\ []) do
-    {keep_unknown_fields, _opts} = Keyword.pop(opts, :keep_unknown_fields, true)
+    {keep_unknown_fields, opts} = Keyword.pop(opts, :keep_unknown_fields, true)
+    {unknown_fields_name, _opts} = Keyword.pop!(opts, :unknown_fields_name)
 
     %{oneofs: oneofs, proto3_optionals: proto3_optionals, others: fields_without_oneofs} =
       Protox.Defs.split_oneofs(fields)
@@ -19,7 +20,9 @@ defmodule Protox.DefineEncoder do
 
     encode_oneof_funs = make_encode_oneof_funs(oneofs)
     encode_field_funs = make_encode_field_funs(fields, required_fields, syntax)
-    encode_unknown_fields_fun = make_encode_unknown_fields_fun(keep_unknown_fields)
+
+    encode_unknown_fields_fun =
+      make_encode_unknown_fields_fun(keep_unknown_fields, unknown_fields_name)
 
     quote do
       unquote(encode_fun)
@@ -282,10 +285,11 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_unknown_fields_fun(true = _keep_unknown_fields) do
+  defp make_encode_unknown_fields_fun(true = _keep_unknown_fields, unknown_fields_name) do
     quote do
       defp encode_unknown_fields(msg) do
-        Enum.map(msg.__struct__.unknown_fields(msg), fn {tag, wire_type, bytes} ->
+        msg.unquote(unknown_fields_name)
+        |> Enum.map(fn {tag, wire_type, bytes} ->
           case wire_type do
             0 ->
               [Protox.Encode.make_key_bytes(tag, :int32), bytes]
@@ -305,7 +309,7 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_unknown_fields_fun(false = _keep_unknown_fields) do
+  defp make_encode_unknown_fields_fun(false = _keep_unknown_fields, _unknown_fields_name) do
     []
   end
 

@@ -113,7 +113,15 @@ defmodule Protox.DefineDecoder do
 
     # Fragment to parse unknown fields. Those are identified with an unknown tag.
     keep_unknown_fields = Keyword.get(opts, :keep_unknown_fields, @default_keep_unknown_field)
-    unknown_tag_case = make_parse_key_value_unknown(vars, keep_set_fields, keep_unknown_fields)
+    unknown_fields_name = Keyword.fetch!(opts, :unknown_fields_name)
+
+    unknown_tag_case =
+      make_parse_key_value_unknown(
+        vars,
+        keep_set_fields,
+        keep_unknown_fields,
+        unknown_fields_name
+      )
 
     # Fragment to parse known fields.
     known_tags_case = make_parse_key_value_known(vars, fields, keep_set_fields)
@@ -160,14 +168,18 @@ defmodule Protox.DefineDecoder do
     end)
   end
 
-  defp make_parse_key_value_unknown(vars, keep_set_fields, true = _keep_unknown_fields) do
+  defp make_parse_key_value_unknown(
+         vars,
+         keep_set_fields,
+         true = _keep_unknown_fields,
+         unknown_fields_name
+       ) do
     body =
       quote do
-        {unquote(vars.msg).__struct__.unknown_fields_name(),
-         [
-           unquote(vars.value)
-           | unquote(vars.msg).__struct__.unknown_fields(unquote(vars.msg))
-         ]}
+        {
+          unquote(unknown_fields_name),
+          [unquote(vars.value) | unquote(vars.msg).unquote(unknown_fields_name)]
+        }
       end
 
     case_return =
@@ -185,7 +197,12 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_parse_key_value_unknown(vars, keep_set_fields, false = _keep_unknown_fields) do
+  defp make_parse_key_value_unknown(
+         vars,
+         keep_set_fields,
+         false = _keep_unknown_fields,
+         _unknown_fields_name
+       ) do
     # No need to maintain a list of set fields when the list of required fields is empty
     case_return =
       case keep_set_fields do
