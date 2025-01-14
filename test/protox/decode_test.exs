@@ -18,7 +18,7 @@ defmodule Protox.DecodeTest do
     {
       "Unknown fields",
       <<186, 62, 4, 104, 101, 121, 33, 176, 62, 42>>,
-      %TestAllTypesProto3{__uf__: [{998, 0, <<42>>}, {999, 2, <<104, 101, 121, 33>>}]}
+      %TestAllTypesProto3{__uf__: [{999, 2, <<104, 101, 121, 33>>}, {998, 0, <<42>>}]}
     },
     {
       "Repeated fixed64, not contiguous, should be concatenated",
@@ -207,9 +207,9 @@ defmodule Protox.DecodeTest do
       <<8, 42, 25, 246, 40, 92, 143, 194, 53, 69, 64, 136, 241, 4, 83>>,
       %NullHypothesisProto3{
         __uf__: [
-          {10_001, 0, "S"},
+          {1, 0, "*"},
           {3, 1, <<246, 40, 92, 143, 194, 53, 69, 64>>},
-          {1, 0, "*"}
+          {10_001, 0, "S"}
         ]
       }
     },
