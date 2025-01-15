@@ -9,7 +9,7 @@ defmodule Protox.DefineMessage do
     for msg = %Protox.Message{} <- messages do
       fields = Enum.sort(msg.fields, &(&1.tag < &2.tag))
       required_fields = make_required_fields(fields)
-      unknown_fields_name = make_unknown_fields(:__uf__, fields)
+      unknown_fields_name = make_unknown_fields_name(:__uf__, fields)
       opts = Keyword.put(opts, :unknown_fields_name, unknown_fields_name)
 
       struct_fields =
@@ -174,18 +174,18 @@ defmodule Protox.DefineMessage do
 
   # Make sure the name chosen for the struct fields that stores the unknow fields
   # of the protobuf message doesn't collide with already existing names.
-  defp make_unknown_fields(name, fields) do
-    name_in_fields = Enum.find(fields, fn %Field{name: n} -> n == name end)
+  defp make_unknown_fields_name(base_name, fields) do
+    name_in_fields = Enum.find(fields, fn %Field{name: n} -> n == base_name end)
 
     if name_in_fields do
       # Append a '_' while there's a collision
-      name
+      base_name
       |> Atom.to_string()
       |> (fn x -> x <> "_" end).()
       |> String.to_atom()
-      |> make_unknown_fields(fields)
+      |> make_unknown_fields_name(fields)
     else
-      name
+      base_name
     end
   end
 
