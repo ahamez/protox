@@ -288,8 +288,7 @@ defmodule Protox.DefineEncoder do
   defp make_encode_unknown_fields_fun(true = _keep_unknown_fields, unknown_fields_name) do
     quote do
       defp encode_unknown_fields(msg) do
-        msg.unquote(unknown_fields_name)
-        |> Enum.map(fn {tag, wire_type, bytes} ->
+        Enum.map(msg.unquote(unknown_fields_name), fn {tag, wire_type, bytes} ->
           case wire_type do
             0 ->
               [Protox.Encode.make_key_bytes(tag, :int32), bytes]
