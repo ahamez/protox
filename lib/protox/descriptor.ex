@@ -64,7 +64,7 @@ defmodule Protox.Descriptor do
         name: Protox.Google.Protobuf.FileDescriptorProto,
         syntax: :proto3,
         fields: [
-          # Ignored: 3, 6, 8, 9, 10, 11
+          # Ignored: 3, 6, 9, 10, 11
           Protox.Field.new!(
             tag: 1,
             label: :none,
