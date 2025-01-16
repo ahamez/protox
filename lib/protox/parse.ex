@@ -165,15 +165,9 @@ defmodule Protox.Parse do
 
   defp make_enum(definition, prefix, descriptor) do
     enum_name = prefix ++ camelize([descriptor.name])
-    enum_constants = [] |> make_enum_constants(descriptor.value) |> Enum.reverse()
+    enum_constants = Enum.map(descriptor.value, &{&1.number, String.to_atom(&1.name)})
 
     put_in(definition, [Access.key!(:enums), enum_name], enum_constants)
-  end
-
-  defp make_enum_constants(acc, []), do: acc
-
-  defp make_enum_constants(acc, [descriptor | descriptors]) do
-    make_enum_constants([{descriptor.number, String.to_atom(descriptor.name)} | acc], descriptors)
   end
 
   defp make_messages(definition, syntax, prefix, descriptors, file_options) do
