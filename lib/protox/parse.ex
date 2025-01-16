@@ -175,9 +175,9 @@ defmodule Protox.Parse do
     )
   end
 
-  defp make_messages(acc, syntax, prefix, descriptors, options) do
+  defp make_messages(acc, syntax, prefix, descriptors, file_options) do
     Enum.reduce(descriptors, acc, fn descriptor, acc ->
-      make_message(acc, syntax, prefix, descriptor, options)
+      make_message(acc, syntax, prefix, descriptor, file_options)
     end)
   end
 
@@ -188,35 +188,31 @@ defmodule Protox.Parse do
          %DescriptorProto{
            options: %MessageOptions{map_entry: map_entry}
          },
-         _options
+         _file_options
        )
        when map_entry do
     # This case has already been handled in the upper message with add_maps.
     acc
   end
 
-  defp make_message(acc, syntax, prefix, descriptor, options) do
+  defp make_message(acc, syntax, prefix, descriptor, file_options) do
     name = prefix ++ camelize([descriptor.name])
 
     acc
-    |> add_message(syntax, name, options)
-    |> make_messages(syntax, name, descriptor.nested_type, options)
+    |> add_message(syntax, name, file_options)
+    |> make_messages(syntax, name, descriptor.nested_type, file_options)
     |> make_enums(name, descriptor.enum_type)
     |> add_fields(descriptor, name, syntax, descriptor.field)
     |> add_fields(descriptor, name, syntax, descriptor.extension)
   end
 
-  defp add_message(acc, syntax, name, options) do
-    %{
-      acc
-      | messages:
-          Map.put_new(acc.messages, name, %Message{
-            name: name,
-            syntax: syntax,
-            fields: [],
-            file_options: options
-          })
-    }
+  defp add_message(acc, syntax, name, file_options) do
+    put_in(acc, [:messages, name], %Message{
+      name: name,
+      syntax: syntax,
+      fields: [],
+      file_options: file_options
+    })
   end
 
   defp add_extensions(acc, syntax, fields) do
