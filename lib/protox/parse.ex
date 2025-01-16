@@ -4,7 +4,7 @@ defmodule Protox.Parse do
   # Creates definitions from a protobuf encoded description (Protox.Google.Protobuf.FileDescriptorSet)
   # of a set of .proto files. This description is produced by `protoc`.
 
-  alias Protox.{Field, Message}
+  alias Protox.{Definition, Field, Message}
 
   alias Protox.Google.Protobuf.{
     DescriptorProto,
@@ -14,13 +14,13 @@ defmodule Protox.Parse do
     MessageOptions
   }
 
-  @spec parse(binary, Keyword.t()) :: map()
+  @spec parse(binary, Keyword.t()) :: Definition.t()
   def parse(file_descriptor_set, opts \\ []) do
     {:ok, descriptor} = FileDescriptorSet.decode(file_descriptor_set)
 
     namespace_or_nil = Keyword.get(opts, :namespace)
 
-    %{enums: %{}, messages: %{}}
+    %Definition{}
     |> parse_files(descriptor.file)
     |> post_process(namespace_or_nil)
     |> remove_well_known_types()
@@ -28,35 +28,47 @@ defmodule Protox.Parse do
 
   # -- Private
 
-  # As not all protoc installations come with the well-known types (Any, Duration, etc.),
-  # protox provides these types automatically.
-  # However, as user code can include those well-known types, we have to get rid of them
-  # here to make sure they are not defined more than once.
-  defp remove_well_known_types(acc) do
-    filtered_messages =
-      Enum.reject(acc.messages, fn msg = %Message{} ->
-        msg.name in Google.Protobuf.well_known_types()
-      end)
+  defp parse_files(definition, descriptors) do
+    Enum.reduce(
+      descriptors,
+      definition,
+      fn %Protox.Google.Protobuf.FileDescriptorProto{} = descriptor, definition ->
+        parse_file(definition, descriptor)
+      end
+    )
+  end
 
-    filtered_enums =
-      Enum.reject(acc.enums, fn {enum_name, _constants} ->
-        enum_name in Google.Protobuf.well_known_types()
-      end)
+  defp parse_file(definition, %Protox.Google.Protobuf.FileDescriptorProto{} = descriptor) do
+    syntax =
+      case descriptor.syntax do
+        "proto3" -> :proto3
+        "proto2" -> :proto2
+        "" -> :proto2
+      end
 
-    %{enums: filtered_enums, messages: filtered_messages}
+    prefix =
+      case descriptor.package do
+        "" -> []
+        p -> p |> String.split(".") |> camelize()
+      end
+
+    definition
+    |> make_enums(prefix, descriptor.enum_type)
+    |> make_messages(syntax, prefix, descriptor.message_type, descriptor.options)
+    |> add_extensions(syntax, descriptor.extension)
   end
 
   # Prepend with namespace, resolve pending types and set default values
-  defp post_process(acc, namespace_or_nil) do
+  defp post_process(definition, namespace_or_nil) do
     processed_messages =
-      for {msg_name, msg = %Message{}} <- acc.messages do
+      for {msg_name, msg = %Message{}} <- definition.messages do
         name = Module.concat([namespace_or_nil | msg_name])
 
         fields =
           Enum.map(msg.fields, fn %Field{} = field ->
             field
-            |> resolve_types(acc.enums)
-            |> set_default_value(acc.enums)
+            |> resolve_types(definition.enums)
+            |> set_default_value(definition.enums)
             |> concat_names(namespace_or_nil)
           end)
 
@@ -64,11 +76,29 @@ defmodule Protox.Parse do
       end
 
     processsed_enums =
-      for {ename, constants} <- acc.enums do
+      for {ename, constants} <- definition.enums do
         {Module.concat([namespace_or_nil | ename]), constants}
       end
 
-    %{enums: processsed_enums, messages: processed_messages}
+    %Definition{enums: processsed_enums, messages: processed_messages}
+  end
+
+  # As not all protoc installations come with the well-known types (Any, Duration, etc.),
+  # protox provides these types automatically.
+  # However, as user code can include those well-known types, we have to get rid of them
+  # here to make sure they are not defined more than once.
+  defp remove_well_known_types(definition) do
+    filtered_messages =
+      Enum.reject(definition.messages, fn msg = %Message{} ->
+        msg.name in Google.Protobuf.well_known_types()
+      end)
+
+    filtered_enums =
+      Enum.reject(definition.enums, fn {enum_name, _constants} ->
+        enum_name in Google.Protobuf.well_known_types()
+      end)
+
+    %Definition{enums: filtered_enums, messages: filtered_messages}
   end
 
   defp resolve_types(%Field{type: {:type_to_resolve, tname}} = field, enums) do
@@ -127,62 +157,33 @@ defmodule Protox.Parse do
 
   defp concat_names(%Field{} = field, _), do: field
 
-  defp parse_files(acc, descriptors) do
-    Enum.reduce(descriptors, acc, fn descriptor, acc ->
-      parse_file(acc, descriptor)
+  defp make_enums(definition, prefix, descriptors) do
+    Enum.reduce(descriptors, definition, fn descriptor, definition ->
+      make_enum(definition, prefix, descriptor)
     end)
   end
 
-  defp parse_file(acc, descriptor) do
-    syntax =
-      case descriptor.syntax do
-        "proto3" -> :proto3
-        "proto2" -> :proto2
-        "" -> :proto2
-      end
-
-    prefix =
-      case descriptor.package do
-        "" -> []
-        p -> p |> String.split(".") |> camelize()
-      end
-
-    acc
-    |> make_enums(prefix, descriptor.enum_type)
-    |> make_messages(syntax, prefix, descriptor.message_type, descriptor.options)
-    |> add_extensions(syntax, descriptor.extension)
-  end
-
-  defp make_enums(acc, prefix, descriptors) do
-    Enum.reduce(descriptors, acc, fn descriptor, acc ->
-      make_enum(acc, prefix, descriptor)
-    end)
-  end
-
-  defp make_enum(acc, prefix, descriptor) do
+  defp make_enum(definition, prefix, descriptor) do
     enum_name = prefix ++ camelize([descriptor.name])
     enum_constants = [] |> make_enum_constants(descriptor.value) |> Enum.reverse()
 
-    %{acc | enums: Map.put(acc.enums, enum_name, enum_constants)}
+    put_in(definition, [Access.key!(:enums), enum_name], enum_constants)
   end
 
   defp make_enum_constants(acc, []), do: acc
 
   defp make_enum_constants(acc, [descriptor | descriptors]) do
-    make_enum_constants(
-      [{descriptor.number, String.to_atom(descriptor.name)} | acc],
-      descriptors
-    )
+    make_enum_constants([{descriptor.number, String.to_atom(descriptor.name)} | acc], descriptors)
   end
 
-  defp make_messages(acc, syntax, prefix, descriptors, file_options) do
-    Enum.reduce(descriptors, acc, fn descriptor, acc ->
-      make_message(acc, syntax, prefix, descriptor, file_options)
+  defp make_messages(definition, syntax, prefix, descriptors, file_options) do
+    Enum.reduce(descriptors, definition, fn descriptor, definition ->
+      make_message(definition, syntax, prefix, descriptor, file_options)
     end)
   end
 
   defp make_message(
-         acc,
+         definition,
          _syntax,
          _prefix,
          %DescriptorProto{
@@ -192,13 +193,13 @@ defmodule Protox.Parse do
        )
        when map_entry do
     # This case has already been handled in the upper message with add_maps.
-    acc
+    definition
   end
 
-  defp make_message(acc, syntax, prefix, descriptor, file_options) do
+  defp make_message(definition, syntax, prefix, descriptor, file_options) do
     name = prefix ++ camelize([descriptor.name])
 
-    acc
+    definition
     |> add_message(syntax, name, file_options)
     |> make_messages(syntax, name, descriptor.nested_type, file_options)
     |> make_enums(name, descriptor.enum_type)
@@ -206,8 +207,8 @@ defmodule Protox.Parse do
     |> add_fields(descriptor, name, syntax, descriptor.extension)
   end
 
-  defp add_message(acc, syntax, name, file_options) do
-    put_in(acc, [:messages, name], %Message{
+  defp add_message(definition, syntax, name, file_options) do
+    put_in(definition, [Access.key!(:messages), name], %Message{
       name: name,
       syntax: syntax,
       fields: [],
@@ -215,19 +216,19 @@ defmodule Protox.Parse do
     })
   end
 
-  defp add_extensions(acc, syntax, fields) do
-    Enum.reduce(fields, acc, fn field, acc ->
-      add_field(acc, syntax, _upper = nil, fully_qualified_name(field.extendee), field)
+  defp add_extensions(definition, syntax, fields) do
+    Enum.reduce(fields, definition, fn field, definition ->
+      add_field(definition, syntax, _upper = nil, fully_qualified_name(field.extendee), field)
     end)
   end
 
-  defp add_fields(acc, upper, msg_name, syntax, fields) do
-    Enum.reduce(fields, acc, fn field, acc ->
-      add_field(acc, syntax, upper, msg_name, field)
+  defp add_fields(definition, upper, msg_name, syntax, fields) do
+    Enum.reduce(fields, definition, fn field, definition ->
+      add_field(definition, syntax, upper, msg_name, field)
     end)
   end
 
-  defp add_field(acc, syntax, upper, msg_name, descriptor) do
+  defp add_field(definition, syntax, upper, msg_name, descriptor) do
     {label, kind, type} =
       case map_entry(upper, msg_name, descriptor) do
         nil ->
@@ -248,12 +249,11 @@ defmodule Protox.Parse do
         type: type
       )
 
-    new_messages =
-      Map.update!(acc.messages, msg_name, fn msg = %Message{} ->
-        %{msg | fields: [field | msg.fields]}
-      end)
-
-    %{acc | messages: new_messages}
+    update_in(
+      definition,
+      [Access.key!(:messages), msg_name, Access.key!(:fields)],
+      fn fields -> [field | fields] end
+    )
   end
 
   defp field_label(%{proto3_optional: true}), do: :proto3_optional
