@@ -191,14 +191,14 @@ defmodule Protox.Parse do
   end
 
   defp make_message(definition, syntax, prefix, descriptor, file_options) do
-    name = prefix ++ camelize([descriptor.name])
+    msg_name = prefix ++ camelize([descriptor.name])
 
     definition
-    |> add_message(syntax, name, file_options)
-    |> make_messages(syntax, name, descriptor.nested_type, file_options)
-    |> make_enums(name, descriptor.enum_type)
-    |> add_fields(descriptor, name, syntax, descriptor.field)
-    |> add_fields(descriptor, name, syntax, descriptor.extension)
+    |> add_message(syntax, msg_name, file_options)
+    |> make_messages(syntax, msg_name, descriptor.nested_type, file_options)
+    |> make_enums(msg_name, descriptor.enum_type)
+    |> add_fields(descriptor, msg_name, syntax, descriptor.field)
+    |> add_fields(descriptor, msg_name, syntax, descriptor.extension)
   end
 
   defp add_message(definition, syntax, name, file_options) do
