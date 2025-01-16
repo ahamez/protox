@@ -179,9 +179,7 @@ defmodule Protox.Parse do
          definition,
          _syntax,
          _prefix,
-         %DescriptorProto{
-           options: %MessageOptions{map_entry: map_entry}
-         },
+         %DescriptorProto{options: %MessageOptions{map_entry: map_entry}},
          _file_options
        )
        when map_entry do
