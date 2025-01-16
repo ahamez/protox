@@ -10,6 +10,7 @@ defmodule Protox.Parse do
     DescriptorProto,
     FieldDescriptorProto,
     FieldOptions,
+    FileDescriptorProto,
     FileDescriptorSet,
     MessageOptions
   }
@@ -32,13 +33,11 @@ defmodule Protox.Parse do
     Enum.reduce(
       descriptors,
       definition,
-      fn %Protox.Google.Protobuf.FileDescriptorProto{} = descriptor, definition ->
-        parse_file(definition, descriptor)
-      end
+      fn %FileDescriptorProto{} = descriptor, definition -> parse_file(definition, descriptor) end
     )
   end
 
-  defp parse_file(definition, %Protox.Google.Protobuf.FileDescriptorProto{} = descriptor) do
+  defp parse_file(definition, %FileDescriptorProto{} = descriptor) do
     syntax =
       case descriptor.syntax do
         "proto3" -> :proto3
