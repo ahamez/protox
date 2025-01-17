@@ -79,18 +79,15 @@ defmodule Protox do
   '''
 
   defmacro __using__(opts) do
-    {opts, _} = Code.eval_quoted(opts)
-
-    {paths, opts} = get_paths(opts)
-    {files, opts} = get_files(opts)
-
-    {:ok, file_descriptor_set} = Protox.Protoc.run(files, paths)
-
-    %{enums: enums, messages: messages} = Protox.Parse.parse(file_descriptor_set, opts)
-
-    quote do
-      unquote(make_external_resources(files))
-      unquote(Protox.Define.define(enums, messages, opts))
+    with {opts, _bindings} <- Code.eval_quoted(opts),
+         {paths, opts} <- get_paths(opts),
+         {files, opts} <- get_files(opts),
+         {:ok, file_descriptor_set} <- Protox.Protoc.run(files, paths),
+         {:ok, definition} <- Protox.Parse.parse(file_descriptor_set, opts) do
+      quote do
+        unquote(make_external_resources(files))
+        unquote(Protox.Define.define(definition, opts))
+      end
     end
   end
 
