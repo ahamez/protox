@@ -4,6 +4,8 @@ defmodule Protox.Parse do
   # Creates definitions from a protobuf encoded description (Protox.Google.Protobuf.FileDescriptorSet)
   # of a set of .proto files. This description is produced by `protoc`.
 
+  import Protox.Guards
+
   alias Protox.{Definition, Field, Message}
 
   alias Protox.Google.Protobuf.{
@@ -296,8 +298,6 @@ defmodule Protox.Parse do
     |> tl()
     |> camelize()
   end
-
-  import Protox.Guards
 
   defp get_kind(_syntax, upper, %FieldDescriptorProto{oneof_index: index}) when index != nil do
     parent = String.to_atom(Enum.at(upper.oneof_decl, index).name)
