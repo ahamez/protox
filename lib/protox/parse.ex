@@ -15,7 +15,7 @@ defmodule Protox.Parse do
     MessageOptions
   }
 
-  @spec parse(binary, Keyword.t()) :: Definition.t()
+  @spec parse(binary(), Keyword.t()) :: Definition.t()
   def parse(file_descriptor_set, opts \\ []) do
     {:ok, descriptor} = FileDescriptorSet.decode(file_descriptor_set)
 
