@@ -17,9 +17,9 @@ defmodule Protox.ParseTest do
     data = File.read!(file_descriptor_set_bin_path)
     File.rm_rf!(file_descriptor_set_bin_path)
 
-    %{enums: enums, messages: messages} = Protox.Parse.parse(data)
+    {:ok, definition} = Protox.Parse.parse(data)
 
-    {:ok, enums: enums, messages: messages}
+    {:ok, enums: definition.enums, messages: definition.messages}
   end
 
   test "Parse FileDescriptorSet, protobuf 3 enums", %{enums: enums} do

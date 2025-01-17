@@ -7,13 +7,16 @@ defmodule Protox.Define do
     {messages, opts} = Keyword.pop(opts, :messages)
 
     define(
-      enums |> Code.eval_quoted() |> elem(0),
-      messages |> Code.eval_quoted() |> elem(0),
+      %Protox.Definition{
+        enums: enums |> Code.eval_quoted() |> elem(0),
+        messages: messages |> Code.eval_quoted() |> elem(0)
+      },
       opts
     )
   end
 
-  def define(enums, messages, opts \\ []) do
-    Protox.DefineEnum.define(enums) ++ Protox.DefineMessage.define(messages, opts)
+  def define(%Protox.Definition{} = definition, opts \\ []) do
+    Protox.DefineEnum.define(definition.enums) ++
+      Protox.DefineMessage.define(definition.messages, opts)
   end
 end

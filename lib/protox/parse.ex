@@ -17,14 +17,17 @@ defmodule Protox.Parse do
     MessageOptions
   }
 
-  @spec parse(binary(), Keyword.t()) :: Definition.t()
+  @spec parse(binary(), Keyword.t()) :: {:ok, Definition.t()}
   def parse(file_descriptor_set, opts \\ []) do
     {:ok, descriptor} = FileDescriptorSet.decode(file_descriptor_set)
 
-    %Definition{}
-    |> parse_files(descriptor.file)
-    |> post_process(opts)
-    |> remove_well_known_types()
+    definition =
+      %Definition{}
+      |> parse_files(descriptor.file)
+      |> post_process(opts)
+      |> remove_well_known_types()
+
+    {:ok, definition}
   end
 
   # -- Private
