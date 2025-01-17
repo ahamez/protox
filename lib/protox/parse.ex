@@ -21,11 +21,9 @@ defmodule Protox.Parse do
   def parse(file_descriptor_set, opts \\ []) do
     {:ok, descriptor} = FileDescriptorSet.decode(file_descriptor_set)
 
-    namespace_or_nil = Keyword.get(opts, :namespace)
-
     %Definition{}
     |> parse_files(descriptor.file)
-    |> post_process(namespace_or_nil)
+    |> post_process(opts)
     |> remove_well_known_types()
   end
 
@@ -60,7 +58,9 @@ defmodule Protox.Parse do
   end
 
   # Prepend with namespace, resolve pending types and set default values
-  defp post_process(definition, namespace_or_nil) do
+  defp post_process(definition, opts) do
+    namespace_or_nil = Keyword.get(opts, :namespace, nil)
+
     processed_messages =
       for {msg_name, msg = %Message{}} <- definition.messages do
         name = Module.concat([namespace_or_nil | msg_name])
