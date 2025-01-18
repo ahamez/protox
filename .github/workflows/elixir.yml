@@ -117,5 +117,5 @@ jobs:
         run: mix credo
 
       - name: Dialyzer
-        run: mix dialyzer
+        run: mix dialyzer --format github
         if: ${{ matrix.dialyzer }}
