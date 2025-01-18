@@ -2,9 +2,9 @@ defmodule Protox.Google.Protobuf.Timestamp do
   @moduledoc false
 
   use Protox.Define,
-    enums: [],
-    messages: [
-      %Protox.Message{
+    enums: %{},
+    messages: %{
+      Google.Protobuf.Timestamp => %Protox.Message{
         name: Google.Protobuf.Timestamp,
         syntax: :proto3,
         fields: [
@@ -24,7 +24,7 @@ defmodule Protox.Google.Protobuf.Timestamp do
           )
         ]
       }
-    ]
+    }
 
   def max_timestamp_rfc(), do: "9999-12-31T23:59:59.999999999Z"
   def max_timestamp_nanos(), do: 253_402_300_799_999_999_999
