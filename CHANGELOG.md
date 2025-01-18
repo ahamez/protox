@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - BREAKING CHANGE: Drop support of JSON encoding and decoding.
 - BREAKING CHANGE: Configuration of features to generate via the CLI mix task is done with the `--generate` argument
 - BREAKING CHANGE: Remove :path option in favor of :paths
+- Add schema/0 to generated code to access the underlying message definition
 - Drop support for Elixir < 1.15
 
 ### Removed
