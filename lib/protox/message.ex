@@ -5,7 +5,7 @@ defmodule Protox.Message do
           name: atom(),
           syntax: atom(),
           fields: list(Protox.Field.t()),
-          file_options: struct() | nil
+          file_options: any()
         }
 
   @enforced_keys [:name, :syntax, :fields]

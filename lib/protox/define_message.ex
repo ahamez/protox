@@ -6,7 +6,7 @@ defmodule Protox.DefineMessage do
   def define(messages, opts \\ []) do
     keep_unknown_fields = Keyword.get(opts, :keep_unknown_fields, true)
 
-    for msg = %Protox.Message{} <- messages do
+    for {_msg_name, msg = %Protox.Message{}} <- messages do
       fields = Enum.sort(msg.fields, &(&1.tag < &2.tag))
       required_fields = make_required_fields(fields)
       unknown_fields_name = make_unknown_fields_name(:__uf__, fields)

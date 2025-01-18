@@ -5,9 +5,9 @@ defmodule Protox.Google.Protobuf.FieldMask do
   @moduledoc false
 
   use Protox.Define,
-    enums: [],
-    messages: [
-      %Protox.Message{
+    enums: %{},
+    messages: %{
+      Google.Protobuf.FieldMask => %Protox.Message{
         name: Google.Protobuf.FieldMask,
         syntax: :proto3,
         fields: [
@@ -20,5 +20,5 @@ defmodule Protox.Google.Protobuf.FieldMask do
           )
         ]
       }
-    ]
+    }
 end

@@ -2,9 +2,9 @@ defmodule Protox.Google.Protobuf.FloatValue do
   @moduledoc false
 
   use Protox.Define,
-    enums: [],
-    messages: [
-      %Protox.Message{
+    enums: %{},
+    messages: %{
+      Google.Protobuf.FloatValue => %Protox.Message{
         name: Google.Protobuf.FloatValue,
         syntax: :proto3,
         fields: [
@@ -17,5 +17,5 @@ defmodule Protox.Google.Protobuf.FloatValue do
           )
         ]
       }
-    ]
+    }
 end

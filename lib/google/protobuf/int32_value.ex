@@ -2,9 +2,9 @@ defmodule Protox.Google.Protobuf.Int32Value do
   @moduledoc false
 
   use Protox.Define,
-    enums: [],
-    messages: [
-      %Protox.Message{
+    enums: %{},
+    messages: %{
+      Google.Protobuf.Int32Value => %Protox.Message{
         name: Google.Protobuf.Int32Value,
         syntax: :proto3,
         fields: [
@@ -17,5 +17,5 @@ defmodule Protox.Google.Protobuf.Int32Value do
           )
         ]
       }
-    ]
+    }
 end

@@ -65,7 +65,7 @@ defmodule Protox.Parse do
     namespace_or_nil = Keyword.get(opts, :namespace, nil)
 
     processed_messages =
-      for {msg_name, msg = %Message{}} <- definition.messages do
+      for {msg_name, msg = %Message{}} <- definition.messages, into: %{} do
         name = Module.concat([namespace_or_nil | msg_name])
 
         fields =
@@ -76,11 +76,11 @@ defmodule Protox.Parse do
             |> concat_names(namespace_or_nil)
           end)
 
-        %Message{msg | name: name, fields: fields}
+        {name, %Message{msg | name: name, fields: fields}}
       end
 
     processsed_enums =
-      for {ename, constants} <- definition.enums do
+      for {ename, constants} <- definition.enums, into: %{} do
         {Module.concat([namespace_or_nil | ename]), constants}
       end
 
@@ -93,12 +93,12 @@ defmodule Protox.Parse do
   # here to make sure they are not defined more than once.
   defp remove_well_known_types(definition) do
     filtered_messages =
-      Enum.reject(definition.messages, fn msg = %Message{} ->
-        msg.name in Google.Protobuf.well_known_types()
+      Map.reject(definition.messages, fn {msg_name, _message} ->
+        msg_name in Google.Protobuf.well_known_types()
       end)
 
     filtered_enums =
-      Enum.reject(definition.enums, fn {enum_name, _constants} ->
+      Map.reject(definition.enums, fn {enum_name, _constants} ->
         enum_name in Google.Protobuf.well_known_types()
       end)
 

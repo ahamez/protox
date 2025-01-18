@@ -5,13 +5,10 @@ defmodule Protox.Google.Protobuf.NullValue do
   @moduledoc false
 
   use Protox.Define,
-    enums: [
-      {
-        Google.Protobuf.NullValue,
-        [
-          {0, :NULL_VALUE}
-        ]
-      }
-    ],
-    messages: []
+    enums: %{
+      Google.Protobuf.NullValue => [
+        {0, :NULL_VALUE}
+      ]
+    },
+    messages: %{}
 end
