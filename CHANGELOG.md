@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - BREAKING CHANGE: Remove syntax/0 from generated code (functionality still available through schema/1)
 - BREAKING CHANGE: Remove file_options/0 from generated code (functionality still available through schema/1)
 - BREAKING CHANGE: Remove field_def/1 from generated code (functionality still available through schema/1)
+- BREAKING CHANGE: Remove encode/1 from strings for enums
 - BREAKING CHANGE: Remove generated `defs/0` function
 - BREAKING CHANGE: Remove `Protox.Encode.encode/1` and `Protox.Encode.encode!/1`
 

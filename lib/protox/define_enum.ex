@@ -53,7 +53,6 @@ defmodule Protox.DefineEnum do
     for {value, constant} <- constant_values do
       quote do
         def encode(unquote(constant)), do: unquote(value)
-        def encode(unquote(Atom.to_string(constant))), do: unquote(value)
       end
     end
   end
