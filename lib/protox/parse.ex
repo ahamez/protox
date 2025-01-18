@@ -25,7 +25,8 @@ defmodule Protox.Parse do
       %Definition{}
       |> parse_files(descriptor.file)
       |> post_process(opts)
-      |> remove_well_known_types()
+      |> add_file_options()
+      |> remove_google_types()
 
     {:ok, definition}
   end
@@ -87,22 +88,75 @@ defmodule Protox.Parse do
     %Definition{enums: processsed_enums, messages: processed_messages}
   end
 
-  # As not all protoc installations come with the well-known types (Any, Duration, etc.),
-  # protox provides these types automatically.
-  # However, as user code can include those well-known types, we have to get rid of them
-  # here to make sure they are not defined more than once.
-  defp remove_well_known_types(definition) do
+  # We remove all Google types as:
+  # - they're either well-known types (Any, Timestamp, etc.) which are provided with protox.
+  # - or they come from descriptor.proto, which are only relevant (as far as I know) protox.
+  # Removing these types permit to generate smaller code.
+  defp remove_google_types(definition) do
     filtered_messages =
       Map.reject(definition.messages, fn {msg_name, _message} ->
-        msg_name in Google.Protobuf.well_known_types()
+        match?(["Google", "Protobuf" | _], Module.split(msg_name))
       end)
 
     filtered_enums =
       Map.reject(definition.enums, fn {enum_name, _constants} ->
-        enum_name in Google.Protobuf.well_known_types()
+        match?(["Google", "Protobuf" | _], Module.split(enum_name))
       end)
 
     %Definition{enums: filtered_enums, messages: filtered_messages}
+  end
+
+  defp add_file_options(definition) do
+    {file_options_messages, other_messages} =
+      Map.split(definition.messages, [
+        Google.Protobuf.FileOptions,
+        Google.Protobuf.UninterpretedOption
+      ])
+
+    case file_options_messages do
+      file_options_message when map_size(file_options_message) == 0 ->
+        definition
+
+      _ ->
+        {file_options_optimize_enum, other_enums} =
+          Map.split(definition.enums, [Google.Protobuf.FileOptions.OptimizeMode])
+
+        %Definition{messages: file_options_messages, enums: file_options_optimize_enum}
+        |> Protox.Define.define()
+        |> Code.eval_quoted()
+
+        # Custom file options are defined by users, so they can't be described in
+        # the FileOptions of descriptor.ex. They are parsed as unknown fields.
+        # So, to decode these custom fields, we have to compile the FileOptions
+        # which comes with the current FileDescriptorSet.
+        #
+        # Also, we transform this FileOptions into a bare map so as to not depend
+        # on the FileOptions type which is not necessary for the end user.
+        other_messages =
+          for {msg_name, msg} <- other_messages, into: %{} do
+            file_options =
+              msg.file_options
+              |> Protox.Google.Protobuf.FileOptions.encode!()
+              |> :binary.list_to_bin()
+              |> then(&apply(Google.Protobuf.FileOptions, :decode!, [&1]))
+              |> Map.from_struct()
+
+            {msg_name, %{msg | file_options: file_options}}
+          end
+
+        :code.delete(Google.Protobuf.FileOptions)
+        :code.purge(Google.Protobuf.FileOptions)
+
+        :code.delete(Google.Protobuf.UninterpretedOption)
+        :code.purge(Google.Protobuf.UninterpretedOption)
+
+        :code.delete(Google.Protobuf.FileOptions.OptimizeMode)
+        :code.purge(Google.Protobuf.FileOptions.OptimizeMode)
+
+        definition
+        |> put_in([Access.key!(:messages)], other_messages)
+        |> put_in([Access.key!(:enums)], other_enums)
+    end
   end
 
   defp resolve_types(%Field{type: {:type_to_resolve, tname}} = field, enums) do
