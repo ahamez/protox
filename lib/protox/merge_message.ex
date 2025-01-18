@@ -60,7 +60,7 @@ defmodule Protox.MergeMessage do
 
       {:ok, %Field{kind: {:scalar, _}}} ->
         {:ok, default} = msg.__struct__.default(name)
-        merge_scalar(msg.__struct__.syntax(), v1, v2, default)
+        merge_scalar(msg.__struct__.schema().syntax, v1, v2, default)
 
       {:ok, %Field{kind: :map, type: {_, {:message, _}}}} ->
         Map.merge(v1, v2, fn _key, w1, w2 -> merge(w1, w2) end)
