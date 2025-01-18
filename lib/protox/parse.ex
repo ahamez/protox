@@ -110,6 +110,13 @@ defmodule Protox.Parse do
   end
 
   defp add_file_options(definition) do
+    # Custom file options are defined by users, so they can't be described in
+    # the FileOptions of descriptor.ex. They are parsed as unknown fields.
+    # So, to decode these custom fields, we have to compile the FileOptions
+    # which comes with the current FileDescriptorSet.
+
+    # Look for FileOptions and related messages. If found, we will compile them
+    # to parse file options.
     {file_options_messages, other_messages} =
       Map.split(definition.messages, [
         Google.Protobuf.FeatureSet,
@@ -123,6 +130,8 @@ defmodule Protox.Parse do
         definition
 
       _ ->
+        # If FileOptions and other related message have been found, we also need
+        # to compile their associated enums.
         {file_options_optimize_enum, other_enums} =
           Map.split(definition.enums, [
             Google.Protobuf.FeatureSet.EnumType,
@@ -134,15 +143,12 @@ defmodule Protox.Parse do
             Google.Protobuf.FileOptions.OptimizeMode
           ])
 
+        # Compile the needed modules.
         %Definition{messages: file_options_messages, enums: file_options_optimize_enum}
         |> Protox.Define.define()
         |> Code.eval_quoted()
 
-        # Custom file options are defined by users, so they can't be described in
-        # the FileOptions of descriptor.ex. They are parsed as unknown fields.
-        # So, to decode these custom fields, we have to compile the FileOptions
-        # which comes with the current FileDescriptorSet.
-        #
+        # We can now parse the unknown fields with the modules compiled above.
         # Also, we transform this FileOptions into a bare map so as to not depend
         # on the FileOptions type which is not necessary for the end user.
         other_messages =
@@ -157,6 +163,8 @@ defmodule Protox.Parse do
             {msg_name, %{msg | file_options: file_options}}
           end
 
+        # It's no longer necessary to keep the compiled modules in memory as they are of
+        # no use for end user.
         remove_module(Google.Protobuf.FeatureSet)
         remove_module(Google.Protobuf.FileOptions)
         remove_module(Google.Protobuf.UninterpretedOption)
@@ -169,6 +177,8 @@ defmodule Protox.Parse do
         remove_module(Google.Protobuf.FeatureSet.Utf8Validation)
         remove_module(Google.Protobuf.FileOptions.OptimizeMode)
 
+        # Finally, construct a new definition with the messages and enums that were not used
+        # to parse FileOptions.
         definition
         |> put_in([Access.key!(:messages)], other_messages)
         |> put_in([Access.key!(:enums)], other_enums)
