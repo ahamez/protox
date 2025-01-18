@@ -48,7 +48,7 @@ defmodule Protox.DefineMessage do
 
   defp make_unknown_fields_funs(unknown_fields, true = _keep_unknown_fields) do
     quote do
-      @spec unknown_fields(struct) :: [{non_neg_integer, Protox.Types.tag(), binary}]
+      @spec unknown_fields(struct()) :: [{non_neg_integer(), Protox.Types.tag(), binary()}]
       def unknown_fields(msg), do: msg.unquote(unknown_fields)
 
       @spec unknown_fields_name() :: unquote(unknown_fields)
@@ -67,7 +67,8 @@ defmodule Protox.DefineMessage do
   defp make_default_funs(fields) do
     spec =
       quote do
-        @spec default(atom) :: {:ok, boolean | integer | String.t() | float} | {:error, atom}
+        @spec default(atom()) ::
+                {:ok, boolean() | integer() | String.t() | float()} | {:error, atom()}
       end
 
     match_all =
