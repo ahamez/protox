@@ -43,7 +43,7 @@ defmodule Protox.DefineDecoder do
     decode_bang_fun = make_decode_bang_fun(required_fields, msg_name, vars)
 
     quote do
-      @spec decode(binary) :: {:ok, struct} | {:error, any}
+      @spec decode(binary()) :: {:ok, struct()} | {:error, any()}
       def decode(bytes) do
         try do
           {:ok, decode!(bytes)}
@@ -59,7 +59,7 @@ defmodule Protox.DefineDecoder do
 
   defp make_decode_bang_fun([], msg_name, _vars) do
     quote do
-      @spec decode!(binary) :: struct | no_return
+      @spec decode!(binary()) :: struct() | no_return()
       def decode!(bytes) do
         parse_key_value(bytes, struct(unquote(msg_name)))
       end
@@ -68,7 +68,7 @@ defmodule Protox.DefineDecoder do
 
   defp make_decode_bang_fun(required_fields, msg_name, vars) do
     quote do
-      @spec decode!(binary) :: struct | no_return
+      @spec decode!(binary()) :: struct() | no_return()
       def decode!(bytes) do
         {msg, unquote(vars.set_fields)} = parse_key_value([], bytes, struct(unquote(msg_name)))
 
@@ -88,7 +88,7 @@ defmodule Protox.DefineDecoder do
 
     if keep_set_fields do
       quote do
-        @spec parse_key_value([atom], binary, struct) :: {struct, [atom]}
+        @spec parse_key_value([atom()], binary(), struct()) :: {struct(), [atom()]}
         defp parse_key_value(unquote(vars.set_fields), <<>>, msg) do
           {msg, unquote(vars.set_fields)}
         end
@@ -99,7 +99,7 @@ defmodule Protox.DefineDecoder do
       end
     else
       quote do
-        @spec parse_key_value(binary, struct) :: struct
+        @spec parse_key_value(binary(), struct()) :: struct()
         defp parse_key_value(<<>>, msg), do: msg
 
         defp parse_key_value(bytes, msg), do: unquote(parse_key_value_body)
