@@ -11,7 +11,7 @@ defmodule Protox.DefineEncoder do
     %{oneofs: oneofs, proto3_optionals: proto3_optionals, others: fields_without_oneofs} =
       Protox.Defs.split_oneofs(fields)
 
-    encode_fun =
+    top_level_encode_fun =
       make_top_level_encode_fun(
         oneofs,
         proto3_optionals ++ fields_without_oneofs,
@@ -25,7 +25,7 @@ defmodule Protox.DefineEncoder do
       make_encode_unknown_fields_fun(keep_unknown_fields, unknown_fields_name)
 
     quote do
-      unquote(encode_fun)
+      unquote(top_level_encode_fun)
       unquote(encode_oneof_funs)
       unquote(encode_field_funs)
       unquote(encode_unknown_fields_fun)
