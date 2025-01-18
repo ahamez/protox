@@ -48,27 +48,27 @@ defmodule Protox.MergeMessage do
   # -- Private
 
   defp merge_field(msg, name, v1, v2) do
-    case msg.__struct__.field_def(name) do
-      {:ok, %Field{kind: :packed}} ->
+    case Map.get(msg.__struct__.schema().fields, name) do
+      %Field{kind: :packed} ->
         v1 ++ v2
 
-      {:ok, %Field{kind: :unpacked}} ->
+      %Field{kind: :unpacked} ->
         v1 ++ v2
 
-      {:ok, %Field{kind: {:scalar, _}, type: {:message, _}}} ->
+      %Field{kind: {:scalar, _}, type: {:message, _}} ->
         merge(v1, v2)
 
-      {:ok, %Field{kind: {:scalar, _}}} ->
+      %Field{kind: {:scalar, _}} ->
         {:ok, default} = msg.__struct__.default(name)
         merge_scalar(msg.__struct__.schema().syntax, v1, v2, default)
 
-      {:ok, %Field{kind: :map, type: {_, {:message, _}}}} ->
+      %Field{kind: :map, type: {_, {:message, _}}} ->
         Map.merge(v1, v2, fn _key, w1, w2 -> merge(w1, w2) end)
 
-      {:ok, %Field{kind: :map}} ->
+      %Field{kind: :map} ->
         Map.merge(v1, v2)
 
-      {:error, :no_such_field} ->
+      nil ->
         merge_oneof(msg, v1, v2)
     end
   end
@@ -83,8 +83,8 @@ defmodule Protox.MergeMessage do
          {v2_child_field, v2_child_value} = v2
        )
        when v1_child_field == v2_child_field do
-    {:ok, v1_child_field_def} = msg.__struct__.field_def(v1_child_field)
-    {:ok, v2_child_field_def} = msg.__struct__.field_def(v2_child_field)
+    v1_child_field_def = Map.fetch!(msg.__struct__.schema().fields, v1_child_field)
+    v2_child_field_def = Map.fetch!(msg.__struct__.schema().fields, v2_child_field)
 
     if oneof_message?(v1_child_field_def) and oneof_message?(v2_child_field_def) do
       {v1_child_field, merge(v1_child_value, v2_child_value)}

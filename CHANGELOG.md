@@ -17,8 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Drop support for Elixir < 1.15
 - BREAKING CHANGE: Drop support of JSON encoding and decoding.
 - BREAKING CHANGE: Remove :path option in favor of :paths
-- BREAKING CHANGE: Remove syntax/0 from generated code (functionnaly still available through schema/1)
-- BREAKING CHANGE: Remove file_options/0 from generated code (functionnaly still available through schema/1)
+- BREAKING CHANGE: Remove syntax/0 from generated code (functionality still available through schema/1)
+- BREAKING CHANGE: Remove file_options/0 from generated code (functionality still available through schema/1)
+- BREAKING CHANGE: Remove field_def/1 from generated code (functionality still available through schema/1)
 - BREAKING CHANGE: Remove generated `defs/0` function
 - BREAKING CHANGE: Remove `Protox.Encode.encode/1` and `Protox.Encode.encode!/1`
 

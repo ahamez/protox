@@ -25,7 +25,8 @@ defmodule Protox.RandomInit do
 
   def generate_struct(mod, fields) when is_list(fields) do
     sub_msgs =
-      mod.fields_defs()
+      mod.schema().fields
+      |> Map.values()
       # Get all sub messages
       |> Enum.filter(fn %Field{} = field ->
         case {field.kind, field.type} do
@@ -132,7 +133,7 @@ defmodule Protox.RandomInit do
   ]
 
   def generate_fields(mod, depth \\ 2) do
-    do_generate([], mod.fields_defs(), depth)
+    do_generate([], Map.values(mod.schema().fields), depth)
   end
 
   defp do_generate(acc, _fields, 0), do: acc

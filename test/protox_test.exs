@@ -55,26 +55,26 @@ defmodule ProtoxTest do
   end
 
   test "Empty fields" do
-    assert NullHypothesisProto3.fields_defs() == []
+    assert NullHypothesisProto3.schema().fields == %{}
   end
 
   test "From text" do
-    assert ProtoxExample.fields_defs() == [
-             %Protox.Field{
+    assert ProtoxExample.schema().fields == %{
+             a: %Protox.Field{
                kind: {:scalar, 0},
                label: :optional,
                name: :a,
                tag: 1,
                type: :int32
              },
-             %Protox.Field{
+             b: %Protox.Field{
                kind: :map,
                label: nil,
                name: :b,
                tag: 2,
                type: {:int32, :string}
              }
-           ]
+           }
   end
 
   test "Can clear unknown fields" do
@@ -162,13 +162,13 @@ defmodule ProtoxTest do
              |> :binary.list_to_bin()
              |> MsgWithNonCamelEnum.decode!()
 
-    assert [
-             %Protox.Field{
+    assert %{
+             snake_case: %Protox.Field{
                name: :snake_case,
                kind: {:scalar, :c},
                type: {:enum, SnakeCase}
              }
-           ] = MsgWithNonCamelEnum.fields_defs()
+           } = MsgWithNonCamelEnum.schema().fields
   end
 
   # -- Helper functions

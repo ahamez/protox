@@ -47,7 +47,7 @@ defmodule Protox.ParseTest do
              {:optional, :oneof_enum, {:oneof, :oneof_field},
               {:enum, ProtobufTestMessages.Proto3.TestAllTypesProto3.NestedEnum}}
 
-    assert [] = messages[ProtobufTestMessages.Proto3.NullHypothesisProto3].fields
+    assert %{} = messages[ProtobufTestMessages.Proto3.NullHypothesisProto3].fields
   end
 
   test "Parse FileDescriptorSet, protobuf 2 enums", %{enums: enums} do
@@ -66,8 +66,12 @@ defmodule Protox.ParseTest do
   end
 
   defp field(fields, tag) do
-    %Protox.Field{label: label, name: name, kind: kind, type: type} =
-      Enum.find(fields, &match?(%Protox.Field{tag: ^tag}, &1))
+    field =
+      fields
+      |> Map.values()
+      |> Enum.find(&(&1.tag == tag))
+
+    %Protox.Field{label: label, name: name, kind: kind, type: type} = field
 
     {label, name, kind, type}
   end
