@@ -19,7 +19,6 @@ defmodule Protox.DefineMessage do
       required_fields_fun = make_required_fields_fun(required_fields)
       fields_access_funs = make_fields_access_funs(fields)
       default_fun = make_default_funs(fields)
-      syntax_fun = make_syntax_fun(msg.syntax)
       file_options_fun = make_file_options_fun(msg)
 
       encoder = Protox.DefineEncoder.define(fields, required_fields, msg.syntax, opts)
@@ -38,7 +37,6 @@ defmodule Protox.DefineMessage do
           unquote(fields_access_funs)
           unquote(unknown_fields_funs)
           unquote(required_fields_fun)
-          unquote(syntax_fun)
           unquote(default_fun)
           unquote(file_options_fun)
 
@@ -88,13 +86,6 @@ defmodule Protox.DefineMessage do
             file_options
         end
       end
-    end
-  end
-
-  defp make_syntax_fun(syntax) do
-    quote do
-      @spec syntax() :: atom()
-      def syntax(), do: unquote(syntax)
     end
   end
 
