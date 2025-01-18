@@ -46,19 +46,19 @@ defmodule Protox.DefineEncoder do
 
   defp make_encode_fun_body([] = _ast) do
     quote do
-      @spec encode(struct) :: {:ok, iodata}
+      @spec encode(struct()) :: {:ok, iodata()}
       def encode(msg) do
         {:ok, encode!(msg)}
       end
 
-      @spec encode!(struct) :: iodata
+      @spec encode!(struct()) :: iodata()
       def encode!(_msg), do: []
     end
   end
 
   defp make_encode_fun_body(ast) do
     quote do
-      @spec encode(struct) :: {:ok, iodata} | {:error, any}
+      @spec encode(struct()) :: {:ok, iodata()} | {:error, any()}
       def encode(msg) do
         try do
           {:ok, encode!(msg)}
@@ -68,7 +68,7 @@ defmodule Protox.DefineEncoder do
         end
       end
 
-      @spec encode!(struct) :: iodata | no_return
+      @spec encode!(struct()) :: iodata() | no_return()
       def encode!(msg), do: unquote(ast)
     end
   end
