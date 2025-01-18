@@ -7,15 +7,16 @@ defmodule Protox.Google.Protobuf.FloatValue do
       Google.Protobuf.FloatValue => %Protox.Message{
         name: Google.Protobuf.FloatValue,
         syntax: :proto3,
-        fields: [
-          Protox.Field.new!(
-            kind: {:scalar, 0.0},
-            label: :optional,
-            name: :value,
-            tag: 1,
-            type: :float
-          )
-        ]
+        fields: %{
+          value:
+            Protox.Field.new!(
+              kind: {:scalar, 0.0},
+              label: :optional,
+              name: :value,
+              tag: 1,
+              type: :float
+            )
+        }
       }
     }
 end

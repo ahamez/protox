@@ -10,15 +10,16 @@ defmodule Protox.Google.Protobuf.ListValue do
       Google.Protobuf.ListValue => %Protox.Message{
         name: Google.Protobuf.ListValue,
         syntax: :proto3,
-        fields: [
-          Protox.Field.new!(
-            kind: :unpacked,
-            label: :repeated,
-            name: :values,
-            tag: 1,
-            type: {:message, Google.Protobuf.Value}
-          )
-        ]
+        fields: %{
+          values:
+            Protox.Field.new!(
+              kind: :unpacked,
+              label: :repeated,
+              name: :values,
+              tag: 1,
+              type: {:message, Google.Protobuf.Value}
+            )
+        }
       }
     }
 end

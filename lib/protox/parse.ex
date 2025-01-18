@@ -70,12 +70,15 @@ defmodule Protox.Parse do
         name = Module.concat([namespace_or_nil | msg_name])
 
         fields =
-          Enum.map(msg.fields, fn %Field{} = field ->
-            field
-            |> resolve_types(definition.enums)
-            |> set_default_value(definition.enums)
-            |> concat_names(namespace_or_nil)
-          end)
+          for {field_name, field} <- msg.fields, into: %{} do
+            field =
+              field
+              |> resolve_types(definition.enums)
+              |> set_default_value(definition.enums)
+              |> concat_names(namespace_or_nil)
+
+            {field_name, field}
+          end
 
         {name, %Message{msg | name: name, fields: fields}}
       end
@@ -261,7 +264,7 @@ defmodule Protox.Parse do
     put_in(definition, [Access.key!(:messages), name], %Message{
       name: name,
       syntax: syntax,
-      fields: [],
+      fields: %{},
       file_options: file_options
     })
   end
@@ -299,10 +302,10 @@ defmodule Protox.Parse do
         type: type
       )
 
-    update_in(
+    put_in(
       definition,
-      [Access.key!(:messages), msg_name, Access.key!(:fields)],
-      fn fields -> [field | fields] end
+      [Access.key!(:messages), msg_name, Access.key!(:fields), field.name],
+      field
     )
   end
 

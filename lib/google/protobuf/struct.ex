@@ -10,15 +10,16 @@ defmodule Protox.Google.Protobuf.Struct do
       Google.Protobuf.Struct => %Protox.Message{
         name: Google.Protobuf.Struct,
         syntax: :proto3,
-        fields: [
-          Protox.Field.new!(
-            kind: :map,
-            label: nil,
-            name: :fields,
-            tag: 1,
-            type: {:string, {:message, Google.Protobuf.Value}}
-          )
-        ]
+        fields: %{
+          fields:
+            Protox.Field.new!(
+              kind: :map,
+              label: nil,
+              name: :fields,
+              tag: 1,
+              type: {:string, {:message, Google.Protobuf.Value}}
+            )
+        }
       }
     }
 end

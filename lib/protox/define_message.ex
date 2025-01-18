@@ -7,21 +7,21 @@ defmodule Protox.DefineMessage do
     keep_unknown_fields = Keyword.get(opts, :keep_unknown_fields, true)
 
     for {_msg_name, msg = %Protox.Message{}} <- messages do
-      fields = Enum.sort(msg.fields, &(&1.tag < &2.tag))
-      required_fields = make_required_fields(fields)
-      unknown_fields_name = make_unknown_fields_name(:__uf__, fields)
+      sorted_fields = msg.fields |> Map.values() |> Enum.sort(&(&1.tag < &2.tag))
+
+      required_fields = make_required_fields(sorted_fields)
+      unknown_fields_name = make_unknown_fields_name(:__uf__, sorted_fields)
       opts = Keyword.put(opts, :unknown_fields_name, unknown_fields_name)
 
       struct_fields =
-        make_struct_fields(fields, msg.syntax, unknown_fields_name, keep_unknown_fields)
+        make_struct_fields(sorted_fields, msg.syntax, unknown_fields_name, keep_unknown_fields)
 
       unknown_fields_funs = make_unknown_fields_funs(unknown_fields_name, keep_unknown_fields)
       required_fields_fun = make_required_fields_fun(required_fields)
-      fields_access_funs = make_fields_access_funs(fields)
-      default_fun = make_default_funs(fields)
+      default_fun = make_default_funs(sorted_fields)
 
-      encoder = Protox.DefineEncoder.define(fields, required_fields, msg.syntax, opts)
-      decoder = Protox.DefineDecoder.define(msg.name, fields, required_fields, opts)
+      encoder = Protox.DefineEncoder.define(sorted_fields, required_fields, msg.syntax, opts)
+      decoder = Protox.DefineDecoder.define(msg.name, sorted_fields, required_fields, opts)
 
       quote do
         defmodule unquote(msg.name) do
@@ -33,7 +33,6 @@ defmodule Protox.DefineMessage do
 
           unquote(encoder)
           unquote(decoder)
-          unquote(fields_access_funs)
           unquote(unknown_fields_funs)
           unquote(required_fields_fun)
           unquote(default_fun)
@@ -90,40 +89,6 @@ defmodule Protox.DefineMessage do
       end)
 
     List.flatten([spec, ast, match_all])
-  end
-
-  # Generate the functions that provide access to a field definition.
-  defp make_fields_access_funs(fields) do
-    quote do
-      @spec fields_defs() :: list(Protox.Field.t())
-      def fields_defs(), do: unquote(Macro.escape(fields))
-
-      unquote(make_field_funs(fields))
-    end
-  end
-
-  defp make_field_funs(fields) do
-    spec =
-      quote do
-        @spec field_def(atom) :: {:ok, Protox.Field.t()} | {:error, :no_such_field}
-      end
-
-    no_such_field_case =
-      quote do
-        def field_def(_), do: {:error, :no_such_field}
-      end
-
-    ast =
-      Enum.map(fields, fn %Field{} = field ->
-        atom_name_as_string = Atom.to_string(field.name)
-
-        quote do
-          def field_def(unquote(field.name)), do: {:ok, unquote(Macro.escape(field))}
-          def field_def(unquote(atom_name_as_string)), do: {:ok, unquote(Macro.escape(field))}
-        end
-      end)
-
-    List.flatten([spec, ast, no_such_field_case])
   end
 
   # Make sure the name chosen for the struct fields that stores the unknow fields
