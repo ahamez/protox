@@ -2,9 +2,9 @@ defmodule Protox.Google.Protobuf.Duration do
   @moduledoc false
 
   use Protox.Define,
-    enums: [],
-    messages: [
-      %Protox.Message{
+    enums: %{},
+    messages: %{
+      Google.Protobuf.Duration => %Protox.Message{
         name: Google.Protobuf.Duration,
         syntax: :proto3,
         fields: [
@@ -24,5 +24,5 @@ defmodule Protox.Google.Protobuf.Duration do
           )
         ]
       }
-    ]
+    }
 end

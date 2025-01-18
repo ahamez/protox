@@ -1,12 +1,13 @@
 defmodule Protox.Definition do
   @moduledoc false
 
-  # For the time being, we use the type any() as the Parser actually
-  # use different types for its internal processing.
+  @type name() :: atom() | [binary()]
+  @type enum_constant() :: {non_neg_integer(), :atom}
   @type t() :: %__MODULE__{
-          enums: any(),
-          messages: any()
+          enums: %{name() => [enum_constant()]},
+          messages: %{name() => Protox.Message.t()}
         }
 
-  defstruct enums: %{}, messages: %{}
+  defstruct enums: %{},
+            messages: %{}
 end
