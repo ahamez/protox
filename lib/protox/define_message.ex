@@ -19,7 +19,6 @@ defmodule Protox.DefineMessage do
       required_fields_fun = make_required_fields_fun(required_fields)
       fields_access_funs = make_fields_access_funs(fields)
       default_fun = make_default_funs(fields)
-      file_options_fun = make_file_options_fun(msg)
 
       encoder = Protox.DefineEncoder.define(fields, required_fields, msg.syntax, opts)
       decoder = Protox.DefineDecoder.define(msg.name, fields, required_fields, opts)
@@ -38,7 +37,6 @@ defmodule Protox.DefineMessage do
           unquote(unknown_fields_funs)
           unquote(required_fields_fun)
           unquote(default_fun)
-          unquote(file_options_fun)
 
           @spec schema() :: Protox.Message.t()
           def schema(), do: unquote(Macro.escape(msg))
@@ -48,46 +46,6 @@ defmodule Protox.DefineMessage do
   end
 
   # -- Private
-
-  defp make_file_options_fun(%Protox.Message{file_options: nil}) do
-    quote do
-      @spec file_options() :: nil
-      def file_options(), do: nil
-    end
-  end
-
-  defp make_file_options_fun(%Protox.Message{} = msg) do
-    quote do
-      @spec file_options() :: struct()
-      def file_options() do
-        file_options = unquote(Macro.escape(msg.file_options))
-
-        # Google.Protobuf.FileOptions may be unknown at compilation time
-        # as it's only generated if a file imports "google/protobuf/descriptor.proto".
-        case function_exported?(Google.Protobuf.FileOptions, :decode!, 1) do
-          true ->
-            # When parsing a proto file, we must use the hardcoded version of
-            # FileOptions contained in file descriptor.ex. However, it means that
-            # extensions added on top on FileOptions to describe custom options can't
-            # be decoded at this moment (they will be stored in the __uf__ field).
-            #
-            # Thus, we first encode them back to a binary form, then we decode them
-            # with Google.Protobuf.FileOptions which contains the extensions
-            # (note the missing `Protox` in front of the module name).
-
-            bytes =
-              file_options
-              |> Protox.Google.Protobuf.FileOptions.encode!()
-              |> :binary.list_to_bin()
-
-            apply(Google.Protobuf.FileOptions, :decode!, [bytes])
-
-          false ->
-            file_options
-        end
-      end
-    end
-  end
 
   defp make_unknown_fields_funs(unknown_fields, true = _keep_unknown_fields) do
     quote do

@@ -12,16 +12,16 @@ defmodule FileOptionsTest do
     ]
 
   test "Can read custom option from FileOptions" do
-    file_options = MessageWithCustomFileOptions.file_options()
+    file_options = MessageWithCustomFileOptions.schema().file_options
     assert Map.has_key?(file_options, :custom_field)
     assert Map.get(file_options, :custom_field) == "bar"
   end
 
   test "Multiple files don't share the same FileOptions" do
-    foo_file_options = JavaFoo.file_options()
+    foo_file_options = JavaFoo.schema().file_options
     assert Map.get(foo_file_options, :java_package) == "com.foo"
 
-    bar_file_options = JavaBar.file_options()
+    bar_file_options = JavaBar.schema().file_options
     assert Map.get(bar_file_options, :java_package) == "com.bar"
   end
 end
