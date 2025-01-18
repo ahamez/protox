@@ -7,15 +7,16 @@ defmodule Protox.Google.Protobuf.BytesValue do
       Google.Protobuf.BytesValue => %Protox.Message{
         name: Google.Protobuf.BytesValue,
         syntax: :proto3,
-        fields: [
-          Protox.Field.new!(
-            kind: {:scalar, ""},
-            label: :optional,
-            name: :value,
-            tag: 1,
-            type: :bytes
-          )
-        ]
+        fields: %{
+          value:
+            Protox.Field.new!(
+              kind: {:scalar, ""},
+              label: :optional,
+              name: :value,
+              tag: 1,
+              type: :bytes
+            )
+        }
       }
     }
 end

@@ -7,7 +7,7 @@ defmodule Protox.Google.Protobuf.Empty do
       Google.Protobuf.Empty => %Protox.Message{
         name: Google.Protobuf.Empty,
         syntax: :proto3,
-        fields: []
+        fields: %{}
       }
     }
 end
