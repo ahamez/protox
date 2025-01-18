@@ -10,15 +10,16 @@ defmodule Protox.Google.Protobuf.FieldMask do
       Google.Protobuf.FieldMask => %Protox.Message{
         name: Google.Protobuf.FieldMask,
         syntax: :proto3,
-        fields: [
-          Protox.Field.new!(
-            kind: :unpacked,
-            label: :repeated,
-            name: :paths,
-            tag: 1,
-            type: :string
-          )
-        ]
+        fields: %{
+          paths:
+            Protox.Field.new!(
+              kind: :unpacked,
+              label: :repeated,
+              name: :paths,
+              tag: 1,
+              type: :string
+            )
+        }
       }
     }
 end
