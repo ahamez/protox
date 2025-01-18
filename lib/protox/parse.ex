@@ -112,8 +112,10 @@ defmodule Protox.Parse do
   defp add_file_options(definition) do
     {file_options_messages, other_messages} =
       Map.split(definition.messages, [
+        Google.Protobuf.FeatureSet,
         Google.Protobuf.FileOptions,
-        Google.Protobuf.UninterpretedOption
+        Google.Protobuf.UninterpretedOption,
+        Google.Protobuf.UninterpretedOption.NamePart
       ])
 
     case file_options_messages do
@@ -122,7 +124,15 @@ defmodule Protox.Parse do
 
       _ ->
         {file_options_optimize_enum, other_enums} =
-          Map.split(definition.enums, [Google.Protobuf.FileOptions.OptimizeMode])
+          Map.split(definition.enums, [
+            Google.Protobuf.FeatureSet.EnumType,
+            Google.Protobuf.FeatureSet.FieldPresence,
+            Google.Protobuf.FeatureSet.JsonFormat,
+            Google.Protobuf.FeatureSet.MessageEncoding,
+            Google.Protobuf.FeatureSet.RepeatedFieldEncoding,
+            Google.Protobuf.FeatureSet.Utf8Validation,
+            Google.Protobuf.FileOptions.OptimizeMode
+          ])
 
         %Definition{messages: file_options_messages, enums: file_options_optimize_enum}
         |> Protox.Define.define()
@@ -147,14 +157,17 @@ defmodule Protox.Parse do
             {msg_name, %{msg | file_options: file_options}}
           end
 
-        :code.delete(Google.Protobuf.FileOptions)
-        :code.purge(Google.Protobuf.FileOptions)
-
-        :code.delete(Google.Protobuf.UninterpretedOption)
-        :code.purge(Google.Protobuf.UninterpretedOption)
-
-        :code.delete(Google.Protobuf.FileOptions.OptimizeMode)
-        :code.purge(Google.Protobuf.FileOptions.OptimizeMode)
+        remove_module(Google.Protobuf.FeatureSet)
+        remove_module(Google.Protobuf.FileOptions)
+        remove_module(Google.Protobuf.UninterpretedOption)
+        remove_module(Google.Protobuf.UninterpretedOption.NamePart)
+        remove_module(Google.Protobuf.FeatureSet.EnumType)
+        remove_module(Google.Protobuf.FeatureSet.FieldPresence)
+        remove_module(Google.Protobuf.FeatureSet.JsonFormat)
+        remove_module(Google.Protobuf.FeatureSet.MessageEncoding)
+        remove_module(Google.Protobuf.FeatureSet.RepeatedFieldEncoding)
+        remove_module(Google.Protobuf.FeatureSet.Utf8Validation)
+        remove_module(Google.Protobuf.FileOptions.OptimizeMode)
 
         definition
         |> put_in([Access.key!(:messages)], other_messages)
@@ -437,5 +450,10 @@ defmodule Protox.Parse do
 
   defp camelize(name) when is_list(name) do
     Enum.map(name, &Macro.camelize/1)
+  end
+
+  defp remove_module(module) when is_atom(module) do
+    :code.delete(module)
+    :code.purge(module)
   end
 end
