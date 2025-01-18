@@ -2,9 +2,9 @@ defmodule Protox.Google.Protobuf.Any do
   @moduledoc false
 
   use Protox.Define,
-    enums: [],
-    messages: [
-      %Protox.Message{
+    enums: %{},
+    messages: %{
+      Google.Protobuf.Any => %Protox.Message{
         name: Google.Protobuf.Any,
         syntax: :proto3,
         fields: [
@@ -24,5 +24,5 @@ defmodule Protox.Google.Protobuf.Any do
           )
         ]
       }
-    ]
+    }
 end
