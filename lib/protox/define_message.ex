@@ -41,6 +41,9 @@ defmodule Protox.DefineMessage do
           unquote(syntax_fun)
           unquote(default_fun)
           unquote(file_options_fun)
+
+          @spec schema() :: Protox.Message.t()
+          def schema(), do: unquote(Macro.escape(msg))
         end
       end
     end
