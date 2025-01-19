@@ -5,24 +5,18 @@ defmodule Protox.DefineEncoder do
   alias Protox.Field
 
   def define(fields, required_fields, syntax, opts \\ []) do
-    {keep_unknown_fields, opts} = Keyword.pop(opts, :keep_unknown_fields, true)
     {unknown_fields_name, _opts} = Keyword.pop!(opts, :unknown_fields_name)
 
     %{oneofs: oneofs, proto3_optionals: proto3_optionals, others: fields_without_oneofs} =
       Protox.Defs.split_oneofs(fields)
 
     top_level_encode_fun =
-      make_top_level_encode_fun(
-        oneofs,
-        proto3_optionals ++ fields_without_oneofs,
-        keep_unknown_fields
-      )
+      make_top_level_encode_fun(oneofs, proto3_optionals ++ fields_without_oneofs)
 
     encode_oneof_funs = make_encode_oneof_funs(oneofs)
     encode_field_funs = make_encode_field_funs(fields, required_fields, syntax)
 
-    encode_unknown_fields_fun =
-      make_encode_unknown_fields_fun(keep_unknown_fields, unknown_fields_name)
+    encode_unknown_fields_fun = make_encode_unknown_fields_fun(unknown_fields_name)
 
     quote do
       unquote(top_level_encode_fun)
@@ -32,12 +26,12 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_top_level_encode_fun(oneofs, fields, keep_unknown_fields) do
+  defp make_top_level_encode_fun(oneofs, fields) do
     ast =
       quote do
         [
           unquote_splicing(make_encode_oneof_fun(oneofs)),
-          unquote_splicing(make_encode_fun_field(fields, keep_unknown_fields))
+          unquote_splicing(make_encode_fun_field(fields))
         ]
       end
 
@@ -73,7 +67,7 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_fun_field(fields, keep_unknown_fields) do
+  defp make_encode_fun_field(fields) do
     ast =
       Enum.map(fields, fn %Protox.Field{} = field ->
         fun_name = String.to_atom("encode_#{field.name}")
@@ -81,9 +75,8 @@ defmodule Protox.DefineEncoder do
         quote(do: unquote(fun_name)(msg))
       end)
 
-    case keep_unknown_fields do
-      true -> quote(do: [unquote_splicing(ast), encode_unknown_fields(msg)])
-      false -> ast
+    quote do
+      [unquote_splicing(ast), encode_unknown_fields(msg)]
     end
   end
 
@@ -285,7 +278,7 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_unknown_fields_fun(true = _keep_unknown_fields, unknown_fields_name) do
+  defp make_encode_unknown_fields_fun(unknown_fields_name) do
     quote do
       defp encode_unknown_fields(msg) do
         Enum.map(msg.unquote(unknown_fields_name), fn {tag, wire_type, bytes} ->
@@ -306,10 +299,6 @@ defmodule Protox.DefineEncoder do
         end)
       end
     end
-  end
-
-  defp make_encode_unknown_fields_fun(false = _keep_unknown_fields, _unknown_fields_name) do
-    []
   end
 
   defp make_encode_packed_body(type) do

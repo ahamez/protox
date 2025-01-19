@@ -13,14 +13,6 @@ defmodule Protox.Messages do
       "./test/samples/protobuf2.proto"
     ]
 
-  # To test the :keep_unknown_fields option.
-  use Protox,
-    schema: """
-    syntax = "proto3";
-    message NoUf {}
-    """,
-    keep_unknown_fields: false
-
   # For Protox.encode/1 and Protox.decode/2 doctests.
   use Protox,
     schema: """
