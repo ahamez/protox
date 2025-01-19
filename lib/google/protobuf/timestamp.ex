@@ -27,10 +27,4 @@ defmodule Protox.Google.Protobuf.Timestamp do
         }
       }
     }
-
-  def max_timestamp_rfc(), do: "9999-12-31T23:59:59.999999999Z"
-  def max_timestamp_nanos(), do: 253_402_300_799_999_999_999
-
-  def min_timestamp_rfc(), do: "0001-01-01T00:00:00Z"
-  def min_timestamp_nanos(), do: -62_135_596_800_000_000_000
 end
