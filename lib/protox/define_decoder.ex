@@ -2,12 +2,8 @@ defmodule Protox.DefineDecoder do
   @moduledoc false
   # Internal. Generates the decoder of a message.
 
-  alias Protox.Field
-
-  use Protox.{
-    Float,
-    WireTypes
-  }
+  alias Protox.{Field, Scalar}
+  use Protox.{Float, WireTypes}
 
   def define(msg_name, fields, required_fields, opts \\ []) do
     vars = %{
@@ -238,7 +234,7 @@ defmodule Protox.DefineDecoder do
     make_delimited_case_impl(vars, keep_set_fields, single_generated, field)
   end
 
-  defp make_delimited_case(_vars, _keep_set_fields, _single_generated, %Field{kind: {:scalar, _}}) do
+  defp make_delimited_case(_vars, _keep_set_fields, _single_generated, %Field{kind: %Scalar{}}) do
     []
   end
 
@@ -342,7 +338,7 @@ defmodule Protox.DefineDecoder do
 
   defp make_update_field(
          value,
-         %Field{kind: {:scalar, _}, type: {:message, _}} = field,
+         %Field{kind: %Scalar{}, type: {:message, _}} = field,
          vars,
          _wrap_value
        ) do
@@ -354,7 +350,7 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_update_field(value, %Field{kind: {:scalar, _}} = field, _vars, _wrap_value) do
+  defp make_update_field(value, %Field{kind: %Scalar{}} = field, _vars, _wrap_value) do
     quote(do: {unquote(field.name), unquote(value)})
   end
 

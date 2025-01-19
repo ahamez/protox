@@ -1,6 +1,8 @@
 defmodule Protox.ParseTest do
   use ExUnit.Case
 
+  alias Protox.Scalar
+
   setup_all do
     file_descriptor_set_bin_path = Protox.TmpFs.tmp_file_path!(".bin")
     File.rm_rf!(file_descriptor_set_bin_path)
@@ -35,7 +37,9 @@ defmodule Protox.ParseTest do
 
     fs = messages[ProtobufTestMessages.Proto3.TestAllTypesProto3].fields
 
-    assert field(fs, 12) == {:optional, :optional_double, {:scalar, 0}, :double}
+    assert field(fs, 12) ==
+             {:optional, :optional_double, %Scalar{default_value: 0}, :double}
+
     assert field(fs, 31) == {:repeated, :repeated_int32, :packed, :int32}
     assert field(fs, 32) == {:repeated, :repeated_int64, :packed, :int64}
     assert field(fs, 64) == {nil, :map_sfixed32_sfixed32, :map, {:sfixed32, :sfixed32}}
@@ -60,9 +64,13 @@ defmodule Protox.ParseTest do
 
     fs = messages[ProtobufTestMessages.Proto2.TestAllRequiredTypesProto2].fields
 
-    assert field(fs, 1) == {:required, :required_int32, {:scalar, 0}, :int32}
-    assert field(fs, 11) == {:required, :required_float, {:scalar, 0.0}, :float}
-    assert field(fs, 15) == {:required, :required_bytes, {:scalar, <<>>}, :bytes}
+    assert field(fs, 1) == {:required, :required_int32, %Scalar{default_value: 0}, :int32}
+
+    assert field(fs, 11) ==
+             {:required, :required_float, %Scalar{default_value: 0.0}, :float}
+
+    assert field(fs, 15) ==
+             {:required, :required_bytes, %Scalar{default_value: <<>>}, :bytes}
   end
 
   defp field(fields, tag) do

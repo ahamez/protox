@@ -32,22 +32,6 @@ defmodule Protox.Types do
   @type tag :: wire_varint() | wire_64bits() | wire_delimited() | wire_32bits()
 
   @typedoc """
-  This type indicates how a field is encoded.
-  """
-  @type kind :: {:scalar, scalar_default_value()} | :packed | :unpacked | :map | {:oneof, atom()}
-
-  @typedoc """
-  All the possible types that can be used as a default value for a scalar.
-  """
-  @type scalar_default_value ::
-          binary()
-          | boolean()
-          | integer()
-          | float()
-          | atom()
-          | nil
-
-  @typedoc """
   All types that can be used as a key in a map field.
   """
   @type map_key ::

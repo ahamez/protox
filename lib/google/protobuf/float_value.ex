@@ -10,7 +10,7 @@ defmodule Protox.Google.Protobuf.FloatValue do
         fields: %{
           value:
             Protox.Field.new!(
-              kind: {:scalar, 0.0},
+              kind: %Protox.Scalar{default_value: 0.0},
               label: :optional,
               name: :value,
               tag: 1,

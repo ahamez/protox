@@ -10,7 +10,7 @@ defmodule Protox.Google.Protobuf.UInt32Value do
         fields: %{
           value:
             Protox.Field.new!(
-              kind: {:scalar, 0},
+              kind: %Protox.Scalar{default_value: 0},
               label: :optional,
               name: :value,
               tag: 1,

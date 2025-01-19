@@ -1,6 +1,7 @@
 defmodule ProtoxTest do
   use ExUnit.Case
 
+  alias Protox.Scalar
   alias ProtobufTestMessages.Proto3.{ForeignEnum, NullHypothesisProto3, TestAllTypesProto3}
   alias ProtobufTestMessages.Proto2.{TestAllTypesProto2, TestAllRequiredTypesProto2}
 
@@ -61,7 +62,7 @@ defmodule ProtoxTest do
   test "From text" do
     assert ProtoxExample.schema().fields == %{
              a: %Protox.Field{
-               kind: {:scalar, 0},
+               kind: %Scalar{default_value: 0},
                label: :optional,
                name: :a,
                tag: 1,
@@ -169,7 +170,7 @@ defmodule ProtoxTest do
     assert %{
              snake_case: %Protox.Field{
                name: :snake_case,
-               kind: {:scalar, :c},
+               kind: %Scalar{default_value: :c},
                type: {:enum, SnakeCase}
              }
            } = MsgWithNonCamelEnum.schema().fields

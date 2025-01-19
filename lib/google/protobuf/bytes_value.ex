@@ -10,7 +10,7 @@ defmodule Protox.Google.Protobuf.BytesValue do
         fields: %{
           value:
             Protox.Field.new!(
-              kind: {:scalar, ""},
+              kind: %Protox.Scalar{default_value: ""},
               label: :optional,
               name: :value,
               tag: 1,

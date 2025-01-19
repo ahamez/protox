@@ -8,24 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- schema/0 to access the underlying definition of a message
+- schema/0 to access the underlying definition of a message.
 
 ### Changed
-- BREAKING CHANGE: Configuration of features to generate via the CLI mix task is done with the `--generate` argument
+- BREAKING CHANGE: Configuration of features to generate via the CLI mix task is done with the `--generate` argument.
 
 ### Removed
-- Drop support for Elixir < 1.15
+- Drop support for Elixir < 1.15.
 - BREAKING CHANGE: Drop support of JSON encoding and decoding.
-- BREAKING CHANGE: Remove :path option in favor of :paths
-- BREAKING CHANGE: Remove :keep_unknown_fields option
+- BREAKING CHANGE: Remove :path option in favor of :paths.
+- BREAKING CHANGE: Remove :keep_unknown_fields option.
   It added complexity to the generation logic while not providing any value as one can simply ignore those fields.
-- BREAKING CHANGE: Remove generated syntax/0 (functionality still available through schema/1)
-- BREAKING CHANGE: Remove generated file_options/0 (functionality still available through schema/1)
-- BREAKING CHANGE: Remove generated field_def/1 (functionality still available through schema/1)
-- BREAKING CHANGE: Remove generated `defs/0` functionn (functionality still available through schema/1)
-- BREAKING CHANGE: Remove generated `required_fields/0` (functionality still available through schema/1)
-- BREAKING CHANGE: Remove gnerated encode/1 from strings for enums
-- BREAKING CHANGE: Remove `Protox.Encode.encode/1` and `Protox.Encode.encode!/1` (functionality is still available in generated modules)
+- BREAKING CHANGE: Remove generated `syntax/0` (functionality still available through schema/1).
+- BREAKING CHANGE: Remove generated `file_options/0` (functionality still available through schema/1).
+- BREAKING CHANGE: Remove generated `field_def/1` (functionality still available through schema/1).
+- BREAKING CHANGE: Remove generated `defs/0` (functionality still available through schema/1).
+- BREAKING CHANGE: Remove generated `required_fields/0` (functionality still available through schema/1).
+- BREAKING CHANGE: Remove generated `encode/1` from strings for enums.
+- BREAKING CHANGE: Remove `Protox.Encode.encode/1` and `Protox.Encode.encode!/1` (functionality is still available in generated modules).
 
 
 ## 1.7.8
