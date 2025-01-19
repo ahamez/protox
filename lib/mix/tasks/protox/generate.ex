@@ -28,17 +28,9 @@ defmodule Mix.Tasks.Protox.Generate do
     generate: :string
   ]
 
-  @default_generate_opt_all [
-    keep_unknown_fields: true
-  ]
-
-  @default_generate_opt_none [
-    keep_unknown_fields: false
-  ]
-
-  @map_generate_opts %{
-    "unknown_fields" => {:keep_unknown_fields, true}
-  }
+  @default_generate_opt_all []
+  @default_generate_opt_none []
+  @map_generate_opts %{}
 
   @impl Mix.Task
   @spec run(any) :: any

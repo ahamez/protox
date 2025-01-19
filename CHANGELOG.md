@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Drop support for Elixir < 1.15
 - BREAKING CHANGE: Drop support of JSON encoding and decoding.
 - BREAKING CHANGE: Remove :path option in favor of :paths
+- BREAKING CHANGE: Remove :keep_unknown_fields option
+  It added complexity to the generation logic while not providing any value as one can simply ignore those fields.
 - BREAKING CHANGE: Remove generated syntax/0 (functionality still available through schema/1)
 - BREAKING CHANGE: Remove generated file_options/0 (functionality still available through schema/1)
 - BREAKING CHANGE: Remove generated field_def/1 (functionality still available through schema/1)
