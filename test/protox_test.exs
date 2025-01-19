@@ -92,50 +92,61 @@ defmodule ProtoxTest do
   end
 
   test "Can access required fields of a protobuf 2 message" do
-    assert TestAllRequiredTypesProto2.required_fields() == [
-             :required_int32,
-             :required_int64,
-             :required_uint32,
-             :required_uint64,
-             :required_sint32,
-             :required_sint64,
-             :required_fixed32,
-             :required_fixed64,
-             :required_sfixed32,
-             :required_sfixed64,
-             :required_float,
-             :required_double,
-             :required_bool,
-             :required_string,
-             :required_bytes,
-             :required_nested_message,
-             :required_foreign_message,
-             :required_nested_enum,
-             :required_foreign_enum,
-             :required_string_piece,
-             :required_cord,
-             :recursive_message,
+    required_fields =
+      TestAllRequiredTypesProto2.schema().fields
+      |> Enum.flat_map(fn
+        {name, %Protox.Field{label: :required}} -> [name]
+        _ -> []
+      end)
+      |> Enum.sort()
+
+    assert required_fields == [
              :data,
-             :default_int32,
-             :default_int64,
-             :default_uint32,
-             :default_uint64,
-             :default_sint32,
-             :default_sint64,
+             :default_bool,
+             :default_bytes,
+             :default_double,
              :default_fixed32,
              :default_fixed64,
+             :default_float,
+             :default_int32,
+             :default_int64,
              :default_sfixed32,
              :default_sfixed64,
-             :default_float,
-             :default_double,
-             :default_bool,
+             :default_sint32,
+             :default_sint64,
              :default_string,
-             :default_bytes
+             :default_uint32,
+             :default_uint64,
+             :recursive_message,
+             :required_bool,
+             :required_bytes,
+             :required_cord,
+             :required_double,
+             :required_fixed32,
+             :required_fixed64,
+             :required_float,
+             :required_foreign_enum,
+             :required_foreign_message,
+             :required_int32,
+             :required_int64,
+             :required_nested_enum,
+             :required_nested_message,
+             :required_sfixed32,
+             :required_sfixed64,
+             :required_sint32,
+             :required_sint64,
+             :required_string,
+             :required_string_piece,
+             :required_uint32,
+             :required_uint64
            ]
   end
 
   test "Protobuf 3 don't have required fields" do
-    assert TestAllTypesProto3.required_fields() == []
+    required_fields =
+      for {name, %Protox.Field{label: :required}} <- TestAllTypesProto3.schema().fields, do: name
+
+    assert required_fields == []
   end
 
   test "Can export to protoc and read its output for protobuf3 messages" do
