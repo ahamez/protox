@@ -9,7 +9,7 @@ defmodule Protox.DefineMessage do
     for {_msg_name, msg = %Protox.Message{}} <- messages do
       sorted_fields = msg.fields |> Map.values() |> Enum.sort(&(&1.tag < &2.tag))
 
-      required_fields = make_required_fields(sorted_fields)
+      required_fields = get_required_fields(sorted_fields)
       unknown_fields_name = make_unknown_fields_name(:__uf__, sorted_fields)
       opts = Keyword.put(opts, :unknown_fields_name, unknown_fields_name)
 
@@ -17,7 +17,6 @@ defmodule Protox.DefineMessage do
         make_struct_fields(sorted_fields, msg.syntax, unknown_fields_name, keep_unknown_fields)
 
       unknown_fields_funs = make_unknown_fields_funs(unknown_fields_name, keep_unknown_fields)
-      required_fields_fun = make_required_fields_fun(required_fields)
       default_fun = make_default_funs(sorted_fields)
 
       encoder = Protox.DefineEncoder.define(sorted_fields, required_fields, msg.syntax, opts)
@@ -34,7 +33,6 @@ defmodule Protox.DefineMessage do
           unquote(encoder)
           unquote(decoder)
           unquote(unknown_fields_funs)
-          unquote(required_fields_fun)
           unquote(default_fun)
 
           @spec schema() :: Protox.Message.t()
@@ -136,30 +134,7 @@ defmodule Protox.DefineMessage do
   defp make_oneof_field(_, _, parent), do: {parent, nil}
 
   # Get the list of fields that are marked as `required`.
-  defp make_required_fields(fields) do
+  defp get_required_fields(fields) do
     for %Field{label: :required, name: name} <- fields, do: name
-  end
-
-  defp make_required_fields_fun(required_fields) do
-    required_fields_typesecs = make_required_fields_typespec(required_fields)
-
-    quote do
-      @spec required_fields() :: unquote(required_fields_typesecs)
-      def required_fields(), do: unquote(required_fields)
-    end
-  end
-
-  defp make_required_fields_typespec([]), do: quote(do: [])
-
-  defp make_required_fields_typespec(fields) do
-    specs =
-      Enum.reduce(
-        fields,
-        fn field, acc ->
-          quote(do: unquote(acc) | unquote(field))
-        end
-      )
-
-    quote(do: [unquote(specs)])
   end
 end
