@@ -10,7 +10,7 @@ defmodule Protox.Google.Protobuf.BoolValue do
         fields: %{
           value:
             Protox.Field.new!(
-              kind: {:scalar, false},
+              kind: %Protox.Scalar{default_value: false},
               label: :optional,
               name: :value,
               tag: 1,

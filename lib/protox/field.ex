@@ -7,7 +7,7 @@ defmodule Protox.Field do
           tag: number(),
           label: Protox.Types.label(),
           name: atom(),
-          kind: Protox.Types.kind(),
+          kind: Protox.Kind.t(),
           type: Protox.Types.type()
         }
 

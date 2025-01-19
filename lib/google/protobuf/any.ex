@@ -10,7 +10,7 @@ defmodule Protox.Google.Protobuf.Any do
         fields: %{
           type_url:
             Protox.Field.new!(
-              kind: {:scalar, ""},
+              kind: %Protox.Scalar{default_value: ""},
               label: :optional,
               name: :type_url,
               tag: 1,
@@ -18,7 +18,7 @@ defmodule Protox.Google.Protobuf.Any do
             ),
           value:
             Protox.Field.new!(
-              kind: {:scalar, ""},
+              kind: %Protox.Scalar{default_value: ""},
               label: :optional,
               name: :value,
               tag: 2,

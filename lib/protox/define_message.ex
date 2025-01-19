@@ -1,7 +1,7 @@
 defmodule Protox.DefineMessage do
   @moduledoc false
 
-  alias Protox.Field
+  alias Protox.{Field, Scalar}
 
   def define(messages, opts \\ []) do
     for {_msg_name, msg = %Protox.Message{}} <- messages do
@@ -56,20 +56,9 @@ defmodule Protox.DefineMessage do
 
   # Generate the functions that provide a direct access to the default value of a field.
   defp make_default_funs(fields) do
-    spec =
-      quote do
-        @spec default(atom()) ::
-                {:ok, boolean() | integer() | String.t() | float()} | {:error, atom()}
-      end
-
-    match_all =
-      quote do
-        def default(_), do: {:error, :no_such_field}
-      end
-
-    ast =
+    all_default_funs =
       Enum.map(fields, fn
-        %Field{name: name, kind: {:scalar, default}} ->
+        %Field{name: name, kind: %Scalar{default_value: default}} ->
           quote do
             def default(unquote(name)), do: {:ok, unquote(default)}
           end
@@ -80,7 +69,15 @@ defmodule Protox.DefineMessage do
           end
       end)
 
-    List.flatten([spec, ast, match_all])
+    quote do
+      @spec default(atom()) ::
+              {:ok, boolean() | integer() | String.t() | float()}
+              | {:error, :no_such_field | :no_default_value}
+
+      unquote_splicing(all_default_funs)
+
+      def default(_), do: {:error, :no_such_field}
+    end
   end
 
   # Make sure the name chosen for the struct fields that stores the unknow fields
@@ -109,8 +106,8 @@ defmodule Protox.DefineMessage do
           {:oneof, parent} -> make_oneof_field(label, name, parent)
           :packed -> {name, []}
           :unpacked -> {name, []}
-          {:scalar, _} when syntax == :proto2 -> {name, nil}
-          {:scalar, default_value} when syntax == :proto3 -> {name, default_value}
+          %Scalar{} when syntax == :proto2 -> {name, nil}
+          %Scalar{default_value: default_value} when syntax == :proto3 -> {name, default_value}
         end
       end
 
