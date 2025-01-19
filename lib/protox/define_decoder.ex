@@ -2,8 +2,6 @@ defmodule Protox.DefineDecoder do
   @moduledoc false
   # Internal. Generates the decoder of a message.
 
-  @default_keep_unknown_field true
-
   alias Protox.Field
 
   use Protox.{
@@ -112,14 +110,12 @@ defmodule Protox.DefineDecoder do
     tag_0_case = make_parse_key_value_tag_0()
 
     # Fragment to parse unknown fields. Those are identified with an unknown tag.
-    keep_unknown_fields = Keyword.get(opts, :keep_unknown_fields, @default_keep_unknown_field)
     unknown_fields_name = Keyword.fetch!(opts, :unknown_fields_name)
 
     unknown_tag_case =
       make_parse_key_value_unknown(
         vars,
         keep_set_fields,
-        keep_unknown_fields,
         unknown_fields_name
       )
 
@@ -168,12 +164,7 @@ defmodule Protox.DefineDecoder do
     end)
   end
 
-  defp make_parse_key_value_unknown(
-         vars,
-         keep_set_fields,
-         true = _keep_unknown_fields,
-         unknown_fields_name
-       ) do
+  defp make_parse_key_value_unknown(vars, keep_set_fields, unknown_fields_name) do
     body =
       quote do
         {
@@ -193,27 +184,6 @@ defmodule Protox.DefineDecoder do
     quote do
       {tag, wire_type, rest} ->
         {unquote(vars.value), rest} = Protox.Decode.parse_unknown(tag, wire_type, rest)
-
-        unquote(case_return)
-    end
-  end
-
-  defp make_parse_key_value_unknown(
-         vars,
-         keep_set_fields,
-         false = _keep_unknown_fields,
-         _unknown_fields_name
-       ) do
-    # No need to maintain a list of set fields when the list of required fields is empty
-    case_return =
-      case keep_set_fields do
-        true -> quote do: {unquote(vars.set_fields), [], rest}
-        false -> quote do: {[], rest}
-      end
-
-    quote do
-      {tag, wire_type, rest} ->
-        {_, rest} = Protox.Decode.parse_unknown(tag, wire_type, rest)
 
         unquote(case_return)
     end

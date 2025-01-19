@@ -84,13 +84,6 @@ defmodule ProtoxTest do
              %NullHypothesisProto3{}
   end
 
-  test "Don't keep unknown fields when asked not to" do
-    bytes = <<8, 42, 136, 241, 4, 83>>
-    msg = NoUf.decode!(bytes)
-    assert msg == %NoUf{}
-    assert Map.get(msg, :__uf__) == nil
-  end
-
   test "Can access required fields of a protobuf 2 message" do
     required_fields =
       TestAllRequiredTypesProto2.schema().fields
