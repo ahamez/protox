@@ -10,7 +10,7 @@ defmodule Protox.Google.Protobuf.Timestamp do
         fields: %{
           seconds:
             Protox.Field.new!(
-              kind: {:scalar, 0},
+              kind: %Protox.Scalar{default_value: 0},
               label: :optional,
               name: :seconds,
               tag: 1,
@@ -18,7 +18,7 @@ defmodule Protox.Google.Protobuf.Timestamp do
             ),
           nanos:
             Protox.Field.new!(
-              kind: {:scalar, 0},
+              kind: %Protox.Scalar{default_value: 0},
               label: :optional,
               name: :nanos,
               tag: 2,

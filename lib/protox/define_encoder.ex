@@ -2,7 +2,7 @@ defmodule Protox.DefineEncoder do
   @moduledoc false
   # Internal. Generates the encoder of a message.
 
-  alias Protox.Field
+  alias Protox.{Field, Scalar}
 
   def define(fields, required_fields, syntax, opts \\ []) do
     {unknown_fields_name, _opts} = Keyword.pop!(opts, :unknown_fields_name)
@@ -143,7 +143,7 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_field_body(%Field{kind: {:scalar, default}} = field, required, syntax, vars) do
+  defp make_encode_field_body(%Field{kind: %Scalar{}} = field, required, syntax, vars) do
     key = make_key_bytes(field.tag, field.type)
     var = quote do: unquote(vars.msg).unquote(field.name)
     encode_value_ast = get_encode_value_body(field.type, var)
@@ -169,7 +169,7 @@ defmodule Protox.DefineEncoder do
       :proto3 ->
         quote do
           # Use == rather than pattern match for float comparison
-          if unquote(var) == unquote(default) do
+          if unquote(var) == unquote(field.kind.default_value) do
             []
           else
             [unquote(key), unquote(encode_value_ast)]
