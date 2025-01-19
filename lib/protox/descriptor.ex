@@ -62,7 +62,7 @@ defmodule Protox.Descriptor do
               tag: 1,
               label: :none,
               name: :name,
-              kind: {:scalar, ""},
+              kind: %Protox.Scalar{default_value: ""},
               type: :string
             ),
           package:
@@ -70,7 +70,7 @@ defmodule Protox.Descriptor do
               tag: 2,
               label: :none,
               name: :package,
-              kind: {:scalar, ""},
+              kind: %Protox.Scalar{default_value: ""},
               type: :string
             ),
           message_type:
@@ -102,7 +102,7 @@ defmodule Protox.Descriptor do
               tag: 8,
               label: :none,
               name: :options,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: {:message, Protox.Google.Protobuf.FileOptions}
             ),
           syntax:
@@ -110,7 +110,7 @@ defmodule Protox.Descriptor do
               tag: 12,
               label: :none,
               name: :syntax,
-              kind: {:scalar, ""},
+              kind: %Protox.Scalar{default_value: ""},
               type: :string
             )
         }
@@ -124,7 +124,7 @@ defmodule Protox.Descriptor do
               tag: 1,
               label: :none,
               name: :start,
-              kind: {:scalar, 0},
+              kind: %Protox.Scalar{default_value: 0},
               type: :int32
             ),
           end:
@@ -132,7 +132,7 @@ defmodule Protox.Descriptor do
               tag: 2,
               label: :none,
               name: :end,
-              kind: {:scalar, 0},
+              kind: %Protox.Scalar{default_value: 0},
               type: :int32
             )
         }
@@ -148,7 +148,7 @@ defmodule Protox.Descriptor do
               tag: 1,
               label: :none,
               name: :name,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: :string
             ),
           field:
@@ -204,7 +204,7 @@ defmodule Protox.Descriptor do
               tag: 7,
               label: :none,
               name: :options,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: {:message, Protox.Google.Protobuf.MessageOptions}
             )
         }
@@ -219,7 +219,7 @@ defmodule Protox.Descriptor do
               tag: 1,
               label: :none,
               name: :name,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: :string
             ),
           number:
@@ -227,7 +227,7 @@ defmodule Protox.Descriptor do
               tag: 3,
               label: :none,
               name: :number,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: :int32
             ),
           label:
@@ -235,7 +235,7 @@ defmodule Protox.Descriptor do
               tag: 4,
               label: :none,
               name: :label,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: {:enum, Protox.Google.Protobuf.FieldDescriptorProto.Label}
             ),
           type:
@@ -243,7 +243,7 @@ defmodule Protox.Descriptor do
               tag: 5,
               label: :none,
               name: :type,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: {:enum, Protox.Google.Protobuf.FieldDescriptorProto.Type}
             ),
           type_name:
@@ -251,7 +251,7 @@ defmodule Protox.Descriptor do
               tag: 6,
               label: :none,
               name: :type_name,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: :string
             ),
           extendee:
@@ -259,7 +259,7 @@ defmodule Protox.Descriptor do
               tag: 2,
               label: :none,
               name: :extendee,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: :string
             ),
           default_value:
@@ -267,7 +267,7 @@ defmodule Protox.Descriptor do
               tag: 7,
               label: :none,
               name: :default_value,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: :string
             ),
           oneof_index:
@@ -275,7 +275,7 @@ defmodule Protox.Descriptor do
               tag: 9,
               label: :none,
               name: :oneof_index,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: :int32
             ),
           options:
@@ -283,7 +283,7 @@ defmodule Protox.Descriptor do
               tag: 8,
               label: :none,
               name: :options,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: {:message, Protox.Google.Protobuf.FieldOptions}
             ),
           proto3_optional:
@@ -291,7 +291,7 @@ defmodule Protox.Descriptor do
               tag: 17,
               label: :none,
               name: :proto3_optional,
-              kind: {:scalar, false},
+              kind: %Protox.Scalar{default_value: false},
               type: :bool
             )
         }
@@ -302,7 +302,7 @@ defmodule Protox.Descriptor do
         fields: %{
           java_package:
             Protox.Field.new!(
-              kind: {:scalar, ""},
+              kind: %Protox.Scalar{default_value: ""},
               label: :optional,
               name: :java_package,
               tag: 1,
@@ -310,7 +310,7 @@ defmodule Protox.Descriptor do
             ),
           java_outer_classname:
             Protox.Field.new!(
-              kind: {:scalar, ""},
+              kind: %Protox.Scalar{default_value: ""},
               label: :optional,
               name: :java_outer_classname,
               tag: 8,
@@ -318,7 +318,7 @@ defmodule Protox.Descriptor do
             ),
           optimize_for:
             Protox.Field.new!(
-              kind: {:scalar, :SPEED},
+              kind: %Protox.Scalar{default_value: :SPEED},
               label: :optional,
               name: :optimize_for,
               tag: 9,
@@ -326,7 +326,7 @@ defmodule Protox.Descriptor do
             ),
           java_multiple_files:
             Protox.Field.new!(
-              kind: {:scalar, false},
+              kind: %Protox.Scalar{default_value: false},
               label: :optional,
               name: :java_multiple_files,
               tag: 10,
@@ -334,7 +334,7 @@ defmodule Protox.Descriptor do
             ),
           go_package:
             Protox.Field.new!(
-              kind: {:scalar, ""},
+              kind: %Protox.Scalar{default_value: ""},
               label: :optional,
               name: :go_package,
               tag: 11,
@@ -342,7 +342,7 @@ defmodule Protox.Descriptor do
             ),
           cc_generic_services:
             Protox.Field.new!(
-              kind: {:scalar, false},
+              kind: %Protox.Scalar{default_value: false},
               label: :optional,
               name: :cc_generic_services,
               tag: 16,
@@ -350,7 +350,7 @@ defmodule Protox.Descriptor do
             ),
           java_generic_services:
             Protox.Field.new!(
-              kind: {:scalar, false},
+              kind: %Protox.Scalar{default_value: false},
               label: :optional,
               name: :java_generic_services,
               tag: 17,
@@ -358,7 +358,7 @@ defmodule Protox.Descriptor do
             ),
           py_generic_services:
             Protox.Field.new!(
-              kind: {:scalar, false},
+              kind: %Protox.Scalar{default_value: false},
               label: :optional,
               name: :py_generic_services,
               tag: 18,
@@ -366,7 +366,7 @@ defmodule Protox.Descriptor do
             ),
           java_generate_equals_and_hash:
             Protox.Field.new!(
-              kind: {:scalar, false},
+              kind: %Protox.Scalar{default_value: false},
               label: :optional,
               name: :java_generate_equals_and_hash,
               tag: 20,
@@ -374,7 +374,7 @@ defmodule Protox.Descriptor do
             ),
           deprecated:
             Protox.Field.new!(
-              kind: {:scalar, false},
+              kind: %Protox.Scalar{default_value: false},
               label: :optional,
               name: :deprecated,
               tag: 23,
@@ -382,7 +382,7 @@ defmodule Protox.Descriptor do
             ),
           java_string_check_utf8:
             Protox.Field.new!(
-              kind: {:scalar, false},
+              kind: %Protox.Scalar{default_value: false},
               label: :optional,
               name: :java_string_check_utf8,
               tag: 27,
@@ -390,7 +390,7 @@ defmodule Protox.Descriptor do
             ),
           cc_enable_arenas:
             Protox.Field.new!(
-              kind: {:scalar, true},
+              kind: %Protox.Scalar{default_value: true},
               label: :optional,
               name: :cc_enable_arenas,
               tag: 31,
@@ -398,7 +398,7 @@ defmodule Protox.Descriptor do
             ),
           objc_class_prefix:
             Protox.Field.new!(
-              kind: {:scalar, ""},
+              kind: %Protox.Scalar{default_value: ""},
               label: :optional,
               name: :objc_class_prefix,
               tag: 36,
@@ -406,7 +406,7 @@ defmodule Protox.Descriptor do
             ),
           csharp_namespace:
             Protox.Field.new!(
-              kind: {:scalar, ""},
+              kind: %Protox.Scalar{default_value: ""},
               label: :optional,
               name: :csharp_namespace,
               tag: 37,
@@ -414,7 +414,7 @@ defmodule Protox.Descriptor do
             ),
           swift_prefix:
             Protox.Field.new!(
-              kind: {:scalar, ""},
+              kind: %Protox.Scalar{default_value: ""},
               label: :optional,
               name: :swift_prefix,
               tag: 39,
@@ -422,7 +422,7 @@ defmodule Protox.Descriptor do
             ),
           php_class_prefix:
             Protox.Field.new!(
-              kind: {:scalar, ""},
+              kind: %Protox.Scalar{default_value: ""},
               label: :optional,
               name: :php_class_prefix,
               tag: 40,
@@ -430,7 +430,7 @@ defmodule Protox.Descriptor do
             ),
           php_namespace:
             Protox.Field.new!(
-              kind: {:scalar, ""},
+              kind: %Protox.Scalar{default_value: ""},
               label: :optional,
               name: :php_namespace,
               tag: 41,
@@ -438,7 +438,7 @@ defmodule Protox.Descriptor do
             ),
           php_generic_services:
             Protox.Field.new!(
-              kind: {:scalar, false},
+              kind: %Protox.Scalar{default_value: false},
               label: :optional,
               name: :php_generic_services,
               tag: 42,
@@ -446,7 +446,7 @@ defmodule Protox.Descriptor do
             ),
           php_metadata_namespace:
             Protox.Field.new!(
-              kind: {:scalar, ""},
+              kind: %Protox.Scalar{default_value: ""},
               label: :optional,
               name: :php_metadata_namespace,
               tag: 44,
@@ -454,7 +454,7 @@ defmodule Protox.Descriptor do
             ),
           ruby_package:
             Protox.Field.new!(
-              kind: {:scalar, ""},
+              kind: %Protox.Scalar{default_value: ""},
               label: :optional,
               name: :ruby_package,
               tag: 45,
@@ -487,7 +487,7 @@ defmodule Protox.Descriptor do
               tag: 3,
               label: :none,
               name: :identifier_value,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: :string
             ),
           positive_int_value:
@@ -495,7 +495,7 @@ defmodule Protox.Descriptor do
               tag: 4,
               label: :none,
               name: :positive_int_value,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: :uint64
             ),
           negative_int_value:
@@ -503,7 +503,7 @@ defmodule Protox.Descriptor do
               tag: 5,
               label: :none,
               name: :negative_int_value,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: :int64
             ),
           double_value:
@@ -511,7 +511,7 @@ defmodule Protox.Descriptor do
               tag: 6,
               label: :none,
               name: :double_value,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: :double
             ),
           string_value:
@@ -519,7 +519,7 @@ defmodule Protox.Descriptor do
               tag: 7,
               label: :none,
               name: :string_value,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: :bytes
             ),
           aggregate_value:
@@ -527,7 +527,7 @@ defmodule Protox.Descriptor do
               tag: 8,
               label: :none,
               name: :aggregate_value,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: :string
             )
         }
@@ -541,7 +541,7 @@ defmodule Protox.Descriptor do
               tag: 1,
               label: :none,
               name: :name_part,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: :string
             ),
           is_extension:
@@ -549,7 +549,7 @@ defmodule Protox.Descriptor do
               tag: 2,
               label: :none,
               name: :is_extension,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: :bool
             )
         }
@@ -564,7 +564,7 @@ defmodule Protox.Descriptor do
               tag: 1,
               label: :none,
               name: :name,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: :string
             )
         }
@@ -579,7 +579,7 @@ defmodule Protox.Descriptor do
               tag: 1,
               label: :none,
               name: :name,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: :string
             ),
           value:
@@ -602,7 +602,7 @@ defmodule Protox.Descriptor do
               tag: 1,
               label: :none,
               name: :name,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: :string
             ),
           number:
@@ -610,7 +610,7 @@ defmodule Protox.Descriptor do
               tag: 2,
               label: :none,
               name: :number,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: :int32
             )
         }
@@ -627,7 +627,7 @@ defmodule Protox.Descriptor do
               tag: 3,
               label: :none,
               name: :deprecated,
-              kind: {:scalar, false},
+              kind: %Protox.Scalar{default_value: false},
               type: :bool
             ),
           map_entry:
@@ -635,7 +635,7 @@ defmodule Protox.Descriptor do
               tag: 7,
               label: :none,
               name: :map_entry,
-              kind: {:scalar, false},
+              kind: %Protox.Scalar{default_value: false},
               type: :bool
             )
         }
@@ -650,7 +650,7 @@ defmodule Protox.Descriptor do
               tag: 2,
               label: :none,
               name: :packed,
-              kind: {:scalar, nil},
+              kind: %Protox.Scalar{default_value: nil},
               type: :bool
             ),
           deprecated:
@@ -658,7 +658,7 @@ defmodule Protox.Descriptor do
               tag: 3,
               label: :none,
               name: :deprecated,
-              kind: {:scalar, false},
+              kind: %Protox.Scalar{default_value: false},
               type: :bool
             )
         }

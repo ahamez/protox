@@ -5,7 +5,7 @@ defmodule Protox.RandomInit do
 
   use PropCheck
 
-  alias Protox.Field
+  alias Protox.{Field, Scalar}
 
   def generate_msg(mod) do
     gen =
@@ -38,9 +38,9 @@ defmodule Protox.RandomInit do
       # Transform into a map for lookup
       |> Enum.reduce(%{}, fn %Field{} = field, acc ->
         case field.kind do
-          {:scalar, _} ->
+          %Scalar{} ->
             {:message, sub_msg} = field.type
-            Map.put(acc, field.name, {:scalar, sub_msg})
+            Map.put(acc, field.name, %Scalar{default_value: sub_msg})
 
           :unpacked ->
             {:message, sub_msg} = field.type
@@ -87,7 +87,7 @@ defmodule Protox.RandomInit do
               end
             end
 
-          {:scalar, sub_msg} ->
+          %Scalar{default_value: sub_msg} ->
             if val == nil do
               [{field_name, nil} | acc]
             else
@@ -160,41 +160,41 @@ defmodule Protox.RandomInit do
   defp do_generate_oneof(acc, oneof_name, oneof_list, depth) do
     generators =
       Enum.map(oneof_list, fn field = %Field{kind: {:oneof, _}} ->
-        {field.name, get_gen(depth, {:scalar, :dummy}, field.type)}
+        {field.name, get_gen(depth, %Scalar{default_value: :dummy}, field.type)}
       end)
 
     [{oneof_name, oneof([nil | generators])} | acc]
   end
 
-  defp get_gen(_depth, {:scalar, _}, {:enum, e}) do
+  defp get_gen(_depth, %Scalar{}, {:enum, e}) do
     oneof(e.constants() |> Map.new() |> Map.values())
   end
 
-  defp get_gen(_depth, {:scalar, _}, :bool), do: bool()
+  defp get_gen(_depth, %Scalar{}, :bool), do: bool()
 
-  defp get_gen(_depth, {:scalar, _}, :int32), do: integer()
-  defp get_gen(_depth, {:scalar, _}, :int64), do: integer()
-  defp get_gen(_depth, {:scalar, _}, :sint32), do: integer()
-  defp get_gen(_depth, {:scalar, _}, :sint64), do: integer()
-  defp get_gen(_depth, {:scalar, _}, :sfixed32), do: integer()
-  defp get_gen(_depth, {:scalar, _}, :sfixed64), do: integer()
-  defp get_gen(_depth, {:scalar, _}, :fixed32), do: non_neg_integer()
-  defp get_gen(_depth, {:scalar, _}, :fixed64), do: non_neg_integer()
+  defp get_gen(_depth, %Scalar{}, :int32), do: integer()
+  defp get_gen(_depth, %Scalar{}, :int64), do: integer()
+  defp get_gen(_depth, %Scalar{}, :sint32), do: integer()
+  defp get_gen(_depth, %Scalar{}, :sint64), do: integer()
+  defp get_gen(_depth, %Scalar{}, :sfixed32), do: integer()
+  defp get_gen(_depth, %Scalar{}, :sfixed64), do: integer()
+  defp get_gen(_depth, %Scalar{}, :fixed32), do: non_neg_integer()
+  defp get_gen(_depth, %Scalar{}, :fixed64), do: non_neg_integer()
 
-  defp get_gen(_depth, {:scalar, _}, :uint32), do: non_neg_integer()
-  defp get_gen(_depth, {:scalar, _}, :uint64), do: non_neg_integer()
+  defp get_gen(_depth, %Scalar{}, :uint32), do: non_neg_integer()
+  defp get_gen(_depth, %Scalar{}, :uint64), do: non_neg_integer()
 
-  defp get_gen(_depth, {:scalar, _}, :float), do: gen_float()
-  defp get_gen(_depth, {:scalar, _}, :double), do: gen_float()
+  defp get_gen(_depth, %Scalar{}, :float), do: gen_float()
+  defp get_gen(_depth, %Scalar{}, :double), do: gen_float()
 
-  defp get_gen(_depth, {:scalar, _}, :bytes), do: binary()
-  defp get_gen(_depth, {:scalar, _}, :string), do: utf8()
+  defp get_gen(_depth, %Scalar{}, :bytes), do: binary()
+  defp get_gen(_depth, %Scalar{}, :string), do: utf8()
 
-  defp get_gen(_depth, {:scalar, _}, {:message, sub_msg}) when sub_msg in @well_known_types do
+  defp get_gen(_depth, %Scalar{}, {:message, sub_msg}) when sub_msg in @well_known_types do
     nil
   end
 
-  defp get_gen(depth, {:scalar, _}, {:message, sub_msg}) do
+  defp get_gen(depth, %Scalar{}, {:message, sub_msg}) do
     oneof([nil, generate_fields(sub_msg, depth - 1)])
   end
 
@@ -249,7 +249,7 @@ defmodule Protox.RandomInit do
 
   defp get_gen(depth, :map, {key_ty, {:message, sub_msg}}) do
     map(
-      get_gen(depth, {:scalar, :dummy}, key_ty),
+      get_gen(depth, %Scalar{default_value: :dummy}, key_ty),
       # we don't want a nil when a message is a value in a map
       generate_fields(sub_msg, depth - 1)
     )
@@ -257,8 +257,8 @@ defmodule Protox.RandomInit do
 
   defp get_gen(depth, :map, {key_ty, value_ty}) do
     map(
-      get_gen(depth, {:scalar, :dummy}, key_ty),
-      get_gen(depth, {:scalar, :dummy}, value_ty)
+      get_gen(depth, %Scalar{default_value: :dummy}, key_ty),
+      get_gen(depth, %Scalar{default_value: :dummy}, value_ty)
     )
   end
 

@@ -1,7 +1,7 @@
 defmodule Protox.DefsTest do
   use ExUnit.Case
 
-  alias Protox.Field
+  alias Protox.{Field, Scalar}
 
   @defs [
     Field.new!(tag: 8, label: nil, name: :msg_k, kind: :map, type: {:int32, :string}),
@@ -9,17 +9,35 @@ defmodule Protox.DefsTest do
     Field.new!(tag: 27, label: :repeated, name: :msg_a, kind: :packed, type: :sint64),
     Field.new!(tag: 28, label: :repeated, name: :msg_b, kind: :packed, type: :fixed32),
     Field.new!(tag: 29, label: :repeated, name: :msg_c, kind: :packed, type: :sfixed64),
-    Field.new!(tag: 1, label: :optional, name: :msg_d, kind: {:scalar, :FOO}, type: {:enum, E}),
-    Field.new!(tag: 2, label: :optional, name: :msg_e, kind: {:scalar, false}, type: :bool),
+    Field.new!(
+      tag: 1,
+      label: :optional,
+      name: :msg_d,
+      kind: %Scalar{default_value: :FOO},
+      type: {:enum, E}
+    ),
+    Field.new!(
+      tag: 2,
+      label: :optional,
+      name: :msg_e,
+      kind: %Scalar{default_value: false},
+      type: :bool
+    ),
     Field.new!(
       tag: 3,
       label: :optional,
       name: :msg_f,
-      kind: {:scalar, nil},
+      kind: %Scalar{default_value: nil},
       type: {:message, Sub}
     ),
     Field.new!(tag: 4, label: :repeated, name: :msg_g, kind: :packed, type: :int32),
-    Field.new!(tag: 5, label: :optional, name: :msg_h, kind: {:scalar, 0.0}, type: :double),
+    Field.new!(
+      tag: 5,
+      label: :optional,
+      name: :msg_h,
+      kind: %Scalar{default_value: 0.0},
+      type: :double
+    ),
     Field.new!(tag: 6, label: :repeated, name: :msg_i, kind: :packed, type: :float),
     Field.new!(tag: 7, label: :repeated, name: :msg_j, kind: :unpacked, type: {:message, Sub}),
     Field.new!(tag: 10, label: :optional, name: :msg_n, kind: {:oneof, :msg_m}, type: :string),
@@ -35,7 +53,7 @@ defmodule Protox.DefsTest do
       tag: 13,
       label: :optional,
       name: :msg_q,
-      kind: {:scalar, nil},
+      kind: %Scalar{default_value: nil},
       type: {:message, Protobuf2}
     ),
     Field.new!(

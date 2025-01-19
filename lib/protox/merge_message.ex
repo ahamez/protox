@@ -3,7 +3,7 @@ defmodule Protox.MergeMessage do
   This module provides a helper function to merge messages.
   """
 
-  alias Protox.Field
+  alias Protox.{Field, Scalar}
 
   @doc """
   Singular fields of `msg` will be overwritten, if specified in `from`, except for
@@ -55,10 +55,10 @@ defmodule Protox.MergeMessage do
       %Field{kind: :unpacked} ->
         v1 ++ v2
 
-      %Field{kind: {:scalar, _}, type: {:message, _}} ->
+      %Field{kind: %Scalar{}, type: {:message, _}} ->
         merge(v1, v2)
 
-      %Field{kind: {:scalar, _}} ->
+      %Field{kind: %Scalar{}} ->
         {:ok, default} = msg.__struct__.default(name)
         merge_scalar(msg.__struct__.schema().syntax, v1, v2, default)
 
