@@ -40,14 +40,6 @@ decode!(data)
 
 Throwing version of `decode/1`.
 
-### Syntax
-
-```elixir
-@spec syntax() :: atom()
-syntax()
-```
-Get the syntax of the protobuf message: `:proto2` or `:proto3`.
-
 ### Default values
 
 ```elixir
@@ -58,8 +50,6 @@ default(field_name)
 Get the default value of a message field. Note that for Protobuf 3, the default value is mandated by [the Google reference documentation](https://developers.google.com/protocol-buffers/docs/proto3#default).
 
 ### Unknown fields
-
-_Note_: these functions are not available when the option `:keep_unknown_fields` is set to `false`.
 
 ```elixir
 @spec clear_unknown_fields(struct() :: struct()
@@ -80,20 +70,15 @@ unknown_fields_name(msg)
 ```
 Get the name of the field that stores unknown fields.
 
-### Required fields
-
-```elixir
-@spec required_fields() :: [atom()]
-required_fields()
-```
-Get the list of required fields.
-
 ### Metadata
 ```elixir
-@spec file_options() :: struct() | nil
-file_options()
+@spec schema() :: Protox.Message.t()
+schema()
 ```
-Get the options set in `*.proto` files (see [the Google reference documentation](https://developers.google.com/protocol-buffers/docs/proto#options)). Returns a [`FileOption`](https://github.com/protocolbuffers/protobuf/blob/cac9765af0ace57ce00b6ea07b8829339a622b1d/src/google/protobuf/descriptor.proto#L346) structure. All messages of a same file share the same options.
+Return the underlying definition of a message, which contains information such as:
+- syntax (protobuf 2 or 3)
+- required fields
+- types of fields
 
 ## Enums
 
