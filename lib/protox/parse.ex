@@ -343,7 +343,7 @@ defmodule Protox.Parse do
          %FieldDescriptorProto{label: :repeated, type: :message} = descriptor
        ) do
     # Might be a map. Now find a nested type of upper that is the corresponding entry.
-    res =
+    search_nested_type =
       Enum.find(upper.nested_type, fn m ->
         if m.options != nil and m.options.map_entry do
           m_name = prefix ++ [m.name]
@@ -357,7 +357,7 @@ defmodule Protox.Parse do
         end
       end)
 
-    case res do
+    case search_nested_type do
       nil ->
         nil
 
