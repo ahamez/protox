@@ -240,25 +240,6 @@ You must always use `unknown_fields/1` as the name of the field (e.g. `__uf__` i
 
 When you encode a message that contains unknown fields, they will be reencoded in the serialized output.
 
-### Disable support of unknown fields
-
-You can deactivate the support of unknown fields by setting the `:keep_unknown_fields` option to `false`:
-```elixir
-defmodule Baz do
-  use Protox,
-    schema: """
-    syntax = "proto3";
-
-    message Sub {
-      int32 a = 1;
-      string b = 2;
-    }
-    """,
-    keep_unknown_fields: false
-end
-```
-ℹ️ `protox` will still correctly parse unknown fields, they just won't be added to the structure and you won't be able to access them. This also means that unkown fields won't be serialized back.
-
 ## Unsupported features
 
 * The [Any](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#any) well-known type is partially supported: you can manually unpack the embedded message right after decoding and conversely pack it right before encoding;

@@ -4,8 +4,6 @@ defmodule Protox.DefineMessage do
   alias Protox.Field
 
   def define(messages, opts \\ []) do
-    keep_unknown_fields = Keyword.get(opts, :keep_unknown_fields, true)
-
     for {_msg_name, msg = %Protox.Message{}} <- messages do
       sorted_fields = msg.fields |> Map.values() |> Enum.sort(&(&1.tag < &2.tag))
 
@@ -13,10 +11,9 @@ defmodule Protox.DefineMessage do
       unknown_fields_name = make_unknown_fields_name(:__uf__, sorted_fields)
       opts = Keyword.put(opts, :unknown_fields_name, unknown_fields_name)
 
-      struct_fields =
-        make_struct_fields(sorted_fields, msg.syntax, unknown_fields_name, keep_unknown_fields)
+      struct_fields = make_struct_fields(sorted_fields, msg.syntax, unknown_fields_name)
 
-      unknown_fields_funs = make_unknown_fields_funs(unknown_fields_name, keep_unknown_fields)
+      unknown_fields_funs = make_unknown_fields_funs(unknown_fields_name)
       default_fun = make_default_funs(sorted_fields)
 
       encoder = Protox.DefineEncoder.define(sorted_fields, required_fields, msg.syntax, opts)
@@ -44,7 +41,7 @@ defmodule Protox.DefineMessage do
 
   # -- Private
 
-  defp make_unknown_fields_funs(unknown_fields, true = _keep_unknown_fields) do
+  defp make_unknown_fields_funs(unknown_fields) do
     quote do
       @spec unknown_fields(struct()) :: [{non_neg_integer(), Protox.Types.tag(), binary()}]
       def unknown_fields(msg), do: msg.unquote(unknown_fields)
@@ -55,10 +52,6 @@ defmodule Protox.DefineMessage do
       @spec clear_unknown_fields(struct) :: struct
       def clear_unknown_fields(msg), do: struct!(msg, [{unquote(unknown_fields), []}])
     end
-  end
-
-  defp make_unknown_fields_funs(_unknown_fields, false = _keep_unknown_fields) do
-    []
   end
 
   # Generate the functions that provide a direct access to the default value of a field.
@@ -108,7 +101,7 @@ defmodule Protox.DefineMessage do
   end
 
   # Generate fields of the struct which is created for a message.
-  defp make_struct_fields(fields, syntax, unknown_fields, keep_unknown_fields) do
+  defp make_struct_fields(fields, syntax, unknown_fields) do
     struct_fields =
       for %Field{label: label, name: name, kind: kind} <- fields do
         case kind do
@@ -121,13 +114,7 @@ defmodule Protox.DefineMessage do
         end
       end
 
-    struct_fields =
-      case keep_unknown_fields do
-        true -> struct_fields ++ [{unknown_fields, []}]
-        false -> struct_fields
-      end
-
-    Enum.uniq(struct_fields)
+    Enum.uniq(struct_fields ++ [{unknown_fields, []}])
   end
 
   defp make_oneof_field(:proto3_optional, name, _), do: {name, nil}
