@@ -44,7 +44,7 @@ iex> {:ok, msg} = Msg.decode(binary)
 - [Files generation](#files-generation)
 - [Conformance](#conformance)
 - [Types mapping](#types-mapping)
-- [Benchmarks](#benchmarks)
+- [Benchmark](#benchmark)
 - [Contributing](#contributing)
 - [Credits](#credits)
 
@@ -448,13 +448,11 @@ Protobuf   | Elixir
 `enum`     | `atom() \| integer()`
 `message`  | `struct()`
 
-## Benchmarks
+## Benchmark
 
 You can launch benchmarks to see how `protox` perform:
 ```
-mix run ./benchmarks/generate_payloads.exs # first time only, generates random payloads
-mix run ./benchmarks/run.exs --lib=./benchmarks/protox.exs
-mix run ./benchmarks/load.exs
+TODO
 ```
 
 ## Contributing

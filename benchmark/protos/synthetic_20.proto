@@ -1,0 +1,30 @@
+syntax = "proto3";
+package protox.benchmark.synthetic_20;
+
+enum Enum {
+  ZERO = 0;
+}
+
+message Message {
+
+   Message field_1 = 1;
+   double field_2 = 2;
+   Message field_3 = 3;
+   int64 field_4 = 4;
+   string field_5 = 5;
+   int64 field_6 = 6;
+   Message field_7 = 7;
+  repeated Message field_8 = 8;
+   fixed64 field_9 = 9;
+  repeated Message field_10 = 10;
+   bool field_11 = 11;
+   int64 field_12 = 12;
+   int64 field_13 = 13;
+   Message field_14 = 14;
+   bool field_15 = 15;
+   Message field_16 = 16;
+   Message field_17 = 17;
+   string field_18 = 18;
+   Message field_19 = 19;
+   Message field_20 = 20;
+}

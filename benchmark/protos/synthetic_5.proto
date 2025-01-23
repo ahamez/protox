@@ -1,0 +1,15 @@
+syntax = "proto3";
+package protox.benchmark.synthetic_5;
+
+enum Enum {
+  ZERO = 0;
+}
+
+message Message {
+
+   int64 field_1 = 1;
+   bool field_2 = 2;
+   string field_3 = 3;
+  repeated Message field_4 = 4;
+   int32 field_5 = 5;
+}
