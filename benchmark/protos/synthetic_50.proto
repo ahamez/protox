@@ -1,0 +1,60 @@
+syntax = "proto3";
+package protox.benchmark.synthetic_50;
+
+enum Enum {
+  ZERO = 0;
+}
+
+message Message {
+
+   bool field_1 = 1;
+   Enum field_2 = 2;
+   bool field_3 = 3;
+   double field_4 = 4;
+   string field_5 = 5;
+  repeated Message field_6 = 6;
+   int32 field_7 = 7;
+  repeated Message field_8 = 8;
+   Message field_9 = 9;
+   bool field_10 = 10;
+   Message field_11 = 11;
+   string field_12 = 12;
+   Message field_13 = 13;
+   Message field_14 = 14;
+   Message field_15 = 15;
+   bool field_16 = 16;
+   int64 field_17 = 17;
+  repeated Message field_18 = 18;
+   Message field_19 = 19;
+   Enum field_20 = 20;
+   Message field_21 = 21;
+   int64 field_22 = 22;
+  repeated float field_23 = 23;
+   Message field_24 = 24;
+   string field_25 = 25;
+   Message field_26 = 26;
+  repeated float field_27 = 27;
+   Message field_28 = 28;
+   string field_29 = 29;
+   double field_30 = 30;
+   int32 field_31 = 31;
+   bool field_32 = 32;
+   string field_33 = 33;
+   float field_34 = 34;
+   float field_35 = 35;
+   int32 field_36 = 36;
+   string field_37 = 37;
+   Enum field_38 = 38;
+   Message field_39 = 39;
+   uint64 field_40 = 40;
+  repeated Message field_41 = 41;
+   string field_42 = 42;
+   string field_43 = 43;
+   Enum field_44 = 44;
+   int64 field_45 = 45;
+   double field_46 = 46;
+   string field_47 = 47;
+   string field_48 = 48;
+   string field_49 = 49;
+   int64 field_50 = 50;
+}

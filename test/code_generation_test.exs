@@ -180,7 +180,7 @@ defmodule Protox.CodeGenerationTest do
 
       def application do
         [
-          extra_applications: [:logger]
+          extra_applications: [:logger, :benchee]
         ]
       end
 
@@ -188,7 +188,8 @@ defmodule Protox.CodeGenerationTest do
         [
           {:protox, path: "#{File.cwd!()}"},
           {:dialyxir, "~> 1.0", only: [:test, :dev], runtime: false},
-          {:credo, "~> 1.4", only: [:test, :dev], runtime: false}
+          {:credo, "~> 1.4", only: [:test, :dev], runtime: false},
+          {:benchee, "~> 1.0", only: [:test, :dev], runtime: false}
         ]
       end
     end
