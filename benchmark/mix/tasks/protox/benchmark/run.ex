@@ -4,40 +4,17 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
   use Mix.Task
 
   @options [
-    prefix: :string
+    tag: :string
   ]
 
   @impl Mix.Task
   @spec run(any) :: any
   def run(args) do
     with {opts, _argv, []} <- OptionParser.parse(args, strict: @options),
-         prefix <- Keyword.get(opts, :prefix, nil),
-         tag <- get_tag(prefix),
+         tag <- get_tag(opts),
          payloads <- get_payloads("./benchmark/benchmark_payloads.bin") do
-      IO.puts("tag=#{tag}\n")
-
-      Benchee.run(
-        %{
-          "decode" => fn input ->
-            Enum.map(input, fn {msg, _size, bytes} -> msg.__struct__.decode!(bytes) end)
-          end,
-          "encode" => fn input ->
-            Enum.map(input, fn {msg, _size, _bytes} -> msg.__struct__.encode!(msg) end)
-          end
-        },
-        inputs: payloads,
-        save: [
-          path: Path.join(["./benchmark", "#{tag}.benchee"]),
-          tag: "#{tag}"
-        ],
-        load: ["./benchmark/*.benchee"],
-        time: 10,
-        memory_time: 2,
-        formatters: [
-          {Benchee.Formatters.HTML, file: "benchmark/output/#{tag}.html"},
-          Benchee.Formatters.Console
-        ]
-      )
+      run_benchee(tag, payloads, :encode)
+      run_benchee(tag, payloads, :decode)
     else
       err ->
         IO.puts(:stderr, "Error: #{inspect(err)}")
@@ -45,27 +22,49 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
     end
   end
 
-  defp get_tag(prefix) do
-    {hash, 0} = System.cmd("git", ["rev-parse", "--short", "HEAD"])
-    elixir_version = System.version()
+  defp run_benchee(tag, payloads, task) do
+    jobs =
+      case task do
+        :encode ->
+          %{
+            "encode" => fn input ->
+              Enum.map(input, fn {msg, _size, _bytes} -> msg.__struct__.encode!(msg) end)
+            end
+          }
 
-    erlang_version =
-      [:code.root_dir(), "releases", :erlang.system_info(:otp_release), "OTP_VERSION"]
-      |> Path.join()
-      |> File.read!()
-      |> String.trim()
-
-    tag = [elixir_version, erlang_version, hash]
-
-    tag =
-      case prefix do
-        nil -> tag
-        prefix -> [prefix | tag]
+        :decode ->
+          %{
+            "decode" => fn input ->
+              Enum.map(input, fn {msg, _size, bytes} -> msg.__struct__.decode!(bytes) end)
+            end
+          }
       end
 
-    tag
-    |> Enum.map(&String.trim/1)
-    |> Enum.join("-")
+    Benchee.run(
+      jobs,
+      inputs: payloads,
+      save: [
+        path: Path.join(["./benchmark", "#{task}-#{tag}.benchee"]),
+        tag: "#{task}-#{tag}"
+      ],
+      load: ["./benchmark/#{task}*.benchee"],
+      time: 5,
+      memory_time: 2,
+      reduction_time: 2,
+      formatters: [
+        {Benchee.Formatters.HTML, file: "benchmark/output/#{task}-#{tag}.html"},
+        Benchee.Formatters.Console
+      ]
+    )
+  end
+
+  defp get_tag(opts) do
+    timestamp = DateTime.utc_now() |> Calendar.strftime("%Y%m%d-%H%S")
+
+    case Keyword.get(opts, :tag, nil) do
+      nil -> timestamp
+      tag -> "#{timestamp}-#{tag}"
+    end
   end
 
   def get_payloads(path) do
