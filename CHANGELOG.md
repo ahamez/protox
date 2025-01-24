@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - BREAKING CHANGE: Remove generated `defs/0` (functionality still available through schema/1).
 - BREAKING CHANGE: Remove generated `required_fields/0` (functionality still available through schema/1).
 - BREAKING CHANGE: Remove generated `encode/1` from strings for enums.
-- BREAKING CHANGE: Remove `Protox.Encode.encode/1` and `Protox.Encode.encode!/1` (functionality is still available in generated modules).
+- BREAKING CHANGE: Remove `Protox.Encode.encode/1` and `Protox.Encode.encode!/1` (functionality is still available in generated modules and in `Protox`.).
 
 
 ## 1.7.8
