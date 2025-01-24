@@ -5,7 +5,21 @@ defmodule Protox.Varint do
   import Bitwise
 
   @spec encode(integer) :: iodata
-  def encode(v) when v < 128, do: <<v>>
+  def encode(v) when v < 128,
+    do: <<v>>
+
+  def encode(v) when v < 16_384,
+    do: <<1::1, v::7, v >>> 7>>
+
+  def encode(v) when v < 2_097_152,
+    do: <<1::1, v::7, 1::1, v >>> 7::7, v >>> 14>>
+
+  def encode(v) when v < 268_435_456,
+    do: <<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, v >>> 21>>
+
+  def encode(v) when v < 34_359_738_368,
+    do: <<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, v >>> 28>>
+
   def encode(v), do: [<<1::1, v::7>>, encode(v >>> 7)]
 
   @spec decode(binary) :: {non_neg_integer, binary}
