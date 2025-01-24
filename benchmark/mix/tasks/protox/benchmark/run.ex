@@ -4,16 +4,15 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
   use Mix.Task
 
   @options [
-    tag: :string,
     task: :string
   ]
 
   @impl Mix.Task
   @spec run(any) :: any
   def run(args) do
-    with {opts, _argv, []} <- OptionParser.parse(args, strict: @options),
+    with {opts, argv, []} <- OptionParser.parse(args, strict: @options),
          tasks <- get_tasks(opts),
-         tag <- get_tag(opts),
+         {:ok, tag} <- get_tag(argv),
          payloads <- get_payloads("./benchmark/benchmark_payloads.bin") do
       run_benchee_tasks(tag, payloads, tasks)
     else
@@ -54,14 +53,10 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
         path: Path.join(["./benchmark/output/benchee", "#{task}-#{tag}.benchee"]),
         tag: "#{task}-#{tag}"
       ],
-      load: ["./benchmark/output/benchee/#{task}*.benchee"],
       time: 5,
       memory_time: 2,
       reduction_time: 2,
-      formatters: [
-        {Benchee.Formatters.HTML, file: "benchmark/output/html/#{task}-#{tag}.html"},
-        Benchee.Formatters.Console
-      ]
+      formatters: [Benchee.Formatters.Console]
     )
   end
 
@@ -73,14 +68,15 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
     end
   end
 
-  defp get_tag(opts) do
+  defp get_tag([]), do: {:error, "No tag provided"}
+
+  defp get_tag([tag]) do
     timestamp = DateTime.utc_now() |> Calendar.strftime("%H%M%S")
 
-    case Keyword.get(opts, :tag, nil) do
-      nil -> timestamp
-      tag -> "#{timestamp}-#{tag}"
-    end
+    {:ok, "#{timestamp}-#{tag}"}
   end
+
+  defp get_tag([_ | _]), do: {:error, "Too many tags provided"}
 
   def get_payloads(path) do
     path
