@@ -1,7 +1,7 @@
 defmodule Protox.DefsTest do
   use ExUnit.Case
 
-  alias Protox.{Field, Scalar}
+  alias Protox.{Field, OneOf, Scalar}
 
   @defs [
     Field.new!(tag: 8, label: nil, name: :msg_k, kind: :map, type: {:int32, :string}),
@@ -40,12 +40,18 @@ defmodule Protox.DefsTest do
     ),
     Field.new!(tag: 6, label: :repeated, name: :msg_i, kind: :packed, type: :float),
     Field.new!(tag: 7, label: :repeated, name: :msg_j, kind: :unpacked, type: {:message, Sub}),
-    Field.new!(tag: 10, label: :optional, name: :msg_n, kind: {:oneof, :msg_m}, type: :string),
+    Field.new!(
+      tag: 10,
+      label: :optional,
+      name: :msg_n,
+      kind: %OneOf{parent: :msg_m},
+      type: :string
+    ),
     Field.new!(
       tag: 11,
       label: :optional,
       name: :msg_o,
-      kind: {:oneof, :msg_m},
+      kind: %OneOf{parent: :msg_m},
       type: {:message, Sub}
     ),
     Field.new!(tag: 12, label: nil, name: :msg_p, kind: :map, type: {:int32, {:enum, E}}),
@@ -60,11 +66,11 @@ defmodule Protox.DefsTest do
       tag: 118,
       label: :optional,
       name: :msg_oneof_double,
-      kind: {:oneof, :msg_oneof_field},
+      kind: %OneOf{parent: :msg_oneof_field},
       type: :double
     ),
     Field.new!(
-      kind: {:oneof, :_optional},
+      kind: %OneOf{parent: :_optional},
       label: :proto3_optional,
       name: :optional,
       tag: 11,
@@ -82,14 +88,14 @@ defmodule Protox.DefsTest do
                  tag: 10,
                  label: :optional,
                  name: :msg_n,
-                 kind: {:oneof, :msg_m},
+                 kind: %OneOf{parent: :msg_m},
                  type: :string
                ),
                Field.new!(
                  tag: 11,
                  label: :optional,
                  name: :msg_o,
-                 kind: {:oneof, :msg_m},
+                 kind: %OneOf{parent: :msg_m},
                  type: {:message, Sub}
                )
              ],
@@ -98,7 +104,7 @@ defmodule Protox.DefsTest do
                  tag: 118,
                  label: :optional,
                  name: :msg_oneof_double,
-                 kind: {:oneof, :msg_oneof_field},
+                 kind: %OneOf{parent: :msg_oneof_field},
                  type: :double
                )
              ]

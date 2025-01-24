@@ -2,7 +2,7 @@ defmodule Protox.DefineDecoder do
   @moduledoc false
   # Internal. Generates the decoder of a message.
 
-  alias Protox.{Field, Scalar}
+  alias Protox.{Field, OneOf, Scalar}
   use Protox.{Float, WireTypes}
 
   def define(msg_name, fields, required_fields, opts \\ []) do
@@ -238,7 +238,7 @@ defmodule Protox.DefineDecoder do
     []
   end
 
-  defp make_delimited_case(_vars, _keep_set_fields, _single_generated, %Field{kind: {:oneof, _}}) do
+  defp make_delimited_case(_vars, _keep_set_fields, _single_generated, %Field{kind: %OneOf{}}) do
     []
   end
 
@@ -293,7 +293,7 @@ defmodule Protox.DefineDecoder do
 
   defp make_update_field(
          value,
-         %Field{label: :proto3_optional, kind: {:oneof, _}, type: {:message, _}} = field,
+         %Field{label: :proto3_optional, kind: %OneOf{}, type: {:message, _}} = field,
          vars,
          _wrap_value
        ) do
@@ -310,29 +310,29 @@ defmodule Protox.DefineDecoder do
 
   defp make_update_field(
          value,
-         %Field{kind: {:oneof, parent_field}, type: {:message, _}} = field,
+         %Field{kind: %OneOf{}, type: {:message, _}} = field,
          vars,
          _wrap_value
        ) do
     quote do
-      case unquote(vars.msg).unquote(parent_field) do
+      case unquote(vars.msg).unquote(field.kind.parent) do
         {unquote(field.name), previous_value} ->
-          {unquote(parent_field),
+          {unquote(field.kind.parent),
            {unquote(field.name), Protox.MergeMessage.merge(previous_value, unquote(value))}}
 
         _ ->
-          {unquote(parent_field), {unquote(field.name), unquote(value)}}
+          {unquote(field.kind.parent), {unquote(field.name), unquote(value)}}
       end
     end
   end
 
-  defp make_update_field(value, %Field{kind: {:oneof, parent_field}} = field, _vars, _wrap_value) do
+  defp make_update_field(value, %Field{kind: %OneOf{}} = field, _vars, _wrap_value) do
     case field.label do
       :proto3_optional ->
         quote(do: {unquote(field.name), unquote(value)})
 
       _ ->
-        quote(do: {unquote(parent_field), {unquote(field.name), unquote(value)}})
+        quote(do: {unquote(field.kind.parent), {unquote(field.name), unquote(value)}})
     end
   end
 

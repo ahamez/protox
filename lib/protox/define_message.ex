@@ -1,7 +1,7 @@
 defmodule Protox.DefineMessage do
   @moduledoc false
 
-  alias Protox.{Field, Scalar}
+  alias Protox.{Field, OneOf, Scalar}
 
   def define(messages, opts \\ []) do
     for {_msg_name, msg = %Protox.Message{}} <- messages do
@@ -103,7 +103,7 @@ defmodule Protox.DefineMessage do
       for %Field{label: label, name: name, kind: kind} <- fields do
         case kind do
           :map -> {name, Macro.escape(%{})}
-          {:oneof, parent} -> make_oneof_field(label, name, parent)
+          %OneOf{parent: parent} -> make_oneof_field(label, name, parent)
           :packed -> {name, []}
           :unpacked -> {name, []}
           %Scalar{} when syntax == :proto2 -> {name, nil}

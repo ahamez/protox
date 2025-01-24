@@ -1,7 +1,7 @@
 defmodule Protox.ParseTest do
   use ExUnit.Case
 
-  alias Protox.Scalar
+  alias Protox.{OneOf, Scalar}
 
   setup_all do
     file_descriptor_set_bin_path = Protox.TmpFs.tmp_file_path!(".bin")
@@ -45,10 +45,10 @@ defmodule Protox.ParseTest do
     assert field(fs, 64) == {nil, :map_sfixed32_sfixed32, :map, {:sfixed32, :sfixed32}}
     assert field(fs, 75) == {:repeated, :packed_int32, :packed, :int32}
     assert field(fs, 89) == {:repeated, :unpacked_int32, :unpacked, :int32}
-    assert field(fs, 111) == {:optional, :oneof_uint32, {:oneof, :oneof_field}, :uint32}
+    assert field(fs, 111) == {:optional, :oneof_uint32, %OneOf{parent: :oneof_field}, :uint32}
 
     assert field(fs, 119) ==
-             {:optional, :oneof_enum, {:oneof, :oneof_field},
+             {:optional, :oneof_enum, %OneOf{parent: :oneof_field},
               {:enum, ProtobufTestMessages.Proto3.TestAllTypesProto3.NestedEnum}}
 
     assert %{} = messages[ProtobufTestMessages.Proto3.NullHypothesisProto3].fields

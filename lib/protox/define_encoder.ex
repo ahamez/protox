@@ -2,7 +2,7 @@ defmodule Protox.DefineEncoder do
   @moduledoc false
   # Internal. Generates the encoder of a message.
 
-  alias Protox.{Field, Scalar}
+  alias Protox.{Field, OneOf, Scalar}
 
   def define(fields, required_fields, syntax, opts \\ []) do
     {unknown_fields_name, _opts} = Keyword.pop!(opts, :unknown_fields_name)
@@ -178,21 +178,21 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  # Generate the AST to encode child `field.name` of oneof `parent_field`
+  # Generate the AST to encode child `field.name` of a oneof
   defp make_encode_field_body(
-         %Field{kind: {:oneof, parent_field}} = child_field,
+         %Field{kind: %OneOf{}} = field,
          _required,
          _syntax,
          vars
        ) do
-    key = make_key_bytes(child_field.tag, child_field.type)
+    key = make_key_bytes(field.tag, field.type)
     var = Macro.var(:child_field_value, __MODULE__)
-    encode_value_ast = get_encode_value_body(child_field.type, var)
+    encode_value_ast = get_encode_value_body(field.type, var)
 
-    case child_field.label do
+    case field.label do
       :proto3_optional ->
         quote do
-          case unquote(vars.msg).unquote(child_field.name) do
+          case unquote(vars.msg).unquote(field.name) do
             nil -> []
             unquote(var) -> [unquote(key), unquote(encode_value_ast)]
           end
@@ -202,7 +202,7 @@ defmodule Protox.DefineEncoder do
         # The dispatch on the correct child is performed by the parent encoding function,
         # this is why we don't check if the child is set.
         quote do
-          {_, unquote(var)} = unquote(vars.msg).unquote(parent_field)
+          {_, unquote(var)} = unquote(vars.msg).unquote(field.kind.parent)
           [unquote(key), unquote(encode_value_ast)]
         end
     end

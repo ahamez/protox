@@ -6,7 +6,7 @@ defmodule Protox.Parse do
 
   import Protox.Guards
 
-  alias Protox.{Definition, Field, Message, Scalar}
+  alias Protox.{Definition, Field, Message, OneOf, Scalar}
 
   alias Protox.Google.Protobuf.{
     DescriptorProto,
@@ -387,9 +387,7 @@ defmodule Protox.Parse do
   end
 
   defp get_kind(_syntax, upper, %FieldDescriptorProto{oneof_index: index}) when index != nil do
-    parent = String.to_atom(Enum.at(upper.oneof_decl, index).name)
-
-    {:oneof, parent}
+    %OneOf{parent: String.to_atom(Enum.at(upper.oneof_decl, index).name)}
   end
 
   defp get_kind(_syntax, _upper, %FieldDescriptorProto{

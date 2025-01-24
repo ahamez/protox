@@ -13,7 +13,7 @@ defmodule Protox.Google.Protobuf.Value do
         fields: %{
           null_value:
             Protox.Field.new!(
-              kind: {:oneof, :kind},
+              kind: %Protox.OneOf{parent: :kind},
               label: :optional,
               name: :null_value,
               tag: 1,
@@ -21,7 +21,7 @@ defmodule Protox.Google.Protobuf.Value do
             ),
           number_value:
             Protox.Field.new!(
-              kind: {:oneof, :kind},
+              kind: %Protox.OneOf{parent: :kind},
               label: :optional,
               name: :number_value,
               tag: 2,
@@ -29,7 +29,7 @@ defmodule Protox.Google.Protobuf.Value do
             ),
           string_value:
             Protox.Field.new!(
-              kind: {:oneof, :kind},
+              kind: %Protox.OneOf{parent: :kind},
               label: :optional,
               name: :string_value,
               tag: 3,
@@ -37,7 +37,7 @@ defmodule Protox.Google.Protobuf.Value do
             ),
           bool_value:
             Protox.Field.new!(
-              kind: {:oneof, :kind},
+              kind: %Protox.OneOf{parent: :kind},
               label: :optional,
               name: :bool_value,
               tag: 4,
@@ -45,7 +45,7 @@ defmodule Protox.Google.Protobuf.Value do
             ),
           struct_value:
             Protox.Field.new!(
-              kind: {:oneof, :kind},
+              kind: %Protox.OneOf{parent: :kind},
               label: :optional,
               name: :struct_value,
               tag: 5,
@@ -53,7 +53,7 @@ defmodule Protox.Google.Protobuf.Value do
             ),
           list_value:
             Protox.Field.new!(
-              kind: {:oneof, :kind},
+              kind: %Protox.OneOf{parent: :kind},
               label: :optional,
               name: :list_value,
               tag: 6,

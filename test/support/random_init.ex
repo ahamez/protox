@@ -5,7 +5,7 @@ defmodule Protox.RandomInit do
 
   use PropCheck
 
-  alias Protox.{Field, Scalar}
+  alias Protox.{Field, OneOf, Scalar}
 
   def generate_msg(mod) do
     gen =
@@ -50,15 +50,17 @@ defmodule Protox.RandomInit do
             {_, {:message, sub_msg}} = field.type
             Map.put(acc, field.name, {:map, sub_msg})
 
-          {:oneof, oneof_name} ->
+          %OneOf{parent: oneof_name} ->
             {:message, sub_msg} = field.type
 
             Map.update(
               acc,
               oneof_name,
               # initial insertion
-              {:oneof, %{field.name => sub_msg}},
-              fn {:oneof, sub_map} -> {:oneof, Map.put(sub_map, field.name, sub_msg)} end
+              %OneOf{parent: %{field.name => sub_msg}},
+              fn %OneOf{parent: sub_map} ->
+                %OneOf{parent: Map.put(sub_map, field.name, sub_msg)}
+              end
             )
         end
       end)
@@ -70,7 +72,7 @@ defmodule Protox.RandomInit do
           nil ->
             [{field_name, val} | acc]
 
-          {:oneof, sub_map} ->
+          %OneOf{parent: sub_map} ->
             if val == nil do
               [{field_name, nil} | acc]
             else
@@ -139,11 +141,11 @@ defmodule Protox.RandomInit do
   defp do_generate(acc, _fields, 0), do: acc
   defp do_generate(acc, [], _depth), do: acc
 
-  defp do_generate(acc, [%Field{kind: {:oneof, oneof_name}} | _] = fields, depth) do
+  defp do_generate(acc, [%Field{kind: %OneOf{parent: oneof_name}} | _] = fields, depth) do
     {oneof_list, fields} =
       Enum.split_with(fields, fn field = %Field{} ->
         case field.kind do
-          {:oneof, ^oneof_name} -> true
+          %OneOf{parent: ^oneof_name} -> true
           _ -> false
         end
       end)
@@ -159,7 +161,7 @@ defmodule Protox.RandomInit do
 
   defp do_generate_oneof(acc, oneof_name, oneof_list, depth) do
     generators =
-      Enum.map(oneof_list, fn field = %Field{kind: {:oneof, _}} ->
+      Enum.map(oneof_list, fn field = %Field{kind: %OneOf{parent: _}} ->
         {field.name, get_gen(depth, %Scalar{default_value: :dummy}, field.type)}
       end)
 

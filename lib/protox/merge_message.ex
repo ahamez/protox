@@ -3,7 +3,7 @@ defmodule Protox.MergeMessage do
   This module provides a helper function to merge messages.
   """
 
-  alias Protox.{Field, Scalar}
+  alias Protox.{Field, OneOf, Scalar}
 
   @doc """
   Singular fields of `msg` will be overwritten, if specified in `from`, except for
@@ -96,6 +96,6 @@ defmodule Protox.MergeMessage do
   defp merge_oneof(_msg, v1, nil), do: v1
   defp merge_oneof(_msg, _v1, v2), do: v2
 
-  defp oneof_message?(%Field{kind: {:oneof, _}, type: {:message, _}}), do: true
+  defp oneof_message?(%Field{kind: %OneOf{}, type: {:message, _}}), do: true
   defp oneof_message?(_), do: false
 end
