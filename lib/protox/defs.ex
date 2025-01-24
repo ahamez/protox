@@ -2,13 +2,13 @@ defmodule Protox.Defs do
   @moduledoc false
   # Internal. Helpers to work with list of fields.
 
-  alias Protox.Field
+  alias Protox.{Field, OneOf}
 
   # Extract oneofs and regroup them by parent field.
   def split_oneofs(fields) do
     {all_oneofs, others} =
       Enum.split_with(fields, fn
-        %Field{kind: {:oneof, _}} -> true
+        %Field{kind: %OneOf{}} -> true
         %Field{} -> false
       end)
 
@@ -31,5 +31,5 @@ defmodule Protox.Defs do
     )
   end
 
-  defp oneof_group_by(%Field{kind: {:oneof, parent}}), do: parent
+  defp oneof_group_by(field), do: field.kind.parent
 end
