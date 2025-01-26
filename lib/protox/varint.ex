@@ -4,23 +4,38 @@ defmodule Protox.Varint do
 
   import Bitwise
 
-  @spec encode(integer) :: iodata
-  def encode(v) when v < 128,
+  @spec encode(integer) :: binary()
+  def encode(v) when v < 1 <<< 7,
     do: <<v>>
 
-  def encode(v) when v < 16_384,
+  def encode(v) when v < 1 <<< 14,
     do: <<1::1, v::7, v >>> 7>>
 
-  def encode(v) when v < 2_097_152,
+  def encode(v) when v < 1 <<< 21,
     do: <<1::1, v::7, 1::1, v >>> 7::7, v >>> 14>>
 
-  def encode(v) when v < 268_435_456,
+  def encode(v) when v < 1 <<< 28,
     do: <<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, v >>> 21>>
 
-  def encode(v) when v < 34_359_738_368,
+  def encode(v) when v < 1 <<< 35,
     do: <<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, v >>> 28>>
 
-  def encode(v), do: [<<1::1, v::7>>, encode(v >>> 7)]
+  def encode(v) when v < 1 <<< 42,
+    do:
+      <<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7,
+        v >>> 35>>
+
+  def encode(v) when v < 1 <<< 49,
+    do:
+      <<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7,
+        1::1, v >>> 35::7, v >>> 42>>
+
+  def encode(v) when v < 1 <<< 56,
+    do:
+      <<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7,
+        1::1, v >>> 35::7, 1::1, v >>> 42::7, v >>> 49>>
+
+  def encode(v), do: <<1::1, v::7, encode(v >>> 7)::binary>>
 
   @spec decode(binary) :: {non_neg_integer, binary}
   def decode(b), do: do_decode(0, 0, b)
