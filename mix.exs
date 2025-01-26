@@ -39,7 +39,8 @@ defmodule Protox.Mixfile do
       {:dialyxir, "~> 1.0", only: [:test, :dev], runtime: false},
       {:excoveralls, "~> 0.13", only: [:test], runtime: false},
       {:ex_doc, "~> 0.22", only: [:dev], runtime: false},
-      {:propcheck, github: "alfert/propcheck", ref: "c564e89d", only: [:test, :dev]}
+      {:propcheck, github: "alfert/propcheck", ref: "c564e89d", only: [:test, :dev]},
+      {:stream_data, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
     |> maybe_add_muzak_pro()
     |> maybe_download_protobuf()
