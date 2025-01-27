@@ -6,7 +6,7 @@ defmodule Mix.Tasks.Protox.Benchmark.Generate.Payloads do
   use Mix.Task
   use PropCheck
 
-  @nb_samples 1
+  @nb_samples 10
 
   @impl Mix.Task
   @spec run(any) :: any
