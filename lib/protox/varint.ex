@@ -93,14 +93,10 @@ defmodule Protox.Varint do
   end
 
   defp do_decode(result, shift, <<1::1, byte::7, rest::binary>>) do
-    do_decode(
-      result ||| byte <<< shift,
-      shift + 7,
-      rest
-    )
+    do_decode(result ||| byte <<< shift, shift + 7, rest)
   end
 
-  defp do_decode(_result, _shift, binary) do
-    raise Protox.DecodingError.new(binary, "invalid varint")
+  defp do_decode(_result, _shift, bytes) do
+    raise Protox.DecodingError.new(bytes, "invalid varint")
   end
 end

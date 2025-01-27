@@ -69,8 +69,8 @@ defmodule Protox.Decode do
     {{tag, @wire_32bits, <<unknown_bytes::32>>}, rest}
   end
 
-  def parse_unknown(_tag, _wire_type, bin) do
-    raise Protox.DecodingError.new(bin, "can't parse unknown bytes")
+  def parse_unknown(_tag, _wire_type, bytes) do
+    raise Protox.DecodingError.new(bytes, "can't parse unknown bytes")
   end
 
   defp get_unknown_varint_bytes(acc, <<0::1, b::7, rest::binary>>) do
@@ -81,33 +81,33 @@ defmodule Protox.Decode do
     get_unknown_varint_bytes(<<acc::binary, 1::1, b::7>>, rest)
   end
 
-  defp get_unknown_varint_bytes(_acc, bin) do
-    raise Protox.DecodingError.new(bin, "can't parse unknown varint bytes")
+  defp get_unknown_varint_bytes(_acc, bytes) do
+    raise Protox.DecodingError.new(bytes, "can't parse unknown varint bytes")
   end
 
   def parse_double(<<@positive_infinity_64, rest::binary>>), do: {:infinity, rest}
   def parse_double(<<@negative_infinity_64, rest::binary>>), do: {:"-infinity", rest}
   def parse_double(<<_::48, 0b1111::4, _::4, _::1, 0b1111111::7, rest::binary>>), do: {:nan, rest}
   def parse_double(<<value::float-little-64, rest::binary>>), do: {value, rest}
-  def parse_double(bin), do: raise(Protox.DecodingError.new(bin, "invalid double"))
+  def parse_double(bytes), do: raise(Protox.DecodingError.new(bytes, "invalid double"))
 
   def parse_float(<<@positive_infinity_32, rest::binary>>), do: {:infinity, rest}
   def parse_float(<<@negative_infinity_32, rest::binary>>), do: {:"-infinity", rest}
   def parse_float(<<_::16, 1::1, _::7, _::1, 0b1111111::7, rest::binary>>), do: {:nan, rest}
   def parse_float(<<value::float-little-32, rest::binary>>), do: {value, rest}
-  def parse_float(bin), do: raise(Protox.DecodingError.new(bin, "invalid float"))
+  def parse_float(bytes), do: raise(Protox.DecodingError.new(bytes, "invalid float"))
 
   def parse_sfixed64(<<value::signed-little-64, rest::binary>>), do: {value, rest}
-  def parse_sfixed64(bin), do: raise(Protox.DecodingError.new(bin, "invalid sfixed64"))
+  def parse_sfixed64(bytes), do: raise(Protox.DecodingError.new(bytes, "invalid sfixed64"))
 
   def parse_fixed64(<<value::unsigned-little-64, rest::binary>>), do: {value, rest}
-  def parse_fixed64(bin), do: raise(Protox.DecodingError.new(bin, "invalid fixed64"))
+  def parse_fixed64(bytes), do: raise(Protox.DecodingError.new(bytes, "invalid fixed64"))
 
   def parse_sfixed32(<<value::signed-little-32, rest::binary>>), do: {value, rest}
-  def parse_sfixed32(bin), do: raise(Protox.DecodingError.new(bin, "invalid sfixed32"))
+  def parse_sfixed32(bytes), do: raise(Protox.DecodingError.new(bytes, "invalid sfixed32"))
 
   def parse_fixed32(<<value::unsigned-little-32, rest::binary>>), do: {value, rest}
-  def parse_fixed32(bin), do: raise(Protox.DecodingError.new(bin, "invalid fixed32"))
+  def parse_fixed32(bytes), do: raise(Protox.DecodingError.new(bytes, "invalid fixed32"))
 
   def parse_bool(bytes) do
     {value, rest} = Varint.decode(bytes)
