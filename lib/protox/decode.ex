@@ -34,12 +34,13 @@ defmodule Protox.Decode do
   @spec parse_key(binary()) :: {non_neg_integer(), non_neg_integer(), binary()}
   def parse_key(bytes) do
     {key, rest} = Varint.decode(bytes)
-    wire_type = key &&& 0b0000_0111
 
-    if wire_type in [@wire_32bits, @wire_64bits, @wire_delimited, @wire_varint] do
-      {key >>> 3, wire_type, rest}
-    else
-      raise Protox.DecodingError.new(bytes, "invalid wire type #{wire_type}")
+    case _wire_type = key &&& 0b0000_0111 do
+      @wire_32bits -> {key >>> 3, @wire_32bits, rest}
+      @wire_64bits -> {key >>> 3, @wire_64bits, rest}
+      @wire_delimited -> {key >>> 3, @wire_delimited, rest}
+      @wire_varint -> {key >>> 3, @wire_varint, rest}
+      wire_type -> raise Protox.DecodingError.new(bytes, "invalid wire type #{wire_type}")
     end
   end
 
