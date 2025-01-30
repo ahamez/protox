@@ -54,7 +54,7 @@ defmodule Protox.Mixfile do
       creds ->
         muzak_pro =
           {:muzak,
-           git: "https://#{creds}@git.devonestes.com/muzak/muzak.git", tag: "1.1.0", only: [:test]}
+           git: "https://#{creds}@github.com/ahamez/muzak.git", tag: "1.1.0", only: [:test]}
 
         [muzak_pro | deps]
     end
