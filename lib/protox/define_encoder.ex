@@ -73,30 +73,24 @@ defmodule Protox.DefineEncoder do
 
   defp make_encode_oneof_funs(oneofs) do
     for {parent_name, children} <- oneofs do
-      nil_case =
+      nil_clause =
         quote do
           nil -> acc
         end
 
-      children_case_ast =
-        nil_case ++
-          (children
-           |> Enum.map(fn %Field{} = child_field ->
-             encode_child_fun_name = make_encode_field_fun_name(child_field.name)
+      children_clauses_ast =
+        Enum.flat_map(children, fn %Field{} = child_field ->
+          encode_child_fun_name = make_encode_field_fun_name(child_field.name)
 
-             quote do
-               {unquote(child_field.name), _field_value} ->
-                 unquote(encode_child_fun_name)(acc, msg)
-             end
-           end)
-           |> List.flatten())
-
-      encode_parent_fun_name = make_encode_field_fun_name(parent_name)
+          quote do
+            {unquote(child_field.name), _field_value} -> unquote(encode_child_fun_name)(acc, msg)
+          end
+        end)
 
       quote do
-        defp unquote(encode_parent_fun_name)(acc, msg) do
+        defp unquote(make_encode_field_fun_name(parent_name))(acc, msg) do
           case msg.unquote(parent_name) do
-            unquote(children_case_ast)
+            unquote(nil_clause ++ children_clauses_ast)
           end
         end
       end
