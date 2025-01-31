@@ -51,9 +51,10 @@ defmodule Protox.DefineEncoder do
   defp make_encode_fun_field(ast, fields) do
     ast =
       Enum.reduce(fields, ast, fn %Protox.Field{} = field, ast_acc ->
-        fun_name = String.to_atom("encode_#{field.name}")
-
-        quote(do: unquote(ast_acc) |> unquote(fun_name)(msg))
+        quote do
+          unquote(ast_acc)
+          |> unquote(make_encode_field_fun_name(field.name))(msg)
+        end
       end)
 
     quote do
@@ -63,8 +64,10 @@ defmodule Protox.DefineEncoder do
 
   defp make_encode_oneof_fun(ast, oneofs) do
     Enum.reduce(oneofs, ast, fn {parent_name, _children}, ast_acc ->
-      fun_name = String.to_atom("encode_#{parent_name}")
-      quote(do: unquote(ast_acc) |> unquote(fun_name)(msg))
+      quote do
+        unquote(ast_acc)
+        |> unquote(make_encode_field_fun_name(parent_name))(msg)
+      end
     end)
   end
 
@@ -79,7 +82,7 @@ defmodule Protox.DefineEncoder do
         nil_case ++
           (children
            |> Enum.map(fn %Field{} = child_field ->
-             encode_child_fun_name = String.to_atom("encode_#{child_field.name}")
+             encode_child_fun_name = make_encode_field_fun_name(child_field.name)
 
              quote do
                {unquote(child_field.name), _field_value} ->
@@ -88,7 +91,7 @@ defmodule Protox.DefineEncoder do
            end)
            |> List.flatten())
 
-      encode_parent_fun_name = String.to_atom("encode_#{parent_name}")
+      encode_parent_fun_name = make_encode_field_fun_name(parent_name)
 
       quote do
         defp unquote(encode_parent_fun_name)(acc, msg) do
@@ -108,7 +111,7 @@ defmodule Protox.DefineEncoder do
 
     for %Field{name: name} = field <- fields do
       required = name in required_fields
-      fun_name = String.to_atom("encode_#{name}")
+      fun_name = make_encode_field_fun_name(name)
       fun_ast = make_encode_field_body(field, required, syntax, vars)
 
       quote do
@@ -383,5 +386,9 @@ defmodule Protox.DefineEncoder do
 
   defp get_encode_value_body(:double, value_var) do
     quote(do: Protox.Encode.encode_double(unquote(value_var)))
+  end
+
+  defp make_encode_field_fun_name(field) when is_atom(field) do
+    String.to_atom("encode_#{field}")
   end
 end
