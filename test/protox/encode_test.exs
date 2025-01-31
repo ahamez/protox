@@ -8,8 +8,7 @@ defmodule Protox.EncodeTest do
   end
 
   test "Default TestAllTypesProto3, with non throwing encode/1" do
-    {status, bytes} = Protox.encode(%TestAllTypesProto3{})
-    assert {:ok, []} == {status, List.flatten(bytes)}
+    assert {:ok, []} == Protox.encode(%TestAllTypesProto3{})
   end
 
   test "Messsage with no fields, unknown fields are encoded back" do
