@@ -111,12 +111,12 @@ defmodule Protox.DefineDecoder do
       )
 
     # Fragment to parse all regular fields.
-    all_fields_clase = make_parse_key_value_known(vars, fields, keep_set_fields)
+    all_fields_clause = make_parse_key_value_known(vars, fields, keep_set_fields)
 
     all_clauses =
       make_parse_key_value_invalid_varint() ++
         make_parse_key_value_tag_0() ++
-        all_fields_clase ++
+        all_fields_clause ++
         unknown_tag_clause
 
     # Note we directly pattern-match against the bytes: we don't decode the tag
@@ -186,7 +186,7 @@ defmodule Protox.DefineDecoder do
         }
       end
 
-    case_return =
+    clause_return =
       case keep_set_fields do
         true -> quote(do: {unquote(vars.set_fields), [unquote(body)], rest})
         # No need to maintain a list of set fields when the list of required fields is empty
@@ -198,7 +198,7 @@ defmodule Protox.DefineDecoder do
         {tag, wire_type, rest} = Protox.Decode.parse_key(unquote(vars.bytes))
         {unquote(vars.value), rest} = Protox.Decode.parse_unknown(tag, wire_type, rest)
 
-        unquote(case_return)
+        unquote(clause_return)
     end
   end
 
