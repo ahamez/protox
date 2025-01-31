@@ -20,11 +20,11 @@ defmodule Protox.DefineEnum do
           unquote(default_fun)
 
           @spec encode(atom() | String.t()) :: integer() | atom()
-          unquote(encode_constants_funs)
+          unquote_splicing(encode_constants_funs)
           def encode(x), do: x
 
           @spec decode(integer()) :: atom() | integer()
-          unquote(decode_constants_funs)
+          unquote_splicing(decode_constants_funs)
           def decode(x), do: x
 
           @spec constants() :: [{integer(), atom()}]
@@ -75,7 +75,7 @@ defmodule Protox.DefineEnum do
       end
 
     quote do
-      unquote(constants)
+      unquote_splicing(constants)
       def has_constant?(_), do: false
     end
   end

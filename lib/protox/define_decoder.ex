@@ -29,7 +29,7 @@ defmodule Protox.DefineDecoder do
     quote do
       unquote(decode_fun)
       unquote(parse_key_value_fun)
-      unquote(parse_map_entries)
+      unquote_splicing(parse_map_entries)
     end
   end
 

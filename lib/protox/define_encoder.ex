@@ -18,8 +18,8 @@ defmodule Protox.DefineEncoder do
 
     quote do
       unquote(top_level_encode_fun)
-      unquote(encode_oneof_funs)
-      unquote(encode_field_funs)
+      unquote_splicing(encode_oneof_funs)
+      unquote_splicing(encode_field_funs)
       unquote(encode_unknown_fields_fun)
     end
   end
