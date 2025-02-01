@@ -17,7 +17,7 @@ defmodule Protox.Generate do
     case launch_protoc(files, paths) do
       {:ok, file_descriptor_set} ->
         {:ok, definition} = Protox.Parse.parse(file_descriptor_set, opts)
-        code = quote do: unquote(Protox.Define.define(definition, opts))
+        code = Protox.Define.define(definition, opts)
         {:ok, generate_files(output_path, code, multiple_files)}
 
       {:error, msg} ->
