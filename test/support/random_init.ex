@@ -13,7 +13,7 @@ defmodule Protox.RandomInit do
         generate_struct(mod, fields)
       end
 
-    {:ok, msg} = :proper_gen.pick(gen)
+    {:ok, msg} = :proper_gen.pick(gen, 5)
 
     msg
   end
