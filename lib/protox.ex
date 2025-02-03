@@ -127,7 +127,7 @@ defmodule Protox do
   Throwing version of `encode/1`.
   """
   @doc since: "1.6.0"
-  @spec encode!(struct()) :: iodata() | no_return()
+  @spec encode!(struct()) :: {iodata(), non_neg_integer()} | no_return()
   def encode!(msg) do
     msg.__struct__.encode!(msg)
   end
@@ -137,7 +137,7 @@ defmodule Protox do
 
   ## Examples
       iex> msg = %ProtoxExample{a: 3, b: %{1 => "some string"}}
-      iex> {:ok, iodata} = Protox.encode(msg)
+      iex> {:ok, iodata, _iodata_size} = Protox.encode(msg)
       iex> :binary.list_to_bin(iodata)
       <<8, 3, 18, 15, 8, 1, 18, 11, 115, 111, 109, 101, 32, 115, 116, 114, 105, 110, 103>>
 
@@ -148,7 +148,7 @@ defmodule Protox do
 
   """
   @doc since: "1.6.0"
-  @spec encode(struct()) :: {:ok, iodata()} | {:error, any()}
+  @spec encode(struct()) :: {:ok, iodata(), non_neg_integer()} | {:error, any()}
   def encode(msg) do
     msg.__struct__.encode(msg)
   end

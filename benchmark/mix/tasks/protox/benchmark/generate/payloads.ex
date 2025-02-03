@@ -66,7 +66,9 @@ defmodule Mix.Tasks.Protox.Benchmark.Generate.Payloads do
       end
 
     Stream.repeatedly(fn -> :proper_gen.pick(gen, 5) end)
-    |> Stream.map(fn {:ok, msg} -> {msg, msg |> Protox.encode!() |> IO.iodata_to_binary()} end)
+    |> Stream.map(fn {:ok, msg} ->
+      {msg, msg |> Protox.encode!() |> elem(0) |> IO.iodata_to_binary()}
+    end)
     |> Stream.reject(fn {_msg, bytes} -> byte_size(bytes) == 0 end)
     |> Stream.reject(fn {_msg, bytes} -> byte_size(bytes) > 16_384 * 16 end)
     |> Stream.map(fn {msg, bytes} -> {msg, byte_size(bytes), bytes} end)
