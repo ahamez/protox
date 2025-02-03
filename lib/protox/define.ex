@@ -16,7 +16,12 @@ defmodule Protox.Define do
   end
 
   def define(%Protox.Definition{} = definition, opts \\ []) do
-    Protox.DefineEnum.define(definition.enums) ++
-      Protox.DefineMessage.define(definition.messages, opts)
+    enums = Protox.DefineEnum.define(definition.enums)
+    messages = Protox.DefineMessage.define(definition.messages, opts)
+
+    quote do
+      unquote_splicing(enums)
+      unquote_splicing(messages)
+    end
   end
 end

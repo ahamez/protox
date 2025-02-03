@@ -43,7 +43,11 @@ defmodule Protox.Generate do
   end
 
   defp generate_files(output_path, code, true = _muliple_files) do
-    Enum.map(code, fn {:defmodule, _, [module_name | _]} = module_code ->
+    # Protox.Define.define outputs a block, we thus have to extract the content
+    # on which we can iterate.
+    {:__block__, _, block} = code
+
+    Enum.map(block, fn {:defmodule, _, [module_name | _]} = module_code ->
       snake_module_name =
         module_name
         |> Module.split()

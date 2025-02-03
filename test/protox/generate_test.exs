@@ -47,14 +47,17 @@ defmodule Protox.GenerateTest do
     assert Code.compile_file(tmp_file) != []
   end
 
-  test "Generate code from multiple proto files" do
+  test "Generate code in multiple files" do
     file = Path.join(__DIR__, "../samples/directory/sub_directory/sub_directory_message.proto")
     generated_path_name = "generated_code_1"
 
     {:ok, files_content} =
-      Protox.Generate.generate_module_code([file], generated_path_name, _multiple_files = true, [
-        "./test/samples"
-      ])
+      Protox.Generate.generate_module_code(
+        [file],
+        generated_path_name,
+        _multiple_files = true,
+        ["./test/samples"]
+      )
 
     assert [
              %Protox.Generate.FileContent{
