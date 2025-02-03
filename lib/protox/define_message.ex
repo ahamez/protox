@@ -5,7 +5,9 @@ defmodule Protox.DefineMessage do
 
   def define(messages, opts \\ []) do
     for {_msg_name, msg = %Protox.Message{}} <- messages do
-      sorted_fields = msg.fields |> Map.values() |> Enum.sort(&(&1.tag < &2.tag))
+      # Revert the order of the fields so we iterator from last field to first.
+      # This enables us to construct the output iodata using [ field | acc ]
+      sorted_fields = msg.fields |> Map.values() |> Enum.sort(&(&1.tag >= &2.tag))
 
       required_fields = get_required_fields(sorted_fields)
       unknown_fields_name = make_unknown_fields_name(:__uf__, sorted_fields)

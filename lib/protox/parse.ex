@@ -156,7 +156,8 @@ defmodule Protox.Parse do
             file_options =
               msg.file_options
               |> Protox.Google.Protobuf.FileOptions.encode!()
-              |> :binary.list_to_bin()
+              |> elem(_bytes_position_in_tuple = 0)
+              |> IO.iodata_to_binary()
               |> then(&apply(Google.Protobuf.FileOptions, :decode!, [&1]))
               |> Map.from_struct()
 

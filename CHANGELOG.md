@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - BREAKING CHANGE: Configuration of features to generate via the CLI mix task is done with the `--generate` argument.
+- BREAKING CHANGE: encoding functions now return the size alongside iodata. Before that, one had to use :binary.list_to_bin/1 to flatten the iodata to then use byte_size, defeating the purpose of having an iodata.
 
 ### Removed
 - Drop support for Elixir < 1.15.

@@ -32,7 +32,8 @@ defmodule Mix.Tasks.Protox.Generate do
          {:ok, output_path} <- Keyword.fetch(opts, :output_path),
          {include_paths, opts} = Keyword.pop_values(opts, :include_path),
          {multiple_files, opts} = Keyword.pop(opts, :multiple_files, false),
-         {:ok, files_content} <- generate_code(files, output_path, multiple_files, include_paths, opts) do
+         {:ok, files_content} <-
+           generate_code(files, output_path, multiple_files, include_paths, opts) do
       Enum.each(files_content, &generate_file/1)
     else
       err ->
