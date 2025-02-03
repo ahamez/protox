@@ -29,14 +29,14 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
           :encode ->
             %{
               encode: fn input ->
-                Enum.map(input, fn {msg, _size, _bytes} -> msg.__struct__.encode!(msg) end)
+                Enum.each(input, fn {msg, _size, _bytes} -> msg.__struct__.encode!(msg) end)
               end
             }
 
           :decode ->
             %{
               decode: fn input ->
-                Enum.map(input, fn {msg, _size, bytes} -> msg.__struct__.decode!(bytes) end)
+                Enum.each(input, fn {msg, _size, bytes} -> msg.__struct__.decode!(bytes) end)
               end
             }
         end

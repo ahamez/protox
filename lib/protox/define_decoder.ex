@@ -661,8 +661,7 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  # Compute at compile time the varint representation of a field
-  # tag and wire type.
+  # Compute at compile time the varint representation of a field tag and wire type.
   defp make_key_bytes(%Field{} = field) do
     # We need to convert the type to something recognized
     # by Protox.Encode.make_key_bytes/2.
@@ -673,6 +672,6 @@ defmodule Protox.DefineDecoder do
         _ -> field.type
       end
 
-    Protox.Encode.make_key_bytes(field.tag, ty) |> IO.iodata_to_binary()
+    Protox.Encode.make_key_bytes(field.tag, ty) |> elem(0) |> IO.iodata_to_binary()
   end
 end
