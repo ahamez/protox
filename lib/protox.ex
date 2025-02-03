@@ -138,7 +138,7 @@ defmodule Protox do
   ## Examples
       iex> msg = %ProtoxExample{a: 3, b: %{1 => "some string"}}
       iex> {:ok, iodata, _iodata_size} = Protox.encode(msg)
-      iex> :binary.list_to_bin(iodata)
+      iex> IO.iodata_to_binary(iodata)
       <<8, 3, 18, 15, 8, 1, 18, 11, 115, 111, 109, 101, 32, 115, 116, 114, 105, 110, 103>>
 
       iex> msg = %ProtoxExample{a: "should not be a string"}
