@@ -30,7 +30,7 @@ defmodule ProtoxTest do
       msg
       |> TestAllTypesProto3.encode!()
       |> elem(0)
-      |> :binary.list_to_bin()
+      |> IO.iodata_to_binary()
       |> TestAllTypesProto3.decode!()
 
     assert decoded.optional_double == msg.optional_double
@@ -43,7 +43,7 @@ defmodule ProtoxTest do
     assert msg
            |> TestAllTypesProto3.encode!()
            |> elem(0)
-           |> :binary.list_to_bin()
+           |> IO.iodata_to_binary()
            |> TestAllTypesProto3.decode!() == msg
   end
 
@@ -53,7 +53,7 @@ defmodule ProtoxTest do
     assert msg
            |> TestAllTypesProto2.encode!()
            |> elem(0)
-           |> :binary.list_to_bin()
+           |> IO.iodata_to_binary()
            |> TestAllTypesProto2.decode!() == msg
   end
 
@@ -161,7 +161,7 @@ defmodule ProtoxTest do
 
   test "Non Camel_case" do
     msg = Protox.RandomInit.generate_msg(Camel)
-    assert msg == msg |> Camel.encode!() |> elem(0) |> :binary.list_to_bin() |> Camel.decode!()
+    assert msg == msg |> Camel.encode!() |> elem(0) |> IO.iodata_to_binary() |> Camel.decode!()
   end
 
   test "Non CamelCase enums" do
@@ -171,7 +171,7 @@ defmodule ProtoxTest do
              msg
              |> MsgWithNonCamelEnum.encode!()
              |> elem(0)
-             |> :binary.list_to_bin()
+             |> IO.iodata_to_binary()
              |> MsgWithNonCamelEnum.decode!()
 
     assert %{
@@ -188,7 +188,7 @@ defmodule ProtoxTest do
   defp reencode_with_protoc({encoded, _size}, mod) do
     tmp_dir = Protox.TmpFs.tmp_dir!("protoc_test")
 
-    encoded = :binary.list_to_bin(encoded)
+    encoded = IO.iodata_to_binary(encoded)
 
     encoded_bin_path = Path.join([tmp_dir, "protoc_test.bin"])
 

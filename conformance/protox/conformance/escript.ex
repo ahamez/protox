@@ -71,7 +71,7 @@ defmodule Protox.Conformance.Escript do
         IO.binwrite(log_file, "Message: #{inspect(msg, limit: :infinity)}\n")
 
         try do
-          encoded_payload = msg |> Protox.encode!() |> elem(0) |> :binary.list_to_bin()
+          encoded_payload = msg |> Protox.encode!() |> elem(0) |> IO.iodata_to_binary()
 
           IO.binwrite(
             log_file,
@@ -155,7 +155,7 @@ defmodule Protox.Conformance.Escript do
   end
 
   defp make_message_bytes(%Conformance.ConformanceResponse{} = msg) do
-    data = msg |> Protox.encode!() |> elem(0) |> :binary.list_to_bin()
+    data = msg |> Protox.encode!() |> elem(0) |> IO.iodata_to_binary()
 
     <<byte_size(data)::unsigned-little-32, data::binary>>
   end
