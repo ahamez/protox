@@ -5,7 +5,7 @@ defmodule Protox.DefineMessage do
 
   def define(messages, opts \\ []) do
     for {_msg_name, msg = %Protox.Message{}} <- messages do
-      # Revert the order of the fields so we iterator from last field to first.
+      # Revert the order of the fields so we iterate from last field to first.
       # This enables us to construct the output iodata using [ field | acc ]
       sorted_fields = msg.fields |> Map.values() |> Enum.sort(&(&1.tag >= &2.tag))
 
@@ -98,7 +98,7 @@ defmodule Protox.DefineMessage do
   end
 
   # Generate fields of the struct which is created for a message.
-  defp make_struct_fields(fields, syntax, unknown_fields) do
+  defp make_struct_fields(fields, syntax, unknown_fields_name) do
     struct_fields =
       for %Field{label: label, name: name, kind: kind} <- fields do
         case kind do
@@ -111,13 +111,12 @@ defmodule Protox.DefineMessage do
         end
       end
 
-    Enum.uniq(struct_fields ++ [{unknown_fields, []}])
+    Enum.uniq(struct_fields ++ [{unknown_fields_name, []}])
   end
 
   defp make_oneof_field(:proto3_optional, name, _), do: {name, nil}
   defp make_oneof_field(_, _, parent), do: {parent, nil}
 
-  # Get the list of fields that are marked as `required`.
   defp get_required_fields(fields) do
     for %Field{label: :required, name: name} <- fields, do: name
   end
