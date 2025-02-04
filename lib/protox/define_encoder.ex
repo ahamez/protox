@@ -39,7 +39,7 @@ defmodule Protox.DefineEncoder do
 
   defp make_encode_fun_body(ast) do
     quote do
-      @spec encode(struct()) :: {:ok, iodata(), non_neg_integer()} | {:error, any()}
+      @spec encode(t()) :: {:ok, iodata(), non_neg_integer()} | {:error, any()}
       def encode(msg) do
         _generator = unquote(make_generator(__ENV__))
 
@@ -51,7 +51,7 @@ defmodule Protox.DefineEncoder do
         end
       end
 
-      @spec encode!(struct()) :: {iodata(), non_neg_integer()} | no_return()
+      @spec encode!(t()) :: {iodata(), non_neg_integer()} | no_return()
       def encode!(msg), do: unquote(ast)
     end
   end

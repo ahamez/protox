@@ -13,6 +13,9 @@ defmodule Protox.DefineMessage do
       unknown_fields_name = make_unknown_fields_name(:__uf__, sorted_fields)
       opts = Keyword.put(opts, :unknown_fields_name, unknown_fields_name)
 
+      struct_fields_types =
+        make_struct_fields_types(sorted_fields, msg.syntax, unknown_fields_name)
+
       struct_fields = make_struct_fields(sorted_fields, msg.syntax, unknown_fields_name)
 
       unknown_fields_funs = make_unknown_fields_funs(unknown_fields_name)
@@ -25,6 +28,7 @@ defmodule Protox.DefineMessage do
         defmodule unquote(msg.name) do
           @moduledoc false
 
+          unquote(struct_fields_types)
           defstruct unquote(struct_fields)
 
           unquote(encoder)
@@ -43,7 +47,7 @@ defmodule Protox.DefineMessage do
 
   defp make_unknown_fields_funs(unknown_fields) do
     quote do
-      @spec unknown_fields(struct()) :: [{non_neg_integer(), Protox.Types.tag(), binary()}]
+      @spec unknown_fields(struct()) :: unquote(unknown_fields_type())
       def unknown_fields(msg), do: msg.unquote(unknown_fields)
 
       @spec unknown_fields_name() :: unquote(unknown_fields)
@@ -114,10 +118,95 @@ defmodule Protox.DefineMessage do
     Enum.uniq(struct_fields ++ [{unknown_fields_name, []}])
   end
 
+  defp make_struct_fields_types(fields, syntax, unknown_fields_name) do
+    %{oneofs: grouped_oneofs, proto3_optionals: proto3_optionals, others: fields} =
+      Protox.Defs.split_oneofs(fields)
+
+    fields_types =
+      for field = %Field{} <- fields do
+        case {field.kind, field.type} do
+          {:map, type} ->
+            key_type = type |> elem(0) |> proto_type_to_typespec()
+            value_type = type |> elem(1) |> proto_type_to_typespec()
+            quote(do: {unquote(field.name), %{unquote(key_type) => unquote(value_type)}})
+
+          {repeated, type} when repeated in [:packed, :unpacked] ->
+            value_type = proto_type_to_typespec(type)
+            quote(do: {unquote(field.name), [unquote(value_type)]})
+
+          {%Scalar{}, type} when syntax == :proto2 ->
+            value_type = proto_type_to_typespec(type)
+            quote(do: {unquote(field.name), unquote(value_type) | nil})
+
+          {%Scalar{}, type = {:message, _}} ->
+            value_type = proto_type_to_typespec(type)
+            quote(do: {unquote(field.name), unquote(value_type) | nil})
+
+          {%Scalar{}, type} ->
+            value_type = proto_type_to_typespec(type)
+            quote(do: {unquote(field.name), unquote(value_type)})
+        end
+      end
+
+    oneofs_fields_types =
+      for {parent_name, children} <- grouped_oneofs do
+        children_types =
+          Enum.reduce(children, nil, fn child, acc ->
+            child_type = proto_type_to_typespec(child.type)
+            {:|, [], [{child.name, child_type}, acc]}
+          end)
+
+        quote do
+          {unquote(parent_name), unquote(children_types)}
+        end
+      end
+
+    proto3_optionals_types =
+      for field = %Field{} <- proto3_optionals do
+        quote do
+          {unquote(field.name), unquote(proto_type_to_typespec(field.type)) | nil}
+        end
+      end
+
+    all_fields_types =
+      fields_types ++
+        oneofs_fields_types ++
+        proto3_optionals_types ++
+        [quote(do: {unquote(unknown_fields_name), unquote(unknown_fields_type())})]
+
+    quote do
+      @type t :: %__MODULE__{unquote_splicing(all_fields_types)}
+    end
+  end
+
   defp make_oneof_field(:proto3_optional, name, _), do: {name, nil}
   defp make_oneof_field(_, _, parent), do: {parent, nil}
 
   defp get_required_fields(fields) do
     for %Field{label: :required, name: name} <- fields, do: name
+  end
+
+  defp proto_type_to_typespec(:string), do: quote(do: String.t())
+  defp proto_type_to_typespec(:bytes), do: quote(do: binary())
+  defp proto_type_to_typespec({:enum, _enum}), do: quote(do: atom())
+  defp proto_type_to_typespec({:message, message}), do: quote(do: unquote(message).t())
+  defp proto_type_to_typespec(:bool), do: quote(do: boolean())
+  defp proto_type_to_typespec(:double), do: quote(do: float())
+  defp proto_type_to_typespec(:float), do: quote(do: float())
+  defp proto_type_to_typespec(:sfixed32), do: quote(do: integer())
+  defp proto_type_to_typespec(:sfixed64), do: quote(do: integer())
+  defp proto_type_to_typespec(:fixed32), do: quote(do: integer())
+  defp proto_type_to_typespec(:fixed64), do: quote(do: integer())
+  defp proto_type_to_typespec(:int32), do: quote(do: integer())
+  defp proto_type_to_typespec(:int64), do: quote(do: integer())
+  defp proto_type_to_typespec(:sint32), do: quote(do: integer())
+  defp proto_type_to_typespec(:sint64), do: quote(do: integer())
+  defp proto_type_to_typespec(:uint32), do: quote(do: non_neg_integer())
+  defp proto_type_to_typespec(:uint64), do: quote(do: non_neg_integer())
+
+  defp unknown_fields_type() do
+    quote do
+      [{non_neg_integer(), Protox.Types.tag(), binary()}]
+    end
   end
 end
