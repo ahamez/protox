@@ -12,6 +12,8 @@ defmodule Protox.DefineEnum do
         defmodule unquote(enum_name) do
           @moduledoc false
 
+          @type t :: %__MODULE__{}
+
           # We need to be able to instanciate a struct in order to make protocol dispatch work.
           defstruct []
 

@@ -37,7 +37,7 @@ defmodule Protox.DefineDecoder do
     decode_bang_fun = make_decode_bang_fun(required_fields, msg_name, vars)
 
     quote do
-      @spec decode(binary()) :: {:ok, struct()} | {:error, any()}
+      @spec decode(binary()) :: {:ok, t()} | {:error, any()}
       def decode(bytes) do
         try do
           {:ok, decode!(bytes)}
@@ -53,7 +53,7 @@ defmodule Protox.DefineDecoder do
 
   defp make_decode_bang_fun([], msg_name, _vars) do
     quote do
-      @spec decode!(binary()) :: struct() | no_return()
+      @spec decode!(binary()) :: t() | no_return()
       def decode!(bytes) do
         parse_key_value(bytes, struct(unquote(msg_name)))
       end
@@ -62,7 +62,7 @@ defmodule Protox.DefineDecoder do
 
   defp make_decode_bang_fun(required_fields, msg_name, vars) do
     quote do
-      @spec decode!(binary()) :: struct() | no_return()
+      @spec decode!(binary()) :: t() | no_return()
       def decode!(bytes) do
         {msg, unquote(vars.set_fields)} = parse_key_value([], bytes, struct(unquote(msg_name)))
 
