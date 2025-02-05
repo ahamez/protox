@@ -72,7 +72,7 @@ Get the name of the field that stores unknown fields.
 
 ### Metadata
 ```elixir
-@spec schema() :: Protox.Message.t()
+@spec schema() :: Protox.MessageSchema.t()
 schema()
 ```
 Return the underlying definition of a message, which contains information such as:

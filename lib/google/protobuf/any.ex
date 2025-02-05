@@ -2,9 +2,9 @@ defmodule Protox.Google.Protobuf.Any do
   @moduledoc false
 
   use Protox.Define,
-    enums: %{},
-    messages: %{
-      Google.Protobuf.Any => %Protox.Message{
+    enums_schemas: %{},
+    messages_schemas: %{
+      Google.Protobuf.Any => %Protox.MessageSchema{
         name: Google.Protobuf.Any,
         syntax: :proto3,
         fields: %{

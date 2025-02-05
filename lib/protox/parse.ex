@@ -6,7 +6,7 @@ defmodule Protox.Parse do
 
   import Protox.Guards
 
-  alias Protox.{Definition, Field, Message, OneOf, Scalar}
+  alias Protox.{Definition, Field, MessageSchema, OneOf, Scalar}
 
   alias Protox.Google.Protobuf.{
     DescriptorProto,
@@ -66,29 +66,29 @@ defmodule Protox.Parse do
     namespace_or_nil = Keyword.get(opts, :namespace, nil)
 
     processed_messages =
-      for {msg_name, msg = %Message{}} <- definition.messages, into: %{} do
+      for {msg_name, msg = %MessageSchema{}} <- definition.messages_schemas, into: %{} do
         name = Module.concat([namespace_or_nil | msg_name])
 
         fields =
           for {field_name, field} <- msg.fields, into: %{} do
             field =
               field
-              |> resolve_types(definition.enums)
-              |> set_default_value(definition.enums)
+              |> resolve_types(definition.enums_schemas)
+              |> set_default_value(definition.enums_schemas)
               |> concat_names(namespace_or_nil)
 
             {field_name, field}
           end
 
-        {name, %Message{msg | name: name, fields: fields}}
+        {name, %MessageSchema{msg | name: name, fields: fields}}
       end
 
     processsed_enums =
-      for {ename, constants} <- definition.enums, into: %{} do
+      for {ename, constants} <- definition.enums_schemas, into: %{} do
         {Module.concat([namespace_or_nil | ename]), constants}
       end
 
-    %Definition{enums: processsed_enums, messages: processed_messages}
+    %Definition{enums_schemas: processsed_enums, messages_schemas: processed_messages}
   end
 
   # We remove all Google types as:
@@ -97,16 +97,16 @@ defmodule Protox.Parse do
   # Removing these types permit to generate smaller code.
   defp remove_google_types(definition) do
     filtered_messages =
-      Map.reject(definition.messages, fn {msg_name, _message} ->
+      Map.reject(definition.messages_schemas, fn {msg_name, _message} ->
         match?(["Google", "Protobuf" | _], Module.split(msg_name))
       end)
 
     filtered_enums =
-      Map.reject(definition.enums, fn {enum_name, _constants} ->
+      Map.reject(definition.enums_schemas, fn {enum_name, _constants} ->
         match?(["Google", "Protobuf" | _], Module.split(enum_name))
       end)
 
-    %Definition{enums: filtered_enums, messages: filtered_messages}
+    %Definition{enums_schemas: filtered_enums, messages_schemas: filtered_messages}
   end
 
   defp add_file_options(definition) do
@@ -118,7 +118,7 @@ defmodule Protox.Parse do
     # Look for FileOptions and related messages. If found, we will compile them
     # to parse file options.
     {file_options_messages, other_messages} =
-      Map.split(definition.messages, [
+      Map.split(definition.messages_schemas, [
         Google.Protobuf.FeatureSet,
         Google.Protobuf.FileOptions,
         Google.Protobuf.UninterpretedOption,
@@ -133,7 +133,7 @@ defmodule Protox.Parse do
         # If FileOptions and other related message have been found, we also need
         # to compile their associated enums.
         {file_options_optimize_enum, other_enums} =
-          Map.split(definition.enums, [
+          Map.split(definition.enums_schemas, [
             Google.Protobuf.FeatureSet.EnumType,
             Google.Protobuf.FeatureSet.FieldPresence,
             Google.Protobuf.FeatureSet.JsonFormat,
@@ -144,7 +144,10 @@ defmodule Protox.Parse do
           ])
 
         # Compile the needed modules.
-        %Definition{messages: file_options_messages, enums: file_options_optimize_enum}
+        %Definition{
+          messages_schemas: file_options_messages,
+          enums_schemas: file_options_optimize_enum
+        }
         |> Protox.Define.define()
         |> Code.eval_quoted()
 
@@ -181,8 +184,8 @@ defmodule Protox.Parse do
         # Finally, construct a new definition with the messages and enums that were not used
         # to parse FileOptions.
         definition
-        |> put_in([Access.key!(:messages)], other_messages)
-        |> put_in([Access.key!(:enums)], other_enums)
+        |> put_in([Access.key!(:messages_schemas)], other_messages)
+        |> put_in([Access.key!(:enums_schemas)], other_enums)
     end
   end
 
@@ -256,7 +259,7 @@ defmodule Protox.Parse do
     enum_name = prefix ++ camelize([descriptor.name])
     enum_constants = Enum.map(descriptor.value, &{&1.number, String.to_atom(&1.name)})
 
-    put_in(definition, [Access.key!(:enums), enum_name], enum_constants)
+    put_in(definition, [Access.key!(:enums_schemas), enum_name], enum_constants)
   end
 
   defp make_messages(definition, syntax, prefix, descriptors, file_options) do
@@ -289,7 +292,7 @@ defmodule Protox.Parse do
   end
 
   defp add_message(definition, syntax, name, file_options) do
-    put_in(definition, [Access.key!(:messages), name], %Message{
+    put_in(definition, [Access.key!(:messages_schemas), name], %MessageSchema{
       name: name,
       syntax: syntax,
       fields: %{},
@@ -332,7 +335,7 @@ defmodule Protox.Parse do
 
     put_in(
       definition,
-      [Access.key!(:messages), msg_name, Access.key!(:fields), field.name],
+      [Access.key!(:messages_schemas), msg_name, Access.key!(:fields), field.name],
       field
     )
   end

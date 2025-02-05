@@ -21,10 +21,10 @@ defmodule Protox.ParseTest do
 
     {:ok, definition} = Protox.Parse.parse(data)
 
-    {:ok, enums: definition.enums, messages: definition.messages}
+    {:ok, enums_schemas: definition.enums_schemas, messages_schemas: definition.messages_schemas}
   end
 
-  test "Parse FileDescriptorSet, protobuf 3 enums", %{enums: enums} do
+  test "Parse FileDescriptorSet, protobuf 3 enums", %{enums_schemas: enums} do
     constants = enums[ProtobufTestMessages.Proto3.ForeignEnum]
     assert constants == [{0, :FOREIGN_FOO}, {1, :FOREIGN_BAR}, {2, :FOREIGN_BAZ}]
 
@@ -32,7 +32,7 @@ defmodule Protox.ParseTest do
     assert constants == [{0, :FOO}, {1, :BAR}, {2, :BAZ}, {-1, :NEG}]
   end
 
-  test "Parse FileDescriptorSet, protobuf 3 messages", %{messages: messages} do
+  test "Parse FileDescriptorSet, protobuf 3 messages", %{messages_schemas: messages} do
     assert messages[ProtobufTestMessages.Proto3.TestAllTypesProto3].syntax == :proto3
 
     fs = messages[ProtobufTestMessages.Proto3.TestAllTypesProto3].fields
@@ -54,12 +54,12 @@ defmodule Protox.ParseTest do
     assert %{} = messages[ProtobufTestMessages.Proto3.NullHypothesisProto3].fields
   end
 
-  test "Parse FileDescriptorSet, protobuf 2 enums", %{enums: enums} do
+  test "Parse FileDescriptorSet, protobuf 2 enums", %{enums_schemas: enums} do
     constants = enums[ProtobufTestMessages.Proto2.ForeignEnumProto2]
     assert constants == [{0, :FOREIGN_FOO}, {1, :FOREIGN_BAR}, {2, :FOREIGN_BAZ}]
   end
 
-  test "Parse FileDescriptorSet, protobuf 2 messages", %{messages: messages} do
+  test "Parse FileDescriptorSet, protobuf 2 messages", %{messages_schemas: messages} do
     assert messages[ProtobufTestMessages.Proto2.TestAllRequiredTypesProto2].syntax == :proto2
 
     fs = messages[ProtobufTestMessages.Proto2.TestAllRequiredTypesProto2].fields
