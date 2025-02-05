@@ -2,9 +2,9 @@ defmodule Protox.Google.Protobuf.UInt64Value do
   @moduledoc false
 
   use Protox.Define,
-    enums: %{},
-    messages: %{
-      Google.Protobuf.UInt64Value => %Protox.Message{
+    enums_schemas: %{},
+    messages_schemas: %{
+      Google.Protobuf.UInt64Value => %Protox.MessageSchema{
         name: Google.Protobuf.UInt64Value,
         syntax: :proto3,
         fields: %{

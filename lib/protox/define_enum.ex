@@ -1,8 +1,8 @@
 defmodule Protox.DefineEnum do
   @moduledoc false
 
-  def define(enums) do
-    for {enum_name, constants} <- enums do
+  def define(enums_schemas) do
+    for {enum_name, constants} <- enums_schemas do
       default_fun = make_enum_default(constants)
       encode_constants_funs = make_encode_enum_constants(constants)
       decode_constants_funs = make_decode_enum_constants(constants)

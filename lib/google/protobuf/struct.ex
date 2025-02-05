@@ -5,9 +5,9 @@ defmodule Protox.Google.Protobuf.Struct do
   @moduledoc false
 
   use Protox.Define,
-    enums: %{},
-    messages: %{
-      Google.Protobuf.Struct => %Protox.Message{
+    enums_schemas: %{},
+    messages_schemas: %{
+      Google.Protobuf.Struct => %Protox.MessageSchema{
         name: Google.Protobuf.Struct,
         syntax: :proto3,
         fields: %{
