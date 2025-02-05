@@ -2,9 +2,9 @@ defmodule Protox.Google.Protobuf.BytesValue do
   @moduledoc false
 
   use Protox.Define,
-    enums: %{},
-    messages: %{
-      Google.Protobuf.BytesValue => %Protox.Message{
+    enums_schemas: %{},
+    messages_schemas: %{
+      Google.Protobuf.BytesValue => %Protox.MessageSchema{
         name: Google.Protobuf.BytesValue,
         syntax: :proto3,
         fields: %{
