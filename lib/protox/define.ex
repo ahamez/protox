@@ -3,25 +3,25 @@ defmodule Protox.Define do
   # Internal. Generates structs from message and enumeration definitions.
 
   defmacro __using__(opts) do
-    {enums, opts} = Keyword.pop(opts, :enums)
-    {messages, opts} = Keyword.pop(opts, :messages)
+    {enums_schemas, opts} = Keyword.pop(opts, :enums_schemas)
+    {messages_schemas, opts} = Keyword.pop(opts, :messages_schemas)
 
     define(
       %Protox.Definition{
-        enums: enums |> Code.eval_quoted() |> elem(0),
-        messages: messages |> Code.eval_quoted() |> elem(0)
+        enums_schemas: enums_schemas |> Code.eval_quoted() |> elem(0),
+        messages_schemas: messages_schemas |> Code.eval_quoted() |> elem(0)
       },
       opts
     )
   end
 
   def define(%Protox.Definition{} = definition, opts \\ []) do
-    enums = Protox.DefineEnum.define(definition.enums)
-    messages = Protox.DefineMessage.define(definition.messages, opts)
+    defined_enums = Protox.DefineEnum.define(definition.enums_schemas)
+    defined_messages = Protox.DefineMessage.define(definition.messages_schemas, opts)
 
     quote do
-      unquote_splicing(enums)
-      unquote_splicing(messages)
+      unquote_splicing(defined_enums)
+      unquote_splicing(defined_messages)
     end
   end
 end

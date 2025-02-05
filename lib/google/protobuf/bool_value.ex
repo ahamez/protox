@@ -2,9 +2,9 @@ defmodule Protox.Google.Protobuf.BoolValue do
   @moduledoc false
 
   use Protox.Define,
-    enums: %{},
-    messages: %{
-      Google.Protobuf.BoolValue => %Protox.Message{
+    enums_schemas: %{},
+    messages_schemas: %{
+      Google.Protobuf.BoolValue => %Protox.MessageSchema{
         name: Google.Protobuf.BoolValue,
         syntax: :proto3,
         fields: %{

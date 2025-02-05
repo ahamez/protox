@@ -3,29 +3,32 @@ defmodule Protox.DefineMessage do
 
   alias Protox.{Field, OneOf, Scalar}
 
-  def define(messages, opts \\ []) do
-    for {_msg_name, msg = %Protox.Message{}} <- messages do
+  def define(messages_schemas, opts \\ []) do
+    for {_msg_name, msg_schema = %Protox.MessageSchema{}} <- messages_schemas do
       # Revert the order of the fields so we iterate from last field to first.
       # This enables us to construct the output iodata using [ field | acc ]
-      sorted_fields = msg.fields |> Map.values() |> Enum.sort(&(&1.tag >= &2.tag))
+      sorted_fields = msg_schema.fields |> Map.values() |> Enum.sort(&(&1.tag >= &2.tag))
 
       required_fields = get_required_fields(sorted_fields)
       unknown_fields_name = make_unknown_fields_name(:__uf__, sorted_fields)
       opts = Keyword.put(opts, :unknown_fields_name, unknown_fields_name)
 
       struct_fields_types =
-        make_struct_fields_types(sorted_fields, msg.syntax, unknown_fields_name)
+        make_struct_fields_types(sorted_fields, msg_schema.syntax, unknown_fields_name)
 
-      struct_fields = make_struct_fields(sorted_fields, msg.syntax, unknown_fields_name)
+      struct_fields = make_struct_fields(sorted_fields, msg_schema.syntax, unknown_fields_name)
 
       unknown_fields_funs = make_unknown_fields_funs(unknown_fields_name)
       default_fun = make_default_funs(sorted_fields)
 
-      encoder = Protox.DefineEncoder.define(sorted_fields, required_fields, msg.syntax, opts)
-      decoder = Protox.DefineDecoder.define(msg.name, sorted_fields, required_fields, opts)
+      encoder =
+        Protox.DefineEncoder.define(sorted_fields, required_fields, msg_schema.syntax, opts)
+
+      decoder =
+        Protox.DefineDecoder.define(msg_schema.name, sorted_fields, required_fields, opts)
 
       quote do
-        defmodule unquote(msg.name) do
+        defmodule unquote(msg_schema.name) do
           @moduledoc false
 
           unquote(struct_fields_types)
@@ -36,8 +39,8 @@ defmodule Protox.DefineMessage do
           unquote(unknown_fields_funs)
           unquote(default_fun)
 
-          @spec schema() :: Protox.Message.t()
-          def schema(), do: unquote(Macro.escape(msg))
+          @spec schema() :: Protox.MessageSchema.t()
+          def schema(), do: unquote(Macro.escape(msg_schema))
         end
       end
     end

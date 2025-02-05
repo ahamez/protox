@@ -2,9 +2,9 @@ defmodule Protox.Google.Protobuf.Timestamp do
   @moduledoc false
 
   use Protox.Define,
-    enums: %{},
-    messages: %{
-      Google.Protobuf.Timestamp => %Protox.Message{
+    enums_schemas: %{},
+    messages_schemas: %{
+      Google.Protobuf.Timestamp => %Protox.MessageSchema{
         name: Google.Protobuf.Timestamp,
         syntax: :proto3,
         fields: %{

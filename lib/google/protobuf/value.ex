@@ -5,9 +5,9 @@ defmodule Protox.Google.Protobuf.Value do
   @moduledoc false
 
   use Protox.Define,
-    enums: %{},
-    messages: %{
-      Google.Protobuf.Value => %Protox.Message{
+    enums_schemas: %{},
+    messages_schemas: %{
+      Google.Protobuf.Value => %Protox.MessageSchema{
         name: Google.Protobuf.Value,
         syntax: :proto3,
         fields: %{

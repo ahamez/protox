@@ -5,7 +5,7 @@ defmodule Protox.Descriptor do
   # https://raw.githubusercontent.com/google/protobuf/master/src/google/protobuf/descriptor.proto
 
   use Protox.Define,
-    enums: %{
+    enums_schemas: %{
       Protox.Google.Protobuf.FieldDescriptorProto.Type => [
         {1, :double},
         {2, :float},
@@ -37,8 +37,8 @@ defmodule Protox.Descriptor do
         {3, :LITE_RUNTIME}
       ]
     },
-    messages: %{
-      Protox.Google.Protobuf.FileDescriptorSet => %Protox.Message{
+    messages_schemas: %{
+      Protox.Google.Protobuf.FileDescriptorSet => %Protox.MessageSchema{
         name: Protox.Google.Protobuf.FileDescriptorSet,
         syntax: :proto3,
         fields: %{
@@ -52,7 +52,7 @@ defmodule Protox.Descriptor do
             )
         }
       },
-      Protox.Google.Protobuf.FileDescriptorProto => %Protox.Message{
+      Protox.Google.Protobuf.FileDescriptorProto => %Protox.MessageSchema{
         name: Protox.Google.Protobuf.FileDescriptorProto,
         syntax: :proto3,
         fields: %{
@@ -115,7 +115,7 @@ defmodule Protox.Descriptor do
             )
         }
       },
-      Protox.Google.Protobuf.DescriptorProto.ExtensionRange => %Protox.Message{
+      Protox.Google.Protobuf.DescriptorProto.ExtensionRange => %Protox.MessageSchema{
         name: Protox.Google.Protobuf.DescriptorProto.ExtensionRange,
         syntax: :proto3,
         fields: %{
@@ -138,7 +138,7 @@ defmodule Protox.Descriptor do
         }
       },
       # Protox.Google.Protobuf.DescriptorProto.ReservedRange ignored
-      Protox.Google.Protobuf.DescriptorProto => %Protox.Message{
+      Protox.Google.Protobuf.DescriptorProto => %Protox.MessageSchema{
         name: Protox.Google.Protobuf.DescriptorProto,
         syntax: :proto3,
         fields: %{
@@ -209,7 +209,7 @@ defmodule Protox.Descriptor do
             )
         }
       },
-      Protox.Google.Protobuf.FieldDescriptorProto => %Protox.Message{
+      Protox.Google.Protobuf.FieldDescriptorProto => %Protox.MessageSchema{
         name: Protox.Google.Protobuf.FieldDescriptorProto,
         syntax: :proto3,
         fields: %{
@@ -296,7 +296,7 @@ defmodule Protox.Descriptor do
             )
         }
       },
-      Protox.Google.Protobuf.FileOptions => %Protox.Message{
+      Protox.Google.Protobuf.FileOptions => %Protox.MessageSchema{
         name: Protox.Google.Protobuf.FileOptions,
         syntax: :proto2,
         fields: %{
@@ -470,7 +470,7 @@ defmodule Protox.Descriptor do
             )
         }
       },
-      Protox.Google.Protobuf.UninterpretedOption => %Protox.Message{
+      Protox.Google.Protobuf.UninterpretedOption => %Protox.MessageSchema{
         name: Protox.Google.Protobuf.UninterpretedOption,
         syntax: :proto2,
         fields: %{
@@ -532,7 +532,7 @@ defmodule Protox.Descriptor do
             )
         }
       },
-      Protox.Google.Protobuf.UninterpretedOption.NamePart => %Protox.Message{
+      Protox.Google.Protobuf.UninterpretedOption.NamePart => %Protox.MessageSchema{
         name: Protox.Google.Protobuf.UninterpretedOption.NamePart,
         syntax: :proto2,
         fields: %{
@@ -554,7 +554,7 @@ defmodule Protox.Descriptor do
             )
         }
       },
-      Protox.Google.Protobuf.OneofDescriptorProto => %Protox.Message{
+      Protox.Google.Protobuf.OneofDescriptorProto => %Protox.MessageSchema{
         name: Protox.Google.Protobuf.OneofDescriptorProto,
         syntax: :proto3,
         fields: %{
@@ -569,7 +569,7 @@ defmodule Protox.Descriptor do
             )
         }
       },
-      Protox.Google.Protobuf.EnumDescriptorProto => %Protox.Message{
+      Protox.Google.Protobuf.EnumDescriptorProto => %Protox.MessageSchema{
         name: Protox.Google.Protobuf.EnumDescriptorProto,
         syntax: :proto3,
         fields: %{
@@ -592,7 +592,7 @@ defmodule Protox.Descriptor do
             )
         }
       },
-      Protox.Google.Protobuf.EnumValueDescriptorProto => %Protox.Message{
+      Protox.Google.Protobuf.EnumValueDescriptorProto => %Protox.MessageSchema{
         name: Protox.Google.Protobuf.EnumValueDescriptorProto,
         syntax: :proto3,
         fields: %{
@@ -617,7 +617,7 @@ defmodule Protox.Descriptor do
       },
       # ServiceDescriptorProto ignored
       # MethodDescriptorProto ignored
-      Protox.Google.Protobuf.MessageOptions => %Protox.Message{
+      Protox.Google.Protobuf.MessageOptions => %Protox.MessageSchema{
         name: Protox.Google.Protobuf.MessageOptions,
         syntax: :proto3,
         fields: %{
@@ -640,7 +640,7 @@ defmodule Protox.Descriptor do
             )
         }
       },
-      Protox.Google.Protobuf.FieldOptions => %Protox.Message{
+      Protox.Google.Protobuf.FieldOptions => %Protox.MessageSchema{
         name: Protox.Google.Protobuf.FieldOptions,
         syntax: :proto3,
         fields: %{

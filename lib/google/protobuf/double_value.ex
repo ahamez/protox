@@ -2,9 +2,9 @@ defmodule Protox.Google.Protobuf.DoubleValue do
   @moduledoc false
 
   use Protox.Define,
-    enums: %{},
-    messages: %{
-      Google.Protobuf.DoubleValue => %Protox.Message{
+    enums_schemas: %{},
+    messages_schemas: %{
+      Google.Protobuf.DoubleValue => %Protox.MessageSchema{
         name: Google.Protobuf.DoubleValue,
         syntax: :proto3,
         fields: %{

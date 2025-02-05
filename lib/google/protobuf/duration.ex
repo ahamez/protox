@@ -2,9 +2,9 @@ defmodule Protox.Google.Protobuf.Duration do
   @moduledoc false
 
   use Protox.Define,
-    enums: %{},
-    messages: %{
-      Google.Protobuf.Duration => %Protox.Message{
+    enums_schemas: %{},
+    messages_schemas: %{
+      Google.Protobuf.Duration => %Protox.MessageSchema{
         name: Google.Protobuf.Duration,
         syntax: :proto3,
         fields: %{

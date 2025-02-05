@@ -4,10 +4,10 @@ defmodule Protox.Definition do
   @type name() :: atom() | [binary()]
   @type enum_constant() :: {non_neg_integer(), :atom}
   @type t() :: %__MODULE__{
-          enums: %{name() => [enum_constant()]},
-          messages: %{name() => Protox.Message.t()}
+          enums_schemas: %{name() => [enum_constant()]},
+          messages_schemas: %{name() => Protox.MessageSchema.t()}
         }
 
-  defstruct enums: %{},
-            messages: %{}
+  defstruct enums_schemas: %{},
+            messages_schemas: %{}
 end
