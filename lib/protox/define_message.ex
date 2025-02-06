@@ -31,6 +31,12 @@ defmodule Protox.DefineMessage do
         defmodule unquote(msg_schema.name) do
           @moduledoc false
 
+          if function_exported?(Protox, :check_generator_version, 1) do
+            Protox.check_generator_version(unquote(Protox.generator_version()))
+          else
+            raise "This code was generated with protox 2 but the runtime is using an older version of protox."
+          end
+
           unquote(struct_fields_types)
           defstruct unquote(struct_fields)
 

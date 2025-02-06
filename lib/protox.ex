@@ -178,4 +178,15 @@ defmodule Protox do
   defp make_external_resources(files) do
     Enum.map(files, fn file -> quote(do: @external_resource(unquote(file))) end)
   end
+
+  @generator_version 1
+  @doc false
+  def generator_version(), do: @generator_version
+
+  @doc false
+  def check_generator_version(generated_code_version) do
+    if generated_code_version != generator_version() do
+      raise "Mismatch detected between the protox generated code and the runtime. Please regenerate the code using the same protox version as the runtime."
+    end
+  end
 end
