@@ -9,7 +9,6 @@ defmodule Protox.DefineMessage do
       # This enables us to construct the output iodata using [ field | acc ]
       sorted_fields = msg_schema.fields |> Map.values() |> Enum.sort(&(&1.tag >= &2.tag))
 
-      required_fields = get_required_fields(sorted_fields)
       unknown_fields_name = make_unknown_fields_name(:__uf__, sorted_fields)
       opts = Keyword.put(opts, :unknown_fields_name, unknown_fields_name)
 
@@ -21,11 +20,8 @@ defmodule Protox.DefineMessage do
       unknown_fields_funs = make_unknown_fields_funs(unknown_fields_name)
       default_fun = make_default_funs(sorted_fields)
 
-      encoder =
-        Protox.DefineEncoder.define(sorted_fields, required_fields, msg_schema.syntax, opts)
-
-      decoder =
-        Protox.DefineDecoder.define(msg_schema.name, sorted_fields, required_fields, opts)
+      encoder = Protox.DefineEncoder.define(sorted_fields, msg_schema.syntax, opts)
+      decoder = Protox.DefineDecoder.define(msg_schema.name, sorted_fields, opts)
 
       quote do
         defmodule unquote(msg_schema.name) do
@@ -190,10 +186,6 @@ defmodule Protox.DefineMessage do
 
   defp make_oneof_field(:proto3_optional, name, _), do: {name, nil}
   defp make_oneof_field(_, _, parent), do: {parent, nil}
-
-  defp get_required_fields(fields) do
-    for %Field{label: :required, name: name} <- fields, do: name
-  end
 
   defp proto_type_to_typespec(:string), do: quote(do: String.t())
   defp proto_type_to_typespec(:bytes), do: quote(do: binary())

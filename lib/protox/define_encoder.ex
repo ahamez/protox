@@ -4,12 +4,14 @@ defmodule Protox.DefineEncoder do
 
   alias Protox.{Field, OneOf, Scalar}
 
-  def define(fields, required_fields, syntax, opts \\ []) do
+  def define(fields, syntax, opts \\ []) do
     vars = %{
       acc: Macro.var(:acc, __MODULE__),
       acc_size: Macro.var(:acc_size, __MODULE__),
       msg: Macro.var(:msg, __MODULE__)
     }
+
+    required_fields = get_required_fields(fields)
 
     %{oneofs: oneofs, proto3_optionals: proto3_optionals, others: fields_without_oneofs} =
       Protox.Defs.split_oneofs(fields)
@@ -489,5 +491,9 @@ defmodule Protox.DefineEncoder do
   defp make_generator(%Macro.Env{} = env) do
     {fun_name, _fun_arity} = env.function
     "#{fun_name}:#{env.line}"
+  end
+
+  defp get_required_fields(fields) do
+    for %Field{label: :required, name: name} <- fields, do: name
   end
 end
