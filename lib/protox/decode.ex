@@ -40,7 +40,6 @@ defmodule Protox.Decode do
       @wire_64bits -> {key >>> 3, @wire_64bits, rest}
       @wire_delimited -> {key >>> 3, @wire_delimited, rest}
       @wire_varint -> {key >>> 3, @wire_varint, rest}
-      wire_type -> raise Protox.DecodingError.new(bytes, "invalid wire type #{wire_type}")
     end
   end
 
