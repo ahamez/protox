@@ -274,7 +274,7 @@ You must use `unknown_fields/1` as the name of the field (e.g. `__uf__` in the a
 
 ## Implementation choices
 
-*  (__Protobuf 2__) __Required fields__ Protox enforces the presence of required fields; an error is raised when encoding or decoding a message with a missing required field:
+*  (__Protobuf 2__) __Required fields__ Protox enforces the presence of required fields; an error is raised when encoding a message with missing required field:
     ```elixir
     defmodule Bar do
       use Protox, schema: """
@@ -287,9 +287,6 @@ You must use `unknown_fields/1` as the name of the field (e.g. `__uf__` in the a
     end
 
     iex> Protox.encode!(%Required{})
-    ** (Protox.RequiredFieldsError) Some required fields are not set: [:a]
-
-    iex> Required.decode!(<<>>)
     ** (Protox.RequiredFieldsError) Some required fields are not set: [:a]
     ```
 
@@ -379,8 +376,6 @@ You must use `unknown_fields/1` as the name of the field (e.g. `__uf__` in the a
 
 - The detailed reference of the generated code is available [here](documentation/reference.md).
 - Please see [reference/types_mapping.md](reference/types_mapping.md) to see how protobuf types are mapped to Elixir types.
-
-
 
 
 ## Conformance
