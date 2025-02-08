@@ -448,8 +448,7 @@ defmodule Protox.DecodeTest do
     assert m == Protox.MergeMessage.merge(m1, m2)
   end
 
-  test "failure: missing required fields" do
-    assert {:error, %Protox.RequiredFieldsError{missing_fields: [:a]}} =
-             Protobuf2Required.decode(<<>>)
+  test "success: not error when some required fields are missing" do
+    assert {:ok, %Protobuf2Required{}} = Protobuf2Required.decode(<<>>)
   end
 end
