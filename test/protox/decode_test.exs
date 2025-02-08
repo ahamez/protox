@@ -303,15 +303,15 @@ defmodule Protox.DecodeTest do
     },
     {
       "invalid double",
-      # Last byte `66` of float is missing.
-      <<93, 133, 235, 40>>,
+      # Last byte `64` of :optional_float is missing.
+      <<97, 3, 130, 148, 51, 111, 39, 98>>,
       TestAllTypesProto3,
       Protox.DecodingError
     },
     {
       "invalid float",
-      # Last byte `63` of float is missing.
-      <<93, 0, 0, 128>>,
+      # Last byte `67` of :optional_float is missing.
+      <<93, 121, 59, 17>>,
       TestAllTypesProto3,
       Protox.DecodingError
     },
