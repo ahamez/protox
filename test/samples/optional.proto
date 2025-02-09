@@ -19,11 +19,3 @@ message OptionalMsg4 {
     OptionalMsg1 foo = 1;
   }
 }
-
-message OptionalUpperMsg {
-  optional OptionalSubMsg sub = 1;
-}
-
-message OptionalSubMsg {
-  int32 a = 1;
-}
