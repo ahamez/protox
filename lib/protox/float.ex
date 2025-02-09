@@ -27,43 +27,29 @@ defmodule Protox.Float do
       #
       # * Protobuf uses little-endian
 
-      @positive_infinity_64 <<0, 0, 0, 0, 0, 0, 0xF0, 0x7F>>
-      @negative_infinity_64 <<0, 0, 0, 0, 0, 0, 0xF0, 0xFF>>
+      @positive_infinity_64 <<0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xF0, 0x7F>>
+      @negative_infinity_64 <<0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xF0, 0xFF>>
       @nan_64 <<1::48, 0b1111::4, 1::4, 1::1, 0b1111111::7>>
-      @min_double Protox.Float.min_double()
-      @max_double Protox.Float.max_double()
+      @min_double (
+                    <<min::float-big-64>> = <<0xFF, 0xEF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF>>
+                    min
+                  )
+      @max_double (
+                    <<max::float-big-64>> = <<0x7F, 0xEF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF>>
+                    max
+                  )
 
       @positive_infinity_32 <<0, 0, 0x80, 0x7F>>
       @negative_infinity_32 <<0, 0, 0x80, 0xFF>>
       @nan_32 <<1::16, 1::1, 1::7, 1::1, 0b1111111::7>>
-      @min_float Protox.Float.min_float()
-      @max_float Protox.Float.max_float()
+      @min_float (
+                   <<min::float-big-32>> = <<0xFF, 0x7F, 0xFF, 0xFF>>
+                   min
+                 )
+      @max_float (
+                   <<max::float-big-32>> = <<0x7F, 0x7F, 0xFF, 0xFF>>
+                   max
+                 )
     end
-  end
-
-  def min_float() do
-    <<value::float-big-32>> = <<0b11111111011111111111111111111111::32>>
-
-    value
-  end
-
-  def max_float() do
-    <<value::float-big-32>> = <<0b01111111011111111111111111111111::32>>
-
-    value
-  end
-
-  def min_double() do
-    <<value::float-big-64>> =
-      <<0b1111111111101111111111111111111111111111111111111111111111111111::64>>
-
-    value
-  end
-
-  def max_double() do
-    <<value::float-big-64>> =
-      <<0b0111111111101111111111111111111111111111111111111111111111111111::64>>
-
-    value
   end
 end
