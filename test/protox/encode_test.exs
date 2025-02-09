@@ -120,7 +120,7 @@ defmodule Protox.EncodeTest do
   end
 
   test "Optional sub message" do
-    assert encode(%OptionalUpperMsg{sub: %OptionalSubMsg{a: 42}}) == {<<10, 2, 8, 42>>, 4}
+    assert encode(%OptionalMsg3{foo: %OptionalMsg1{foo: 42}}) == {<<10, 2, 8, 42>>, 4}
   end
 
   test "Do not output default double/float" do
