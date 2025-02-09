@@ -24,7 +24,6 @@ defmodule Protox.DefineEncoder do
     encode_unknown_fields_fun = make_encode_unknown_fields_fun(vars, opts)
 
     quote do
-      _generator = unquote(make_generator(__ENV__))
       unquote(top_level_encode_fun)
       unquote_splicing(encode_oneof_funs)
       unquote_splicing(encode_field_funs)
@@ -43,8 +42,6 @@ defmodule Protox.DefineEncoder do
     quote do
       @spec encode(t()) :: {:ok, iodata(), non_neg_integer()} | {:error, any()}
       def encode(msg) do
-        _generator = unquote(make_generator(__ENV__))
-
         try do
           msg |> encode!() |> Tuple.insert_at(0, :ok)
         rescue
@@ -219,8 +216,6 @@ defmodule Protox.DefineEncoder do
     encode_packed_ast = make_encode_packed_body(field.type)
 
     quote do
-      _generator = unquote(make_generator(__ENV__))
-
       case unquote(vars.msg).unquote(field.name) do
         [] ->
           {unquote(vars.acc), unquote(vars.acc_size)}
@@ -240,8 +235,6 @@ defmodule Protox.DefineEncoder do
     encode_repeated_ast = make_encode_repeated_body(field.tag, field.type)
 
     quote do
-      _generator = unquote(make_generator(__ENV__))
-
       case unquote(vars.msg).unquote(field.name) do
         [] ->
           {unquote(vars.acc), unquote(vars.acc_size)}
@@ -272,8 +265,6 @@ defmodule Protox.DefineEncoder do
     keys_len = k_key_size + v_key_size
 
     quote do
-      _generator = unquote(make_generator(__ENV__))
-
       map = Map.fetch!(unquote(vars.msg), unquote(field.name))
 
       if map_size(map) == 0 do
@@ -313,8 +304,6 @@ defmodule Protox.DefineEncoder do
 
     quote do
       defp encode_unknown_fields({unquote(vars.acc), unquote(vars.acc_size)}, msg) do
-        _generator = unquote(make_generator(__ENV__))
-
         Enum.reduce(
           msg.unquote(unknown_fields_name),
           {unquote(vars.acc), unquote(vars.acc_size)},
@@ -364,8 +353,6 @@ defmodule Protox.DefineEncoder do
     encode_value_ast = get_encode_value_body(type, value_var)
 
     quote do
-      _generator = unquote(make_generator(__ENV__))
-
       {value_bytes, value_size} =
         Enum.reduce(
           values,
@@ -392,8 +379,6 @@ defmodule Protox.DefineEncoder do
     encode_value_ast = get_encode_value_body(type, value_var)
 
     quote do
-      _generator = unquote(make_generator(__ENV__))
-
       {value_bytes, value_size} =
         Enum.reduce(
           values,
@@ -486,11 +471,6 @@ defmodule Protox.DefineEncoder do
 
   defp make_encode_field_fun_name(field) when is_atom(field) do
     String.to_atom("encode_#{field}")
-  end
-
-  defp make_generator(%Macro.Env{} = env) do
-    {fun_name, _fun_arity} = env.function
-    "#{fun_name}:#{env.line}"
   end
 
   defp get_required_fields(fields) do
