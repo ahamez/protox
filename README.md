@@ -7,7 +7,7 @@ binary encoding and decoding.
 
 ## Example
 
-Given the following protobuf definition, Protox will create a `Msg` struct:
+Given the following protobuf definition:
 ```proto
 message Msg{
   int32 a = 1;
@@ -15,8 +15,7 @@ message Msg{
 }
 ```
 
-You can then interact with `Msg` as with any Elixir structure:
-
+Protox will create a regular Elixir `Msg` struct:
 ```elixir
 iex> msg = %Msg{a: 42, b: %{1 => "a map entry"}}
 iex> {:ok, iodata, iodata_size} = Msg.encode(msg)
