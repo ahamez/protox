@@ -277,36 +277,33 @@ defmodule Protox.DefineDecoder do
 
   defp make_update_field(
          value,
-         %Field{label: :proto3_optional, kind: %OneOf{}, type: {:message, _}} = field,
-         vars,
-         _wrap_value
-       ) do
-    quote do
-      case unquote(vars.msg).unquote(field.name) do
-        {unquote(field.name), previous_value} ->
-          {unquote(field.name), Protox.MergeMessage.merge(previous_value, unquote(value))}
-
-        _ ->
-          {unquote(field.name), unquote(value)}
-      end
-    end
-  end
-
-  defp make_update_field(
-         value,
          %Field{kind: %OneOf{}, type: {:message, _}} = field,
          vars,
          _wrap_value
        ) do
-    quote do
-      case unquote(vars.msg).unquote(field.kind.parent) do
-        {unquote(field.name), previous_value} ->
-          {unquote(field.kind.parent),
-           {unquote(field.name), Protox.MergeMessage.merge(previous_value, unquote(value))}}
+    case field.label do
+      :proto3_optional ->
+        quote do
+          case unquote(vars.msg).unquote(field.name) do
+            {unquote(field.name), previous_value} ->
+              {unquote(field.name), Protox.MergeMessage.merge(previous_value, unquote(value))}
 
-        _ ->
-          {unquote(field.kind.parent), {unquote(field.name), unquote(value)}}
-      end
+            _ ->
+              {unquote(field.name), unquote(value)}
+          end
+        end
+
+      _ ->
+        quote do
+          case unquote(vars.msg).unquote(field.kind.parent) do
+            {unquote(field.name), previous_value} ->
+              {unquote(field.kind.parent),
+               {unquote(field.name), Protox.MergeMessage.merge(previous_value, unquote(value))}}
+
+            _ ->
+              {unquote(field.kind.parent), {unquote(field.name), unquote(value)}}
+          end
+        end
     end
   end
 
