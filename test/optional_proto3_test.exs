@@ -9,18 +9,9 @@ defmodule OptionalProto3Test do
     encoded_msg2 = msg2 |> OptionalMsg2.encode!() |> elem(0) |> IO.iodata_to_binary()
 
     assert encoded_msg1 == encoded_msg2
-  end
 
-  test "A proto3 synthetic oneof can be decoded as an optional field" do
-    msg1 = %OptionalMsg1{foo: 1}
-    msg2 = %OptionalMsg2{_foo: {:foo, 1}}
-
-    assert msg1 ==
-             msg2
-             |> OptionalMsg2.encode!()
-             |> elem(0)
-             |> IO.iodata_to_binary()
-             |> OptionalMsg1.decode!()
+    decoded_msg2_as_msg1 = encoded_msg2 |> OptionalMsg1.decode!()
+    assert decoded_msg2_as_msg1 == msg1
   end
 
   test "A unset proto3 optional field is not serialized" do
@@ -39,6 +30,9 @@ defmodule OptionalProto3Test do
     encoded_msg4 = msg4 |> OptionalMsg4.encode!() |> elem(0) |> IO.iodata_to_binary()
 
     assert encoded_msg3 == encoded_msg4
+
+    decoded_msg4_as_msg3 = encoded_msg4 |> OptionalMsg3.decode!()
+    assert decoded_msg4_as_msg3 == msg3
   end
 
   test "A proto3 optional non-empty message field is encoded as a oneof" do
@@ -49,6 +43,9 @@ defmodule OptionalProto3Test do
     encoded_msg4 = msg4 |> OptionalMsg4.encode!() |> elem(0) |> IO.iodata_to_binary()
 
     assert encoded_msg3 == encoded_msg4
+
+    decoded_msg4_as_msg3 = encoded_msg4 |> OptionalMsg3.decode!()
+    assert decoded_msg4_as_msg3 == msg3
   end
 
   test "A unset proto3 optional message field is not serialized" do
@@ -57,5 +54,13 @@ defmodule OptionalProto3Test do
 
     assert explicit_nil |> OptionalMsg3.encode!() |> elem(0) |> IO.iodata_to_binary() == <<>>
     assert implicit_nil |> OptionalMsg3.encode!() |> elem(0) |> IO.iodata_to_binary() == <<>>
+  end
+
+  test "Use the latest set value on the wire" do
+    bin1 = <<10, 2, 8, 32>>
+    bin2 = <<10, 2, 8, 100>>
+
+    assert (bin1 <> bin2) |> OptionalMsg3.decode!() == %OptionalMsg3{foo: %OptionalMsg1{foo: 100}}
+    assert (bin2 <> bin1) |> OptionalMsg3.decode!() == %OptionalMsg3{foo: %OptionalMsg1{foo: 32}}
   end
 end
