@@ -8,6 +8,7 @@ defmodule Protox.DefineEncoder do
     vars = %{
       acc: Macro.var(:acc, __MODULE__),
       acc_size: Macro.var(:acc_size, __MODULE__),
+      child_field_value: Macro.var(:child_field_value, __MODULE__),
       msg: Macro.var(:msg, __MODULE__)
     }
 
@@ -19,7 +20,7 @@ defmodule Protox.DefineEncoder do
     top_level_encode_fun =
       make_top_level_encode_fun(oneofs, proto3_optionals ++ fields_without_oneofs)
 
-    encode_oneof_funs = make_encode_oneof_funs(oneofs)
+    encode_oneof_funs = make_encode_oneof_funs(oneofs, syntax, vars)
     encode_field_funs = make_encode_field_funs(fields, required_fields, syntax, vars)
     encode_unknown_fields_fun = make_encode_unknown_fields_fun(vars, opts)
 
@@ -78,24 +79,28 @@ defmodule Protox.DefineEncoder do
     end)
   end
 
-  defp make_encode_oneof_funs(oneofs) do
+  defp make_encode_oneof_funs(oneofs, syntax, vars) do
     for {parent_name, children} <- oneofs do
       nil_clause =
         quote do
-          nil -> acc
+          nil -> {unquote(vars.acc), unquote(vars.acc_size)}
         end
 
       children_clauses_ast =
         Enum.flat_map(children, fn %Field{} = child_field ->
-          encode_child_fun_name = make_encode_field_fun_name(child_field.name)
+          encode_child_body = make_encode_field_body(child_field, false, syntax, vars)
 
           quote do
-            {unquote(child_field.name), _field_value} -> unquote(encode_child_fun_name)(acc, msg)
+            {unquote(child_field.name), unquote(vars.child_field_value)} ->
+              unquote(encode_child_body)
           end
         end)
 
       quote do
-        defp unquote(make_encode_field_fun_name(parent_name))(acc, msg) do
+        defp unquote(make_encode_field_fun_name(parent_name))(
+               {unquote(vars.acc), unquote(vars.acc_size)},
+               msg
+             ) do
           case msg.unquote(parent_name) do
             unquote(nil_clause ++ children_clauses_ast)
           end
@@ -105,6 +110,13 @@ defmodule Protox.DefineEncoder do
   end
 
   defp make_encode_field_funs(fields, required_fields, syntax, vars) do
+    fields =
+      Enum.reject(fields, fn
+        %Field{label: :proto3_optional, kind: %OneOf{}} -> false
+        %Field{kind: %OneOf{}} -> true
+        _ -> false
+      end)
+
     for %Field{name: name} = field <- fields do
       required = name in required_fields
       fun_name = make_encode_field_fun_name(name)
@@ -168,9 +180,8 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  # Generate the AST to encode child `field.name` of a oneof
   defp make_encode_field_body(
-         %Field{kind: %OneOf{}} = field,
+         %Field{label: :proto3_optional, kind: %OneOf{}} = field,
          _required,
          _syntax,
          vars
@@ -179,35 +190,40 @@ defmodule Protox.DefineEncoder do
     var = Macro.var(:child_field_value, __MODULE__)
     encode_value_ast = get_encode_value_body(field.type, var)
 
-    case field.label do
-      :proto3_optional ->
-        quote do
-          case unquote(vars.msg).unquote(field.name) do
-            nil ->
-              {unquote(vars.acc), unquote(vars.acc_size)}
+    quote do
+      case unquote(vars.msg).unquote(field.name) do
+        nil ->
+          {unquote(vars.acc), unquote(vars.acc_size)}
 
-            unquote(var) ->
-              {value_bytes, value_bytes_size} = unquote(encode_value_ast)
-
-              {
-                [unquote(key), value_bytes | unquote(vars.acc)],
-                unquote(vars.acc_size) + unquote(key_size) + value_bytes_size
-              }
-          end
-        end
-
-      _ ->
-        # The dispatch on the correct child is performed by the parent encoding function,
-        # this is why we don't check if the child is set.
-        quote do
-          {_, unquote(var)} = unquote(vars.msg).unquote(field.kind.parent)
+        unquote(var) ->
           {value_bytes, value_bytes_size} = unquote(encode_value_ast)
 
           {
             [unquote(key), value_bytes | unquote(vars.acc)],
             unquote(vars.acc_size) + unquote(key_size) + value_bytes_size
           }
-        end
+      end
+    end
+  end
+
+  defp make_encode_field_body(
+         %Field{kind: %OneOf{}} = field,
+         _required,
+         _syntax,
+         vars
+       ) do
+    {key, key_size} = Protox.Encode.make_key_bytes(field.tag, field.type)
+    encode_value_ast = get_encode_value_body(field.type, vars.child_field_value)
+
+    # The dispatch on the correct child is performed by the parent encoding function,
+    # this is why we don't check if the child is set.
+    quote do
+      {value_bytes, value_bytes_size} = unquote(encode_value_ast)
+
+      {
+        [unquote(key), value_bytes | unquote(vars.acc)],
+        unquote(vars.acc_size) + unquote(key_size) + value_bytes_size
+      }
     end
   end
 
