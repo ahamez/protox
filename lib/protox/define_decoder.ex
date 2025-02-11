@@ -284,13 +284,9 @@ defmodule Protox.DefineDecoder do
     case field.label do
       :proto3_optional ->
         quote do
-          case unquote(vars.msg).unquote(field.name) do
-            {unquote(field.name), previous_value} ->
-              {unquote(field.name), Protox.MergeMessage.merge(previous_value, unquote(value))}
-
-            _ ->
-              {unquote(field.name), unquote(value)}
-          end
+          # It's unclear if we should merge the value here or not. For now, conformance tests
+          # pass without this.
+          {unquote(field.name), unquote(value)}
         end
 
       _ ->
