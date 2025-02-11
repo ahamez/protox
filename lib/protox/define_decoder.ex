@@ -152,16 +152,10 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_single_case(_vars, %Field{type: {:message, _}}) do
-    quote(do: [])
-  end
-
+  defp make_single_case(_vars, %Field{type: {:message, _}}), do: quote(do: [])
   defp make_single_case(_vars, %Field{type: :string}), do: quote(do: [])
   defp make_single_case(_vars, %Field{type: :bytes}), do: quote(do: [])
-
-  defp make_single_case(_vars, %Field{type: {x, _}}) when x != :enum do
-    quote(do: [])
-  end
+  defp make_single_case(_vars, %Field{type: {x, _}}) when x != :enum, do: quote(do: [])
 
   defp make_single_case(vars, %Field{} = field) do
     parse_single = make_parse_single(vars.bytes, field.type)
