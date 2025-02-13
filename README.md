@@ -56,7 +56,7 @@ You can use Protox in two ways:
 
 ## Prerequisites
 
-- Elixir >= 1.15
+- Elixir >= 1.15 and OTP >= 26
 - [protoc](https://github.com/protocolbuffers/protobuf/releases) >= 3.0 *This dependency is only required at compile-time*. It must be available in `$PATH`.
 
 ## Installation
