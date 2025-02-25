@@ -3,7 +3,7 @@ defmodule Protox.String do
 
   if Mix.env() == :test do
     @max_size Bitwise.<<<(1, 20)
-    def max_size, do: @max_size
+    def max_size(), do: @max_size
   else
     # Reference: https://protobuf.dev/programming-guides/proto3/#scalar
     @max_size Bitwise.<<<(1, 32)

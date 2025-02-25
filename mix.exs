@@ -1,7 +1,7 @@
 defmodule Protox.Mixfile do
   use Mix.Project
 
-  def project do
+  def project() do
     [
       app: :protox,
       version: "2.0.0-dev",
@@ -25,13 +25,13 @@ defmodule Protox.Mixfile do
   defp elixirc_paths(:prod), do: ["lib"]
   defp elixirc_paths(_), do: ["lib", "conformance", "benchmark", "test/support"]
 
-  def application do
+  def application() do
     [
       extra_applications: [:benchee, :eex, :mix]
     ]
   end
 
-  defp deps do
+  defp deps() do
     [
       {:benchee, "~> 1.0", only: [:test, :dev], runtime: false},
       {:benchee_html, "~> 1.0", only: [:test, :dev], runtime: false},
@@ -79,13 +79,13 @@ defmodule Protox.Mixfile do
     end
   end
 
-  defp description do
+  defp description() do
     """
     A fast, easy to use and 100% conformant Elixir library for Google Protocol Buffers (aka protobuf)
     """
   end
 
-  def escript do
+  def escript() do
     [
       # do not start any application: avoid propcheck app to fail when running escript
       app: nil,
@@ -94,7 +94,7 @@ defmodule Protox.Mixfile do
     ]
   end
 
-  defp package do
+  defp package() do
     [
       name: :protox,
       files: ["lib", "mix.exs", "README*", "LICENSE"],
@@ -105,7 +105,7 @@ defmodule Protox.Mixfile do
     ]
   end
 
-  defp docs do
+  defp docs() do
     [
       main: "readme",
       extras: ["README.md", "documentation/reference.md"]

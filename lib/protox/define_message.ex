@@ -56,7 +56,7 @@ defmodule Protox.DefineMessage do
       def unknown_fields(msg), do: msg.unquote(unknown_fields)
 
       @spec unknown_fields_name() :: unquote(unknown_fields)
-      def unknown_fields_name, do: unquote(unknown_fields)
+      def unknown_fields_name(), do: unquote(unknown_fields)
 
       @spec clear_unknown_fields(struct) :: struct
       def clear_unknown_fields(msg), do: struct!(msg, [{unquote(unknown_fields), []}])
