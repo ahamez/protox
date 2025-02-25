@@ -245,8 +245,7 @@ defmodule Protox.DefineDecoder do
 
           _ ->
             quote do
-              <<unquote(first_byte)::5, _wire_type::3, unquote(tail),
-                unquote(vars.bytes)::binary>>
+              <<unquote(first_byte)::5, _wire_type::3, unquote(tail), unquote(vars.bytes)::binary>>
             end
         end
       end
@@ -264,8 +263,7 @@ defmodule Protox.DefineDecoder do
     quote do
       {entry_key, entry_value} = unquote(value)
 
-      {unquote(field.name),
-       Map.put(unquote(vars.msg).unquote(field.name), entry_key, entry_value)}
+      {unquote(field.name), Map.put(unquote(vars.msg).unquote(field.name), entry_key, entry_value)}
     end
   end
 

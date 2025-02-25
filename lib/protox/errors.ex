@@ -55,8 +55,7 @@ defmodule Protox.InvalidFieldAttribute do
   @doc false
   def new(attribute, expected, got) do
     %__MODULE__{
-      message:
-        "Field attribute #{attribute} should be in #{inspect(expected)}, got #{inspect(got)}"
+      message: "Field attribute #{attribute} should be in #{inspect(expected)}, got #{inspect(got)}"
     }
   end
 end

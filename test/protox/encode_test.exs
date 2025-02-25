@@ -69,17 +69,15 @@ defmodule Protox.EncodeTest do
     assert encode(%TestAllTypesProto3{
              repeated_double: [33.2, -44.0, :infinity, :"-infinity", :nan]
            }) ==
-             {<<210, 2, 40, 154, 153, 153, 153, 153, 153, 64, 64, 0, 0, 0, 0, 0, 0, 70, 192, 0, 0,
-                0, 0, 0, 0, 240, 127, 0, 0, 0, 0, 0, 0, 240, 255, 0, 0, 0, 0, 0, 1, 241, 255>>,
-              43}
+             {<<210, 2, 40, 154, 153, 153, 153, 153, 153, 64, 64, 0, 0, 0, 0, 0, 0, 70, 192, 0, 0, 0, 0, 0, 0, 240, 127,
+                0, 0, 0, 0, 0, 0, 240, 255, 0, 0, 0, 0, 0, 1, 241, 255>>, 43}
   end
 
   test "Repeated float" do
     assert encode(%TestAllTypesProto3{
              repeated_float: [33.2, -44.0, :infinity, :"-infinity", :nan]
            }) ==
-             {<<202, 2, 20, 205, 204, 4, 66, 0, 0, 48, 194, 0, 0, 128, 127, 0, 0, 128, 255, 0, 1,
-                129, 255>>, 23}
+             {<<202, 2, 20, 205, 204, 4, 66, 0, 0, 48, 194, 0, 0, 128, 127, 0, 0, 128, 255, 0, 1, 129, 255>>, 23}
   end
 
   test "Repeated bool" do
@@ -94,8 +92,7 @@ defmodule Protox.EncodeTest do
 
   test "Unpacked Repeated int32" do
     assert encode(%TestAllTypesProto3{unpacked_int32: [-1, 2, 3]}) ==
-             {<<200, 5, 255, 255, 255, 255, 255, 255, 255, 255, 255, 1, 200, 5, 2, 200, 5, 3>>,
-              18}
+             {<<200, 5, 255, 255, 255, 255, 255, 255, 255, 255, 255, 1, 200, 5, 2, 200, 5, 3>>, 18}
   end
 
   test "Bytes" do

@@ -40,7 +40,8 @@ defmodule Protox.Mixfile do
       {:excoveralls, "~> 0.13", only: [:test], runtime: false},
       {:ex_doc, "~> 0.22", only: [:dev], runtime: false},
       {:propcheck, github: "alfert/propcheck", ref: "c564e89d", only: [:test, :dev]},
-      {:stream_data, "~> 1.0", only: [:dev, :test], runtime: false}
+      {:stream_data, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:quokka, "~> 2.0", only: [:dev, :test], runtime: false}
     ]
     |> maybe_add_muzak_pro()
     |> maybe_download_protobuf()
@@ -53,8 +54,7 @@ defmodule Protox.Mixfile do
 
       creds ->
         muzak_pro =
-          {:muzak,
-           git: "https://#{creds}@github.com/ahamez/muzak.git", tag: "1.1.0", only: [:test]}
+          {:muzak, git: "https://#{creds}@github.com/ahamez/muzak.git", tag: "1.1.0", only: [:test]}
 
         [muzak_pro | deps]
     end

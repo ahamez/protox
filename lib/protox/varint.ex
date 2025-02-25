@@ -21,19 +21,17 @@ defmodule Protox.Varint do
     do: {<<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, v >>> 28>>, 5}
 
   def encode(v) when v < 1 <<< 42,
-    do:
-      {<<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7,
-         v >>> 35>>, 6}
+    do: {<<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7, v >>> 35>>, 6}
 
   def encode(v) when v < 1 <<< 49,
     do:
-      {<<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7,
-         1::1, v >>> 35::7, v >>> 42>>, 7}
+      {<<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7, 1::1, v >>> 35::7,
+         v >>> 42>>, 7}
 
   def encode(v) when v < 1 <<< 56,
     do:
-      {<<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7,
-         1::1, v >>> 35::7, 1::1, v >>> 42::7, v >>> 49>>, 8}
+      {<<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7, 1::1, v >>> 35::7, 1::1,
+         v >>> 42::7, v >>> 49>>, 8}
 
   def encode(v) do
     {next_bytes, size} = encode(v >>> 7)
@@ -53,23 +51,19 @@ defmodule Protox.Varint do
   def decode(<<1::1, byte3::7, 1::1, byte2::7, 1::1, byte1::7, 0::1, byte0::7, rest::binary>>),
     do: {byte3 <<< 0 ||| byte2 <<< 7 ||| byte1 <<< 14 ||| byte0 <<< 21, rest}
 
-  def decode(
-        <<1::1, byte4::7, 1::1, byte3::7, 1::1, byte2::7, 1::1, byte1::7, 0::1, byte0::7,
-          rest::binary>>
-      ),
-      do: {byte4 <<< 0 ||| byte3 <<< 7 ||| byte2 <<< 14 ||| byte1 <<< 21 ||| byte0 <<< 28, rest}
+  def decode(<<1::1, byte4::7, 1::1, byte3::7, 1::1, byte2::7, 1::1, byte1::7, 0::1, byte0::7, rest::binary>>),
+    do: {byte4 <<< 0 ||| byte3 <<< 7 ||| byte2 <<< 14 ||| byte1 <<< 21 ||| byte0 <<< 28, rest}
 
   def decode(
-        <<1::1, byte5::7, 1::1, byte4::7, 1::1, byte3::7, 1::1, byte2::7, 1::1, byte1::7, 0::1,
-          byte0::7, rest::binary>>
+        <<1::1, byte5::7, 1::1, byte4::7, 1::1, byte3::7, 1::1, byte2::7, 1::1, byte1::7, 0::1, byte0::7, rest::binary>>
       ),
       do:
         {byte5 <<< 0 ||| byte4 <<< 7 ||| byte3 <<< 14 ||| byte2 <<< 21 ||| byte1 <<< 28 |||
            byte0 <<< 35, rest}
 
   def decode(
-        <<1::1, byte6::7, 1::1, byte5::7, 1::1, byte4::7, 1::1, byte3::7, 1::1, byte2::7, 1::1,
-          byte1::7, 0::1, byte0::7, rest::binary>>
+        <<1::1, byte6::7, 1::1, byte5::7, 1::1, byte4::7, 1::1, byte3::7, 1::1, byte2::7, 1::1, byte1::7, 0::1,
+          byte0::7, rest::binary>>
       ),
       do:
         {byte6 <<< 0 ||| byte5 <<< 7 ||| byte4 <<< 14 ||| byte3 <<< 21 ||| byte2 <<< 28 |||
@@ -77,8 +71,8 @@ defmodule Protox.Varint do
            byte0 <<< 42, rest}
 
   def decode(
-        <<1::1, byte7::7, 1::1, byte6::7, 1::1, byte5::7, 1::1, byte4::7, 1::1, byte3::7, 1::1,
-          byte2::7, 1::1, byte1::7, 0::1, byte0::7, rest::binary>>
+        <<1::1, byte7::7, 1::1, byte6::7, 1::1, byte5::7, 1::1, byte4::7, 1::1, byte3::7, 1::1, byte2::7, 1::1,
+          byte1::7, 0::1, byte0::7, rest::binary>>
       ),
       do:
         {byte7 <<< 0 ||| byte6 <<< 7 ||| byte5 <<< 14 ||| byte4 <<< 21 ||| byte3 <<< 28 |||
