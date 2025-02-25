@@ -86,8 +86,7 @@ defmodule Mix.Tasks.Protox.Conformance do
         {"protobuf_BUILD_LIBPROTOC", "OFF"},
         {"protobuf_BUILD_LIBUPB", "OFF"}
       ]
-      |> Enum.map(fn {key, value} -> "-D#{key}=#{value}" end)
-      |> Enum.join(" ")
+      |> Enum.map_join(" ", fn {key, value} -> "-D#{key}=#{value}" end)
 
     File.cd!(Mix.Project.deps_paths().protobuf, fn ->
       cmd = shell.cmd("cmake . #{configuration}")

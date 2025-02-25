@@ -143,7 +143,7 @@ defmodule Protox.RandomInit do
 
   defp do_generate(acc, [%Field{kind: %OneOf{parent: oneof_name}} | _] = fields, depth) do
     {oneof_list, fields} =
-      Enum.split_with(fields, fn field = %Field{} ->
+      Enum.split_with(fields, fn %Field{} = field ->
         case field.kind do
           %OneOf{parent: ^oneof_name} -> true
           _ -> false
@@ -161,7 +161,7 @@ defmodule Protox.RandomInit do
 
   defp do_generate_oneof(acc, oneof_name, oneof_list, depth) do
     generators =
-      Enum.map(oneof_list, fn field = %Field{kind: %OneOf{parent: _}} ->
+      Enum.map(oneof_list, fn %Field{kind: %OneOf{parent: _}} = field ->
         {field.name, get_gen(depth, %Scalar{default_value: :dummy}, field.type)}
       end)
 
@@ -169,7 +169,7 @@ defmodule Protox.RandomInit do
   end
 
   defp get_gen(_depth, %Scalar{}, {:enum, e}) do
-    oneof(e.constants() |> Map.new() |> Map.values())
+    e.constants() |> Map.new() |> Map.values() |> oneof()
   end
 
   defp get_gen(_depth, %Scalar{}, :bool), do: bool()
@@ -231,7 +231,7 @@ defmodule Protox.RandomInit do
   defp get_gen(_depth, :unpacked, :double), do: list(gen_double())
 
   defp get_gen(_depth, kind, {:enum, e}) when kind == :packed or kind == :unpacked do
-    list(oneof(e.constants() |> Map.new() |> Map.values()))
+    list(e.constants() |> Map.new() |> Map.values() |> oneof())
   end
 
   defp get_gen(_depth, :unpacked, :string), do: list(utf8())

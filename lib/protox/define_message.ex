@@ -4,7 +4,7 @@ defmodule Protox.DefineMessage do
   alias Protox.{Field, OneOf, Scalar}
 
   def define(messages_schemas, opts \\ []) do
-    for {_msg_name, msg_schema = %Protox.MessageSchema{}} <- messages_schemas do
+    for {_msg_name, %Protox.MessageSchema{} = msg_schema} <- messages_schemas do
       # Revert the order of the fields so we iterate from last field to first.
       # This enables us to construct the output iodata using [ field | acc ]
       sorted_fields = msg_schema.fields |> Map.values() |> Enum.sort(&(&1.tag >= &2.tag))
@@ -56,7 +56,7 @@ defmodule Protox.DefineMessage do
       def unknown_fields(msg), do: msg.unquote(unknown_fields)
 
       @spec unknown_fields_name() :: unquote(unknown_fields)
-      def unknown_fields_name(), do: unquote(unknown_fields)
+      def unknown_fields_name, do: unquote(unknown_fields)
 
       @spec clear_unknown_fields(struct) :: struct
       def clear_unknown_fields(msg), do: struct!(msg, [{unquote(unknown_fields), []}])
@@ -98,7 +98,7 @@ defmodule Protox.DefineMessage do
       # Append a '_' while there's a collision
       base_name
       |> Atom.to_string()
-      |> (fn x -> x <> "_" end).()
+      |> then(fn x -> x <> "_" end)
       |> String.to_atom()
       |> make_unknown_fields_name(fields)
     else
@@ -128,7 +128,7 @@ defmodule Protox.DefineMessage do
       Protox.Defs.split_oneofs(fields)
 
     fields_types =
-      for field = %Field{} <- fields do
+      for %Field{} = field <- fields do
         case {field.kind, field.type} do
           {:map, type} ->
             key_type = type |> elem(0) |> proto_type_to_typespec()
@@ -143,7 +143,7 @@ defmodule Protox.DefineMessage do
             value_type = proto_type_to_typespec(type)
             quote(do: {unquote(field.name), unquote(value_type) | nil})
 
-          {%Scalar{}, type = {:message, _}} ->
+          {%Scalar{}, {:message, _} = type} ->
             value_type = proto_type_to_typespec(type)
             quote(do: {unquote(field.name), unquote(value_type) | nil})
 
@@ -167,7 +167,7 @@ defmodule Protox.DefineMessage do
       end
 
     proto3_optionals_types =
-      for field = %Field{} <- proto3_optionals do
+      for %Field{} = field <- proto3_optionals do
         quote do
           {unquote(field.name), unquote(proto_type_to_typespec(field.type)) | nil}
         end

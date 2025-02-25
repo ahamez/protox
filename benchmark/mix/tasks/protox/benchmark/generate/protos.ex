@@ -1,9 +1,9 @@
 defmodule Mix.Tasks.Protox.Benchmark.Generate.Protos do
   @moduledoc false
 
-  require Logger
-
   use Mix.Task
+
+  require Logger
 
   # Frequencies are taken from
   # https://github.com/protocolbuffers/protobuf/blob/336d6f04e94efebcefb5574d0c8d487bcb0d187e/benchmarks/gen_synthetic_protos.py.

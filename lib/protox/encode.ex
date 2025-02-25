@@ -3,13 +3,13 @@ defmodule Protox.Encode do
   This module contains the functions necessary to encode protobuf messages.
   """
 
-  import Protox.Guards
-  import Bitwise
-
   use Protox.{
     Float,
     WireTypes
   }
+
+  import Bitwise
+  import Protox.Guards
 
   alias Protox.{
     Varint,

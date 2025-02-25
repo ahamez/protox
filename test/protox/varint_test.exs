@@ -1,7 +1,8 @@
 defmodule Protox.VarintTest do
-  import Bitwise
   use ExUnit.Case, async: true
   use ExUnitProperties
+
+  import Bitwise
 
   property "Unrolled encoding produces the same result as the reference implementation" do
     check all(int <- integer(0..(1 <<< 64))) do

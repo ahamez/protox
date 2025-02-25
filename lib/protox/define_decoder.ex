@@ -1,9 +1,9 @@
 defmodule Protox.DefineDecoder do
   @moduledoc false
   # Internal. Generates the decoder of a message.
+  use Protox.{Float, WireTypes}
 
   alias Protox.{Field, OneOf, Scalar}
-  use Protox.{Float, WireTypes}
 
   def define(msg_name, fields, opts \\ []) do
     vars = %{
@@ -39,12 +39,10 @@ defmodule Protox.DefineDecoder do
     quote do
       @spec decode(binary()) :: {:ok, t()} | {:error, any()}
       def decode(bytes) do
-        try do
-          {:ok, decode!(bytes)}
-        rescue
-          e in [Protox.DecodingError, Protox.IllegalTagError, Protox.RequiredFieldsError] ->
-            {:error, e}
-        end
+        {:ok, decode!(bytes)}
+      rescue
+        e in [Protox.DecodingError, Protox.IllegalTagError, Protox.RequiredFieldsError] ->
+          {:error, e}
       end
 
       unquote(decode_bang_fun)
@@ -267,12 +265,7 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_update_field(
-         value,
-         %Field{kind: %OneOf{}, type: {:message, _}} = field,
-         vars,
-         _wrap_value
-       ) do
+  defp make_update_field(value, %Field{kind: %OneOf{}, type: {:message, _}} = field, vars, _wrap_value) do
     case field.label do
       :proto3_optional ->
         quote do
@@ -305,12 +298,7 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_update_field(
-         value,
-         %Field{kind: %Scalar{}, type: {:message, _}} = field,
-         vars,
-         _wrap_value
-       ) do
+  defp make_update_field(value, %Field{kind: %Scalar{}, type: {:message, _}} = field, vars, _wrap_value) do
     quote do
       {
         unquote(field.name),

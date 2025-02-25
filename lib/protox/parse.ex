@@ -66,7 +66,7 @@ defmodule Protox.Parse do
     namespace_or_nil = Keyword.get(opts, :namespace, nil)
 
     processed_messages =
-      for {msg_name, msg = %MessageSchema{}} <- definition.messages_schemas, into: %{} do
+      for {msg_name, %MessageSchema{} = msg} <- definition.messages_schemas, into: %{} do
         name = Module.concat([namespace_or_nil | msg_name])
 
         fields =
@@ -197,10 +197,7 @@ defmodule Protox.Parse do
     end
   end
 
-  defp resolve_types(
-         %Field{kind: :map, type: {key_type, {:type_to_resolve, tname}}} = field,
-         enums
-       ) do
+  defp resolve_types(%Field{kind: :map, type: {key_type, {:type_to_resolve, tname}}} = field, enums) do
     if Map.has_key?(enums, tname) do
       %Field{field | type: {key_type, {:enum, tname}}}
     else
@@ -211,11 +208,7 @@ defmodule Protox.Parse do
   defp resolve_types(%Field{} = field, _enums), do: field
 
   defp set_default_value(
-         %Field{
-           kind: %Scalar{default_value: :enum_default_to_resolve},
-           type: {:enum, ename}
-         } =
-           field,
+         %Field{kind: %Scalar{default_value: :enum_default_to_resolve}, type: {:enum, ename}} = field,
          enums
        ) do
     # proto2: the first entry is always the default value
@@ -236,10 +229,7 @@ defmodule Protox.Parse do
     %Field{field | type: {:message, Module.concat([namespace_or_nil | mname])}}
   end
 
-  defp concat_names(
-         %Field{kind: :map, type: {key_type, {:message, mname}}} = field,
-         namespace_or_nil
-       ) do
+  defp concat_names(%Field{kind: :map, type: {key_type, {:message, mname}}} = field, namespace_or_nil) do
     %Field{field | type: {key_type, {:message, Module.concat([namespace_or_nil | mname])}}}
   end
 
@@ -345,11 +335,7 @@ defmodule Protox.Parse do
 
   defp map_entry(nil, _prefix, _descriptor), do: nil
 
-  defp map_entry(
-         upper,
-         prefix,
-         %FieldDescriptorProto{label: :repeated, type: :message} = descriptor
-       ) do
+  defp map_entry(upper, prefix, %FieldDescriptorProto{label: :repeated, type: :message} = descriptor) do
     # Might be a map. Now find a nested type of upper that is the corresponding entry.
     search_nested_type =
       Enum.find(upper.nested_type, fn m ->
@@ -394,17 +380,11 @@ defmodule Protox.Parse do
     %OneOf{parent: String.to_atom(Enum.at(upper.oneof_decl, index).name)}
   end
 
-  defp get_kind(_syntax, _upper, %FieldDescriptorProto{
-         label: :repeated,
-         options: %FieldOptions{packed: true}
-       }) do
+  defp get_kind(_syntax, _upper, %FieldDescriptorProto{label: :repeated, options: %FieldOptions{packed: true}}) do
     :packed
   end
 
-  defp get_kind(_syntax, _upper, %FieldDescriptorProto{
-         label: :repeated,
-         options: %FieldOptions{packed: false}
-       }) do
+  defp get_kind(_syntax, _upper, %FieldDescriptorProto{label: :repeated, options: %FieldOptions{packed: false}}) do
     :unpacked
   end
 
@@ -412,8 +392,7 @@ defmodule Protox.Parse do
     :packed
   end
 
-  defp get_kind(:proto3, _upper, %FieldDescriptorProto{label: :repeated, type: ty})
-       when is_primitive(ty) do
+  defp get_kind(:proto3, _upper, %FieldDescriptorProto{label: :repeated, type: ty}) when is_primitive(ty) do
     :packed
   end
 

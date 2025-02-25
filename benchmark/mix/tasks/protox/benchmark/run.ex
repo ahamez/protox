@@ -3,6 +3,8 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
 
   use Mix.Task
 
+  alias Benchee.Formatters.Console
+
   @options [
     task: :string
   ]
@@ -11,9 +13,9 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
   @spec run(any) :: any
   def run(args) do
     with {opts, argv, []} <- OptionParser.parse(args, strict: @options),
-         tasks <- get_tasks(opts),
-         {:ok, tag} <- get_tag(argv),
-         payloads <- get_payloads("./benchmark/benchmark_payloads.bin") do
+         tasks = get_tasks(opts),
+         {:ok, tag} <- get_tag(argv) do
+      payloads = get_payloads("./benchmark/benchmark_payloads.bin")
       run_benchee_tasks(tag, payloads, tasks)
     else
       err ->
@@ -56,7 +58,7 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
       time: 5,
       memory_time: 2,
       reduction_time: 2,
-      formatters: [Benchee.Formatters.Console]
+      formatters: [Console]
     )
   end
 

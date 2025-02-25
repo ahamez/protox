@@ -1,9 +1,9 @@
 defmodule Protox.MergeMessageTest do
   use ExUnit.Case
 
-  doctest Protox.MergeMessage
-
   alias ProtobufTestMessages.Proto3.{TestAllTypesProto3, TestAllTypesProto3.NestedMessage}
+
+  doctest Protox.MergeMessage
 
   test "Protobuf 2, replace only set scalar fields" do
     r1 = %Protobuf2Message{a: 0, b: :ONE}

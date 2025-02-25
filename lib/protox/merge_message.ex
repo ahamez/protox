@@ -77,11 +77,7 @@ defmodule Protox.MergeMessage do
   defp merge_scalar(:proto3, v1, v2, v2), do: v1
   defp merge_scalar(_syntax, _v1, v2, _default), do: v2
 
-  defp merge_oneof(
-         msg,
-         {v1_child_field, v1_child_value},
-         {v2_child_field, v2_child_value} = v2
-       )
+  defp merge_oneof(msg, {v1_child_field, v1_child_value}, {v2_child_field, v2_child_value} = v2)
        when v1_child_field == v2_child_field do
     v1_child_field_def = Map.fetch!(msg.__struct__.schema().fields, v1_child_field)
     v2_child_field_def = Map.fetch!(msg.__struct__.schema().fields, v2_child_field)

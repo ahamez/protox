@@ -50,13 +50,8 @@ defmodule Protox.Conformance.Escript do
   end
 
   defp handle_request(
-         {
-           :ok,
-           request = %Conformance.ConformanceRequest{
-             requested_output_format: :PROTOBUF,
-             payload: {:protobuf_payload, _}
-           }
-         },
+         {:ok,
+          %Conformance.ConformanceRequest{requested_output_format: :PROTOBUF, payload: {:protobuf_payload, _}} = request},
          log_file
        ) do
     IO.binwrite(log_file, "Will parse protobuf\n")

@@ -1,10 +1,12 @@
 defmodule Mix.Tasks.Protox.Benchmark.Generate.Payloads do
   @moduledoc false
 
-  require Logger
-
   use Mix.Task
   use PropCheck
+
+  alias ProtobufTestMessages.Proto3.TestAllTypesProto3
+
+  require Logger
 
   @nb_samples 10
 
@@ -31,7 +33,7 @@ defmodule Mix.Tasks.Protox.Benchmark.Generate.Payloads do
             match?(["Protox", "Benchmark", _, "Message"], Module.split(mod))
           end)
 
-        modules = [ProtobufTestMessages.Proto3.TestAllTypesProto3 | modules]
+        modules = [TestAllTypesProto3 | modules]
 
         Logger.info("Modules: #{inspect(modules)}")
 
@@ -51,8 +53,7 @@ defmodule Mix.Tasks.Protox.Benchmark.Generate.Payloads do
     payloads =
       payloads_async
       |> Task.async_stream(fn {name, gen} -> {name, gen.()} end, timeout: :infinity)
-      |> Stream.map(fn {:ok, {name, payloads}} -> {name, payloads} end)
-      |> Map.new()
+      |> Map.new(fn {:ok, {name, payloads}} -> {name, payloads} end)
 
     {:ok, payloads}
   end

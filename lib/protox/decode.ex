@@ -1,13 +1,12 @@
 defmodule Protox.Decode do
   @moduledoc false
   # Helpers decoding functions that will be used by the generated code.
-
-  import Bitwise
-
   use Protox.{
     Float,
     WireTypes
   }
+
+  import Bitwise
 
   alias Protox.{
     Varint,
@@ -269,14 +268,12 @@ defmodule Protox.Decode do
   end
 
   def parse_delimited(bytes, len) do
-    try do
-      <<value::binary-size(len), rest::binary>> = bytes
+    <<value::binary-size(len), rest::binary>> = bytes
 
-      {value, rest}
-    rescue
-      _ ->
-        reraise Protox.DecodingError.new(bytes, "invalid bytes for delimited field"),
-                __STACKTRACE__
-    end
+    {value, rest}
+  rescue
+    _ ->
+      reraise Protox.DecodingError.new(bytes, "invalid bytes for delimited field"),
+              __STACKTRACE__
   end
 end

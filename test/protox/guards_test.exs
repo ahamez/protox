@@ -1,5 +1,6 @@
 defmodule Protox.GuardsTest do
   use ExUnit.Case
+
   import Protox.Guards
 
   test "is_primitive" do

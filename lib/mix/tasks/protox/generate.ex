@@ -1,4 +1,6 @@
 defmodule Mix.Tasks.Protox.Generate do
+  @shortdoc "Generate Elixir code from Protobuf definitions"
+
   @moduledoc """
   Generate Elixir code from `.proto` files.
 
@@ -13,8 +15,6 @@ defmodule Mix.Tasks.Protox.Generate do
   If you have large protobuf files, you can use the `--multiple-files` option to generate
   one file per module (it will leverage parallel compilation).
   """
-  @shortdoc "Generate Elixir code from Protobuf definitions"
-
   use Mix.Task
 
   @options [

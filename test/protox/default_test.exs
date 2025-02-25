@@ -1,12 +1,13 @@
 defmodule Protox.DefaultTest do
   use ExUnit.Case
-  doctest Protox.Default
 
   alias ProtobufTestMessages.{
     Proto2.TestAllTypesProto2,
     Proto3.ForeignEnum,
     Proto3.TestAllTypesProto3
   }
+
+  doctest Protox.Default
 
   test "Protobuf3" do
     assert TestAllTypesProto3.default(:optional_nested_enum) == {:ok, :FOO}

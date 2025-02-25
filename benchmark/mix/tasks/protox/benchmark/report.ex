@@ -3,6 +3,8 @@ defmodule Mix.Tasks.Protox.Benchmark.Report do
 
   use Mix.Task
 
+  alias Benchee.Formatters.{Console, HTML}
+
   @impl Mix.Task
   @spec run(any) :: any
   def run(args) do
@@ -11,8 +13,8 @@ defmodule Mix.Tasks.Protox.Benchmark.Report do
       Benchee.report(
         load: files,
         formatters: [
-          {Benchee.Formatters.Console, extended_statistics: true},
-          {Benchee.Formatters.HTML, file: "benchmark/output/html/report.html"}
+          {Console, extended_statistics: true},
+          {HTML, file: "benchmark/output/html/report.html"}
         ]
       )
     else

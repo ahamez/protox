@@ -43,12 +43,10 @@ defmodule Protox.DefineEncoder do
     quote do
       @spec encode(t()) :: {:ok, iodata(), non_neg_integer()} | {:error, any()}
       def encode(msg) do
-        try do
-          msg |> encode!() |> Tuple.insert_at(0, :ok)
-        rescue
-          e in [Protox.EncodingError, Protox.RequiredFieldsError] ->
-            {:error, e}
-        end
+        msg |> encode!() |> Tuple.insert_at(0, :ok)
+      rescue
+        e in [Protox.EncodingError, Protox.RequiredFieldsError] ->
+          {:error, e}
       end
 
       @spec encode!(t()) :: {iodata(), non_neg_integer()} | no_return()
@@ -124,13 +122,11 @@ defmodule Protox.DefineEncoder do
 
       quote do
         defp unquote(fun_name)({unquote(vars.acc), unquote(vars.acc_size)}, unquote(vars.msg)) do
-          try do
-            unquote(fun_ast)
-          rescue
-            ArgumentError ->
-              reraise Protox.EncodingError.new(unquote(name), "invalid field value"),
-                      __STACKTRACE__
-          end
+          unquote(fun_ast)
+        rescue
+          ArgumentError ->
+            reraise Protox.EncodingError.new(unquote(name), "invalid field value"),
+                    __STACKTRACE__
         end
       end
     end
@@ -152,7 +148,7 @@ defmodule Protox.DefineEncoder do
       end
 
     case {syntax, required} do
-      {:proto2, _required = true} ->
+      {:proto2, true = _required} ->
         quote do
           case unquote(vars.msg).unquote(field.name) do
             nil -> raise Protox.RequiredFieldsError.new([unquote(field.name)])
@@ -160,7 +156,7 @@ defmodule Protox.DefineEncoder do
           end
         end
 
-      {:proto2, _required = false} ->
+      {:proto2, false = _required} ->
         quote do
           case unquote(var) do
             nil -> {unquote(vars.acc), unquote(vars.acc_size)}
@@ -180,12 +176,7 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_field_body(
-         %Field{label: :proto3_optional, kind: %OneOf{}} = field,
-         _required,
-         _syntax,
-         vars
-       ) do
+  defp make_encode_field_body(%Field{label: :proto3_optional, kind: %OneOf{}} = field, _required, _syntax, vars) do
     {key, key_size} = Protox.Encode.make_key_bytes(field.tag, field.type)
     var = Macro.var(:child_field_value, __MODULE__)
     encode_value_ast = get_encode_value_body(field.type, var)
@@ -206,12 +197,7 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_field_body(
-         %Field{kind: %OneOf{}} = field,
-         _required,
-         _syntax,
-         vars
-       ) do
+  defp make_encode_field_body(%Field{kind: %OneOf{}} = field, _required, _syntax, vars) do
     {key, key_size} = Protox.Encode.make_key_bytes(field.tag, field.type)
     encode_value_ast = get_encode_value_body(field.type, vars.child_field_value)
 
