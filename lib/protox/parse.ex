@@ -6,8 +6,6 @@ defmodule Protox.Parse do
 
   import Protox.Guards
 
-  alias Protox.{Definition, Field, MessageSchema, OneOf, Scalar}
-
   alias Protox.Google.Protobuf.{
     DescriptorProto,
     FieldDescriptorProto,
@@ -16,6 +14,8 @@ defmodule Protox.Parse do
     FileDescriptorSet,
     MessageOptions
   }
+
+  alias Protox.{Definition, Field, MessageSchema, OneOf, Scalar}
 
   @spec parse(binary(), Keyword.t()) :: {:ok, Definition.t()}
   def parse(file_descriptor_set, opts \\ []) do

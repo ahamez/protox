@@ -99,8 +99,7 @@ defmodule Protox.RandomInit do
           {:map, sub_msg} ->
             val =
               val
-              |> Enum.map(fn {k, msg_val} -> {k, generate_struct(sub_msg, msg_val)} end)
-              |> Map.new()
+              |> Map.new(fn {k, msg_val} -> {k, generate_struct(sub_msg, msg_val)} end)
 
             [{field_name, val} | acc]
 
@@ -231,7 +230,7 @@ defmodule Protox.RandomInit do
   defp get_gen(_depth, :unpacked, :double), do: list(gen_double())
 
   defp get_gen(_depth, kind, {:enum, e}) when kind == :packed or kind == :unpacked do
-    list(e.constants() |> Map.new() |> Map.values() |> oneof())
+    e.constants() |> Map.new() |> Map.values() |> oneof() |> list()
   end
 
   defp get_gen(_depth, :unpacked, :string), do: list(utf8())
