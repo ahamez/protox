@@ -4,8 +4,8 @@ defmodule Protox.DefaultTest do
 
   alias ProtobufTestMessages.{
     Proto2.TestAllTypesProto2,
-    Proto3.TestAllTypesProto3,
-    Proto3.ForeignEnum
+    Proto3.ForeignEnum,
+    Proto3.TestAllTypesProto3
   }
 
   test "Protobuf3" do

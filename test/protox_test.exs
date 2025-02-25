@@ -1,9 +1,9 @@
 defmodule ProtoxTest do
   use ExUnit.Case
 
-  alias Protox.Scalar
+  alias ProtobufTestMessages.Proto2.{TestAllRequiredTypesProto2, TestAllTypesProto2}
   alias ProtobufTestMessages.Proto3.{ForeignEnum, NullHypothesisProto3, TestAllTypesProto3}
-  alias ProtobufTestMessages.Proto2.{TestAllTypesProto2, TestAllRequiredTypesProto2}
+  alias Protox.Scalar
 
   doctest Protox
 
