@@ -50,7 +50,7 @@ defmodule Protox.Field do
     if label in @labels do
       label
     else
-      raise Protox.InvalidFieldAttribute.new(:label, @labels, label)
+      raise Protox.InvalidFieldAttributeError.new(:label, @labels, label)
     end
   end
 end

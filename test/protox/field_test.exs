@@ -1,7 +1,7 @@
 defmodule Protox.FieldTest do
   use ExUnit.Case
 
-  alias Protox.{Field, IllegalTagError, InvalidFieldAttribute, Scalar}
+  alias Protox.{Field, IllegalTagError, InvalidFieldAttributeError, Scalar}
 
   describe "errors" do
     test "can't construct with tag == 0" do
@@ -11,7 +11,7 @@ defmodule Protox.FieldTest do
     end
 
     test "can't construct with invalid label" do
-      assert_raise InvalidFieldAttribute, fn ->
+      assert_raise InvalidFieldAttributeError, fn ->
         Field.new!(
           tag: 1,
           label: :invalid_label,

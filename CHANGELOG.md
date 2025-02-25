@@ -13,7 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - BREAKING CHANGE: Configuration of features to generate via the CLI mix task is done with the `--generate` argument.
 - BREAKING CHANGE: encoding functions now return the size alongside iodata. Before that, one had to use :binary.list_to_bin/1 to flatten the iodata to then use byte_size, defeating the purpose of having an iodata.
-- BREAKEING CHANGE: `Protox.decode!` and `Protox.decode`  no longer raise or return an error if a message with required fields don't have all said fields set. The rationale being that we should let the user decide if it's a problem or not.
+- BREAKING CHANGE: `Protox.decode!` and `Protox.decode`  no longer raise or return an error if a message with required fields don't have all said fields set. The rationale being that we should let the user decide if it's a problem or not.
+- BREAKING CHANGE: Rename `InvalidFieldAttribute` to `InvalidFieldAttributeError` for consistency.
 
 ### Removed
 - Drop support for Elixir < 1.15.

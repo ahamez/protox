@@ -45,7 +45,7 @@ defmodule Protox.IllegalTagError do
   end
 end
 
-defmodule Protox.InvalidFieldAttribute do
+defmodule Protox.InvalidFieldAttributeError do
   @moduledoc """
   This error is thrown when a field is constructed with an invalid atribute.
   """
