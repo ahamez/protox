@@ -5,6 +5,9 @@
 Protox is an Elixir library for working with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers), versions 2 and 3, supporting
 binary encoding and decoding.
 
+> [!NOTE]
+> If you're using version 1, please see how to migrate to version 2 [here](documentation/v1_to_v2_migration.md).
+
 ## Example
 
 Given the following protobuf definition:
@@ -101,7 +104,7 @@ defmodule MyModule do
   use Protox, files: [
     "./defs/foo.proto",
     "./defs/bar.proto",
-    "./defs/baz/fiz.proto",
+    "./defs/baz/fiz.proto"
   ]
 end
 ```

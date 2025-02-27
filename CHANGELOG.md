@@ -5,30 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## Unreleased
 
 ### Added
-- schema/0 to access the underlying definition of a message.
+- `schema/0` to access the underlying definition of a message.
 
 ### Changed
-- BREAKING CHANGE: Configuration of features to generate via the CLI mix task is done with the `--generate` argument.
-- BREAKING CHANGE: encoding functions now return the size alongside iodata. Before that, one had to use :binary.list_to_bin/1 to flatten the iodata to then use byte_size, defeating the purpose of having an iodata.
-- BREAKING CHANGE: `Protox.decode!` and `Protox.decode`  no longer raise or return an error if a message with required fields don't have all said fields set. The rationale being that we should let the user decide if it's a problem or not.
+- Minimal supported Elixir version is now 1.15.
+- BREAKING CHANGE: encoding functions now return the size alongside iodata.
+Previously, one had to use `:binary.list_to_bin/1` to flatten the iodata and then use `byte_size`, defeating the purpose of having an iodata. Furthermore, it provides a significant performance boost.
+- BREAKING CHANGE: `Protox.decode!` and `Protox.decode`  no longer raise or return an error if a message don't have all required fields set. We should let the user decide whether it's a problem.
 - BREAKING CHANGE: Rename `InvalidFieldAttribute` to `InvalidFieldAttributeError` for consistency.
 
 ### Removed
-- Drop support for Elixir < 1.15.
 - BREAKING CHANGE: Drop support of JSON encoding and decoding.
-- BREAKING CHANGE: Remove :path option in favor of :paths.
-- BREAKING CHANGE: Remove :keep_unknown_fields option.
-  It added complexity to the generation logic while not providing any value as one can simply ignore those fields.
-- BREAKING CHANGE: Remove generated `syntax/0` (functionality still available through schema/1).
-- BREAKING CHANGE: Remove generated `file_options/0` (functionality still available through schema/1).
-- BREAKING CHANGE: Remove generated `field_def/1` (functionality still available through schema/1).
-- BREAKING CHANGE: Remove generated `defs/0` (functionality still available through schema/1).
-- BREAKING CHANGE: Remove generated `required_fields/0` (functionality still available through schema/1).
+  The implementation was half-baked, it's preferable to have the library focused. Even [Google doesn't recommend](https://protobuf.dev/programming-guides/json/) using JSON: _"In short, there are many good reasons why Google prefers to use the standard wire format for virtually everything rather than ProtoJSON format"_.
+- BREAKING CHANGE: Remove `:path` option in favor of the already existing `:paths` option, which covers the same functionality.
+- BREAKING CHANGE: Remove `:keep_unknown_fields` option (the corresponding `--keep-unknown-fields` option for the mix task `protox.generate` is also removed). They are now always kept.
+It added complexity to the generation logic while not providing any value as one can simply ignore those fields and as it's mandatory to parse them correctly.
+- BREAKING CHANGE: Remove generated `defs/0` (functionality remains available through `schema/0`).
+- BREAKING CHANGE: Remove generated `field_def/1` (functionality remains available through `schema/0`).
+- BREAKING CHANGE: Remove generated `file_options/0` (functionality remains available through `schema/0`).
+- BREAKING CHANGE: Remove generated `required_fields/0` (functionality remains available through `schema/0`).
+- BREAKING CHANGE: Remove generated `syntax/0` (functionality remains available through `schema/0`).
 - BREAKING CHANGE: Remove generated `encode/1` from strings for enums.
-- BREAKING CHANGE: Remove `Protox.Encode.encode/1` and `Protox.Encode.encode!/1` (functionality is still available in generated modules and in `Protox`.).
+- BREAKING CHANGE: Remove `Protox.Encode.encode/1` and `Protox.Encode.encode!/1` (functionality remains available in generated modules and in `Protox`).
 
 
 ## 1.7.8
