@@ -21,8 +21,7 @@ defmodule Mix.Tasks.Protox.Generate do
     output_path: :string,
     include_path: :keep,
     namespace: :string,
-    multiple_files: :boolean,
-    generate: :string
+    multiple_files: :boolean
   ]
 
   @impl Mix.Task

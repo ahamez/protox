@@ -20,32 +20,18 @@ defmodule Protox.CodeGenerationTest do
     {:ok, %{code_generation_path: code_generation_path, protox_path: File.cwd!()}}
   end
 
-  test "Generate single file, with unknown fields", %{
+  test "Generate single file", %{
     code_generation_path: path,
     protox_path: protox_path
   } do
-    launch(path, protox_path, "single_with_unknown_fields.ex", [])
+    launch(path, protox_path, "single.ex", [])
   end
 
-  test "Generate single file, without unknown fields", %{
-    code_generation_path: path,
-    protox_path: protox_path
-  } do
-    launch(path, protox_path, "single_without_unknown_fields.ex", ["--generate=none"])
-  end
-
-  test "Generate multiple files, with unknown fields", %{
+  test "Generate multiple files", %{
     code_generation_path: path,
     protox_path: protox_path
   } do
     launch(path, protox_path, ".", ["--multiple-files"])
-  end
-
-  test "Generate multiple files, without unknown fields", %{
-    code_generation_path: path,
-    protox_path: protox_path
-  } do
-    launch(path, protox_path, ".", ["--multiple-files", "--generate=none"])
   end
 
   test "Generate single file, with namespace", %{
