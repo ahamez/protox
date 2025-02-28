@@ -1,7 +1,5 @@
 defmodule Protox.Encode do
-  @moduledoc """
-  This module contains the functions necessary to encode protobuf messages.
-  """
+  @moduledoc false
 
   use Protox.{
     Float,

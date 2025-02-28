@@ -1,6 +1,17 @@
 defmodule Protox.MessageSchema do
-  @moduledoc false
+  @moduledoc """
+  Represents the schema of a Protocol Buffers message once it has been processed by Protox.
 
+  This struct contains all the necessary information to describe a message in a Protocol Buffers
+  schema, including its name, syntax version, fields, and optional file-level options.
+
+  ## Fields
+
+  * `:name` - The atom representing the name of the message
+  * `:syntax` - The Protocol Buffers syntax version (e.g., `:proto2` or `:proto3`)
+  * `:fields` - A map of field names to their definitions (`Protox.Field.t()`)
+  * `:file_options` - Optional file-level options, represented as a map if any.
+  """
   @type t() :: %__MODULE__{
           name: atom(),
           syntax: atom(),
