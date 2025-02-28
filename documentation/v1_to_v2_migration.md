@@ -1,4 +1,4 @@
-# Migration Guide
+# Migration guide (v1 to v2)
 
 This guide explains how to migrate from version 1 to version 2 of Protox.
 
@@ -18,11 +18,11 @@ iex> msg = %Foo{a: 3, b: %{1 => %Baz{}}}
 
 It's no longer possible to encode or decode JSON data directly using Protox. If it's necessary, you can stick to version 1.7 or switch to [`protobuf`](https://hex.pm/packages/protobuf).
 
-## `Protox` options
+## `Protox` macro options
 
 The `:path` option is removed in favor of the already existing `:paths` option, thus one just has to provide a list containing a single path.
 
-Also, the `:keep_unknown_fields` option is no longer available. Thus, unknown fields are always kept. If you don't need them, you juste have to ignore them.
+Also, the `:keep_unknown_fields` option is no longer available. Thus, unknown fields are always kept. If you don't need them, you can simply ignore them.
 
 ## Generated code
 
@@ -34,7 +34,7 @@ The following functions generated for messages are replaced by the function `sch
 - `required_fields/0`
 - `syntax/0`
 
-`schema/0` returns a `%Protox.MessageSchema{}` struct which contains information about the message's fields, syntax, and file options.
+`schema/0` returns a `Protox.MessageSchema` struct which contains information about the message's fields, syntax, and file options.
 
 ### Example
 

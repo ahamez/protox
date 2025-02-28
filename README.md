@@ -2,8 +2,10 @@
 
 [![Elixir CI](https://github.com/ahamez/protox/actions/workflows/elixir.yml/badge.svg)](https://github.com/ahamez/protox/actions/workflows/elixir.yml) [![Coverage Status](https://coveralls.io/repos/github/ahamez/protox/badge.svg?branch=master)](https://coveralls.io/github/ahamez/protox?branch=master) [![Hex.pm Version](http://img.shields.io/hexpm/v/protox.svg)](https://hex.pm/packages/protox) [![Hex Docs](https://img.shields.io/badge/hex-docs-brightgreen.svg)](https://hexdocs.pm/protox/) [![License](https://img.shields.io/hexpm/l/protox.svg)](https://github.com/ahamez/protox/blob/master/LICENSE)
 
-Protox is an Elixir library for working with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers), versions 2 and 3, supporting
-binary encoding and decoding.
+Protox is an Elixir library for working with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers), versions 2 and 3, supporting binary encoding and decoding.
+
+The primary objective of Protox is **reliability**: it uses [property testing](https://github.com/alfert/propcheck), [mutation testing](https://github.com/devonestes/muzak) and has a [near 100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master). Protox [passes all the tests](#conformance) of the conformance checker provided by Google.
+
 
 > [!NOTE]
 > If you're using version 1, please see how to migrate to version 2 [here](documentation/v1_to_v2_migration.md).
@@ -26,10 +28,6 @@ iex> {:ok, iodata, iodata_size} = Msg.encode(msg)
 iex> binary = # read binary from a socket, a file, etc.
 iex> {:ok, msg} = Msg.decode(binary)
 ```
-
-## Reliability
-
-The primary objective of Protox is **reliability**: it uses [property testing](https://github.com/alfert/propcheck), [mutation testing](https://github.com/devonestes/muzak) and has a [near 100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master). Protox [passes all the tests](#conformance) of the conformance checker provided by Google.
 
 ## Usage
 
@@ -111,7 +109,7 @@ end
 
 ## Encode
 
-Here's how to create and encode a new message to binary protobuf:
+Here's how to encode a message to binary protobuf:
 
 ```elixir
 msg = %Foo{a: 3, b: %{1 => %Baz{}}}
@@ -197,7 +195,7 @@ msg = %Bar.Abc.Msg{a: 42}
 
 ## Specify include path
 
-An include path can be specified using the `:paths` option that specify the directories in which to search for imports:
+One or more include paths (directories in which to search for imports) can be specified using the `:paths` option:
 
 ```elixir
 defmodule Baz do
@@ -263,7 +261,7 @@ iex> Msg.unknown_fields(msg)
 [{5, 2, <<121, 97, 121, 101>>}]
 ```
 
-You must use `unknown_fields/1` as the name of the field (e.g. `__uf__` in the above example) is generated at compile-time to avoid collision with the actual fields of the Protobuf message. This function returns a list of tuples `{tag, wire_type, bytes}`. For more information, please see [protobuf encoding guide](https://developers.google.com/protocol-buffers/docs/encoding).
+You must use `unknown_fields/1` as the name of the field (e.g. `__uf__` in the above example) is generated at compile-time to avoid collision with the actual fields of the Protobuf message. This function returns a list of tuples `{tag, wire_type, bytes}`. For more information, please see the [protobuf encoding guide](https://developers.google.com/protocol-buffers/docs/encoding).
 
 > [!NOTE]
 > Unknown fields are retained when re-encoding the message.
@@ -315,12 +313,11 @@ You must use `unknown_fields/1` as the name of the field (e.g. `__uf__` in the a
       """
     end
 
-    iex> Foo.default(:a)
-    {:ok, 42}
-
     iex> %Foo{}.a
     nil
 
+    iex> Foo.default(:a)
+    {:ok, 42}
     ```
 
 * (__Protobuf 3__) __Unset fields__ are assigned to their [default values](https://developers.google.com/protocol-buffers/docs/proto3#default). However, if you use the `optional` keyword (available in protoc >= 3.15), then unset fields are assigned `nil`:
@@ -337,17 +334,17 @@ You must use `unknown_fields/1` as the name of the field (e.g. `__uf__` in the a
       """
     end
 
-    iex> Foo.default(:a)
-    {:ok, 0}
-
     iex> %Foo{}.a
     0
 
-    iex> Foo.default(:b)
-    {:error, :no_default_value}
+    iex> Foo.default(:a)
+    {:ok, 0}
 
     iex> %Foo{}.b
     nil
+
+    iex> Foo.default(:b)
+    {:error, :no_default_value}
     ```
 
 * __Messages and enums names__ are converted using the [`Macro.camelize/1`](https://hexdocs.pm/elixir/Macro.html#camelize/1) function.
@@ -376,8 +373,8 @@ You must use `unknown_fields/1` as the name of the field (e.g. `__uf__` in the a
 
 ## Generated code reference and types mapping
 
-- The detailed reference of the generated code is available [here](documentation/reference.md).
-- Please see [reference/types_mapping.md](reference/types_mapping.md) to see how protobuf types are mapped to Elixir types.
+- The detailed reference of the generated code is available in [documentation/reference.md](documentation/reference.md).
+- Please see [documentation/types_mapping.md](documentation/types_mapping.md) to see how protobuf types are mapped to Elixir types.
 
 
 ## Conformance
@@ -406,8 +403,8 @@ To launch these conformance tests, use the `protox.conformance` mix task:
 
 ## Benchmark
 
-Please see [benchmark/README.md](benchmark/README.md) for more information on how to launch benchmark.
+Please see [benchmark/launch_benchmark.md](benchmark/launch_benchmark.md) for more information on how to launch benchmark.
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for more information on how to contribute.
+Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for more information on how to contribute.

@@ -106,4 +106,3 @@ Get the enum entry of an integer value. If `value` does not correpond to any ent
 constants()
 ```
 Get the list of all the constants of the enum that correponds to the module on which this function has been called.
-```

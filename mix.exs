@@ -108,7 +108,7 @@ defmodule Protox.Mixfile do
   defp docs() do
     [
       main: "readme",
-      extras: ["README.md", "documentation/reference.md"]
+      extras: Path.wildcard("./*.md") ++ Path.wildcard("./benchmark/*.md") ++ Path.wildcard("./documentation/*.md")
     ]
   end
 end
