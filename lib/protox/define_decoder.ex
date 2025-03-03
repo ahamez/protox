@@ -223,7 +223,7 @@ defmodule Protox.DefineDecoder do
         make_update_field(parse_delimited, field, vars, _wrap_value = !single_generated)
       end
 
-    key_bytes = make_key_bytes(%Field{field | kind: :packed})
+    key_bytes = make_key_bytes(%{field | kind: :packed})
 
     clause =
       if single_generated do

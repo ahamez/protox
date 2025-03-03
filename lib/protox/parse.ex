@@ -80,7 +80,7 @@ defmodule Protox.Parse do
             {field_name, field}
           end
 
-        {name, %MessageSchema{msg | name: name, fields: fields}}
+        {name, %{msg | name: name, fields: fields}}
       end
 
     processsed_enums =
@@ -191,17 +191,17 @@ defmodule Protox.Parse do
 
   defp resolve_types(%Field{type: {:type_to_resolve, tname}} = field, enums) do
     if Map.has_key?(enums, tname) do
-      %Field{field | type: {:enum, tname}}
+      %{field | type: {:enum, tname}}
     else
-      %Field{field | type: {:message, tname}}
+      %{field | type: {:message, tname}}
     end
   end
 
   defp resolve_types(%Field{kind: :map, type: {key_type, {:type_to_resolve, tname}}} = field, enums) do
     if Map.has_key?(enums, tname) do
-      %Field{field | type: {key_type, {:enum, tname}}}
+      %{field | type: {key_type, {:enum, tname}}}
     else
-      %Field{field | type: {key_type, {:message, tname}}}
+      %{field | type: {key_type, {:message, tname}}}
     end
   end
 
@@ -216,25 +216,25 @@ defmodule Protox.Parse do
     # to have the value 0
     [{_, first_is_default} | _] = Map.fetch!(enums, ename)
 
-    %Field{field | kind: %Scalar{default_value: first_is_default}, type: {:enum, ename}}
+    %{field | kind: %Scalar{default_value: first_is_default}, type: {:enum, ename}}
   end
 
   defp set_default_value(%Field{} = field, _enums), do: field
 
   defp concat_names(%Field{type: {:enum, ename}} = field, namespace_or_nil) do
-    %Field{field | type: {:enum, Module.concat([namespace_or_nil | ename])}}
+    %{field | type: {:enum, Module.concat([namespace_or_nil | ename])}}
   end
 
   defp concat_names(%Field{type: {:message, mname}} = field, namespace_or_nil) do
-    %Field{field | type: {:message, Module.concat([namespace_or_nil | mname])}}
+    %{field | type: {:message, Module.concat([namespace_or_nil | mname])}}
   end
 
   defp concat_names(%Field{kind: :map, type: {key_type, {:message, mname}}} = field, namespace_or_nil) do
-    %Field{field | type: {key_type, {:message, Module.concat([namespace_or_nil | mname])}}}
+    %{field | type: {key_type, {:message, Module.concat([namespace_or_nil | mname])}}}
   end
 
   defp concat_names(%Field{type: {key_type, {:enum, ename}}} = field, namespace_or_nil) do
-    %Field{field | type: {key_type, {:enum, Module.concat([namespace_or_nil | ename])}}}
+    %{field | type: {key_type, {:enum, Module.concat([namespace_or_nil | ename])}}}
   end
 
   defp concat_names(%Field{} = field, _), do: field
