@@ -27,14 +27,13 @@ defmodule Protox.Mixfile do
 
   def application() do
     [
-      extra_applications: [:benchee, :eex, :mix]
+      extra_applications: [:eex, :mix]
     ]
   end
 
   defp deps() do
     [
-      {:benchee, "~> 1.0", only: [:test, :dev], runtime: false},
-      {:benchee_html, "~> 1.0", only: [:test, :dev], runtime: false},
+      {:benchee, "~> 1.0", only: [:test, :dev]},
       {:credo, "~> 1.4", only: [:test, :dev], runtime: false},
       {:dialyxir, "~> 1.0", only: [:test, :dev], runtime: false},
       {:excoveralls, "~> 0.13", only: [:test], runtime: false},
