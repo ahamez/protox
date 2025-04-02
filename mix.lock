@@ -18,7 +18,7 @@
   "propcheck": {:git, "https://github.com/alfert/propcheck.git", "c564e89d3873caf9c6bf64a2af4bb3890e24ecf1", [ref: "c564e89d"]},
   "proper": {:git, "https://github.com/proper-testing/proper.git", "a5ae5669f01143b0828fc21667d4f5e344aa760b", [ref: "a5ae5669f01143b0828fc21667d4f5e344aa760b"]},
   "protobuf": {:git, "https://github.com/protocolbuffers/protobuf.git", "b407e8416e3893036aee5af9a12bd9b6a0e2b2e6", [tag: "v29.3", submodules: true]},
-  "quokka": {:hex, :quokka, "2.4.1", "77b9cd0928bc5706e746657e6862ed1dd49528835dec543de646c8409fb789e6", [:mix], [{:credo, "~> 1.7", [hex: :credo, repo: "hexpm", optional: false]}], "hexpm", "ec52089058d28e18ee21c30aac1a018c6239632fd3038c2adfdc75016cf6d926"},
+  "quokka": {:hex, :quokka, "2.5.0", "e5c311f228958a2a1a531a5974049aaefb73fc008cedae0fef2fc7c5b9818fb0", [:mix], [{:credo, "~> 1.7", [hex: :credo, repo: "hexpm", optional: false]}], "hexpm", "e8266bea00f2f48fe5052fd0d2ff5844d302289299891e7fd29d2b4233c9555c"},
   "statistex": {:hex, :statistex, "1.0.0", "f3dc93f3c0c6c92e5f291704cf62b99b553253d7969e9a5fa713e5481cd858a5", [:mix], [], "hexpm", "ff9d8bee7035028ab4742ff52fc80a2aa35cece833cf5319009b52f1b5a86c27"},
   "stream_data": {:hex, :stream_data, "1.2.0", "58dd3f9e88afe27dc38bef26fce0c84a9e7a96772b2925c7b32cd2435697a52b", [:mix], [], "hexpm", "eb5c546ee3466920314643edf68943a5b14b32d1da9fe01698dc92b73f89a9ed"},
 }
