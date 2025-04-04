@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package protox.test;
+
+import "message_as_file_option.proto";
+
+option (protox.test.msg_as_file_option) = {
+  a: 42
+};
+
+message DummyMessage{}

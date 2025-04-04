@@ -132,7 +132,7 @@ defmodule Protox.Parse do
       _ ->
         # If FileOptions and other related message have been found, we also need
         # to compile their associated enums.
-        {file_options_optimize_enum, other_enums} =
+        {file_options_enums, other_enums} =
           Map.split(definition.enums_schemas, [
             Google.Protobuf.FeatureSet.EnumType,
             Google.Protobuf.FeatureSet.FieldPresence,
@@ -143,10 +143,19 @@ defmodule Protox.Parse do
             Google.Protobuf.FileOptions.OptimizeMode
           ])
 
+        # FileOptions can also contain nested messages and enums, which we need to compile as well.
+        nested_in_file_options = find_enums_and_messages(definition.messages_schemas, Google.Protobuf.FileOptions)
+        messages_used_in_file_options = Map.take(definition.messages_schemas, nested_in_file_options.messages)
+        enums_used_in_file_options = Map.take(definition.enums_schemas, nested_in_file_options.enums)
+
+        # Remove those messages and enums from the returned definition to avoid compiling them twice.
+        other_messages = Map.drop(other_messages, nested_in_file_options.messages)
+        other_enums = Map.drop(other_enums, nested_in_file_options.enums)
+
         # Compile the needed modules.
         %Definition{
-          messages_schemas: file_options_messages,
-          enums_schemas: file_options_optimize_enum
+          messages_schemas: Map.merge(file_options_messages, messages_used_in_file_options),
+          enums_schemas: Map.merge(file_options_enums, enums_used_in_file_options)
         }
         |> Protox.Define.define()
         |> Code.eval_quoted()
@@ -155,7 +164,7 @@ defmodule Protox.Parse do
         # Also, we transform this FileOptions into a bare map so as to not depend
         # on the FileOptions type which is not necessary for the end user.
         other_messages =
-          for {msg_name, msg} <- other_messages, into: %{} do
+          for {msg_name, msg} when msg.file_options != nil <- other_messages, into: %{} do
             file_options =
               msg.file_options
               |> Protox.Google.Protobuf.FileOptions.encode!()
@@ -187,6 +196,23 @@ defmodule Protox.Parse do
         |> put_in([Access.key!(:messages_schemas)], other_messages)
         |> put_in([Access.key!(:enums_schemas)], other_enums)
     end
+  end
+
+  defp find_enums_and_messages(messages_schemas, msg_name, acc \\ %{enums: [], messages: []}) do
+    Enum.reduce(messages_schemas[msg_name].fields, acc, fn
+      {_field_name, %Protox.Field{type: {:message, sub_msg_name}}}, acc ->
+        find_enums_and_messages(
+          messages_schemas,
+          sub_msg_name,
+          _new_acc = Map.update!(acc, :messages, &[sub_msg_name | &1])
+        )
+
+      {_field_name, %Protox.Field{type: {:enum, sub_enum_name}}}, acc ->
+        Map.update!(acc, :enums, &[sub_enum_name | &1])
+
+      _field, acc ->
+        acc
+    end)
   end
 
   defp resolve_types(%Field{type: {:type_to_resolve, tname}} = field, enums) do

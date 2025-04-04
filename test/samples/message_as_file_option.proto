@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package protox.test;
+
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.FileOptions {
+  MsgAsFileOption msg_as_file_option = 1053;
+}
+
+message MsgAsFileOption {
+  int32 a = 1;
+}
