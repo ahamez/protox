@@ -109,14 +109,14 @@ defmodule Protox.DefineMessage do
   # Generate fields of the struct which is created for a message.
   defp make_struct_fields(fields, syntax, unknown_fields_name) do
     struct_fields =
-      for %Field{label: label, name: name, kind: kind} <- fields do
+      for %Field{kind: kind} = field <- fields do
         case kind do
-          :map -> {name, Macro.escape(%{})}
-          %OneOf{parent: parent} -> make_oneof_field(label, name, parent)
-          :packed -> {name, []}
-          :unpacked -> {name, []}
-          %Scalar{} when syntax == :proto2 -> {name, nil}
-          %Scalar{default_value: default_value} when syntax == :proto3 -> {name, default_value}
+          :map -> {field.name, Macro.escape(%{})}
+          %OneOf{parent: parent} -> make_oneof_field(field.label, field.name, parent)
+          :packed -> {field.name, []}
+          :unpacked -> {field.name, []}
+          %Scalar{} when syntax == :proto2 -> {field.name, nil}
+          %Scalar{default_value: default_value} when syntax == :proto3 -> {field.name, default_value}
         end
       end
 
