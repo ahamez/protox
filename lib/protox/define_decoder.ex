@@ -311,13 +311,9 @@ defmodule Protox.DefineDecoder do
     quote(do: {unquote(field.name), unquote(value)})
   end
 
-  defp make_update_field(value, %Field{} = field, vars, true = _wrap_value) do
-    quote do
-      {unquote(field.name), unquote(vars.msg).unquote(field.name) ++ [unquote(value)]}
-    end
-  end
+  defp make_update_field(value, %Field{} = field, vars, wrap_value) do
+    value = maybe_wrap(value, wrap_value)
 
-  defp make_update_field(value, %Field{} = field, vars, false = _wrap_value) do
     quote do
       {unquote(field.name), unquote(vars.msg).unquote(field.name) ++ unquote(value)}
     end
@@ -579,4 +575,7 @@ defmodule Protox.DefineDecoder do
 
     Protox.Encode.make_key_bytes(field.tag, ty) |> elem(0) |> IO.iodata_to_binary()
   end
+
+  defp maybe_wrap(value, true = _wrap_value), do: [value]
+  defp maybe_wrap(value, false = _wrap_value), do: value
 end
