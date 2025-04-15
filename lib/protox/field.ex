@@ -18,14 +18,10 @@ defmodule Protox.Field do
   @doc false
   @spec new!(keyword()) :: %__MODULE__{} | no_return()
   def new!(attrs) do
-    tag = get_tag(attrs)
-    label = get_label(attrs)
-    name = Keyword.fetch!(attrs, :name)
-
     %__MODULE__{
-      tag: tag,
-      label: label,
-      name: name,
+      tag: fetch_tag!(attrs),
+      label: fetch_label!(attrs),
+      name: Keyword.fetch!(attrs, :name),
       kind: Keyword.fetch!(attrs, :kind),
       type: Keyword.fetch!(attrs, :type)
     }
@@ -33,7 +29,7 @@ defmodule Protox.Field do
 
   # -- Private
 
-  defp get_tag(attrs) do
+  defp fetch_tag!(attrs) do
     tag = Keyword.fetch!(attrs, :tag)
 
     if tag == 0 do
@@ -44,7 +40,7 @@ defmodule Protox.Field do
   end
 
   @labels [:none, :optional, :proto3_optional, :repeated, :required, nil]
-  defp get_label(attrs) do
+  defp fetch_label!(attrs) do
     label = Keyword.get(attrs, :label, nil)
 
     if label in @labels do
