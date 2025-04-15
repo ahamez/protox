@@ -8,12 +8,12 @@ defmodule Protox.Field do
           label: Protox.Types.label(),
           name: atom(),
           kind: Protox.Kind.t(),
-          type: Protox.Types.type()
+          type: Protox.Types.type(),
+          extender: nil | atom()
         }
 
-  @keys [:tag, :label, :name, :kind, :type]
-  @enforce_keys @keys
-  defstruct @keys
+  @enforce_keys [:tag, :label, :name, :kind, :type]
+  defstruct @enforce_keys ++ [:extender]
 
   @doc false
   @spec new!(keyword()) :: %__MODULE__{} | no_return()
@@ -23,7 +23,8 @@ defmodule Protox.Field do
       label: fetch_label!(attrs),
       name: Keyword.fetch!(attrs, :name),
       kind: Keyword.fetch!(attrs, :kind),
-      type: Keyword.fetch!(attrs, :type)
+      type: Keyword.fetch!(attrs, :type),
+      extender: Keyword.get(attrs, :extender, nil)
     }
   end
 

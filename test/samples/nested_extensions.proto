@@ -1,0 +1,48 @@
+syntax = "proto2";
+
+message Extendee {
+  extensions 100 to max;
+}
+
+message Extension1 {
+  // It should not appear in Extendee.
+  optional int32 a = 1;
+  extend Extendee {
+    optional Extension1 ext1 = 102;
+  }
+}
+message Extension2 {
+  extend Extendee {
+    optional int32 ext2 = 103;
+  }
+}
+message Extension3 {
+  // It should not appear in Extendee.
+  optional int32 a = 1;
+  extend Extendee {
+    repeated int32 ext3 = 104 [packed = true];
+  }
+}
+
+message Extension4 {
+  extend Extendee {
+    optional int32 ext = 105;
+  }
+}
+
+message Extension5 {
+  extend Extendee {
+  repeated int32 ext = 106 [packed = true];
+  }
+}
+
+// The binary encoding of the following message will be the same
+// as the binary encoding of Extendee with its extension, as the fields
+// types and tags are the same.
+message ExtendeeWithInlinedExtensions {
+  optional Extension1 extension1_ext = 102;
+  optional int32 extension2_ext = 103;
+  repeated int32 extension3_ext = 104 [packed = true];
+  optional int32 extension4_ext = 105;
+  repeated int32 extension5_ext = 106 [packed = true];
+}

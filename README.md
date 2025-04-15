@@ -290,6 +290,47 @@ You must use `unknown_fields/1` as the name of the field (e.g. `__uf__` in the a
     ** (Protox.RequiredFieldsError) Some required fields are not set: [:a]
     ```
 
+* (__Protobuf 2__) __Nested extensions__ Fields names coming from a nested extension are prefixed with the name of the extender:
+    ```protobuf
+    message Extendee {
+      extensions 100 to max;
+    }
+
+    message Extension1 {
+      extend Extendee {
+        optional Extension1 ext1 = 102;
+      }
+    }
+
+    message Extension2 {
+      extend Extendee {
+        optional int32 ext2 = 103;
+      }
+    }
+
+    message Extension3 {
+      extend Extendee {
+        optional int32 identical_name = 105;
+      }
+    }
+
+    message Extension4 {
+      extend Extendee {
+        repeated int32 identical_name = 106;
+      }
+    }
+    ```
+
+    In the above example, the fields of `Extendee` will be:
+    ```elixir
+      :extension1_ext1
+      :extension2_ext2
+      :extension3_identical_name
+      :extension4_identical_name
+    ```
+
+    This is to disambiguate cases where fields in extensions have the same name.
+
 * __Enum aliases__ When decoding, the last encountered constant is used. For instance, in the following example, `:BAR` is always used if the value `1` is read on the wire:
     ```protobuf
     enum E {

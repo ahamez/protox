@@ -8,6 +8,7 @@ defmodule Protox.Messages do
       "./test/samples/google/test_messages_proto3.proto",
       "./test/samples/java_bar.proto",
       "./test/samples/java_foo.proto",
+      "./test/samples/nested_extensions.proto",
       "./test/samples/no_uf_name_clash.proto",
       "./test/samples/optional.proto",
       "./test/samples/protobuf2.proto"

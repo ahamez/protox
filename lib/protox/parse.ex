@@ -76,6 +76,7 @@ defmodule Protox.Parse do
               |> resolve_types(definition.enums_schemas)
               |> set_default_value(definition.enums_schemas)
               |> concat_names(namespace_or_nil)
+              |> concat_extender(namespace_or_nil)
 
             {field_name, field}
           end
@@ -89,6 +90,12 @@ defmodule Protox.Parse do
       end
 
     %Definition{enums_schemas: processsed_enums, messages_schemas: processed_messages}
+  end
+
+  defp concat_extender(%Field{extender: nil} = field, _namespace_or_nil), do: field
+
+  defp concat_extender(%Field{extender: extender} = field, namespace_or_nil) do
+    %{field | extender: Module.concat([namespace_or_nil | extender])}
   end
 
   # We remove all Google types as:
@@ -323,12 +330,37 @@ defmodule Protox.Parse do
   end
 
   defp add_fields(definition, upper, msg_name, syntax, fields) do
-    Enum.reduce(fields, definition, fn field, definition ->
-      add_field(definition, syntax, upper, msg_name, field)
+    Enum.reduce(fields, definition, fn %FieldDescriptorProto{} = descriptor, definition ->
+      case descriptor.extendee do
+        nil ->
+          add_field(definition, syntax, upper, msg_name, descriptor)
+
+        # When extendee is not nil, it means this field is not part of `msg_name`, but of `extendee`,
+        # even though it was declared in `msg_name` -> it's a nested extension.
+        extendee ->
+          add_field(
+            definition,
+            syntax,
+            _upper = nil,
+            fully_qualified_name(extendee),
+            descriptor,
+            _extender = msg_name
+          )
+      end
     end)
   end
 
-  defp add_field(definition, syntax, upper, msg_name, descriptor) do
+  defp add_field(definition, syntax, upper, msg_name, descriptor, extender \\ nil) do
+    field_name =
+      if extender do
+        extender
+        |> Enum.concat([descriptor.name])
+        |> Enum.map_join("_", &Macro.underscore/1)
+        |> String.to_atom()
+      else
+        String.to_atom(descriptor.name)
+      end
+
     {label, kind, type} =
       case map_entry(upper, msg_name, descriptor) do
         nil ->
@@ -344,9 +376,10 @@ defmodule Protox.Parse do
       Field.new!(
         tag: descriptor.number,
         label: label,
-        name: String.to_atom(descriptor.name),
+        name: field_name,
         kind: kind,
-        type: type
+        type: type,
+        extender: extender
       )
 
     put_in(
