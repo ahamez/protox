@@ -21,6 +21,6 @@ Protobuf   | Elixir
 `bytes`    | `binary()`
 `repeated` | `list(value_type)` where `value_type` is the type of the repeated field
 `map`      | `map()`
-`oneof`    | `{atom(), value_type}` where `atom()` is the type of the set field and where `value_type` is the type of the set field
+`oneof`    | `{atom(), value_type}` where `atom()` is the name of the set field and where `value_type` is the type of the set field
 `enum`     | `atom() \| integer()`
 `message`  | `struct()`

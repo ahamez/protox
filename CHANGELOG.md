@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Remove useless fields from file options.
 
+### Fixed
+- Correct type description in [types_mapping.md](documentation/types_mapping.md)
+
 ## 2.0.3
 
 ### Fixed
