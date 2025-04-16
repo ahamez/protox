@@ -137,8 +137,7 @@ defmodule Protox.Parse do
         definition
 
       _ ->
-        # If FileOptions and other related message have been found, we also need
-        # to compile their associated enums.
+        # If FileOptions and other related message have been found, we also need to compile their associated enums.
         {file_options_enums, other_enums} =
           Map.split(definition.enums_schemas, [
             Google.Protobuf.FeatureSet.EnumType,
@@ -168,8 +167,6 @@ defmodule Protox.Parse do
         |> Code.eval_quoted()
 
         # We can now parse the unknown fields with the modules compiled above.
-        # Also, we transform this FileOptions into a bare map so as to not depend
-        # on the FileOptions type which is not necessary for the end user.
         other_messages =
           for {msg_name, msg} when msg.file_options != nil <- other_messages, into: %{} do
             file_options =
@@ -178,7 +175,6 @@ defmodule Protox.Parse do
               |> elem(_bytes_position_in_tuple = 0)
               |> IO.iodata_to_binary()
               |> then(&apply(Google.Protobuf.FileOptions, :decode!, [&1]))
-              |> Map.from_struct()
 
             {msg_name, %{msg | file_options: file_options}}
           end

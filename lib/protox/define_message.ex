@@ -3,13 +3,17 @@ defmodule Protox.DefineMessage do
 
   alias Protox.{Field, OneOf, Scalar}
 
+  @base_unknown_fields_name :__uf__
+
   def define(messages_schemas, opts \\ []) do
     for {_msg_name, %Protox.MessageSchema{} = msg_schema} <- messages_schemas do
+      msg_schema = cleanup_file_options(msg_schema)
+
       # Revert the order of the fields so we iterate from last field to first.
       # This enables us to construct the output iodata using [ field | acc ]
       sorted_fields = msg_schema.fields |> Map.values() |> Enum.sort(&(&1.tag >= &2.tag))
 
-      unknown_fields_name = make_unknown_fields_name(:__uf__, sorted_fields)
+      unknown_fields_name = make_unknown_fields_name(@base_unknown_fields_name, sorted_fields)
       opts = Keyword.put(opts, :unknown_fields_name, unknown_fields_name)
 
       struct_fields_types =
@@ -209,5 +213,16 @@ defmodule Protox.DefineMessage do
     quote do
       [{non_neg_integer(), Protox.Types.tag(), binary()}]
     end
+  end
+
+  defp cleanup_file_options(schema) do
+    # If it exists, transform :file_options into a bare map so as to not depend
+    # on the FileOptions type which is not necessary for the end user.
+    # Also, remove the unknown fields field which will always be empty in this case.
+
+    update_in(schema, [Access.key!(:file_options)], fn
+      nil -> nil
+      struct -> struct |> Map.from_struct() |> Map.delete(@base_unknown_fields_name)
+    end)
   end
 end
