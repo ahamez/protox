@@ -30,3 +30,6 @@ pre-push:
       run: mix credo
     trailing_whitespaces_and_merge_conflicts:
       run: git --no-pager diff --check --cached
+  scripts:
+    "check_signatures.sh":
+      runner: bash
