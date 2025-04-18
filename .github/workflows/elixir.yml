@@ -44,7 +44,7 @@ jobs:
             name_suffix: "(unlock deps)"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set up Elixir
         uses: erlef/setup-beam@5304e04ea2b355f03681464e683d92e3b2f18451 # v1.18.2
@@ -53,13 +53,13 @@ jobs:
           otp-version: ${{matrix.otp}}
 
       - name: Restore dependencies cache
-        uses: actions/cache@v4
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: deps
           key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
 
       - name: Restore PLT cache
-        uses: actions/cache@v4
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: priv/plts
           key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
@@ -89,18 +89,6 @@ jobs:
 
       - name: Compile prod with warnings as errors
         run: MIX_ENV=prod mix compile --warnings-as-errors
-
-      # - name: Compile conformance-test-runner
-      #   if: steps.restore_conformance_test_runner.outputs.cache-hit != 'true'
-      #   run: |
-      #     mix protox.conformance --compile-only
-      #     cp ./deps/protobuf/conformance_test_runner ./conformance_test_runner
-
-      # - name: Restore conformance-test-runner from cache
-      #   if: steps.restore_conformance_test_runner.outputs.cache-hit == 'true'
-      #   run: |
-      #     mkdir -p ./deps/protobuf
-      #     cp ./conformance_test_runner ./deps/protobuf/conformance_test_runner
 
       - name: Run tests
         run: mix coveralls.github --timeout 600000 --include conformance
