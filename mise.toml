@@ -3,3 +3,4 @@ PROTOX_PROTOBUF_VERSION = "29.3"
 
 [tools]
 elixir = "1.18.2-otp-27"
+lefthook = "latest"
