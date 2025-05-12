@@ -131,7 +131,8 @@ It's also possible to call `encode/1` and `encode!/1` directly on the generated 
 {iodata, iodata_size} = Foo.encode!(msg)
 ```
 
-> [!NOTE] > `encode/1` and `encode!/1` return an [IO data](https://hexdocs.pm/elixir/IO.html#module-use-cases-for-io-data) for efficiency reasons. Such IO data can be used directly with files or sockets write operations:
+> [!NOTE]
+> `encode/1` and `encode!/1` return an [IO data](https://hexdocs.pm/elixir/IO.html#module-use-cases-for-io-data) for efficiency reasons. Such IO data can be used directly with files or sockets write operations:
 >
 > ```elixir
 > iex> {iodata, _iodata_size} = Protox.encode!(%Foo{a: 3, b: %{1 => %Baz{}}})
