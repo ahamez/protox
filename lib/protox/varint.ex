@@ -1,4 +1,10 @@
-defmodule Protox.Varint do
+if Code.ensure_loaded?(Protox.Varint.Native) do
+  defmodule Protox.Varint do
+    defdelegate encode(v), to: Protox.Varint.Native
+    defdelegate decode(b), to: Protox.Varint.Native
+  end
+else
+  defmodule Protox.Varint do
   @moduledoc false
   # Internal. Implement LEB128 compression.
 
@@ -85,4 +91,5 @@ defmodule Protox.Varint do
   defp do_decode(_result, _shift, bytes) do
     raise Protox.DecodingError.new(bytes, "invalid varint")
   end
+end
 end

@@ -9,6 +9,8 @@ defmodule Protox.Mixfile do
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      compilers: [:rustler] ++ Mix.compilers(),
+      rustler_crates: [varint_nif: [path: "native/varint_nif", mode: (Mix.env() == :prod && :release || :debug)]],
       test_coverage: [tool: ExCoveralls],
       elixirc_paths: elixirc_paths(Mix.env()),
       escript: escript(),
@@ -40,7 +42,8 @@ defmodule Protox.Mixfile do
       {:ex_doc, "~> 0.22", only: [:dev], runtime: false},
       {:propcheck, github: "alfert/propcheck", ref: "c564e89d", only: [:test, :dev]},
       {:stream_data, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:quokka, "~> 2.0", only: [:dev, :test], runtime: false}
+      {:quokka, "~> 2.0", only: [:dev, :test], runtime: false},
+      {:rustler, "~> 0.29"}
     ]
     |> maybe_add_muzak_pro()
     |> maybe_download_protobuf()
