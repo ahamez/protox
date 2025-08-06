@@ -91,6 +91,15 @@ defmodule ProtoxTest do
              %NullHypothesisProto3{}
   end
 
+  test "Merging keeps unknown fields" do
+    msg1 = %NullHypothesisProto3{__uf__: [{10, 2, <<1>>}]}
+    msg2 = %NullHypothesisProto3{__uf__: [{11, 2, <<2>>}]}
+
+    merged = Protox.MergeMessage.merge(msg1, msg2)
+
+    assert merged.__uf__ == msg1.__uf__ ++ msg2.__uf__
+  end
+
   test "Can access required fields of a protobuf 2 message" do
     required_fields =
       TestAllRequiredTypesProto2.schema().fields
