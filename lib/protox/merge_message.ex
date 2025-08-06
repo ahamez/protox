@@ -1,6 +1,9 @@
 defmodule Protox.MergeMessage do
   @moduledoc """
   This module provides a helper function to merge messages.
+
+  When merging, unknown fields from both input messages are concatenated and
+  kept as-is. Duplicates are preserved; no deduplication is performed.
   """
 
   alias Protox.{Field, OneOf, Scalar}
@@ -37,8 +40,8 @@ defmodule Protox.MergeMessage do
       :__struct__, v1, _v2 ->
         v1
 
-      ^unknown_fields_name, v1, _v2 ->
-        v1
+      ^unknown_fields_name, v1, v2 ->
+        v1 ++ v2
 
       name, v1, v2 ->
         merge_field(msg, name, v1, v2)
