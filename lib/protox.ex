@@ -3,7 +3,7 @@ defmodule Protox do
   Use this module to generate the Elixir structs corresponding to a set of protobuf definitions
   and to encode/decode instances of these structures.
 
-  ## Elixit structs generation examples
+  ## Elixir structs generation examples
   From a set of files:
       defmodule Dummy do
         use Protox,
