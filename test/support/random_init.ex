@@ -259,16 +259,26 @@ defmodule Protox.RandomInit do
   defp get_gen(depth, :map, {key_ty, {:message, sub_msg}}) do
     map_of(
       get_gen(depth, %Scalar{default_value: :dummy}, key_ty),
-      generate_fields(sub_msg, depth - 1)
+      generate_fields(sub_msg, depth - 1),
+      max_length: map_max_length(key_ty)
     )
   end
 
   defp get_gen(depth, :map, {key_ty, value_ty}) do
     map_of(
       get_gen(depth, %Scalar{default_value: :dummy}, key_ty),
-      get_gen(depth, %Scalar{default_value: :dummy}, value_ty)
+      get_gen(depth, %Scalar{default_value: :dummy}, value_ty),
+      max_length: map_max_length(key_ty)
     )
   end
+
+  defp map_max_length(:bool), do: 2
+
+  defp map_max_length({:enum, e}) do
+    e.constants() |> Enum.count() |> min(5)
+  end
+
+  defp map_max_length(_), do: 5
 
   # ----------------------
 
