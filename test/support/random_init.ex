@@ -3,19 +3,17 @@
 defmodule Protox.RandomInit do
   @moduledoc false
 
-  use PropCheck
+  import StreamData
 
   alias Protox.{Field, OneOf, Scalar}
 
   def generate_msg(mod) do
     gen =
-      let fields <- generate_fields(mod) do
-        generate_struct(mod, fields)
-      end
+      bind(generate_fields(mod), fn fields ->
+        constant(generate_struct(mod, fields))
+      end)
 
-    {:ok, msg} = :proper_gen.pick(gen, 5)
-
-    msg
+    gen |> resize(5) |> Enum.at(0)
   end
 
   # ------------------------------------------------------------------- #
@@ -137,8 +135,8 @@ defmodule Protox.RandomInit do
     do_generate([], Map.values(mod.schema().fields), depth)
   end
 
-  defp do_generate(acc, _fields, 0), do: acc
-  defp do_generate(acc, [], _depth), do: acc
+  defp do_generate(acc, _fields, 0), do: constant(acc)
+  defp do_generate(acc, [], _depth), do: constant(acc)
 
   defp do_generate(acc, [%Field{kind: %OneOf{parent: oneof_name}} | _] = fields, depth) do
     {oneof_list, fields} =
@@ -149,29 +147,39 @@ defmodule Protox.RandomInit do
         end
       end)
 
-    acc
-    |> do_generate_oneof(oneof_name, oneof_list, depth)
-    |> do_generate(fields, depth)
+    bind(do_generate_oneof(acc, oneof_name, oneof_list, depth), fn acc ->
+      do_generate(acc, fields, depth)
+    end)
   end
 
   defp do_generate(acc, [field | fields], depth) do
-    do_generate([{field.name, get_gen(depth, field.kind, field.type)} | acc], fields, depth)
+    bind(get_gen(depth, field.kind, field.type), fn val ->
+      do_generate([{field.name, val} | acc], fields, depth)
+    end)
   end
 
   defp do_generate_oneof(acc, oneof_name, oneof_list, depth) do
     generators =
       Enum.map(oneof_list, fn %Field{kind: %OneOf{parent: _}} = field ->
-        {field.name, get_gen(depth, %Scalar{default_value: :dummy}, field.type)}
+        map(get_gen(depth, %Scalar{default_value: :dummy}, field.type), fn val ->
+          {field.name, val}
+        end)
       end)
 
-    [{oneof_name, oneof([nil | generators])} | acc]
+    bind(one_of([constant(nil) | generators]), fn
+      nil ->
+        constant([{oneof_name, nil} | acc])
+
+      {field_name, val} ->
+        constant([{oneof_name, {field_name, val}} | acc])
+    end)
   end
 
   defp get_gen(_depth, %Scalar{}, {:enum, e}) do
-    e.constants() |> Map.new() |> Map.values() |> oneof()
+    e.constants() |> Map.new() |> Map.values() |> one_of()
   end
 
-  defp get_gen(_depth, %Scalar{}, :bool), do: bool()
+  defp get_gen(_depth, %Scalar{}, :bool), do: boolean()
 
   defp get_gen(_depth, %Scalar{}, :int32), do: integer()
   defp get_gen(_depth, %Scalar{}, :int64), do: integer()
@@ -179,85 +187,84 @@ defmodule Protox.RandomInit do
   defp get_gen(_depth, %Scalar{}, :sint64), do: integer()
   defp get_gen(_depth, %Scalar{}, :sfixed32), do: integer()
   defp get_gen(_depth, %Scalar{}, :sfixed64), do: integer()
-  defp get_gen(_depth, %Scalar{}, :fixed32), do: non_neg_integer()
-  defp get_gen(_depth, %Scalar{}, :fixed64), do: non_neg_integer()
+  defp get_gen(_depth, %Scalar{}, :fixed32), do: non_negative_integer()
+  defp get_gen(_depth, %Scalar{}, :fixed64), do: non_negative_integer()
 
-  defp get_gen(_depth, %Scalar{}, :uint32), do: non_neg_integer()
-  defp get_gen(_depth, %Scalar{}, :uint64), do: non_neg_integer()
+  defp get_gen(_depth, %Scalar{}, :uint32), do: non_negative_integer()
+  defp get_gen(_depth, %Scalar{}, :uint64), do: non_negative_integer()
 
   defp get_gen(_depth, %Scalar{}, :float), do: gen_float()
   defp get_gen(_depth, %Scalar{}, :double), do: gen_float()
 
   defp get_gen(_depth, %Scalar{}, :bytes), do: binary()
-  defp get_gen(_depth, %Scalar{}, :string), do: utf8()
+  defp get_gen(_depth, %Scalar{}, :string), do: string(:printable)
 
   defp get_gen(_depth, %Scalar{}, {:message, sub_msg}) when sub_msg in @well_known_types do
-    nil
+    constant(nil)
   end
 
   defp get_gen(depth, %Scalar{}, {:message, sub_msg}) do
-    oneof([nil, generate_fields(sub_msg, depth - 1)])
+    one_of([constant(nil), generate_fields(sub_msg, depth - 1)])
   end
 
-  defp get_gen(_depth, :packed, :bool), do: list(bool())
-  defp get_gen(_depth, :unpacked, :bool), do: list(bool())
+  defp get_gen(_depth, :packed, :bool), do: list_of(boolean())
+  defp get_gen(_depth, :unpacked, :bool), do: list_of(boolean())
 
-  defp get_gen(_depth, :packed, :int32), do: list(integer())
-  defp get_gen(_depth, :packed, :int64), do: list(integer())
-  defp get_gen(_depth, :packed, :sint32), do: list(integer())
-  defp get_gen(_depth, :packed, :sint64), do: list(integer())
-  defp get_gen(_depth, :packed, :sfixed32), do: list(integer())
-  defp get_gen(_depth, :packed, :sfixed64), do: list(integer())
-  defp get_gen(_depth, :packed, :fixed32), do: list(non_neg_integer())
-  defp get_gen(_depth, :packed, :fixed64), do: list(non_neg_integer())
-  defp get_gen(_depth, :unpacked, :int32), do: list(integer())
-  defp get_gen(_depth, :unpacked, :int64), do: list(integer())
-  defp get_gen(_depth, :unpacked, :sint32), do: list(integer())
-  defp get_gen(_depth, :unpacked, :sint64), do: list(integer())
-  defp get_gen(_depth, :unpacked, :sfixed32), do: list(integer())
-  defp get_gen(_depth, :unpacked, :sfixed64), do: list(integer())
-  defp get_gen(_depth, :unpacked, :fixed32), do: list(non_neg_integer())
-  defp get_gen(_depth, :unpacked, :fixed64), do: list(non_neg_integer())
+  defp get_gen(_depth, :packed, :int32), do: list_of(integer())
+  defp get_gen(_depth, :packed, :int64), do: list_of(integer())
+  defp get_gen(_depth, :packed, :sint32), do: list_of(integer())
+  defp get_gen(_depth, :packed, :sint64), do: list_of(integer())
+  defp get_gen(_depth, :packed, :sfixed32), do: list_of(integer())
+  defp get_gen(_depth, :packed, :sfixed64), do: list_of(integer())
+  defp get_gen(_depth, :packed, :fixed32), do: list_of(non_negative_integer())
+  defp get_gen(_depth, :packed, :fixed64), do: list_of(non_negative_integer())
+  defp get_gen(_depth, :unpacked, :int32), do: list_of(integer())
+  defp get_gen(_depth, :unpacked, :int64), do: list_of(integer())
+  defp get_gen(_depth, :unpacked, :sint32), do: list_of(integer())
+  defp get_gen(_depth, :unpacked, :sint64), do: list_of(integer())
+  defp get_gen(_depth, :unpacked, :sfixed32), do: list_of(integer())
+  defp get_gen(_depth, :unpacked, :sfixed64), do: list_of(integer())
+  defp get_gen(_depth, :unpacked, :fixed32), do: list_of(non_negative_integer())
+  defp get_gen(_depth, :unpacked, :fixed64), do: list_of(non_negative_integer())
 
-  defp get_gen(_depth, :packed, :uint32), do: list(non_neg_integer())
-  defp get_gen(_depth, :packed, :uint64), do: list(non_neg_integer())
-  defp get_gen(_depth, :unpacked, :uint32), do: list(non_neg_integer())
-  defp get_gen(_depth, :unpacked, :uint64), do: list(non_neg_integer())
+  defp get_gen(_depth, :packed, :uint32), do: list_of(non_negative_integer())
+  defp get_gen(_depth, :packed, :uint64), do: list_of(non_negative_integer())
+  defp get_gen(_depth, :unpacked, :uint32), do: list_of(non_negative_integer())
+  defp get_gen(_depth, :unpacked, :uint64), do: list_of(non_negative_integer())
 
-  defp get_gen(_depth, :packed, :float), do: list(gen_float())
-  defp get_gen(_depth, :packed, :double), do: list(gen_double())
-  defp get_gen(_depth, :unpacked, :float), do: list(gen_float())
-  defp get_gen(_depth, :unpacked, :double), do: list(gen_double())
+  defp get_gen(_depth, :packed, :float), do: list_of(gen_float())
+  defp get_gen(_depth, :packed, :double), do: list_of(gen_double())
+  defp get_gen(_depth, :unpacked, :float), do: list_of(gen_float())
+  defp get_gen(_depth, :unpacked, :double), do: list_of(gen_double())
 
   defp get_gen(_depth, kind, {:enum, e}) when kind == :packed or kind == :unpacked do
-    e.constants() |> Map.new() |> Map.values() |> oneof() |> list()
+    e.constants() |> Map.new() |> Map.values() |> one_of() |> list_of()
   end
 
-  defp get_gen(_depth, :unpacked, :string), do: list(utf8())
-  defp get_gen(_depth, :unpacked, :bytes), do: list(binary())
+  defp get_gen(_depth, :unpacked, :string), do: list_of(string(:printable))
+  defp get_gen(_depth, :unpacked, :bytes), do: list_of(binary())
 
   defp get_gen(_depth, :unpacked, {:message, sub_msg}) when sub_msg in @well_known_types do
-    []
+    constant([])
   end
 
   defp get_gen(depth, :unpacked, {:message, sub_msg}) do
-    list(generate_fields(sub_msg, depth - 1))
+    list_of(generate_fields(sub_msg, depth - 1))
   end
 
   defp get_gen(_depth, :map, {_key_ty, {:message, sub_msg}}) when sub_msg in @well_known_types do
-    %{}
+    constant(%{})
   end
 
   defp get_gen(depth, :map, {key_ty, {:message, sub_msg}}) do
-    map(
+    map_of(
       get_gen(depth, %Scalar{default_value: :dummy}, key_ty),
-      # we don't want a nil when a message is a value in a map
       generate_fields(sub_msg, depth - 1)
     )
   end
 
   defp get_gen(depth, :map, {key_ty, value_ty}) do
-    map(
+    map_of(
       get_gen(depth, %Scalar{default_value: :dummy}, key_ty),
       get_gen(depth, %Scalar{default_value: :dummy}, value_ty)
     )
@@ -266,10 +273,10 @@ defmodule Protox.RandomInit do
   # ----------------------
 
   defp gen_float() do
-    oneof([integer(), :nan, :infinity, :"-infinity"])
+    one_of([integer(), constant(:nan), constant(:infinity), constant(:"-infinity")])
   end
 
   defp gen_double() do
-    oneof([float(), :nan, :infinity, :"-infinity"])
+    one_of([float(), constant(:nan), constant(:infinity), constant(:"-infinity")])
   end
 end

@@ -2,7 +2,7 @@ defmodule Mix.Tasks.Protox.Benchmark.Generate.Payloads do
   @moduledoc false
 
   use Mix.Task
-  use PropCheck
+  import StreamData
 
   alias ProtobufTestMessages.Proto3.TestAllTypesProto3
 
@@ -62,12 +62,12 @@ defmodule Mix.Tasks.Protox.Benchmark.Generate.Payloads do
     Logger.info("Generating payload for #{mod}")
 
     gen =
-      let fields <- Protox.RandomInit.generate_fields(mod) do
-        Protox.RandomInit.generate_struct(mod, fields)
-      end
+      bind(Protox.RandomInit.generate_fields(mod), fn fields ->
+        constant(Protox.RandomInit.generate_struct(mod, fields))
+      end)
 
-    Stream.repeatedly(fn -> :proper_gen.pick(gen, 5) end)
-    |> Stream.map(fn {:ok, msg} ->
+    Stream.repeatedly(fn -> gen |> resize(5) |> Enum.at(0) end)
+    |> Stream.map(fn msg ->
       {msg, msg |> Protox.encode!() |> elem(0) |> IO.iodata_to_binary()}
     end)
     |> Stream.reject(fn {_msg, bytes} -> byte_size(bytes) == 0 end)

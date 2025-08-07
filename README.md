@@ -9,7 +9,7 @@
 
 Protox is an Elixir library for working with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers), versions 2 and 3, supporting binary encoding and decoding.
 
-The primary objective of Protox is **reliability**: it uses [property testing](https://github.com/alfert/propcheck), [mutation testing](https://github.com/devonestes/muzak) and has a [near 100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master). Protox [passes all the tests](#conformance) of the conformance checker provided by Google.
+The primary objective of Protox is **reliability**: it uses [property testing](https://github.com/whatyouhide/stream_data), [mutation testing](https://github.com/devonestes/muzak) and has a [near 100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master). Protox [passes all the tests](#conformance) of the conformance checker provided by Google.
 
 > [!NOTE]
 > If you're using version 1, please see how to migrate to version 2 [here](documentation/v1_to_v2_migration.md).
