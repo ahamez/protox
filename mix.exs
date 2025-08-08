@@ -16,7 +16,10 @@ defmodule Protox.Mixfile do
       source_url: "https://github.com/ahamez/protox",
       description: description(),
       package: package(),
-      dialyzer: [plt_local_path: "priv/plts"],
+      dialyzer: [
+        plt_local_path: "priv/plts",
+        plt_add_apps: [:logger, :stream_data]
+      ],
       docs: docs(),
       preferred_cli_env: [muzak: :test]
     ]
@@ -38,7 +41,6 @@ defmodule Protox.Mixfile do
       {:dialyxir, "~> 1.0", only: [:test, :dev], runtime: false},
       {:excoveralls, "~> 0.13", only: [:test], runtime: false},
       {:ex_doc, "~> 0.22", only: [:dev], runtime: false},
-      {:propcheck, github: "alfert/propcheck", ref: "c564e89d", only: [:test, :dev]},
       {:stream_data, "~> 1.0", only: [:dev, :test], runtime: false},
       {:quokka, "~> 2.0", only: [:dev, :test], runtime: false}
     ]
@@ -86,7 +88,7 @@ defmodule Protox.Mixfile do
 
   def escript() do
     [
-      # do not start any application: avoid propcheck app to fail when running escript
+      # do not start any application when running the escript
       app: nil,
       main_module: Protox.Conformance.Escript,
       name: "protox_conformance"
