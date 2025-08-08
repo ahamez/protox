@@ -3,19 +3,20 @@
 defmodule Protox.RandomInit do
   @moduledoc false
 
-  use PropCheck
+  import Bitwise
 
   alias Protox.{Field, OneOf, Scalar}
+  alias StreamData, as: SD
 
   def generate_msg(mod) do
     gen =
-      let fields <- generate_fields(mod) do
-        generate_struct(mod, fields)
-      end
+      SD.bind(generate_fields_values(mod), fn fields ->
+        SD.constant(generate_struct(mod, fields))
+      end)
 
-    {:ok, msg} = :proper_gen.pick(gen, 5)
-
-    msg
+    gen
+    |> SD.resize(5)
+    |> Enum.at(0)
   end
 
   # ------------------------------------------------------------------- #
@@ -137,6 +138,36 @@ defmodule Protox.RandomInit do
     do_generate([], Map.values(mod.schema().fields), depth)
   end
 
+  def generate_fields_values(mod, depth \\ 2) do
+    generate_fields(mod, depth) |> resolve_generators()
+  end
+
+  defp resolve_generators(%StreamData{} = gen), do: gen
+
+  defp resolve_generators(term) when is_list(term) do
+    Enum.reduce(Enum.reverse(term), SD.constant([]), fn elem, acc_gen ->
+      SD.bind(resolve_generators(elem), fn v ->
+        SD.map(acc_gen, fn acc -> [v | acc] end)
+      end)
+    end)
+  end
+
+  defp resolve_generators(term) when is_map(term) do
+    term
+    |> Map.to_list()
+    |> resolve_generators()
+    |> SD.map(&Map.new/1)
+  end
+
+  defp resolve_generators(term) when is_tuple(term) do
+    term
+    |> Tuple.to_list()
+    |> resolve_generators()
+    |> SD.map(&List.to_tuple/1)
+  end
+
+  defp resolve_generators(term), do: SD.constant(term)
+
   defp do_generate(acc, _fields, 0), do: acc
   defp do_generate(acc, [], _depth), do: acc
 
@@ -161,87 +192,88 @@ defmodule Protox.RandomInit do
   defp do_generate_oneof(acc, oneof_name, oneof_list, depth) do
     generators =
       Enum.map(oneof_list, fn %Field{kind: %OneOf{parent: _}} = field ->
-        {field.name, get_gen(depth, %Scalar{default_value: :dummy}, field.type)}
+        gen = get_gen(depth, %Scalar{default_value: :dummy}, field.type)
+        SD.map(gen, fn v -> {field.name, v} end)
       end)
 
-    [{oneof_name, oneof([nil | generators])} | acc]
+    [{oneof_name, SD.one_of([SD.constant(nil) | generators])} | acc]
   end
 
   defp get_gen(_depth, %Scalar{}, {:enum, e}) do
-    e.constants() |> Map.new() |> Map.values() |> oneof()
+    e.constants() |> Map.new() |> Map.values() |> SD.member_of()
   end
 
-  defp get_gen(_depth, %Scalar{}, :bool), do: bool()
+  defp get_gen(_depth, %Scalar{}, :bool), do: SD.boolean()
 
-  defp get_gen(_depth, %Scalar{}, :int32), do: integer()
-  defp get_gen(_depth, %Scalar{}, :int64), do: integer()
-  defp get_gen(_depth, %Scalar{}, :sint32), do: integer()
-  defp get_gen(_depth, %Scalar{}, :sint64), do: integer()
-  defp get_gen(_depth, %Scalar{}, :sfixed32), do: integer()
-  defp get_gen(_depth, %Scalar{}, :sfixed64), do: integer()
-  defp get_gen(_depth, %Scalar{}, :fixed32), do: non_neg_integer()
-  defp get_gen(_depth, %Scalar{}, :fixed64), do: non_neg_integer()
+  defp get_gen(_depth, %Scalar{}, :int32), do: SD.integer()
+  defp get_gen(_depth, %Scalar{}, :int64), do: SD.integer()
+  defp get_gen(_depth, %Scalar{}, :sint32), do: SD.integer()
+  defp get_gen(_depth, %Scalar{}, :sint64), do: SD.integer()
+  defp get_gen(_depth, %Scalar{}, :sfixed32), do: SD.integer()
+  defp get_gen(_depth, %Scalar{}, :sfixed64), do: SD.integer()
+  defp get_gen(_depth, %Scalar{}, :fixed32), do: SD.integer(0..((1 <<< 32) - 1))
+  defp get_gen(_depth, %Scalar{}, :fixed64), do: SD.integer(0..((1 <<< 64) - 1))
 
-  defp get_gen(_depth, %Scalar{}, :uint32), do: non_neg_integer()
-  defp get_gen(_depth, %Scalar{}, :uint64), do: non_neg_integer()
+  defp get_gen(_depth, %Scalar{}, :uint32), do: SD.integer(0..((1 <<< 32) - 1))
+  defp get_gen(_depth, %Scalar{}, :uint64), do: SD.integer(0..((1 <<< 64) - 1))
 
   defp get_gen(_depth, %Scalar{}, :float), do: gen_float()
-  defp get_gen(_depth, %Scalar{}, :double), do: gen_float()
+  defp get_gen(_depth, %Scalar{}, :double), do: gen_double()
 
-  defp get_gen(_depth, %Scalar{}, :bytes), do: binary()
-  defp get_gen(_depth, %Scalar{}, :string), do: utf8()
+  defp get_gen(_depth, %Scalar{}, :bytes), do: SD.binary()
+  defp get_gen(_depth, %Scalar{}, :string), do: SD.string(:printable)
 
   defp get_gen(_depth, %Scalar{}, {:message, sub_msg}) when sub_msg in @well_known_types do
     nil
   end
 
   defp get_gen(depth, %Scalar{}, {:message, sub_msg}) do
-    oneof([nil, generate_fields(sub_msg, depth - 1)])
+    SD.one_of([SD.constant(nil), generate_fields_values(sub_msg, depth - 1)])
   end
 
-  defp get_gen(_depth, :packed, :bool), do: list(bool())
-  defp get_gen(_depth, :unpacked, :bool), do: list(bool())
+  defp get_gen(_depth, :packed, :bool), do: SD.list_of(SD.boolean())
+  defp get_gen(_depth, :unpacked, :bool), do: SD.list_of(SD.boolean())
 
-  defp get_gen(_depth, :packed, :int32), do: list(integer())
-  defp get_gen(_depth, :packed, :int64), do: list(integer())
-  defp get_gen(_depth, :packed, :sint32), do: list(integer())
-  defp get_gen(_depth, :packed, :sint64), do: list(integer())
-  defp get_gen(_depth, :packed, :sfixed32), do: list(integer())
-  defp get_gen(_depth, :packed, :sfixed64), do: list(integer())
-  defp get_gen(_depth, :packed, :fixed32), do: list(non_neg_integer())
-  defp get_gen(_depth, :packed, :fixed64), do: list(non_neg_integer())
-  defp get_gen(_depth, :unpacked, :int32), do: list(integer())
-  defp get_gen(_depth, :unpacked, :int64), do: list(integer())
-  defp get_gen(_depth, :unpacked, :sint32), do: list(integer())
-  defp get_gen(_depth, :unpacked, :sint64), do: list(integer())
-  defp get_gen(_depth, :unpacked, :sfixed32), do: list(integer())
-  defp get_gen(_depth, :unpacked, :sfixed64), do: list(integer())
-  defp get_gen(_depth, :unpacked, :fixed32), do: list(non_neg_integer())
-  defp get_gen(_depth, :unpacked, :fixed64), do: list(non_neg_integer())
+  defp get_gen(_depth, :packed, :int32), do: SD.list_of(SD.integer())
+  defp get_gen(_depth, :packed, :int64), do: SD.list_of(SD.integer())
+  defp get_gen(_depth, :packed, :sint32), do: SD.list_of(SD.integer())
+  defp get_gen(_depth, :packed, :sint64), do: SD.list_of(SD.integer())
+  defp get_gen(_depth, :packed, :sfixed32), do: SD.list_of(SD.integer())
+  defp get_gen(_depth, :packed, :sfixed64), do: SD.list_of(SD.integer())
+  defp get_gen(_depth, :packed, :fixed32), do: SD.list_of(SD.integer(0..((1 <<< 32) - 1)))
+  defp get_gen(_depth, :packed, :fixed64), do: SD.list_of(SD.integer(0..((1 <<< 64) - 1)))
+  defp get_gen(_depth, :unpacked, :int32), do: SD.list_of(SD.integer())
+  defp get_gen(_depth, :unpacked, :int64), do: SD.list_of(SD.integer())
+  defp get_gen(_depth, :unpacked, :sint32), do: SD.list_of(SD.integer())
+  defp get_gen(_depth, :unpacked, :sint64), do: SD.list_of(SD.integer())
+  defp get_gen(_depth, :unpacked, :sfixed32), do: SD.list_of(SD.integer())
+  defp get_gen(_depth, :unpacked, :sfixed64), do: SD.list_of(SD.integer())
+  defp get_gen(_depth, :unpacked, :fixed32), do: SD.list_of(SD.integer(0..((1 <<< 32) - 1)))
+  defp get_gen(_depth, :unpacked, :fixed64), do: SD.list_of(SD.integer(0..((1 <<< 64) - 1)))
 
-  defp get_gen(_depth, :packed, :uint32), do: list(non_neg_integer())
-  defp get_gen(_depth, :packed, :uint64), do: list(non_neg_integer())
-  defp get_gen(_depth, :unpacked, :uint32), do: list(non_neg_integer())
-  defp get_gen(_depth, :unpacked, :uint64), do: list(non_neg_integer())
+  defp get_gen(_depth, :packed, :uint32), do: SD.list_of(SD.integer(0..((1 <<< 32) - 1)))
+  defp get_gen(_depth, :packed, :uint64), do: SD.list_of(SD.integer(0..((1 <<< 64) - 1)))
+  defp get_gen(_depth, :unpacked, :uint32), do: SD.list_of(SD.integer(0..((1 <<< 32) - 1)))
+  defp get_gen(_depth, :unpacked, :uint64), do: SD.list_of(SD.integer(0..((1 <<< 64) - 1)))
 
-  defp get_gen(_depth, :packed, :float), do: list(gen_float())
-  defp get_gen(_depth, :packed, :double), do: list(gen_double())
-  defp get_gen(_depth, :unpacked, :float), do: list(gen_float())
-  defp get_gen(_depth, :unpacked, :double), do: list(gen_double())
+  defp get_gen(_depth, :packed, :float), do: SD.list_of(gen_float())
+  defp get_gen(_depth, :packed, :double), do: SD.list_of(gen_double())
+  defp get_gen(_depth, :unpacked, :float), do: SD.list_of(gen_float())
+  defp get_gen(_depth, :unpacked, :double), do: SD.list_of(gen_double())
 
   defp get_gen(_depth, kind, {:enum, e}) when kind == :packed or kind == :unpacked do
-    e.constants() |> Map.new() |> Map.values() |> oneof() |> list()
+    e.constants() |> Map.new() |> Map.values() |> SD.member_of() |> SD.list_of()
   end
 
-  defp get_gen(_depth, :unpacked, :string), do: list(utf8())
-  defp get_gen(_depth, :unpacked, :bytes), do: list(binary())
+  defp get_gen(_depth, :unpacked, :string), do: SD.list_of(SD.string(:printable))
+  defp get_gen(_depth, :unpacked, :bytes), do: SD.list_of(SD.binary())
 
   defp get_gen(_depth, :unpacked, {:message, sub_msg}) when sub_msg in @well_known_types do
     []
   end
 
   defp get_gen(depth, :unpacked, {:message, sub_msg}) do
-    list(generate_fields(sub_msg, depth - 1))
+    SD.list_of(generate_fields_values(sub_msg, depth - 1))
   end
 
   defp get_gen(_depth, :map, {_key_ty, {:message, sub_msg}}) when sub_msg in @well_known_types do
@@ -249,27 +281,49 @@ defmodule Protox.RandomInit do
   end
 
   defp get_gen(depth, :map, {key_ty, {:message, sub_msg}}) do
-    map(
-      get_gen(depth, %Scalar{default_value: :dummy}, key_ty),
-      # we don't want a nil when a message is a value in a map
-      generate_fields(sub_msg, depth - 1)
-    )
+    key_gen = get_gen(depth, %Scalar{default_value: :dummy}, key_ty)
+    val_gen = generate_fields_values(sub_msg, depth - 1)
+    map_of_for_keys(key_ty, key_gen, val_gen)
   end
 
   defp get_gen(depth, :map, {key_ty, value_ty}) do
-    map(
-      get_gen(depth, %Scalar{default_value: :dummy}, key_ty),
-      get_gen(depth, %Scalar{default_value: :dummy}, value_ty)
-    )
+    key_gen = get_gen(depth, %Scalar{default_value: :dummy}, key_ty)
+    val_gen = get_gen(depth, %Scalar{default_value: :dummy}, value_ty)
+    map_of_for_keys(key_ty, key_gen, val_gen)
+  end
+
+  defp map_of_for_keys(key_ty, key_gen, val_gen) do
+    max_len =
+      case key_ty do
+        :bool -> 2
+        {:enum, e} -> e.constants() |> Map.new() |> map_size()
+        _ -> nil
+      end
+
+    case max_len do
+      nil -> SD.map_of(key_gen, val_gen, max_length: 20)
+      n -> SD.map_of(key_gen, val_gen, max_length: n)
+    end
   end
 
   # ----------------------
 
   defp gen_float() do
-    oneof([integer(), :nan, :infinity, :"-infinity"])
+    SD.one_of([
+      SD.map(SD.integer(-10_000..10_000), &(&1 * 1.0)),
+      SD.constant(:nan),
+      SD.constant(:infinity),
+      SD.constant(:"-infinity")
+    ])
   end
 
   defp gen_double() do
-    oneof([float(), :nan, :infinity, :"-infinity"])
+    SD.one_of([
+      # SD.map(SD.integer(-1_000_000_000..1_000_000_000), &(&1 * 1.0)),
+      SD.float(),
+      SD.constant(:nan),
+      SD.constant(:infinity),
+      SD.constant(:"-infinity")
+    ])
   end
 end
