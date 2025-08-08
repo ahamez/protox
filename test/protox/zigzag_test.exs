@@ -1,6 +1,6 @@
 defmodule Protox.ZigzagTest do
   use ExUnit.Case
-  use PropCheck
+  use ExUnitProperties
 
   test "Zigzag encode" do
     assert Protox.Zigzag.encode(0) == 0
@@ -13,8 +13,8 @@ defmodule Protox.ZigzagTest do
 
   @tag :properties
   property "Zigzag encode" do
-    forall value <- integer() do
-      Protox.Zigzag.encode(value) >= 0
+    check all(value <- integer()) do
+      assert Protox.Zigzag.encode(value) >= 0
     end
   end
 
@@ -29,15 +29,15 @@ defmodule Protox.ZigzagTest do
 
   @tag :properties
   property "Zigzag decode" do
-    forall value <- range(0, 4_294_967_295) do
+    check all(value <- integer(0..4_294_967_295)) do
       decoded = Protox.Zigzag.decode(value)
-      decoded <= 2_147_483_647 and decoded >= -2_147_483_648
+      assert decoded <= 2_147_483_647 and decoded >= -2_147_483_648
     end
   end
 
-  test "Symmetric" do
-    forall value <- integer() do
-      value == value |> Protox.Zigzag.encode() |> Protox.Zigzag.decode()
+  property "Symmetric" do
+    check all(value <- integer()) do
+      assert value == value |> Protox.Zigzag.encode() |> Protox.Zigzag.decode()
     end
   end
 end
