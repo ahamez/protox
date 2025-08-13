@@ -41,6 +41,7 @@ jobs:
             check_deps: true
             dialyzer: true
             unlock_deps: true
+            safe: true
             name_suffix: "(unlock deps)"
 
     steps:
@@ -90,6 +91,13 @@ jobs:
       - name: Compile prod with warnings as errors
         run: MIX_ENV=prod mix compile --warnings-as-errors
 
+      - name: Upload _build directory
+        uses: actions/upload-artifact@v4
+        if: ${{ matrix.safe }}
+        with:
+          name: build-artifact
+          path: _build
+
       - name: Run tests
         run: mix coveralls.github --timeout 600000 --include conformance
 
@@ -107,3 +115,25 @@ jobs:
       - name: Dialyzer
         run: mix dialyzer --format github
         if: ${{ matrix.dialyzer }}
+
+  security-check:
+    runs-on: ubuntu-24.04
+    needs: build
+    container:
+      image: erlangsolutions/safe:1.1.0-otp-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download _build directory
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact
+          path: _build
+      - run: safe start
+        env:
+          SAFE_LICENSE: ${{ secrets.SAFE_LICENSE }}
+      - name: Persist results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-safe-results
+          path: _results/<<Project_Name>>.safe
