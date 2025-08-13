@@ -1,0 +1,17 @@
+{
+  "output": "stdio",
+  "version": "1.0",
+  "project": {
+    "name": "protox",
+    "type": "beam",
+    "apps": [
+      {
+        "name": "protox",
+        "additional_includes": []
+      }
+    ],
+    "paths": [
+      "_build/prod/lib"
+    ]
+  }
+}
