@@ -1,0 +1,26 @@
+[
+  {
+    "file": "lib/protox/define_encoder.ex",
+    "line": 475
+  },
+  {
+    "file": "lib/protox/define_decoder.ex",
+    "line": 545
+  },
+  { "file": "lib/protox/parse.ex", "line": 357 },
+  { "file": "lib/protox/parse.ex", "line": 355 },
+  { "file": "lib/protox/parse.ex", "line": 279 },
+  { "file": "lib/protox/parse.ex", "line": 435 },
+  { "file": "lib/protox/parse.ex", "line": 474 },
+  { "file": "lib/protox/parse.ex", "line": 98 },
+  { "file": "lib/protox/parse.ex", "line": 254 },
+  { "file": "lib/protox/parse.ex", "line": 258 },
+  { "file": "lib/protox/parse.ex", "line": 262 },
+  { "file": "lib/protox/parse.ex", "line": 266 },
+  { "file": "lib/protox/parse.ex", "line": 70 },
+  { "file": "lib/protox/parse.ex", "line": 89 },
+  { "file": "lib/protox/define.ex", "line": 11 },
+  { "file": "lib/protox/define.ex", "line": 12 },
+  { "file": "lib/protox/parse.ex", "line": 167 },
+  { "file": "lib/protox.ex", "line": 82 }
+]
