@@ -15,7 +15,7 @@
   "makeup_erlang": {:hex, :makeup_erlang, "1.0.2", "03e1804074b3aa64d5fad7aa64601ed0fb395337b982d9bcf04029d68d51b6a7", [:mix], [{:makeup, "~> 1.0", [hex: :makeup, repo: "hexpm", optional: false]}], "hexpm", "af33ff7ef368d5893e4a267933e7744e46ce3cf1f61e2dccf53a111ed3aa3727"},
   "nimble_parsec": {:hex, :nimble_parsec, "1.4.2", "8efba0122db06df95bfaa78f791344a89352ba04baedd3849593bfce4d0dc1c6", [:mix], [], "hexpm", "4b21398942dda052b403bbe1da991ccd03a053668d147d53fb8c4e0efe09c973"},
   "protobuf": {:git, "https://github.com/protocolbuffers/protobuf.git", "b407e8416e3893036aee5af9a12bd9b6a0e2b2e6", [tag: "v29.3", submodules: true]},
-  "quokka": {:hex, :quokka, "2.10.0", "0a29a642f1832c3795af6f6bdf51e25779d5c6253a04c5c4540397e918e9539a", [:mix], [{:credo, "~> 1.7", [hex: :credo, repo: "hexpm", optional: false]}], "hexpm", "ca73c0acdbfa9014bd8d74c23522d0a7b5b64d9a6e30df88741c69acf843657f"},
+  "quokka": {:hex, :quokka, "2.11.0", "301a8ba7dc89a77064f0c6b05db18ba8bfa7e11206fc4dcc7e2c604f617346b2", [:mix], [{:credo, "~> 1.7", [hex: :credo, repo: "hexpm", optional: false]}], "hexpm", "03b3f53204dc8133cfd7d03023977f6c1264d1e48cf3b943f2111bf134025bd9"},
   "statistex": {:hex, :statistex, "1.0.0", "f3dc93f3c0c6c92e5f291704cf62b99b553253d7969e9a5fa713e5481cd858a5", [:mix], [], "hexpm", "ff9d8bee7035028ab4742ff52fc80a2aa35cece833cf5319009b52f1b5a86c27"},
   "stream_data": {:hex, :stream_data, "1.2.0", "58dd3f9e88afe27dc38bef26fce0c84a9e7a96772b2925c7b32cd2435697a52b", [:mix], [], "hexpm", "eb5c546ee3466920314643edf68943a5b14b32d1da9fe01698dc92b73f89a9ed"},
 }
