@@ -4,6 +4,8 @@ env:
   PROTOX_PROTOBUF_VERSION: "29.2"
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   MIX_ENV: test
+  # Mark Coveralls uploads as part of a parallel build; a finish job will close it
+  COVERALLS_PARALLEL: true
 
 on:
   push:
@@ -99,7 +101,13 @@ jobs:
           path: _build
 
       - name: Run tests
-        run: mix coveralls.github --timeout 600000 --include conformance
+        run: mix coveralls.github --parallel --timeout 600000 --include conformance
+
+      # - uses: coverallsapp/github-action@v2
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     flag-name: elixir-${{ matrix.elixir }}-otp-${{ matrix.otp }}
+      #     parallel: true
 
       - name: Check formatting
         run: mix format --check-formatted
@@ -115,6 +123,31 @@ jobs:
       - name: Dialyzer
         run: mix dialyzer --format github
         if: ${{ matrix.dialyzer }}
+
+  # Signal Coveralls that all parallel jobs finished so it can merge results
+  coveralls-finish:
+    runs-on: ubuntu-24.04
+    needs: build
+    if: always()
+    steps:
+      - name: Coveralls Finished
+        # - name: Coveralls Finished (PR)
+        # if: ${{ github.event_name == 'pull_request' }}
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          parallel-finished: true
+          # Match ExCoveralls build identifier format for PRs
+          # build-number: ${{ github.sha }}-PR-${{ github.event.pull_request.number }}
+
+      # - name: Coveralls Finished (push/branch)
+      #   if: ${{ github.event_name != 'pull_request' }}
+      #   uses: coverallsapp/github-action@v2
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     parallel-finished: true
+      #     # Match ExCoveralls build identifier for branch pushes
+      #     build-number: ${{ github.sha }}
 
   security-check:
     runs-on: ubuntu-24.04
