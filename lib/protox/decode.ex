@@ -27,7 +27,21 @@ defmodule Protox.Decode do
             parse_fixed32: 1,
             parse_sfixed32: 1,
             parse_fixed64: 1,
-            parse_sfixed64: 1}
+            parse_sfixed64: 1,
+            parse_repeated_bool: 2,
+            parse_repeated_enum: 3,
+            parse_repeated_int32: 2,
+            parse_repeated_uint32: 2,
+            parse_repeated_sint32: 2,
+            parse_repeated_int64: 2,
+            parse_repeated_uint64: 2,
+            parse_repeated_sint64: 2,
+            parse_repeated_fixed32: 2,
+            parse_repeated_fixed64: 2,
+            parse_repeated_sfixed32: 2,
+            parse_repeated_sfixed64: 2,
+            parse_repeated_float: 2,
+            parse_repeated_double: 2}
 
   # Get the key's tag and wire type.
   @spec parse_key(binary()) :: {non_neg_integer(), non_neg_integer(), binary()}
@@ -127,7 +141,6 @@ defmodule Protox.Decode do
 
   def parse_uint32(bytes) do
     {value, rest} = Varint.decode(bytes)
-
     <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
     {res, rest}
   end
