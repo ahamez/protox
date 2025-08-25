@@ -134,7 +134,7 @@ jobs:
     container:
       image: erlangsolutions/safe:1.1.0-otp-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Download _build directory
         uses: actions/download-artifact@v5
         with:
