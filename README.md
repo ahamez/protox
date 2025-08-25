@@ -2,17 +2,17 @@
 
 [![Elixir CI](https://github.com/ahamez/protox/actions/workflows/elixir.yml/badge.svg)](https://github.com/ahamez/protox/actions/workflows/elixir.yml)
 [![Coverage Status](https://coveralls.io/repos/github/ahamez/protox/badge.svg?branch=master)](https://coveralls.io/github/ahamez/protox?branch=master)
-[![Hex.pm Version](http://img.shields.io/hexpm/v/protox.svg)](https://hex.pm/packages/protox)
+[![Hex.pm Version](https://img.shields.io/hexpm/v/protox.svg)](https://hex.pm/packages/protox)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-brightgreen.svg)](https://hexdocs.pm/protox/)
 [![Hex.pm Downloads](https://img.shields.io/hexpm/dw/protox)](https://hex.pm/packages/protox)
 [![License](https://img.shields.io/hexpm/l/protox.svg)](https://github.com/ahamez/protox/blob/master/LICENSE)
 
-Protox is an Elixir library for working with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers), versions 2 and 3, supporting binary encoding and decoding.
+Protox is an Elixir library for working with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers) (proto2 and proto3): encode/decode to/from binary, generate code, or compile schemas at build time.
 
-The primary objective of Protox is **reliability**: it uses [property testing](https://hexdocs.pm/stream_data), [mutation testing](https://github.com/devonestes/muzak) and has a [near 100% code coverage](https://coveralls.io/github/ahamez/protox?branch=master). Protox [passes all the tests](#conformance) of the conformance checker provided by Google.
+Protox emphasizes **reliability**: it uses [property testing](https://hexdocs.pm/stream_data), [mutation testing](https://github.com/devonestes/muzak), maintains [near 100% coverage](https://coveralls.io/github/ahamez/protox?branch=master), and [passes Google’s conformance suite](#conformance).
 
 > [!NOTE]
-> If you're using version 1, please see how to migrate to version 2 [here](documentation/v1_to_v2_migration.md).
+> Using v1? See the v2 migration guide in [v1_to_v2_migration.md](documentation/v1_to_v2_migration.md).
 
 ## Example
 
@@ -41,25 +41,6 @@ You can use Protox in two ways:
 
 1. pass the protobuf schema ([as an inlined schema](#usage-with-an-inlined-schema) or as a [list of files](#usage-with-files)) to the `Protox` macro;
 2. [generate](#files-generation) Elixir source code files with the mix task `protox.generate`.
-
-## Table of contents
-
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Usage with an inlined schema](#usage-with-an-inlined-schema)
-- [Usage with files](#usage-with-files)
-- [Encode](#encode)
-- [Decode](#decode)
-- [Packages and namespaces](#packages-and-namespaces)
-- [Specify include path](#specify-include-path)
-- [Files generation](#files-generation)
-- [Unknown fields](#unknown-fields)
-- [Unsupported features](#unsupported-features)
-- [Implementation choices](#implementation-choices)
-- [Generated code reference and types mapping](#generated-code-reference-and-types-mapping)
-- [Conformance](#conformance)
-- [Benchmark](#benchmark)
-- [Contributing](#contributing)
 
 ## Prerequisites
 
@@ -124,26 +105,15 @@ msg = %Foo{a: 3, b: %{1 => %Baz{}}}
 {iodata, iodata_size} = Protox.encode!(msg)
 ```
 
-It's also possible to call `encode/1` and `encode!/1` directly on the generated structures:
+You can also call `encode/1` and `encode!/1` directly on the generated structures:
 
 ```elixir
 {:ok, iodata, iodata_size} = Foo.encode(msg)
 {iodata, iodata_size} = Foo.encode!(msg)
 ```
 
-> [!NOTE]
-> `encode/1` and `encode!/1` return an [IO data](https://hexdocs.pm/elixir/IO.html#module-use-cases-for-io-data) for efficiency reasons. Such IO data can be used directly with files or sockets write operations:
->
-> ```elixir
-> iex> {iodata, _iodata_size} = Protox.encode!(%Foo{a: 3, b: %{1 => %Baz{}}})
-> {["\b", <<3>>, <<18, 4, 8>>, <<1>>, <<18>>, [<<0>>, []]], 8}
-> iex> {:ok, file} = File.open("msg.bin", [:write])
-> {:ok, #PID<0.1023.0>}
-> iex> IO.binwrite(file, iodata)
-> :ok
-> ```
->
-> Use [`:binary.list_to_bin/1`](https://erlang.org/doc/man/binary.html#list_to_bin-1) or [`IO.iodata_to_binary`](https://hexdocs.pm/elixir/IO.html#iodata_to_binary/1) if you need to get a binary from an IO data.
+> [!TIP]
+> `encode/1` and `encode!/1` return [iodata](https://hexdocs.pm/elixir/IO.html#module-use-cases-for-io-data) for efficiency. Use it directly with file/socket writes, or convert with `IO.iodata_to_binary/1` when you need a binary.
 
 ## Decode
 
@@ -155,16 +125,14 @@ Here's how to decode a message from binary protobuf:
 msg = Protox.decode!(<<8, 3, 18, 4, 8, 1, 18, 0>>, Foo)
 ```
 
-It's also possible to call `decode/1` and `decode!/1` directly on the generated structures:
+You can also call `decode/1` and `decode!/1` directly on the generated structures:
 
 ```elixir
 {:ok, msg} = Foo.decode(<<8, 3, 18, 4, 8, 1, 18, 0>>)
 msg = Foo.decode!(<<8, 3, 18, 4, 8, 1, 18, 0>>)
 ```
 
-## Packages and namespaces
-
-### Packages
+## Packages
 
 Protox honors the [`package`](https://protobuf.dev/programming-guides/proto3/#packages) directive:
 
@@ -173,11 +141,11 @@ package abc.def;
 message Baz {}
 ```
 
-The example above will be translated to `Abc.Def.Baz` (note the [camelization](#implementation-choices) of package `abc.def` to `Abc.Def`).
+The example above is translated to `Abc.Def.Baz` (package `abc.def` is camelized to `Abc.Def`).
 
-### Prepend namespaces
+## Namespaces
 
-In addition, Protox provides the possibility to prepend a namespace with the `:namespace` option:
+You can prepend a namespace with a prefix using the `:namespace` option:
 
 ```elixir
 defmodule Bar do
@@ -256,7 +224,7 @@ The files will be usable in any project as long as Protox is declared in the dep
 
 ## Unknown fields
 
-[Unknown fields](https://developers.google.com/protocol-buffers/docs/proto3#unknowns) are fields that are present on the wire but which do not correspond to an entry in the protobuf definition. Typically, it occurs when the sender has a newer version of the protobuf definition. It enables backwards compatibility as the receiver with an old version of the protobuf definition will still be able to decode old fields.
+[Unknown fields](https://developers.google.com/protocol-buffers/docs/proto3#unknowns) are fields present on the wire that do not correspond to the protobuf definition. This enables forward-compatibility: older readers keep and re-emit fields added by newer writers.
 
 When unknown fields are encountered at decoding time, they are kept in the decoded message. It's possible to access them with the `unknown_fields/1` function defined with the message.
 
@@ -268,7 +236,7 @@ iex> Msg.unknown_fields(msg)
 [{5, 2, <<121, 97, 121, 101>>}]
 ```
 
-You must use `unknown_fields/1` as the name of the field (e.g. `__uf__` in the above example) is generated at compile-time to avoid collision with the actual fields of the Protobuf message. This function returns a list of tuples `{tag, wire_type, bytes}`. For more information, please see the [protobuf encoding guide](https://developers.google.com/protocol-buffers/docs/encoding).
+Always use `unknown_fields/1` since the field name (e.g. `__uf__`) is generated to avoid collisions with protobuf fields. It returns a list of `{tag, wire_type, bytes}`. See the [protobuf encoding guide](https://developers.google.com/protocol-buffers/docs/encoding) for details.
 
 > [!NOTE]
 > Unknown fields are retained when re-encoding the message.
@@ -281,7 +249,7 @@ You must use `unknown_fields/1` as the name of the field (e.g. `__uf__` in the a
 
 ## Implementation choices
 
-- (**Protobuf 2**) **Required fields** Protox enforces the presence of required fields; an error is raised when encoding a message with missing required field:
+- (**Protobuf 2**) **Required fields** encoding raises `Protox.RequiredFieldsError` when a required field is missing.
 
   ```elixir
   defmodule Bar do
@@ -435,21 +403,10 @@ You must use `unknown_fields/1` as the name of the field (e.g. `__uf__` in the a
 
 The Protox library has been thoroughly tested using the conformance checker [provided by Google](https://github.com/protocolbuffers/protobuf/tree/master/conformance).
 
-To launch these conformance tests, use the `protox.conformance` mix task:
+Run the suite with:
 
 ```shell
-$ mix protox.conformance
-WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
-I0000 00:00:1738246114.224098 3490144 conformance_test_runner.cc:394] ./protox_conformance
-CONFORMANCE TEST BEGIN ====================================
-
-CONFORMANCE SUITE PASSED: 1368 successes, 1307 skipped, 0 expected failures, 0 unexpected failures.
-
-WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
-I0000 00:00:1738246115.065491 3495574 conformance_test_runner.cc:394] ./protox_conformance
-CONFORMANCE TEST BEGIN ====================================
-
-CONFORMANCE SUITE PASSED: 0 successes, 414 skipped, 0 expected failures, 0 unexpected failures.
+mix protox.conformance
 ```
 
 > [!NOTE]
@@ -457,7 +414,7 @@ CONFORMANCE SUITE PASSED: 0 successes, 414 skipped, 0 expected failures, 0 unexp
 
 ## Benchmark
 
-Please see [benchmark/launch_benchmark.md](benchmark/launch_benchmark.md) for more information on how to launch benchmark.
+See [benchmark/launch_benchmark.md](benchmark/launch_benchmark.md) for running benchmarks.
 
 ## Contributing
 
