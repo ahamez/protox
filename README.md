@@ -4,8 +4,6 @@
 [![Coverage Status](https://coveralls.io/repos/github/ahamez/protox/badge.svg?branch=master)](https://coveralls.io/github/ahamez/protox?branch=master)
 [![Hex.pm Version](https://img.shields.io/hexpm/v/protox.svg)](https://hex.pm/packages/protox)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-brightgreen.svg)](https://hexdocs.pm/protox/)
-[![Hex.pm Downloads](https://img.shields.io/hexpm/dw/protox)](https://hex.pm/packages/protox)
-[![License](https://img.shields.io/hexpm/l/protox.svg)](https://github.com/ahamez/protox/blob/master/LICENSE)
 
 Protox is an Elixir library for working with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers) (proto2 and proto3): encode/decode to/from binary, generate code, or compile schemas at build time.
 
