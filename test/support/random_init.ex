@@ -99,13 +99,14 @@ defmodule Protox.RandomInit do
 
           {:map, sub_msg} ->
             val =
-              val
-              |> Map.new(fn {k, msg_val} -> {k, generate_struct(sub_msg, msg_val)} end)
+              Map.new(val, fn {k, msg_val} -> {k, generate_struct(sub_msg, msg_val)} end)
 
             [{field_name, val} | acc]
 
           {:repeated, sub_msg} ->
-            val = Enum.map(val, fn msg_val -> generate_struct(sub_msg, msg_val) end)
+            val =
+              Enum.map(val, fn msg_val -> generate_struct(sub_msg, msg_val) end)
+
             [{field_name, val} | acc]
         end
       end)
