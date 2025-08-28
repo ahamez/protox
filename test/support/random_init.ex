@@ -319,7 +319,6 @@ defmodule Protox.RandomInit do
 
   defp gen_double() do
     SD.one_of([
-      # SD.map(SD.integer(-1_000_000_000..1_000_000_000), &(&1 * 1.0)),
       SD.float(),
       SD.constant(:nan),
       SD.constant(:infinity),
