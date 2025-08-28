@@ -294,16 +294,10 @@ defmodule Protox.RandomInit do
   end
 
   defp map_of_for_keys(key_ty, key_gen, val_gen) do
-    max_len =
-      case key_ty do
-        :bool -> 2
-        {:enum, e} -> e.constants() |> Map.new() |> map_size()
-        _ -> nil
-      end
-
-    case max_len do
-      nil -> SD.map_of(key_gen, val_gen, max_length: 20)
-      n -> SD.map_of(key_gen, val_gen, max_length: n)
+    case key_ty do
+      :bool -> SD.map_of(key_gen, val_gen, max_length: 2)
+      {:enum, e} -> SD.map_of(key_gen, val_gen, max_length: length(e.constants()))
+      _ -> SD.map_of(key_gen, val_gen, max_length: 20)
     end
   end
 
