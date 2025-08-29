@@ -33,7 +33,7 @@ defmodule Protox.Generate do
     |> Protox.Protoc.run(paths)
   end
 
-  defp generate_files(output_path, code, false = _muliple_files) do
+  defp generate_files(output_path, code, false = _multiple_files) do
     [
       %FileContent{
         name: output_path,
@@ -42,7 +42,7 @@ defmodule Protox.Generate do
     ]
   end
 
-  defp generate_files(output_path, code, true = _muliple_files) do
+  defp generate_files(output_path, code, true = _multiple_files) do
     # Protox.Define.define outputs a block, we thus have to extract the content
     # on which we can iterate.
     {:__block__, _, block} = code
