@@ -6,7 +6,11 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
   alias Benchee.Formatters.Console
 
   @options [
-    task: :string
+    task: :string,
+    warmup: :integer,
+    time: :integer,
+    memory_time: :integer,
+    reduction_time: :integer
   ]
 
   @impl Mix.Task
@@ -14,9 +18,10 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
   def run(args) do
     with {opts, argv, []} <- OptionParser.parse(args, strict: @options),
          tasks = get_tasks(opts),
+         benchee_cfg = get_benchee_config(opts),
          {:ok, tag} <- get_tag(argv) do
       payloads = get_payloads("./benchmark/benchmark_payloads.bin")
-      run_benchee_tasks(tag, payloads, tasks)
+      run_benchee_tasks(tag, payloads, tasks, benchee_cfg)
     else
       err ->
         IO.puts(:stderr, "Error: #{inspect(err)}")
@@ -24,7 +29,7 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
     end
   end
 
-  defp run_benchee_tasks(tag, payloads, tasks) do
+  defp run_benchee_tasks(tag, payloads, tasks, benchee_cfg) do
     Enum.each(tasks, fn task ->
       job =
         case task do
@@ -43,11 +48,11 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
             }
         end
 
-      run_benchee(tag, payloads, task, job)
+      run_benchee(tag, payloads, task, job, benchee_cfg)
     end)
   end
 
-  defp run_benchee(tag, payloads, task, job) do
+  defp run_benchee(tag, payloads, task, job, benchee_cfg) do
     Benchee.run(
       job,
       inputs: payloads,
@@ -55,9 +60,10 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
         path: Path.join(["./benchmark/output/benchee", "#{task}-#{tag}.benchee"]),
         tag: "#{task}-#{tag}"
       ],
-      time: 5,
-      memory_time: 2,
-      reduction_time: 2,
+      warmup: benchee_cfg.warmup,
+      time: benchee_cfg.time,
+      memory_time: benchee_cfg.memory_time,
+      reduction_time: benchee_cfg.reduction_time,
       formatters: [Console]
     )
   end
@@ -68,6 +74,15 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
       "encode" -> [:encode]
       "decode" -> [:decode]
     end
+  end
+
+  defp get_benchee_config(opts) do
+    %{
+      warmup: Keyword.get(opts, :warmup, 2),
+      time: Keyword.get(opts, :time, 5),
+      memory_time: Keyword.get(opts, :memory_time, 2),
+      reduction_time: Keyword.get(opts, :reduction_time, 2)
+    }
   end
 
   defp get_tag([]), do: {:error, "No tag provided"}
