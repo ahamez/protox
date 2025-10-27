@@ -92,7 +92,7 @@ jobs:
         run: MIX_ENV=prod mix compile --warnings-as-errors
 
       - name: Upload _build directory
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: ${{ matrix.safe }}
         with:
           name: build-artifact
@@ -145,7 +145,7 @@ jobs:
           SAFE_LICENSE: ${{ secrets.SAFE_LICENSE }}
       - name: Persist results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: project-safe-results
           path: _results/<<Project_Name>>.safe
