@@ -136,7 +136,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Download _build directory
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: build-artifact
           path: _build
