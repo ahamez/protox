@@ -20,9 +20,12 @@ defmodule Protox.Mixfile do
         plt_local_path: "priv/plts",
         plt_add_apps: [:logger, :stream_data]
       ],
-      docs: docs(),
-      preferred_cli_env: [muzak: :test]
+      docs: docs()
     ]
+  end
+
+  def cli() do
+    [preferred_envs: [muzak: :test]]
   end
 
   defp elixirc_paths(:prod), do: ["lib"]
