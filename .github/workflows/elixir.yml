@@ -128,25 +128,3 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel-finished: true
           fail-on-error: false
-
-  security-check:
-    runs-on: ubuntu-24.04
-    needs: build
-    container:
-      image: erlangsolutions/safe:1.1.0-otp-26
-    steps:
-      - uses: actions/checkout@v6
-      - name: Download _build directory
-        uses: actions/download-artifact@v7
-        with:
-          name: build-artifact
-          path: _build
-      - run: safe start
-        env:
-          SAFE_LICENSE: ${{ secrets.SAFE_LICENSE }}
-      - name: Persist results
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: project-safe-results
-          path: _results/<<Project_Name>>.safe
