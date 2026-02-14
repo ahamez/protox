@@ -91,13 +91,6 @@ jobs:
       - name: Compile prod with warnings as errors
         run: MIX_ENV=prod mix compile --warnings-as-errors
 
-      - name: Upload _build directory
-        uses: actions/upload-artifact@v6
-        if: ${{ matrix.safe }}
-        with:
-          name: build-artifact
-          path: _build
-
       - name: Run tests
         run: mix coveralls.github --parallel --timeout 600000 --include conformance
 
