@@ -13,7 +13,7 @@ defmodule Protox.CodeGenerationTest do
     {_, 0} = System.cmd("mix", ["new", "code_generation"], cd: tmp_dir)
     File.write!("#{code_generation_path}/mix.exs", mix_exs())
 
-    {_, 0} = System.cmd("mix", ["do", "deps.get,", "deps.compile"], cd: code_generation_path)
+    {_, 0} = System.cmd("mix", ["do", "deps.get", "+", "deps.compile"], cd: code_generation_path)
 
     on_exit(fn -> File.rm_rf!(code_generation_path) end)
 
