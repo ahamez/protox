@@ -127,6 +127,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel-finished: true
+          fail-on-error: false
 
   security-check:
     runs-on: ubuntu-24.04
