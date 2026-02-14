@@ -2,5 +2,6 @@
 PROTOX_PROTOBUF_VERSION = "29.3"
 
 [tools]
-elixir = "1.18.4-otp-28"
-lefthook = "latest"
+elixir = "1.19-otp-28"
+erlang = "28.3"
+lefthook = "2.1.1"
