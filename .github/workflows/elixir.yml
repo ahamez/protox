@@ -35,13 +35,17 @@ jobs:
             check_format: true
             check_deps: true
             dialyzer: true
-          - elixir: "1.18"
-            otp: "27"
+          - elixir: "1.19"
+            otp: "28"
+            check_format: true
+            check_deps: true
+            dialyzer: true
+          - elixir: "1.19"
+            otp: "28"
             check_format: true
             check_deps: true
             dialyzer: true
             unlock_deps: true
-            safe: true
             name_suffix: "(unlock deps)"
 
     steps:
