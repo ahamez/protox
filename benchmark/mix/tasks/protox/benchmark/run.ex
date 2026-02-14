@@ -69,7 +69,7 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
   end
 
   defp get_tasks(opts) do
-    case Keyword.get(opts, :task, nil) do
+    case Keyword.get(opts, :task) do
       nil -> [:encode, :decode]
       "encode" -> [:encode]
       "decode" -> [:decode]

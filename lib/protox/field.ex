@@ -24,7 +24,7 @@ defmodule Protox.Field do
       name: Keyword.fetch!(attrs, :name),
       kind: Keyword.fetch!(attrs, :kind),
       type: Keyword.fetch!(attrs, :type),
-      extender: Keyword.get(attrs, :extender, nil)
+      extender: Keyword.get(attrs, :extender)
     }
   end
 
@@ -42,7 +42,7 @@ defmodule Protox.Field do
 
   @labels [:none, :optional, :proto3_optional, :repeated, :required, nil]
   defp fetch_label!(attrs) do
-    label = Keyword.get(attrs, :label, nil)
+    label = Keyword.get(attrs, :label)
 
     if label in @labels do
       label
