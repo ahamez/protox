@@ -50,8 +50,9 @@ defmodule Protox.Varint do
 
   def decode(
         <<1::1, byte5::7, 1::1, byte4::7, 1::1, byte3::7, 1::1, byte2::7, 1::1, byte1::7, 0::1, byte0::7, rest::binary>>
-      ),
-      do: {byte5 <<< 0 ||| byte4 <<< 7 ||| byte3 <<< 14 ||| byte2 <<< 21 ||| byte1 <<< 28 ||| byte0 <<< 35, rest}
+      ) do
+    {byte5 <<< 0 ||| byte4 <<< 7 ||| byte3 <<< 14 ||| byte2 <<< 21 ||| byte1 <<< 28 ||| byte0 <<< 35, rest}
+  end
 
   def decode(
         <<1::1, byte6::7, 1::1, byte5::7, 1::1, byte4::7, 1::1, byte3::7, 1::1, byte2::7, 1::1, byte1::7, 0::1,
