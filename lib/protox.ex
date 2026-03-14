@@ -79,7 +79,7 @@ defmodule Protox do
   '''
 
   defmacro __using__(opts) do
-    with {opts, _bindings} <- Code.eval_quoted(opts),
+    with {opts, _bindings} <- Code.eval_quoted(opts, [], __CALLER__),
          {paths, opts} <- get_paths(opts),
          {files, opts} <- get_files(opts),
          {:ok, file_descriptor_set} <- Protox.Protoc.run(files, paths),
