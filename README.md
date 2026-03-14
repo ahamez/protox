@@ -76,7 +76,7 @@ end
 ```
 
 > [!NOTE]
-> The module in which the `Protox` macro is called is ignored and does not appear in the names of the generated modules. To include the enclosing module’s name, use the `namespace` option, see [here](#prepend-namespaces).
+> The module in which the `Protox` macro is called is ignored and does not appear in the names of the generated modules. To include the enclosing module’s name, use the `namespace` option, see [here](#namespaces).
 
 ## Usage with files
 
