@@ -33,6 +33,22 @@ defmodule Protox do
   The generated modules respect the package declaration. For instance, in the above example,
   both the `Fiz.Baz` and `Fiz.Foo` modules will be generated.
 
+  ## Namespaces
+  For `use Protox`, prefer the `:prefix` option when prepending a namespace to generated modules:
+      defmodule Dummy do
+        use Protox,
+          schema: """
+          syntax = "proto3";
+          package fiz;
+
+          message Foo {
+          }
+          """,
+          prefix: __MODULE__
+      end
+
+  The older `:namespace` option is deprecated but still supported for legacy computed expressions.
+
   ## Encoding/decoding
   For the rest of this module documentation, we suppose the following protobuf messages are defined:
       defmodule Dummy do
@@ -54,7 +70,7 @@ defmodule Protox do
               map<int32, Baz> b = 2;
             }
           """,
-          namespace: Namespace
+          prefix: Namespace
 
         use Protox,
           schema: """
@@ -78,9 +94,10 @@ defmodule Protox do
   See each function documentation to see how they are used to encode and decode protobuf messages.
   '''
 
-  defmacro __using__(opts) do
-    with {opts, _bindings} <- Code.eval_quoted(opts, [], __CALLER__),
-         {paths, opts} <- get_paths(opts),
+  defmacro __using__(opts_ast) do
+    opts = normalize_use_opts(opts_ast, __CALLER__)
+
+    with {paths, opts} <- get_paths(opts),
          {files, opts} <- get_files(opts),
          {:ok, file_descriptor_set} <- Protox.Protoc.run(files, paths),
          {:ok, definition} <- Protox.Parse.parse(file_descriptor_set, opts) do
@@ -154,6 +171,87 @@ defmodule Protox do
   end
 
   # -- Private
+
+  defp normalize_use_opts(opts_ast, caller) when is_list(opts_ast) do
+    validate_namespace_conflict!(opts_ast)
+
+    Enum.map(opts_ast, fn
+      {:prefix, value_ast} -> {:namespace, normalize_use_opt(:prefix, value_ast, caller)}
+      {key, value_ast} when is_atom(key) -> {key, normalize_use_opt(key, value_ast, caller)}
+      other -> raise ArgumentError, "invalid Protox option: #{Macro.to_string(other)}"
+    end)
+  end
+
+  defp normalize_use_opts(opts_ast, _caller) do
+    raise ArgumentError,
+          "use Protox expects a keyword list, got: #{Macro.to_string(opts_ast)}"
+  end
+
+  defp normalize_use_opt(:namespace, value_ast, caller) do
+    IO.warn("`use Protox, namespace: ...` is deprecated; use `prefix: ...` instead")
+    eval_option(value_ast, caller)
+  end
+
+  defp normalize_use_opt(:prefix, value_ast, caller) do
+    value_ast
+    |> Macro.expand_once(caller)
+    |> validate_namespace!(:prefix)
+  end
+
+  defp normalize_use_opt(:schema, value_ast, caller) do
+    value_ast
+    |> eval_option(caller)
+    |> validate_option_type!(:schema, &is_binary/1, "a string")
+  end
+
+  defp normalize_use_opt(key, value_ast, caller) when key in [:files, :paths] do
+    value_ast
+    |> eval_option(caller)
+    |> validate_option_type!(
+      key,
+      fn value -> is_list(value) and Enum.all?(value, &is_binary/1) end,
+      "a list of strings"
+    )
+  end
+
+  defp normalize_use_opt(_key, value_ast, caller), do: eval_option(value_ast, caller)
+
+  defp validate_namespace_conflict!(opts_ast) do
+    has_namespace? = Keyword.has_key?(opts_ast, :namespace)
+    has_prefix? = Keyword.has_key?(opts_ast, :prefix)
+
+    if has_namespace? and has_prefix? do
+      raise ArgumentError, "use Protox options :namespace and :prefix are mutually exclusive"
+    end
+  end
+
+  defp eval_option(value_ast, caller) do
+    value_ast
+    |> Code.eval_quoted([], caller)
+    |> elem(0)
+  end
+
+  defp validate_option_type!(value, key, validator, expected) do
+    if validator.(value) do
+      value
+    else
+      raise ArgumentError,
+            "invalid Protox option #{inspect(key)}: expected #{expected}, got: #{inspect(value)}"
+    end
+  end
+
+  defp validate_namespace!({:__aliases__, _, modules}, _key), do: Module.concat(modules)
+  defp validate_namespace!(value, _key) when is_atom(value) or is_binary(value) or is_nil(value), do: value
+
+  defp validate_namespace!(value_ast, key) do
+    raise_invalid_namespace!(key, value_ast)
+  end
+
+  defp raise_invalid_namespace!(key, expanded_ast) do
+    raise ArgumentError,
+          "invalid Protox option #{inspect(key)}: expected an alias, atom, string, or nil, got: " <>
+            Macro.to_string(expanded_ast)
+  end
 
   defp get_paths(opts) do
     case Keyword.pop(opts, :paths) do

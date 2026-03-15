@@ -5,11 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- Add `prefix` as the preferred `use Protox` option for namespace expansion.
+
+### Changed
+
+- Deprecate the `use Protox` `namespace` option in favor of `prefix`, while keeping legacy evaluation semantics for compatibility.
+
 ## 2.0.5
 
 ### Fixed
 
 - Correctly resolve `__MODULE__` in `use Protox` options (thanks to [Luka Dornhecker](https://github.com/lukad))
+- Merging of unknown fields
 
 ## 2.0.4
 
