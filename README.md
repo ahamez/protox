@@ -76,7 +76,7 @@ end
 ```
 
 > [!NOTE]
-> The module in which the `Protox` macro is called is ignored and does not appear in the names of the generated modules. To include the enclosing module’s name, use the `namespace` option, see [here](#namespaces).
+> The module in which the `Protox` macro is called is ignored and does not appear in the names of the generated modules. To include the enclosing module’s name, use the `prefix` option, see [here](#namespaces).
 
 ## Usage with files
 
@@ -143,7 +143,7 @@ The example above is translated to `Abc.Def.Baz` (package `abc.def` is camelized
 
 ## Namespaces
 
-You can prepend a namespace with a prefix using the `:namespace` option:
+For `use Protox`, you can prepend a namespace with a prefix using the `:prefix` option:
 
 ```elixir
 defmodule Bar do
@@ -156,7 +156,7 @@ defmodule Bar do
         int32 a = 1;
       }
     """,
-    namespace: __MODULE__
+    prefix: __MODULE__
 end
 ```
 
@@ -165,6 +165,8 @@ In this example, the module `Bar.Abc.Msg` is generated:
 ```elixir
 msg = %Bar.Abc.Msg{a: 42}
 ```
+
+The older `:namespace` option is deprecated for `use Protox`, but it remains available for legacy computed expressions.
 
 ## Specify include path
 
@@ -219,6 +221,7 @@ The files will be usable in any project as long as Protox is declared in the dep
 - `--namespace`
 
   [Prepends a namespace](#prepend-namespaces) to all generated modules.
+  This CLI flag is separate from the `use Protox`-only `:prefix` option.
 
 ## Unknown fields
 
