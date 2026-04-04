@@ -50,7 +50,7 @@
 ## Configuration Tips
 
 - `protoc` must be in `PATH` for development/build.
-- Optional env vars: `PROTOX_MUZAK_PRO_CREDS` (mutation testing), `PROTOX_PROTOBUF_VERSION` (to build conformance runner).
+- Optional env vars: `PROTOX_PROTOBUF_VERSION` (to build conformance runner).
 
 ## Security
 

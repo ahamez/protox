@@ -25,7 +25,7 @@ defmodule Protox.Mixfile do
   end
 
   def cli() do
-    [preferred_envs: [muzak: :test]]
+    [preferred_envs: [muex: :test]]
   end
 
   defp elixirc_paths(:prod), do: ["lib"]
@@ -44,24 +44,11 @@ defmodule Protox.Mixfile do
       {:dialyxir, "~> 1.0", only: [:test, :dev], runtime: false},
       {:excoveralls, "~> 0.13", only: [:test], runtime: false},
       {:ex_doc, "~> 0.22", only: [:dev], runtime: false},
+      {:muex, "~> 0.5.1", only: [:dev, :test], runtime: false},
       {:stream_data, "~> 1.0", only: [:dev, :test], runtime: false},
       {:quokka, "~> 2.0", only: [:dev, :test], runtime: false}
     ]
-    |> maybe_add_muzak_pro()
     |> maybe_download_protobuf()
-  end
-
-  defp maybe_add_muzak_pro(deps) do
-    case System.get_env("PROTOX_MUZAK_PRO_CREDS") do
-      nil ->
-        deps
-
-      creds ->
-        muzak_pro =
-          {:muzak, git: "https://#{creds}@github.com/ahamez/muzak.git", tag: "1.1.0", only: [:test]}
-
-        [muzak_pro | deps]
-    end
   end
 
   defp maybe_download_protobuf(deps) do

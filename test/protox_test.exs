@@ -7,6 +7,13 @@ defmodule ProtoxTest do
 
   doctest Protox
 
+  defmodule RelativeImport do
+    use Protox,
+      files: ["./test/samples/directory/sub_directory/sub_directory_message.proto"],
+      paths: ["./test/samples"],
+      namespace: __MODULE__
+  end
+
   setup_all do
     {
       :ok,
@@ -21,6 +28,33 @@ defmodule ProtoxTest do
 
     assert Protox.decode(bytes, TestAllTypesProto3) ==
              {:ok, %TestAllTypesProto3{optional_int32: 42}}
+  end
+
+  test "generator version check passes for matching versions" do
+    assert Protox.check_generator_version(Protox.generator_version()) == nil
+  end
+
+  test "generator version check raises for mismatched versions" do
+    assert_raise RuntimeError,
+                 "Mismatch detected between the protox generated code and the runtime. Please regenerate the code using the same protox version as the runtime.",
+                 fn ->
+                   Protox.check_generator_version(Protox.generator_version() + 1)
+                 end
+  end
+
+  test "use Protox resolves imported files through paths" do
+    assert Code.ensure_loaded?(RelativeImport.SubDirectoryMessage)
+    assert Code.ensure_loaded?(RelativeImport.DirectoryMessage1)
+
+    assert RelativeImport.SubDirectoryMessage.schema().fields == %{
+             msg1: %Protox.Field{
+               kind: %Scalar{default_value: nil},
+               label: :optional,
+               name: :msg1,
+               tag: 1,
+               type: {:message, RelativeImport.DirectoryMessage1}
+             }
+           }
   end
 
   test "Symmetric float precision" do
