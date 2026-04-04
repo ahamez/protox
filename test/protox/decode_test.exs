@@ -413,6 +413,19 @@ defmodule Protox.DecodeTest do
       >>,
       TestAllTypesProto3,
       Protox.DecodingError
+    },
+    {
+      "length-delimited field with varint wire type",
+      <<
+        # Field 14 (optional_string) encoded with wire type 0 (varint)
+        14 <<< 3 ||| 0,
+        # Value parsed as varint in unknown field path
+        1,
+        # Invalid tag to ensure the previous field was skipped, not parsed as string
+        0
+      >>,
+      TestAllTypesProto3,
+      Protox.IllegalTagError
     }
   ]
 
