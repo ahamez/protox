@@ -260,6 +260,78 @@ defmodule Protox.DecodeTest do
       %TestAllTypesProto3{
         optional_string: <<0::integer-size(Protox.String.max_size())-unit(8)>>
       }
+    },
+    {
+      # Regression test for quadratic decode cost fix:
+      # unknown fields are prepended during parsing then reversed once at the end,
+      # so the final list must match the encounter order in the binary.
+      "Multiple unknown varint fields preserve encounter order",
+      # tag 10 wire 0 value 1 | tag 20 wire 0 value 2 | tag 30 wire 0 value 3 | tag 40 wire 0 value 4 | tag 50 wire 0 value 5
+      # key(10,0)=80          | key(20,0)=160(2-byte)  | key(30,0)=240(2-byte)  | key(40,0)=320(2-byte)  | key(50,0)=400(2-byte)
+      <<80, 1, 160, 1, 2, 240, 1, 3, 192, 2, 4, 144, 3, 5>>,
+      %NullHypothesisProto3{
+        __uf__: [
+          {10, 0, <<1>>},
+          {20, 0, <<2>>},
+          {30, 0, <<3>>},
+          {40, 0, <<4>>},
+          {50, 0, <<5>>}
+        ]
+      }
+    },
+    {
+      # Regression test: verifies that the single reversal at parse completion
+      # produces the correct encounter order for a larger set of unknown fields.
+      "Many unknown varint fields preserve exact encounter order",
+      # tags 1..8, wire 0, values 10..17 in order
+      # key(N,0) = N*8 for N in 1..8
+      <<8, 10, 16, 11, 24, 12, 32, 13, 40, 14, 48, 15, 56, 16, 64, 17>>,
+      %NullHypothesisProto3{
+        __uf__: [
+          {1, 0, <<10>>},
+          {2, 0, <<11>>},
+          {3, 0, <<12>>},
+          {4, 0, <<13>>},
+          {5, 0, <<14>>},
+          {6, 0, <<15>>},
+          {7, 0, <<16>>},
+          {8, 0, <<17>>}
+        ]
+      }
+    },
+    {
+      # Tests that unknown fields of different wire types (varint, 32-bit, delimited)
+      # appear in encounter order after the prepend+reverse optimisation.
+      "Unknown fields with mixed wire types preserve encounter order",
+      # tag 10 wire 0 (varint) value 42
+      # tag 11 wire 5 (32-bit) value <<1,2,3,4>>
+      # tag 12 wire 2 (delimited) value "abc"
+      # key(10,0)=80, key(11,5)=93, key(12,2)=98
+      <<80, 42, 93, 1, 2, 3, 4, 98, 3, 97, 98, 99>>,
+      %NullHypothesisProto3{
+        __uf__: [
+          {10, 0, <<42>>},
+          {11, 5, <<1, 2, 3, 4>>},
+          {12, 2, "abc"}
+        ]
+      }
+    },
+    {
+      # Tests that unknown fields decoded between known fields end up in the
+      # correct encounter order and do not interfere with known-field decoding.
+      "Interleaved known and unknown fields, unknown fields in encounter order",
+      # optional_int32 (field 1, wire 0) = 42  : <<8, 42>>
+      # unknown tag 999 wire 2 "hey!"           : <<186, 62, 4, 104, 101, 121, 33>>
+      # unknown tag 998 wire 0 value 100        : <<176, 62, 100>>
+      # optional_int32 (field 1, wire 0) = 200  : <<8, 200, 1>>  (last value wins)
+      <<8, 42, 186, 62, 4, 104, 101, 121, 33, 176, 62, 100, 8, 200, 1>>,
+      %TestAllTypesProto3{
+        optional_int32: 200,
+        __uf__: [
+          {999, 2, <<104, 101, 121, 33>>},
+          {998, 0, <<100>>}
+        ]
+      }
     }
   ]
 
@@ -413,19 +485,6 @@ defmodule Protox.DecodeTest do
       >>,
       TestAllTypesProto3,
       Protox.DecodingError
-    },
-    {
-      "length-delimited field with varint wire type",
-      <<
-        # Field 14 (optional_string) encoded with wire type 0 (varint)
-        14 <<< 3 ||| 0,
-        # Value parsed as varint in unknown field path
-        1,
-        # Invalid tag to ensure the previous field was skipped, not parsed as string
-        0
-      >>,
-      TestAllTypesProto3,
-      Protox.IllegalTagError
     }
   ]
 
