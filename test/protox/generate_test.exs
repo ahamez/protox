@@ -1,6 +1,25 @@
 defmodule Protox.GenerateTest do
   use ExUnit.Case
 
+  test "generate_module_code/5 rejects invalid argument types" do
+    file = Path.join(__DIR__, "../samples/directory/sub_directory/sub_directory_message.proto")
+
+    assert %FunctionClauseError{module: Protox.Generate, function: :generate_module_code} =
+             assert_raise(FunctionClauseError, fn ->
+               Protox.Generate.generate_module_code(file, "generated_code.ex", false, ["./test/samples"])
+             end)
+
+    assert %FunctionClauseError{module: Protox.Generate, function: :generate_module_code} =
+             assert_raise(FunctionClauseError, fn ->
+               Protox.Generate.generate_module_code([file], :generated_code, false, ["./test/samples"])
+             end)
+
+    assert %FunctionClauseError{module: Protox.Generate, function: :generate_module_code} =
+             assert_raise(FunctionClauseError, fn ->
+               Protox.Generate.generate_module_code([file], "generated_code.ex", nil, ["./test/samples"])
+             end)
+  end
+
   test "Generate code from a single proto file definition" do
     file = Path.join(__DIR__, "../samples/directory/sub_directory/sub_directory_message.proto")
     generated_file_name = "generated_code_1.ex"
