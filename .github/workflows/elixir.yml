@@ -88,8 +88,30 @@ jobs:
 
       - name: Install protoc
         run: |
-          wget https://github.com/protocolbuffers/protobuf/releases/download/v${{ env.PROTOX_PROTOBUF_VERSION }}/protoc-${{ env.PROTOX_PROTOBUF_VERSION }}-linux-x86_64.zip
-          unzip -d protoc protoc-${{ env.PROTOX_PROTOBUF_VERSION }}-linux-x86_64.zip
+          PROTOC_ARCHIVE="protoc-${{ env.PROTOX_PROTOBUF_VERSION }}-linux-x86_64.zip"
+          BASE_URL="https://github.com/protocolbuffers/protobuf/releases/download/v${{ env.PROTOX_PROTOBUF_VERSION }}"
+          wget "${BASE_URL}/${PROTOC_ARCHIVE}"
+          python - <<'PY' > protoc.sha256
+          import json
+          import os
+          import urllib.request
+
+          version = os.environ["PROTOX_PROTOBUF_VERSION"]
+          archive = f"protoc-{version}-linux-x86_64.zip"
+          release_url = f"https://api.github.com/repos/protocolbuffers/protobuf/releases/tags/v{version}"
+
+          with urllib.request.urlopen(release_url) as response:
+              release = json.load(response)
+
+          asset = next(item for item in release["assets"] if item["name"] == archive)
+          digest = asset["digest"]
+          if not digest.startswith("sha256:"):
+              raise RuntimeError(f"Unsupported digest format: {digest}")
+
+          print(f"{digest.split(':', 1)[1]}  {archive}")
+          PY
+          sha256sum --check protoc.sha256
+          unzip -d protoc "${PROTOC_ARCHIVE}"
           echo "${PWD}/protoc/bin" >> $GITHUB_PATH
 
       - name: Compile prod with warnings as errors
