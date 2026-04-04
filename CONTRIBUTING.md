@@ -18,7 +18,7 @@ We use a few tools to keep the code clean and consistent:
 - [`mix format --check-formatted`](https://hexdocs.pm/mix/Mix.Tasks.Format.html) to check for code formatting issues
 - [`mix credo`](https://hexdocs.pm/credo/Mix.Tasks.Credo.html) for code style and consistency checks
 - [`mix dialyzer`](https://hexdocs.pm/dialyxir/Mix.Tasks.Dialyzer.html) for type checking
-- [`mix muzak`](https://hexdocs.pm/muzak_pro/muzak-pro.html) for mutation testing
+- [`mix muex`](https://hexdocs.pm/muex) for mutation testing
 - `mix test --include conformance` for testing
 
 > [!NOTE]
@@ -27,7 +27,7 @@ We use a few tools to keep the code clean and consistent:
 
 > [!NOTE]
 >
-> `lefthook` can be used to run these tasks automatically on each commit or push (except for the `muzak` task which takes a long time to run).
+> `lefthook` can be used to run these tasks automatically on each commit or push (except for the `muex` task which takes a long time to run).
 
 > [!NOTE]
 >

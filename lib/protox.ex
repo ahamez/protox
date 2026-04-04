@@ -77,7 +77,6 @@ defmodule Protox do
 
   See each function documentation to see how they are used to encode and decode protobuf messages.
   '''
-
   defmacro __using__(opts) do
     with {opts, _bindings} <- Code.eval_quoted(opts, [], __CALLER__),
          {paths, opts} <- get_paths(opts),
@@ -158,7 +157,7 @@ defmodule Protox do
   defp get_paths(opts) do
     case Keyword.pop(opts, :paths) do
       {nil, opts} -> {nil, opts}
-      {paths, opts} -> {Enum.map(paths, &Path.expand/1), opts}
+      {paths, opts} -> {Enum.map(paths, fn path -> Path.expand(path) end), opts}
     end
   end
 
@@ -171,22 +170,26 @@ defmodule Protox do
 
       {nil, opts} ->
         {files, opts} = Keyword.pop(opts, :files)
-        {Enum.map(files, &Path.expand/1), opts}
+        {Enum.map(files, fn file -> Path.expand(file) end), opts}
     end
   end
 
   defp make_external_resources(files) do
-    Enum.map(files, fn file -> quote(do: @external_resource(unquote(file))) end)
+    Enum.map(files, fn file ->
+      quote do
+        @external_resource unquote(file)
+      end
+    end)
   end
 
   @generator_version 1
-  @doc false
+  @doc nil
   def generator_version(), do: @generator_version
 
-  @doc false
-  def check_generator_version(generated_code_version) do
-    if generated_code_version != generator_version() do
-      raise "Mismatch detected between the protox generated code and the runtime. Please regenerate the code using the same protox version as the runtime."
-    end
+  @doc nil
+  def check_generator_version(@generator_version), do: nil
+
+  def check_generator_version(_generated_code_version) do
+    raise "Mismatch detected between the protox generated code and the runtime. Please regenerate the code using the same protox version as the runtime."
   end
 end

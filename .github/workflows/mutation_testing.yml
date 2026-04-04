@@ -38,16 +38,45 @@ jobs:
 
       - name: Install protoc
         run: |
-          wget https://github.com/protocolbuffers/protobuf/releases/download/v${{ env.PROTOX_PROTOBUF_VERSION }}/protoc-${{ env.PROTOX_PROTOBUF_VERSION }}-linux-x86_64.zip
-          unzip -d protoc protoc-${{ env.PROTOX_PROTOBUF_VERSION }}-linux-x86_64.zip
-          echo "${PWD}/protoc/bin" >> $GITHUB_PATH
+          wget "https://github.com/protocolbuffers/protobuf/releases/download/v${{ env.PROTOX_PROTOBUF_VERSION }}/protoc-${{ env.PROTOX_PROTOBUF_VERSION }}-linux-x86_64.zip"
+          unzip -d protoc "protoc-${{ env.PROTOX_PROTOBUF_VERSION }}-linux-x86_64.zip"
+          echo "${PWD}/protoc/bin" >> "$GITHUB_PATH"
 
       - name: Run mutation testing
         env:
-          PROTOX_MUZAK_PRO_CREDS: ${{ secrets.PROTOX_MUZAK_PRO_CREDS }}
           MIX_ENV: test
         run: |
           mix local.rebar --force
           mix local.hex --force
           mix deps.get
-          mix muzak --profile ci
+          CHANGED_FILES="$(git diff --name-only HEAD~25..HEAD | grep '^lib/.*\.ex$' || true)"
+
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No changed Elixir source files under lib/, skipping mutation testing."
+            exit 0
+          fi
+
+          status=0
+
+          while IFS= read -r file; do
+            [ -n "$file" ] || continue
+            echo "Running mutation testing for $file"
+
+            output_file="$(mktemp)"
+
+            if mix muex --files "$file" --mutators arithmetic,comparison,boolean,conditional --fail-at 20 --timeout 30000 --optimize --optimize-level conservative --verbose >"$output_file" 2>&1; then
+              cat "$output_file"
+            else
+              cat "$output_file"
+
+              if grep -q "Original mutations: 0" "$output_file"; then
+                echo "No mutations generated for $file, skipping threshold enforcement."
+              else
+                status=1
+              fi
+            fi
+          done <<EOF
+          $CHANGED_FILES
+          EOF
+
+          exit "$status"

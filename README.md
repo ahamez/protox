@@ -7,7 +7,7 @@
 
 Protox is an Elixir library for working with [Google's Protocol Buffers](https://developers.google.com/protocol-buffers) (proto2 and proto3): encode/decode to/from binary, generate code, or compile schemas at build time.
 
-Protox emphasizes **reliability**: it uses [property testing](https://hexdocs.pm/stream_data), [mutation testing](https://github.com/devonestes/muzak), maintains [near 100% coverage](https://coveralls.io/github/ahamez/protox?branch=master), and [passes Google’s conformance suite](#conformance).
+Protox emphasizes **reliability**: it uses [property testing](https://hexdocs.pm/stream_data), [mutation testing](https://hex.pm/packages/muex), maintains [near 100% coverage](https://coveralls.io/github/ahamez/protox?branch=master), and [passes Google’s conformance suite](#conformance).
 
 > [!NOTE]
 > Using v1? See the v2 migration guide in [v1_to_v2_migration.md](documentation/v1_to_v2_migration.md).
