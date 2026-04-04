@@ -62,9 +62,13 @@ defmodule Protox.DefineDecoder do
     parse_key_value_body =
       make_parse_key_value_body(fields, vars, opts)
 
+    unknown_fields_name = Keyword.fetch!(opts, :unknown_fields_name)
+
     quote do
       @spec parse_key_value(binary(), struct()) :: struct()
-      defp parse_key_value(<<>>, msg), do: msg
+      defp parse_key_value(<<>>, msg) do
+        %{msg | unquote(unknown_fields_name) => Enum.reverse(msg.unquote(unknown_fields_name))}
+      end
 
       defp parse_key_value(bytes, msg), do: unquote(parse_key_value_body)
     end
@@ -136,8 +140,7 @@ defmodule Protox.DefineDecoder do
       quote do
         {
           unquote(unknown_fields_name),
-          # Order is important here, we want to keep the order of the unknown fields.
-          unquote(vars.msg).unquote(unknown_fields_name) ++ [unquote(vars.value)]
+          [unquote(vars.value) | unquote(vars.msg).unquote(unknown_fields_name)]
         }
       end
 
