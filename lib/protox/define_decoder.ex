@@ -227,8 +227,6 @@ defmodule Protox.DefineDecoder do
 
     clause =
       if single_generated do
-        # If the single clause was not generated for this field, we don't need the wire type
-        # discrimant as there is only one clause matching for this field.
         quote do
           <<unquote(key_bytes), unquote(vars.bytes)::binary>>
         end
@@ -238,12 +236,12 @@ defmodule Protox.DefineDecoder do
         case tail do
           "" ->
             quote do
-              <<unquote(first_byte)::5, _wire_type::3, unquote(vars.bytes)::binary>>
+              <<unquote(first_byte)::5, unquote(@wire_delimited)::3, unquote(vars.bytes)::binary>>
             end
 
           _ ->
             quote do
-              <<unquote(first_byte)::5, _wire_type::3, unquote(tail), unquote(vars.bytes)::binary>>
+              <<unquote(first_byte)::5, unquote(@wire_delimited)::3, unquote(tail), unquote(vars.bytes)::binary>>
             end
         end
       end
