@@ -21,7 +21,7 @@
 - Format: `mix format`
 - Docs: `mix docs`
 - Codegen from .proto: `mix protox.generate --output-path=lib/messages.ex --include-path=. defs/foo.proto`
-- Conformance suite: `mix protox.conformance` (requires `PROTOX_PROTOBUF_VERSION`, CI uses `29.3`)
+- Conformance suite: `mix protox.conformance` (requires `PROTOX_PROTOBUF_VERSION`, CI uses `34.1`)
 - Address warnings before opening a PR.
 
 ## Coding Style & Naming Conventions
