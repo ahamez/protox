@@ -1,9 +1,9 @@
 name: Mutation testing
 
 env:
-  PROTOX_PROTOBUF_VERSION: "29.3"
-  # Computed from the pinned v29.3 release asset because upstream does not expose a digest for this release.
-  PROTOX_PROTOBUF_SHA256: "3e866620c5be27664f3d2fa2d656b5f3e09b5152b42f1bedbf427b333e90021a"
+  PROTOX_PROTOBUF_VERSION: "34.1"
+  # Published by upstream in the pinned v34.1 release metadata for this asset.
+  PROTOX_PROTOBUF_SHA256: "af27ea66cd26938fe48587804ca7d4817457a08350021a1c6e23a27ccc8c6904"
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 on:

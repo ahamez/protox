@@ -1,5 +1,5 @@
 [env]
-PROTOX_PROTOBUF_VERSION = "29.3"
+PROTOX_PROTOBUF_VERSION = "34.1"
 
 [tools]
 elixir = "1.19.5"

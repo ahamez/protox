@@ -58,25 +58,28 @@ defmodule Mix.Tasks.Protox.Conformance do
         force_runner_build = Keyword.get(options, :force_runner_build, false)
 
         if File.exists?(runner_path) and not force_runner_build do
-          {:ok, runner_path}
+          ensure_runner_exists(runner_path)
         else
           with :ok <- configure_runner(options),
-               :ok <- build_runner(options) do
+               :ok <- build_runner(options),
+               {:ok, runner_path} <- ensure_runner_exists(runner_path) do
             {:ok, runner_path}
           end
         end
 
       runner_path ->
-        {:ok, runner_path}
+        ensure_runner_exists(runner_path)
     end
   end
 
   defp configure_runner(options) do
     shell = shell(options)
+    runtime_output_directory = Path.expand("#{Mix.Project.deps_paths().protobuf}/bin")
 
     configuration =
       [
-        {"CMAKE_CXX_STANDARD", "14"},
+        {"CMAKE_CXX_STANDARD", "17"},
+        {"CMAKE_RUNTIME_OUTPUT_DIRECTORY", runtime_output_directory},
         {"protobuf_INSTALL", "OFF"},
         {"protobuf_BUILD_TESTS", "OFF"},
         {"protobuf_BUILD_CONFORMANCE", "ON"},
@@ -115,6 +118,13 @@ defmodule Mix.Tasks.Protox.Conformance do
     case Keyword.get(options, :quiet, false) do
       true -> Mix.Shell.Quiet
       false -> Mix.Shell.IO
+    end
+  end
+
+  defp ensure_runner_exists(runner_path) do
+    case File.exists?(runner_path) do
+      true -> {:ok, runner_path}
+      false -> {:error, {:runner_missing, runner_path}}
     end
   end
 end
