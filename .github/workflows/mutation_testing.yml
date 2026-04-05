@@ -1,7 +1,9 @@
 name: Mutation testing
 
 env:
-  PROTOX_PROTOBUF_VERSION: "29.2"
+  PROTOX_PROTOBUF_VERSION: "29.3"
+  # Computed from the pinned v29.3 release asset because upstream does not expose a digest for this release.
+  PROTOX_PROTOBUF_SHA256: "3e866620c5be27664f3d2fa2d656b5f3e09b5152b42f1bedbf427b333e90021a"
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 on:
@@ -38,9 +40,15 @@ jobs:
 
       - name: Install protoc
         run: |
-          wget "https://github.com/protocolbuffers/protobuf/releases/download/v${{ env.PROTOX_PROTOBUF_VERSION }}/protoc-${{ env.PROTOX_PROTOBUF_VERSION }}-linux-x86_64.zip"
-          unzip -d protoc "protoc-${{ env.PROTOX_PROTOBUF_VERSION }}-linux-x86_64.zip"
+          protoc_zip="protoc-${{ env.PROTOX_PROTOBUF_VERSION }}-linux-x86_64.zip"
+          wget "https://github.com/protocolbuffers/protobuf/releases/download/v${{ env.PROTOX_PROTOBUF_VERSION }}/${protoc_zip}"
+          if ! echo "${{ env.PROTOX_PROTOBUF_SHA256 }}  ${protoc_zip}" | sha256sum --check --; then
+            echo "Checksum verification failed for ${protoc_zip}" >&2
+            exit 1
+          fi
+          unzip -d protoc "${protoc_zip}"
           echo "${PWD}/protoc/bin" >> "$GITHUB_PATH"
+          "${PWD}/protoc/bin/protoc" --version
 
       - name: Run mutation testing
         env:
