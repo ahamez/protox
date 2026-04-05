@@ -61,9 +61,8 @@ defmodule Mix.Tasks.Protox.Conformance do
           ensure_runner_exists(runner_path)
         else
           with :ok <- configure_runner(options),
-               :ok <- build_runner(options),
-               {:ok, runner_path} <- ensure_runner_exists(runner_path) do
-            {:ok, runner_path}
+               :ok <- build_runner(options) do
+            ensure_runner_exists(runner_path)
           end
         end
 
