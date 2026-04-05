@@ -13,6 +13,9 @@ defmodule Protox.Decode do
     Zigzag
   }
 
+  # Protobuf keys reserve the low 3 bits for the wire type, leaving 29 bits for the field number.
+  @max_field_number (1 <<< 29) - 1
+
   @compile {:inline,
             parse_bool: 1,
             parse_sint32: 1,
@@ -47,12 +50,24 @@ defmodule Protox.Decode do
   @spec parse_key(binary()) :: {non_neg_integer(), non_neg_integer(), binary()}
   def parse_key(bytes) do
     {key, rest} = Varint.decode(bytes)
+    key_size = byte_size(bytes) - byte_size(rest)
+    key_bytes = binary_part(bytes, 0, key_size)
+    field_number = key >>> 3
+
+    # Reject overlong or otherwise non-canonical key varints that decode to the same integer.
+    if elem(Varint.encode(key), 0) != key_bytes do
+      raise Protox.DecodingError.new(bytes, "invalid key varint")
+    end
+
+    if field_number > @max_field_number do
+      raise Protox.DecodingError.new(bytes, "field number out of range")
+    end
 
     case _wire_type = key &&& 0b0000_0111 do
-      @wire_32bits -> {key >>> 3, @wire_32bits, rest}
-      @wire_64bits -> {key >>> 3, @wire_64bits, rest}
-      @wire_delimited -> {key >>> 3, @wire_delimited, rest}
-      @wire_varint -> {key >>> 3, @wire_varint, rest}
+      @wire_32bits -> {field_number, @wire_32bits, rest}
+      @wire_64bits -> {field_number, @wire_64bits, rest}
+      @wire_delimited -> {field_number, @wire_delimited, rest}
+      @wire_varint -> {field_number, @wire_varint, rest}
     end
   end
 

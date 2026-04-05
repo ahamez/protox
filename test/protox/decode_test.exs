@@ -427,6 +427,30 @@ defmodule Protox.DecodeTest do
       Protox.DecodingError
     },
     {
+      "field number slightly too high",
+      <<136, 128, 128, 128, 64, 210, 9>>,
+      NullHypothesisProto3,
+      Protox.DecodingError
+    },
+    {
+      "field number too high",
+      <<136, 128, 128, 128, 128, 128, 15, 210, 9>>,
+      NullHypothesisProto3,
+      Protox.DecodingError
+    },
+    {
+      "overlong key varint",
+      <<136, 128, 128, 128, 128, 128, 128, 128, 0, 210, 9>>,
+      NullHypothesisProto3,
+      Protox.DecodingError
+    },
+    {
+      "key varint more than ten bytes",
+      <<136, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 0, 210, 9>>,
+      NullHypothesisProto3,
+      Protox.DecodingError
+    },
+    {
       "invalid string (incomplete prefix)",
       # We set field to the length delimited value <<128, ?a>>
       <<114, 2, 128, ?a>>,
