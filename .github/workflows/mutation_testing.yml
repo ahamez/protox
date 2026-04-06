@@ -57,34 +57,18 @@ jobs:
           mix local.rebar --force
           mix local.hex --force
           mix deps.get
-          CHANGED_FILES="$(git diff --name-only HEAD~25..HEAD | grep '^lib/.*\.ex$' || true)"
+          echo "Running mutation testing for lib"
 
-          if [ -z "$CHANGED_FILES" ]; then
-            echo "No changed Elixir source files under lib/, skipping mutation testing."
-            exit 0
-          fi
+          output_file="$(mktemp)"
 
-          status=0
+          if mix muex --files lib --mutators arithmetic,comparison,boolean,conditional --fail-at 20 --timeout 30000 --optimize --optimize-level conservative --verbose >"$output_file" 2>&1; then
+            cat "$output_file"
+          else
+            cat "$output_file"
 
-          while IFS= read -r file; do
-            [ -n "$file" ] || continue
-            echo "Running mutation testing for $file"
-
-            output_file="$(mktemp)"
-
-            if mix muex --files "$file" --mutators arithmetic,comparison,boolean,conditional --fail-at 20 --timeout 30000 --optimize --optimize-level conservative --verbose >"$output_file" 2>&1; then
-              cat "$output_file"
+            if grep -q "Original mutations: 0" "$output_file"; then
+              echo "No mutations generated for lib, skipping threshold enforcement."
             else
-              cat "$output_file"
-
-              if grep -q "Original mutations: 0" "$output_file"; then
-                echo "No mutations generated for $file, skipping threshold enforcement."
-              else
-                status=1
-              fi
+              exit 1
             fi
-          done <<EOF
-          $CHANGED_FILES
-          EOF
-
-          exit "$status"
+          fi
