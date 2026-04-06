@@ -44,7 +44,7 @@ defmodule Protox.Mixfile do
       {:dialyxir, "~> 1.0", only: [:test, :dev], runtime: false},
       {:excoveralls, "~> 0.13", only: [:test], runtime: false},
       {:ex_doc, "~> 0.22", only: [:dev], runtime: false},
-      {:muex, "~> 0.5.1", only: [:dev, :test], runtime: false},
+      {:muex, "~> 0.6.1", only: [:dev, :test], runtime: false},
       {:stream_data, "~> 1.0", only: [:dev, :test], runtime: false},
       {:quokka, "~> 2.0", only: [:dev, :test], runtime: false}
     ]
