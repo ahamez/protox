@@ -5,11 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 2.0.7
 
 ### Changed
 
 - Replace Muzak with [Muex](https://hex.pm/packages/muex) for mutation testing
+- Bump the protobuf toolchain used in CI and development to `34.1`, and verify the downloaded `protoc` binary with a pinned SHA-256 checksum
+
+### Fixed
+
+- Reject non-canonical or out-of-range field key varints when decoding, fixing protobuf conformance failures on invalid tags
 
 ## 2.0.6
 
