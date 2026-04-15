@@ -161,7 +161,8 @@ defmodule Protox.GenerateTest do
     refute content =~ "msg.repeated_string ++"
     refute content =~ "msg.repeated_nested_message ++"
 
-    assert content =~ ~r/repeated_string:\s*\[\s*Protox\.Decode\.validate_string!\(delimited\)\s*\|\s*msg\.repeated_string\s*\]/s
+    assert content =~
+             ~r/repeated_string:\s*\[\s*Protox\.Decode\.validate_string!\(delimited\)\s*\|\s*msg\.repeated_string\s*\]/s
 
     assert content =~ "repeated_string: Enum.reverse(msg.repeated_string)"
     assert content =~ "repeated_bool: Enum.reverse(msg.repeated_bool)"

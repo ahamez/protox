@@ -87,8 +87,7 @@ defmodule Protox.DefineDecoder do
         {field_name, quote(do: Enum.reverse(unquote(msg_var).unquote(field_name)))}
       end) ++
         [
-          {unknown_fields_name,
-           quote(do: Enum.reverse(unquote(msg_var).unquote(unknown_fields_name)))}
+          {unknown_fields_name, quote(do: Enum.reverse(unquote(msg_var).unquote(unknown_fields_name)))}
         ]
 
     quote do
@@ -334,8 +333,7 @@ defmodule Protox.DefineDecoder do
     quote(do: {unquote(field.name), unquote(value)})
   end
 
-  defp make_update_field(value, %Field{kind: kind} = field, vars, wrap_value)
-       when kind in [:packed, :unpacked] do
+  defp make_update_field(value, %Field{kind: kind} = field, vars, wrap_value) when kind in [:packed, :unpacked] do
     update_value =
       if wrap_value do
         quote(do: [unquote(value) | unquote(vars.msg).unquote(field.name)])
