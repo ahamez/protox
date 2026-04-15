@@ -63,14 +63,35 @@ defmodule Protox.DefineDecoder do
       make_parse_key_value_body(fields, vars, opts)
 
     unknown_fields_name = Keyword.fetch!(opts, :unknown_fields_name)
+    finish_decode = make_finish_decode(fields, vars.msg, unknown_fields_name)
 
     quote do
       @spec parse_key_value(binary(), struct()) :: struct()
       defp parse_key_value(<<>>, msg) do
-        %{msg | unquote(unknown_fields_name) => Enum.reverse(msg.unquote(unknown_fields_name))}
+        unquote(finish_decode)
       end
 
       defp parse_key_value(bytes, msg), do: unquote(parse_key_value_body)
+    end
+  end
+
+  defp make_finish_decode(fields, msg_var, unknown_fields_name) do
+    repeated_field_names =
+      fields
+      |> Enum.filter(&(&1.kind in [:packed, :unpacked]))
+      |> Enum.map(& &1.name)
+      |> Enum.uniq()
+
+    updates =
+      Enum.map(repeated_field_names, fn field_name ->
+        {field_name, quote(do: Enum.reverse(unquote(msg_var).unquote(field_name)))}
+      end) ++
+        [
+          {unknown_fields_name, quote(do: Enum.reverse(unquote(msg_var).unquote(unknown_fields_name)))}
+        ]
+
+    quote do
+      %{unquote(msg_var) | unquote_splicing(updates)}
     end
   end
 
@@ -310,6 +331,19 @@ defmodule Protox.DefineDecoder do
 
   defp make_update_field(value, %Field{kind: %Scalar{}} = field, _vars, _wrap_value) do
     quote(do: {unquote(field.name), unquote(value)})
+  end
+
+  defp make_update_field(value, %Field{kind: kind} = field, vars, wrap_value) when kind in [:packed, :unpacked] do
+    update_value =
+      if wrap_value do
+        quote(do: [unquote(value) | unquote(vars.msg).unquote(field.name)])
+      else
+        quote(do: Enum.reverse(unquote(value), unquote(vars.msg).unquote(field.name)))
+      end
+
+    quote do
+      {unquote(field.name), unquote(update_value)}
+    end
   end
 
   defp make_update_field(value, %Field{} = field, vars, wrap_value) do

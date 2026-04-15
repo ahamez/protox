@@ -142,4 +142,29 @@ defmodule Protox.GenerateTest do
     assert Code.compile_file(namespace_directory_message1_tmp_file) != []
     assert Code.compile_file(namespace_sub_directory_message_tmp_file) != []
   end
+
+  test "Generate repeated-field decoders with prepend-and-reverse" do
+    file = Path.join(__DIR__, "../samples/google/test_messages_proto3.proto")
+    generated_file_name = "generated_repeated_decode.ex"
+
+    {:ok, files_content} =
+      Protox.Generate.generate_module_code([file], generated_file_name, false, [
+        "./test/samples/google"
+      ])
+
+    assert [%Protox.Generate.FileContent{name: ^generated_file_name, content: content}] =
+             files_content
+
+    content = IO.iodata_to_binary(content)
+
+    refute content =~ "msg.repeated_bool ++"
+    refute content =~ "msg.repeated_string ++"
+    refute content =~ "msg.repeated_nested_message ++"
+
+    assert content =~
+             ~r/repeated_string:\s*\[\s*Protox\.Decode\.validate_string!\(delimited\)\s*\|\s*msg\.repeated_string\s*\]/s
+
+    assert content =~ "repeated_string: Enum.reverse(msg.repeated_string)"
+    assert content =~ "repeated_bool: Enum.reverse(msg.repeated_bool)"
+  end
 end
