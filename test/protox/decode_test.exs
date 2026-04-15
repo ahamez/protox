@@ -49,6 +49,12 @@ defmodule Protox.DecodeTest do
       %TestAllTypesProto3{repeated_bool: [true, false, true, false]}
     },
     {
+      "Repeated bool, unpacked and packed, should be concatenated (2)",
+      # unpacked <> packed
+      <<218, 2, 1, 1, 218, 2, 1, 0>> <> <<218, 2, 2, 1, 0>>,
+      %TestAllTypesProto3{repeated_bool: [true, false, true, false]}
+    },
+    {
       "Repeated uint32",
       <<138, 2, 6, 0, 1, 2, 3, 144, 78>>,
       %TestAllTypesProto3{repeated_uint32: [0, 1, 2, 3, 10_000]}
