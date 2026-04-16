@@ -4,4 +4,4 @@ PROTOX_PROTOBUF_VERSION = "34.1"
 [tools]
 elixir = "1.19.5"
 erlang = "28.4"
-lefthook = "2.1.4"
+lefthook = "2.1.5"
