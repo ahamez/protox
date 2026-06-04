@@ -6,17 +6,17 @@ defmodule Protox.GenerateTest do
 
     assert %FunctionClauseError{module: Protox.Generate, function: :generate_module_code} =
              assert_raise(FunctionClauseError, fn ->
-               Protox.Generate.generate_module_code(file, "generated_code.ex", false, ["./test/samples"])
+               apply(Protox.Generate, :generate_module_code, [file, "generated_code.ex", false, ["./test/samples"]])
              end)
 
     assert %FunctionClauseError{module: Protox.Generate, function: :generate_module_code} =
              assert_raise(FunctionClauseError, fn ->
-               Protox.Generate.generate_module_code([file], :generated_code, false, ["./test/samples"])
+               apply(Protox.Generate, :generate_module_code, [[file], :generated_code, false, ["./test/samples"]])
              end)
 
     assert %FunctionClauseError{module: Protox.Generate, function: :generate_module_code} =
              assert_raise(FunctionClauseError, fn ->
-               Protox.Generate.generate_module_code([file], "generated_code.ex", nil, ["./test/samples"])
+               apply(Protox.Generate, :generate_module_code, [[file], "generated_code.ex", nil, ["./test/samples"]])
              end)
   end
 
