@@ -79,13 +79,6 @@ jobs:
           path: priv/plts
           key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
 
-      # - name: Restore conformance_test_runner cache
-      #   uses: actions/cache@v4
-      #   id: restore_conformance_test_runner
-      #   with:
-      #     path: conformance_test_runner
-      #     key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-protobuf-${{ env.PROTOX_PROTOBUF_VERSION }}
-
       - name: Unlock all dependencies
         run: mix deps.unlock --all
         if: ${{ matrix.unlock_deps }}
