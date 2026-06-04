@@ -1,5 +1,8 @@
 name: Mutation testing
 
+permissions:
+  contents: read
+
 env:
   PROTOX_PROTOBUF_VERSION: "34.1"
   # Published by upstream in the pinned v34.1 release metadata for this asset.
