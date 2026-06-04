@@ -84,7 +84,7 @@ defmodule Protox.Decode do
     {len, new_bytes} = Varint.decode(bytes)
 
     try do
-      <<unknown_bytes::binary-size(len), rest::binary>> = new_bytes
+      <<unknown_bytes::binary-size(^len), rest::binary>> = new_bytes
       {{tag, @wire_delimited, unknown_bytes}, rest}
     rescue
       _ ->
@@ -296,7 +296,7 @@ defmodule Protox.Decode do
   end
 
   def parse_delimited(bytes, len) do
-    <<value::binary-size(len), rest::binary>> = bytes
+    <<value::binary-size(^len), rest::binary>> = bytes
 
     {value, rest}
   rescue
