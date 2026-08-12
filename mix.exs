@@ -33,7 +33,7 @@ defmodule Protox.Mixfile do
 
   def application() do
     [
-      extra_applications: [:eex, :mix]
+      extra_applications: [:eex]
     ]
   end
 
