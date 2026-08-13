@@ -18,7 +18,10 @@ defmodule Protox.Mixfile do
       package: package(),
       dialyzer: [
         plt_local_path: "priv/plts",
-        plt_add_apps: [:logger, :stream_data]
+        # :mix is not a runtime dependency (see `application/0`), but the
+        # mix tasks and dev/test tooling reference it — keep it in the PLT
+        # so dialyzer can see those modules.
+        plt_add_apps: [:logger, :mix, :stream_data]
       ],
       docs: docs()
     ]
