@@ -56,15 +56,7 @@ defmodule Protox.Descriptor do
         name: Protox.Google.Protobuf.FileDescriptorProto,
         syntax: :proto3,
         fields: %{
-          # Ignored: 3, 6, 9, 10, 11
-          name:
-            Protox.Field.new!(
-              tag: 1,
-              label: :none,
-              name: :name,
-              kind: %Protox.Scalar{default_value: ""},
-              type: :string
-            ),
+          # Ignored: 1, 3, 6, 9, 10, 11
           package:
             Protox.Field.new!(
               tag: 2,
@@ -142,7 +134,7 @@ defmodule Protox.Descriptor do
         name: Protox.Google.Protobuf.DescriptorProto,
         syntax: :proto3,
         fields: %{
-          # Ignored: 9, 10
+          # Ignored: 5, 9, 10
           name:
             Protox.Field.new!(
               tag: 1,
@@ -182,14 +174,6 @@ defmodule Protox.Descriptor do
               name: :enum_type,
               kind: :unpacked,
               type: {:message, Protox.Google.Protobuf.EnumDescriptorProto}
-            ),
-          extension_range:
-            Protox.Field.new!(
-              tag: 5,
-              label: :repeated,
-              name: :extension_range,
-              kind: :unpacked,
-              type: {:message, Protox.Google.Protobuf.DescriptorProto.ExtensionRange}
             ),
           oneof_decl:
             Protox.Field.new!(
@@ -621,15 +605,7 @@ defmodule Protox.Descriptor do
         name: Protox.Google.Protobuf.MessageOptions,
         syntax: :proto3,
         fields: %{
-          # 1, 2, 999 ignored
-          deprecated:
-            Protox.Field.new!(
-              tag: 3,
-              label: :none,
-              name: :deprecated,
-              kind: %Protox.Scalar{default_value: false},
-              type: :bool
-            ),
+          # 1, 2, 3, 999 ignored
           map_entry:
             Protox.Field.new!(
               tag: 7,
@@ -644,21 +620,13 @@ defmodule Protox.Descriptor do
         name: Protox.Google.Protobuf.FieldOptions,
         syntax: :proto3,
         fields: %{
-          # 1, 6, 5, 10, 999 ignored
+          # 1, 3, 5, 6, 10, 999 ignored
           packed:
             Protox.Field.new!(
               tag: 2,
               label: :none,
               name: :packed,
               kind: %Protox.Scalar{default_value: nil},
-              type: :bool
-            ),
-          deprecated:
-            Protox.Field.new!(
-              tag: 3,
-              label: :none,
-              name: :deprecated,
-              kind: %Protox.Scalar{default_value: false},
               type: :bool
             )
         }

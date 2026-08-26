@@ -4,7 +4,7 @@ defmodule Protox.WireTypes do
   # Describe messages fields types to be used as constants in several modules.
   # See https://developers.google.com/protocol-buffers/docs/encoding#structure.
 
-  defmacro __using__(_) do
+  defmacro __using__(_opts) do
     quote do
       @wire_varint 0
       @wire_64bits 1

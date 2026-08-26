@@ -52,20 +52,17 @@ defmodule Protox.MergeMessage do
 
   defp merge_field(msg, name, v1, v2) do
     case Map.get(msg.__struct__.schema().fields, name) do
-      %Field{kind: :packed} ->
+      %Field{kind: kind} when kind in [:packed, :unpacked] ->
         v1 ++ v2
 
-      %Field{kind: :unpacked} ->
-        v1 ++ v2
-
-      %Field{kind: %Scalar{}, type: {:message, _}} ->
+      %Field{kind: %Scalar{}, type: {:message, _mod}} ->
         merge(v1, v2)
 
       %Field{kind: %Scalar{}} ->
         {:ok, default} = msg.__struct__.default(name)
         merge_scalar(msg.__struct__.schema().syntax, v1, v2, default)
 
-      %Field{kind: :map, type: {_, {:message, _}}} ->
+      %Field{kind: :map, type: {_key_type, {:message, _mod}}} ->
         Map.merge(v1, v2, fn _key, w1, w2 -> merge(w1, w2) end)
 
       %Field{kind: :map} ->
@@ -95,6 +92,6 @@ defmodule Protox.MergeMessage do
   defp merge_oneof(_msg, v1, nil), do: v1
   defp merge_oneof(_msg, _v1, v2), do: v2
 
-  defp oneof_message?(%Field{kind: %OneOf{}, type: {:message, _}}), do: true
-  defp oneof_message?(_), do: false
+  defp oneof_message?(%Field{kind: %OneOf{}, type: {:message, _mod}}), do: true
+  defp oneof_message?(_field), do: false
 end

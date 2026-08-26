@@ -5,17 +5,20 @@ defmodule Protox.RandomInit do
 
   import Bitwise
 
+  alias Google.Protobuf.{BoolValue, BytesValue, DoubleValue, Duration}
+  alias Google.Protobuf.{FieldMask, FloatValue, Int32Value, Int64Value}
+  alias Google.Protobuf.{ListValue, NullValue, StringValue, Struct}
+  alias Google.Protobuf.{Timestamp, UInt32Value, UInt64Value, Value}
   alias Protox.{Field, OneOf, Scalar}
-  alias StreamData, as: SD
 
   def generate_msg(mod) do
     gen =
-      SD.bind(generate_fields_values(mod), fn fields ->
-        SD.constant(generate_struct(mod, fields))
+      StreamData.bind(generate_fields_values(mod), fn fields ->
+        StreamData.constant(generate_struct(mod, fields))
       end)
 
     gen
-    |> SD.resize(5)
+    |> StreamData.resize(5)
     |> Enum.at(0)
   end
 
@@ -31,9 +34,9 @@ defmodule Protox.RandomInit do
       # Get all sub messages
       |> Enum.filter(fn %Field{} = field ->
         case {field.kind, field.type} do
-          {:map, {_, {:message, _}}} -> true
-          {_, {:message, _}} -> true
-          _ -> false
+          {:map, {_key_type, {:message, _msg_type}}} -> true
+          {_kind, {:message, _msg_type}} -> true
+          _other -> false
         end
       end)
       # Transform into a map for lookup
@@ -48,7 +51,7 @@ defmodule Protox.RandomInit do
             Map.put(acc, field.name, {:repeated, sub_msg})
 
           :map ->
-            {_, {:message, sub_msg}} = field.type
+            {_key_type, {:message, sub_msg}} = field.type
             Map.put(acc, field.name, {:map, sub_msg})
 
           %OneOf{parent: oneof_name} ->
@@ -117,22 +120,22 @@ defmodule Protox.RandomInit do
   # ------------------------------------------------------------------- #
 
   @well_known_types [
-    Google.Protobuf.BoolValue,
-    Google.Protobuf.BytesValue,
-    Google.Protobuf.DoubleValue,
-    Google.Protobuf.Duration,
-    Google.Protobuf.FieldMask,
-    Google.Protobuf.FloatValue,
-    Google.Protobuf.Int32Value,
-    Google.Protobuf.Int64Value,
-    Google.Protobuf.ListValue,
-    Google.Protobuf.NullValue,
-    Google.Protobuf.StringValue,
-    Google.Protobuf.Struct,
-    Google.Protobuf.Timestamp,
-    Google.Protobuf.UInt32Value,
-    Google.Protobuf.UInt64Value,
-    Google.Protobuf.Value
+    BoolValue,
+    BytesValue,
+    DoubleValue,
+    Duration,
+    FieldMask,
+    FloatValue,
+    Int32Value,
+    Int64Value,
+    ListValue,
+    NullValue,
+    StringValue,
+    Struct,
+    Timestamp,
+    UInt32Value,
+    UInt64Value,
+    Value
   ]
 
   def generate_fields(mod, depth \\ 2) do
@@ -140,15 +143,15 @@ defmodule Protox.RandomInit do
   end
 
   def generate_fields_values(mod, depth \\ 2) do
-    generate_fields(mod, depth) |> resolve_generators()
+    resolve_generators(generate_fields(mod, depth))
   end
 
   defp resolve_generators(%StreamData{} = gen), do: gen
 
   defp resolve_generators(term) when is_list(term) do
-    Enum.reduce(Enum.reverse(term), SD.constant([]), fn elem, acc_gen ->
-      SD.bind(resolve_generators(elem), fn v ->
-        SD.map(acc_gen, fn acc -> [v | acc] end)
+    Enum.reduce(Enum.reverse(term), StreamData.constant([]), fn elem, acc_gen ->
+      StreamData.bind(resolve_generators(elem), fn v ->
+        StreamData.map(acc_gen, fn acc -> [v | acc] end)
       end)
     end)
   end
@@ -157,27 +160,27 @@ defmodule Protox.RandomInit do
     term
     |> Map.to_list()
     |> resolve_generators()
-    |> SD.map(&Map.new/1)
+    |> StreamData.map(&Map.new/1)
   end
 
   defp resolve_generators(term) when is_tuple(term) do
     term
     |> Tuple.to_list()
     |> resolve_generators()
-    |> SD.map(&List.to_tuple/1)
+    |> StreamData.map(&List.to_tuple/1)
   end
 
-  defp resolve_generators(term), do: SD.constant(term)
+  defp resolve_generators(term), do: StreamData.constant(term)
 
   defp do_generate(acc, _fields, 0), do: acc
   defp do_generate(acc, [], _depth), do: acc
 
-  defp do_generate(acc, [%Field{kind: %OneOf{parent: oneof_name}} | _] = fields, depth) do
+  defp do_generate(acc, [%Field{kind: %OneOf{parent: oneof_name}} | _rest] = fields, depth) do
     {oneof_list, fields} =
       Enum.split_with(fields, fn %Field{} = field ->
         case field.kind do
           %OneOf{parent: ^oneof_name} -> true
-          _ -> false
+          _other_kind -> false
         end
       end)
 
@@ -192,89 +195,96 @@ defmodule Protox.RandomInit do
 
   defp do_generate_oneof(acc, oneof_name, oneof_list, depth) do
     generators =
-      Enum.map(oneof_list, fn %Field{kind: %OneOf{parent: _}} = field ->
+      Enum.map(oneof_list, fn %Field{kind: %OneOf{parent: _parent}} = field ->
         gen = get_gen(depth, %Scalar{default_value: :dummy}, field.type)
-        SD.map(gen, fn v -> {field.name, v} end)
+        StreamData.map(gen, fn v -> {field.name, v} end)
       end)
 
-    [{oneof_name, SD.one_of([SD.constant(nil) | generators])} | acc]
+    [{oneof_name, StreamData.one_of([StreamData.constant(nil) | generators])} | acc]
   end
 
   defp get_gen(_depth, %Scalar{}, {:enum, e}) do
-    e.constants() |> Map.new() |> Map.values() |> SD.member_of()
+    e.constants()
+    |> Map.new()
+    |> Map.values()
+    |> StreamData.member_of()
   end
 
-  defp get_gen(_depth, %Scalar{}, :bool), do: SD.boolean()
+  defp get_gen(_depth, %Scalar{}, :bool), do: StreamData.boolean()
 
-  defp get_gen(_depth, %Scalar{}, :int32), do: SD.integer()
-  defp get_gen(_depth, %Scalar{}, :int64), do: SD.integer()
-  defp get_gen(_depth, %Scalar{}, :sint32), do: SD.integer()
-  defp get_gen(_depth, %Scalar{}, :sint64), do: SD.integer()
-  defp get_gen(_depth, %Scalar{}, :sfixed32), do: SD.integer()
-  defp get_gen(_depth, %Scalar{}, :sfixed64), do: SD.integer()
-  defp get_gen(_depth, %Scalar{}, :fixed32), do: SD.integer(0..((1 <<< 32) - 1))
-  defp get_gen(_depth, %Scalar{}, :fixed64), do: SD.integer(0..((1 <<< 64) - 1))
+  defp get_gen(_depth, %Scalar{}, :int32), do: StreamData.integer()
+  defp get_gen(_depth, %Scalar{}, :int64), do: StreamData.integer()
+  defp get_gen(_depth, %Scalar{}, :sint32), do: StreamData.integer()
+  defp get_gen(_depth, %Scalar{}, :sint64), do: StreamData.integer()
+  defp get_gen(_depth, %Scalar{}, :sfixed32), do: StreamData.integer()
+  defp get_gen(_depth, %Scalar{}, :sfixed64), do: StreamData.integer()
+  defp get_gen(_depth, %Scalar{}, :fixed32), do: StreamData.integer(0..((1 <<< 32) - 1))
+  defp get_gen(_depth, %Scalar{}, :fixed64), do: StreamData.integer(0..((1 <<< 64) - 1))
 
-  defp get_gen(_depth, %Scalar{}, :uint32), do: SD.integer(0..((1 <<< 32) - 1))
-  defp get_gen(_depth, %Scalar{}, :uint64), do: SD.integer(0..((1 <<< 64) - 1))
+  defp get_gen(_depth, %Scalar{}, :uint32), do: StreamData.integer(0..((1 <<< 32) - 1))
+  defp get_gen(_depth, %Scalar{}, :uint64), do: StreamData.integer(0..((1 <<< 64) - 1))
 
   defp get_gen(_depth, %Scalar{}, :float), do: gen_float()
   defp get_gen(_depth, %Scalar{}, :double), do: gen_double()
 
-  defp get_gen(_depth, %Scalar{}, :bytes), do: SD.binary()
-  defp get_gen(_depth, %Scalar{}, :string), do: SD.string(:printable)
+  defp get_gen(_depth, %Scalar{}, :bytes), do: StreamData.binary()
+  defp get_gen(_depth, %Scalar{}, :string), do: StreamData.string(:printable)
 
   defp get_gen(_depth, %Scalar{}, {:message, sub_msg}) when sub_msg in @well_known_types do
     nil
   end
 
   defp get_gen(depth, %Scalar{}, {:message, sub_msg}) do
-    SD.one_of([SD.constant(nil), generate_fields_values(sub_msg, depth - 1)])
+    StreamData.one_of([StreamData.constant(nil), generate_fields_values(sub_msg, depth - 1)])
   end
 
-  defp get_gen(_depth, :packed, :bool), do: SD.list_of(SD.boolean())
-  defp get_gen(_depth, :unpacked, :bool), do: SD.list_of(SD.boolean())
+  defp get_gen(_depth, :packed, :bool), do: StreamData.list_of(StreamData.boolean())
+  defp get_gen(_depth, :unpacked, :bool), do: StreamData.list_of(StreamData.boolean())
 
-  defp get_gen(_depth, :packed, :int32), do: SD.list_of(SD.integer())
-  defp get_gen(_depth, :packed, :int64), do: SD.list_of(SD.integer())
-  defp get_gen(_depth, :packed, :sint32), do: SD.list_of(SD.integer())
-  defp get_gen(_depth, :packed, :sint64), do: SD.list_of(SD.integer())
-  defp get_gen(_depth, :packed, :sfixed32), do: SD.list_of(SD.integer())
-  defp get_gen(_depth, :packed, :sfixed64), do: SD.list_of(SD.integer())
-  defp get_gen(_depth, :packed, :fixed32), do: SD.list_of(SD.integer(0..((1 <<< 32) - 1)))
-  defp get_gen(_depth, :packed, :fixed64), do: SD.list_of(SD.integer(0..((1 <<< 64) - 1)))
-  defp get_gen(_depth, :unpacked, :int32), do: SD.list_of(SD.integer())
-  defp get_gen(_depth, :unpacked, :int64), do: SD.list_of(SD.integer())
-  defp get_gen(_depth, :unpacked, :sint32), do: SD.list_of(SD.integer())
-  defp get_gen(_depth, :unpacked, :sint64), do: SD.list_of(SD.integer())
-  defp get_gen(_depth, :unpacked, :sfixed32), do: SD.list_of(SD.integer())
-  defp get_gen(_depth, :unpacked, :sfixed64), do: SD.list_of(SD.integer())
-  defp get_gen(_depth, :unpacked, :fixed32), do: SD.list_of(SD.integer(0..((1 <<< 32) - 1)))
-  defp get_gen(_depth, :unpacked, :fixed64), do: SD.list_of(SD.integer(0..((1 <<< 64) - 1)))
+  defp get_gen(_depth, :packed, :int32), do: StreamData.list_of(StreamData.integer())
+  defp get_gen(_depth, :packed, :int64), do: StreamData.list_of(StreamData.integer())
+  defp get_gen(_depth, :packed, :sint32), do: StreamData.list_of(StreamData.integer())
+  defp get_gen(_depth, :packed, :sint64), do: StreamData.list_of(StreamData.integer())
+  defp get_gen(_depth, :packed, :sfixed32), do: StreamData.list_of(StreamData.integer())
+  defp get_gen(_depth, :packed, :sfixed64), do: StreamData.list_of(StreamData.integer())
+  defp get_gen(_depth, :packed, :fixed32), do: StreamData.list_of(StreamData.integer(0..((1 <<< 32) - 1)))
+  defp get_gen(_depth, :packed, :fixed64), do: StreamData.list_of(StreamData.integer(0..((1 <<< 64) - 1)))
+  defp get_gen(_depth, :unpacked, :int32), do: StreamData.list_of(StreamData.integer())
+  defp get_gen(_depth, :unpacked, :int64), do: StreamData.list_of(StreamData.integer())
+  defp get_gen(_depth, :unpacked, :sint32), do: StreamData.list_of(StreamData.integer())
+  defp get_gen(_depth, :unpacked, :sint64), do: StreamData.list_of(StreamData.integer())
+  defp get_gen(_depth, :unpacked, :sfixed32), do: StreamData.list_of(StreamData.integer())
+  defp get_gen(_depth, :unpacked, :sfixed64), do: StreamData.list_of(StreamData.integer())
+  defp get_gen(_depth, :unpacked, :fixed32), do: StreamData.list_of(StreamData.integer(0..((1 <<< 32) - 1)))
+  defp get_gen(_depth, :unpacked, :fixed64), do: StreamData.list_of(StreamData.integer(0..((1 <<< 64) - 1)))
 
-  defp get_gen(_depth, :packed, :uint32), do: SD.list_of(SD.integer(0..((1 <<< 32) - 1)))
-  defp get_gen(_depth, :packed, :uint64), do: SD.list_of(SD.integer(0..((1 <<< 64) - 1)))
-  defp get_gen(_depth, :unpacked, :uint32), do: SD.list_of(SD.integer(0..((1 <<< 32) - 1)))
-  defp get_gen(_depth, :unpacked, :uint64), do: SD.list_of(SD.integer(0..((1 <<< 64) - 1)))
+  defp get_gen(_depth, :packed, :uint32), do: StreamData.list_of(StreamData.integer(0..((1 <<< 32) - 1)))
+  defp get_gen(_depth, :packed, :uint64), do: StreamData.list_of(StreamData.integer(0..((1 <<< 64) - 1)))
+  defp get_gen(_depth, :unpacked, :uint32), do: StreamData.list_of(StreamData.integer(0..((1 <<< 32) - 1)))
+  defp get_gen(_depth, :unpacked, :uint64), do: StreamData.list_of(StreamData.integer(0..((1 <<< 64) - 1)))
 
-  defp get_gen(_depth, :packed, :float), do: SD.list_of(gen_float())
-  defp get_gen(_depth, :packed, :double), do: SD.list_of(gen_double())
-  defp get_gen(_depth, :unpacked, :float), do: SD.list_of(gen_float())
-  defp get_gen(_depth, :unpacked, :double), do: SD.list_of(gen_double())
+  defp get_gen(_depth, :packed, :float), do: StreamData.list_of(gen_float())
+  defp get_gen(_depth, :packed, :double), do: StreamData.list_of(gen_double())
+  defp get_gen(_depth, :unpacked, :float), do: StreamData.list_of(gen_float())
+  defp get_gen(_depth, :unpacked, :double), do: StreamData.list_of(gen_double())
 
   defp get_gen(_depth, kind, {:enum, e}) when kind == :packed or kind == :unpacked do
-    e.constants() |> Map.new() |> Map.values() |> SD.member_of() |> SD.list_of()
+    e.constants()
+    |> Map.new()
+    |> Map.values()
+    |> StreamData.member_of()
+    |> StreamData.list_of()
   end
 
-  defp get_gen(_depth, :unpacked, :string), do: SD.list_of(SD.string(:printable))
-  defp get_gen(_depth, :unpacked, :bytes), do: SD.list_of(SD.binary())
+  defp get_gen(_depth, :unpacked, :string), do: StreamData.list_of(StreamData.string(:printable))
+  defp get_gen(_depth, :unpacked, :bytes), do: StreamData.list_of(StreamData.binary())
 
   defp get_gen(_depth, :unpacked, {:message, sub_msg}) when sub_msg in @well_known_types do
     []
   end
 
   defp get_gen(depth, :unpacked, {:message, sub_msg}) do
-    SD.list_of(generate_fields_values(sub_msg, depth - 1))
+    StreamData.list_of(generate_fields_values(sub_msg, depth - 1))
   end
 
   defp get_gen(_depth, :map, {_key_ty, {:message, sub_msg}}) when sub_msg in @well_known_types do
@@ -295,29 +305,29 @@ defmodule Protox.RandomInit do
 
   defp map_of_for_keys(key_ty, key_gen, val_gen) do
     case key_ty do
-      :bool -> SD.map_of(key_gen, val_gen, max_length: 2, max_tries: 50)
-      {:enum, e} -> SD.map_of(key_gen, val_gen, max_length: length(e.constants()), max_tries: 50)
-      _ -> SD.map_of(key_gen, val_gen, max_length: 20, max_tries: 50)
+      :bool -> StreamData.map_of(key_gen, val_gen, max_length: 2, max_tries: 50)
+      {:enum, e} -> StreamData.map_of(key_gen, val_gen, max_length: length(e.constants()), max_tries: 50)
+      _other_key_type -> StreamData.map_of(key_gen, val_gen, max_length: 20, max_tries: 50)
     end
   end
 
   # ----------------------
 
   defp gen_float() do
-    SD.one_of([
-      SD.map(SD.integer(-10_000..10_000), &(&1 * 1.0)),
-      SD.constant(:nan),
-      SD.constant(:infinity),
-      SD.constant(:"-infinity")
+    StreamData.one_of([
+      StreamData.map(StreamData.integer(-10_000..10_000), &(&1 * 1.0)),
+      StreamData.constant(:nan),
+      StreamData.constant(:infinity),
+      StreamData.constant(:"-infinity")
     ])
   end
 
   defp gen_double() do
-    SD.one_of([
-      SD.float(),
-      SD.constant(:nan),
-      SD.constant(:infinity),
-      SD.constant(:"-infinity")
+    StreamData.one_of([
+      StreamData.float(),
+      StreamData.constant(:nan),
+      StreamData.constant(:infinity),
+      StreamData.constant(:"-infinity")
     ])
   end
 end

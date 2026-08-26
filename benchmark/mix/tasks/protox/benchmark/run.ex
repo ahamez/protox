@@ -24,7 +24,7 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
       run_benchee_tasks(tag, payloads, tasks, benchee_cfg)
     else
       err ->
-        IO.puts(:stderr, "Error: #{inspect(err)}")
+        Mix.shell().error("Error: #{inspect(err)}")
         exit({:shutdown, 1})
     end
   end
@@ -88,12 +88,12 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
   defp get_tag([]), do: {:error, "No tag provided"}
 
   defp get_tag([tag]) do
-    timestamp = DateTime.utc_now() |> Calendar.strftime("%H%M%S")
+    timestamp = Calendar.strftime(DateTime.utc_now(), "%H%M%S")
 
     {:ok, "#{timestamp}-#{tag}"}
   end
 
-  defp get_tag([_ | _]), do: {:error, "Too many tags provided"}
+  defp get_tag([_tag | _rest]), do: {:error, "Too many tags provided"}
 
   def get_payloads(path) do
     path

@@ -1,5 +1,5 @@
 defmodule Protox.ZigzagTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   use ExUnitProperties
 
   test "Zigzag encode" do
@@ -37,7 +37,10 @@ defmodule Protox.ZigzagTest do
 
   property "Symmetric" do
     check all(value <- integer()) do
-      assert value == value |> Protox.Zigzag.encode() |> Protox.Zigzag.decode()
+      assert value ==
+               value
+               |> Protox.Zigzag.encode()
+               |> Protox.Zigzag.decode()
     end
   end
 end

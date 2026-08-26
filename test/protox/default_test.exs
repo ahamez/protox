@@ -1,5 +1,5 @@
 defmodule Protox.DefaultTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias ProtobufTestMessages.{
     Proto2.TestAllTypesProto2,

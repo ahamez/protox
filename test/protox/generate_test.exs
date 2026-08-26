@@ -1,23 +1,24 @@
 defmodule Protox.GenerateTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
+
+  alias Protox.Generate.FileContent
 
   test "generate_module_code/5 rejects invalid argument types" do
     file = Path.join(__DIR__, "../samples/directory/sub_directory/sub_directory_message.proto")
 
-    assert %FunctionClauseError{module: Protox.Generate, function: :generate_module_code} =
-             assert_raise(FunctionClauseError, fn ->
-               apply(Protox.Generate, :generate_module_code, [file, "generated_code.ex", false, ["./test/samples"]])
-             end)
-
-    assert %FunctionClauseError{module: Protox.Generate, function: :generate_module_code} =
-             assert_raise(FunctionClauseError, fn ->
-               apply(Protox.Generate, :generate_module_code, [[file], :generated_code, false, ["./test/samples"]])
-             end)
-
-    assert %FunctionClauseError{module: Protox.Generate, function: :generate_module_code} =
-             assert_raise(FunctionClauseError, fn ->
-               apply(Protox.Generate, :generate_module_code, [[file], "generated_code.ex", nil, ["./test/samples"]])
-             end)
+    # These calls deliberately pass invalid argument types: they go through
+    # apply/3 so the compiler's type checker does not flag them at compile time.
+    for args <- [
+          [file, "generated_code.ex", false, ["./test/samples"]],
+          [[file], :generated_code, false, ["./test/samples"]],
+          [[file], "generated_code.ex", nil, ["./test/samples"]]
+        ] do
+      assert %FunctionClauseError{module: Protox.Generate, function: :generate_module_code} =
+               assert_raise(FunctionClauseError, fn ->
+                 # credo:disable-for-next-line Credo.Check.Refactor.Apply
+                 apply(Protox.Generate, :generate_module_code, args)
+               end)
+    end
   end
 
   test "Generate code from a single proto file definition" do
@@ -29,7 +30,7 @@ defmodule Protox.GenerateTest do
         "./test/samples"
       ])
 
-    assert [%Protox.Generate.FileContent{name: ^generated_file_name, content: content}] =
+    assert [%FileContent{name: ^generated_file_name, content: content}] =
              files_content
 
     tmp_file = Protox.TmpFs.tmp_file_path!(generated_file_name)
@@ -54,7 +55,7 @@ defmodule Protox.GenerateTest do
         namespace: "Namespace"
       )
 
-    assert [%Protox.Generate.FileContent{name: ^generated_file_name, content: content}] =
+    assert [%FileContent{name: ^generated_file_name, content: content}] =
              files_content
 
     tmp_file = Protox.TmpFs.tmp_file_path!(generated_file_name)
@@ -79,11 +80,11 @@ defmodule Protox.GenerateTest do
       )
 
     assert [
-             %Protox.Generate.FileContent{
+             %FileContent{
                name: "generated_code_1/directory_message1.ex",
                content: directory_message_1
              },
-             %Protox.Generate.FileContent{
+             %FileContent{
                name: "generated_code_1/sub_directory_message.ex",
                content: sub_directory_message
              }
@@ -116,11 +117,11 @@ defmodule Protox.GenerateTest do
       )
 
     assert [
-             %Protox.Generate.FileContent{
+             %FileContent{
                name: "generated_code_2/namespace_directory_message1.ex",
                content: namespace_directory_message1_content
              },
-             %Protox.Generate.FileContent{
+             %FileContent{
                name: "generated_code_2/namespace_sub_directory_message.ex",
                content: namespace_sub_directory_message_content
              }
@@ -152,7 +153,7 @@ defmodule Protox.GenerateTest do
         "./test/samples/google"
       ])
 
-    assert [%Protox.Generate.FileContent{name: ^generated_file_name, content: content}] =
+    assert [%FileContent{name: ^generated_file_name, content: content}] =
              files_content
 
     content = IO.iodata_to_binary(content)

@@ -7,6 +7,7 @@ defmodule Protox.DecodingError do
                binary: <<>>
 
   @doc false
+  @spec new(binary(), binary()) :: %__MODULE__{}
   def new(binary, reason) when is_binary(binary) and is_binary(reason) do
     %__MODULE__{
       message: "Could not decode data (#{reason})",
@@ -24,6 +25,7 @@ defmodule Protox.EncodingError do
                field: nil
 
   @doc false
+  @spec new(atom(), binary()) :: %__MODULE__{}
   def new(field, reason) when is_atom(field) and is_binary(reason) do
     %__MODULE__{
       message: "Could not encode field #{inspect(field)} (#{reason})",
@@ -40,6 +42,7 @@ defmodule Protox.IllegalTagError do
   defexception message: "Field with illegal tag 0"
 
   @doc false
+  @spec new() :: %__MODULE__{}
   def new() do
     %__MODULE__{}
   end
@@ -53,6 +56,7 @@ defmodule Protox.InvalidFieldAttributeError do
   defexception message: ""
 
   @doc false
+  @spec new(atom(), list(), term()) :: %__MODULE__{}
   def new(attribute, expected, got) do
     %__MODULE__{
       message: "Field attribute #{attribute} should be in #{inspect(expected)}, got #{inspect(got)}"
@@ -70,6 +74,7 @@ defmodule Protox.RequiredFieldsError do
                missing_fields: []
 
   @doc false
+  @spec new([atom()]) :: %__MODULE__{}
   def new(missing_fields) do
     %__MODULE__{
       message: "Some required fields are not set: #{inspect(missing_fields)}",

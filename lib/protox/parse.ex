@@ -6,6 +6,11 @@ defmodule Protox.Parse do
 
   import Protox.Guards
 
+  alias Google.Protobuf.{FeatureSet, FileOptions, UninterpretedOption}
+  alias Google.Protobuf.FeatureSet.{EnumType, FieldPresence, JsonFormat}
+  alias Google.Protobuf.FeatureSet.{MessageEncoding, RepeatedFieldEncoding, Utf8Validation}
+  alias Google.Protobuf.FileOptions.OptimizeMode
+  alias Google.Protobuf.UninterpretedOption.NamePart
   alias Protox.{Definition, Field, MessageSchema, OneOf, Scalar}
 
   alias Protox.Google.Protobuf.{
@@ -51,8 +56,13 @@ defmodule Protox.Parse do
 
     prefix =
       case descriptor.package do
-        "" -> []
-        p -> p |> String.split(".") |> camelize()
+        "" ->
+          []
+
+        p ->
+          p
+          |> String.split(".")
+          |> camelize()
       end
 
     definition
@@ -105,12 +115,12 @@ defmodule Protox.Parse do
   defp remove_google_types(definition) do
     filtered_messages =
       Map.reject(definition.messages_schemas, fn {msg_name, _message} ->
-        match?(["Google", "Protobuf" | _], Module.split(msg_name))
+        match?(["Google", "Protobuf" | _rest], Module.split(msg_name))
       end)
 
     filtered_enums =
       Map.reject(definition.enums_schemas, fn {enum_name, _constants} ->
-        match?(["Google", "Protobuf" | _], Module.split(enum_name))
+        match?(["Google", "Protobuf" | _rest], Module.split(enum_name))
       end)
 
     %Definition{enums_schemas: filtered_enums, messages_schemas: filtered_messages}
@@ -126,31 +136,31 @@ defmodule Protox.Parse do
     # to parse file options.
     {file_options_messages, other_messages} =
       Map.split(definition.messages_schemas, [
-        Google.Protobuf.FeatureSet,
-        Google.Protobuf.FileOptions,
-        Google.Protobuf.UninterpretedOption,
-        Google.Protobuf.UninterpretedOption.NamePart
+        FeatureSet,
+        FileOptions,
+        UninterpretedOption,
+        NamePart
       ])
 
     case file_options_messages do
       file_options_message when map_size(file_options_message) == 0 ->
         definition
 
-      _ ->
+      _file_options_messages ->
         # If FileOptions and other related message have been found, we also need to compile their associated enums.
         {file_options_enums, other_enums} =
           Map.split(definition.enums_schemas, [
-            Google.Protobuf.FeatureSet.EnumType,
-            Google.Protobuf.FeatureSet.FieldPresence,
-            Google.Protobuf.FeatureSet.JsonFormat,
-            Google.Protobuf.FeatureSet.MessageEncoding,
-            Google.Protobuf.FeatureSet.RepeatedFieldEncoding,
-            Google.Protobuf.FeatureSet.Utf8Validation,
-            Google.Protobuf.FileOptions.OptimizeMode
+            EnumType,
+            FieldPresence,
+            JsonFormat,
+            MessageEncoding,
+            RepeatedFieldEncoding,
+            Utf8Validation,
+            OptimizeMode
           ])
 
         # FileOptions can also contain nested messages and enums, which we need to compile as well.
-        nested_in_file_options = find_enums_and_messages(definition.messages_schemas, Google.Protobuf.FileOptions)
+        nested_in_file_options = find_enums_and_messages(definition.messages_schemas, FileOptions)
         messages_used_in_file_options = Map.take(definition.messages_schemas, nested_in_file_options.messages)
         enums_used_in_file_options = Map.take(definition.enums_schemas, nested_in_file_options.enums)
 
@@ -167,31 +177,45 @@ defmodule Protox.Parse do
         |> Code.eval_quoted()
 
         # We can now parse the unknown fields with the modules compiled above.
+        # Two same-basename modules are in play here: the compile-time descriptor
+        # FileOptions (Protox.Google.Protobuf.FileOptions, called through a
+        # variable so no alias-lifting can shadow the runtime alias) and the one
+        # compiled just above at runtime (Google.Protobuf.FileOptions, bound to
+        # the FileOptions alias, called through apply/3 as the compiler cannot
+        # see a module that only exists at runtime).
+        descriptor_file_options = Protox.Google.Protobuf.FileOptions
+
         other_messages =
           for {msg_name, msg} when msg.file_options != nil <- other_messages, into: %{} do
             file_options =
               msg.file_options
-              |> Protox.Google.Protobuf.FileOptions.encode!()
+              |> descriptor_file_options.encode!()
               |> elem(_bytes_position_in_tuple = 0)
               |> IO.iodata_to_binary()
-              |> then(&apply(Google.Protobuf.FileOptions, :decode!, [&1]))
+              # credo:disable-for-next-line Credo.Check.Refactor.Apply
+              |> then(&apply(FileOptions, :decode!, [&1]))
 
             {msg_name, %{msg | file_options: file_options}}
           end
 
         # It's no longer necessary to keep the compiled modules in memory as they are of
         # no use for end user.
-        remove_module(Google.Protobuf.FeatureSet)
-        remove_module(Google.Protobuf.FileOptions)
-        remove_module(Google.Protobuf.UninterpretedOption)
-        remove_module(Google.Protobuf.UninterpretedOption.NamePart)
-        remove_module(Google.Protobuf.FeatureSet.EnumType)
-        remove_module(Google.Protobuf.FeatureSet.FieldPresence)
-        remove_module(Google.Protobuf.FeatureSet.JsonFormat)
-        remove_module(Google.Protobuf.FeatureSet.MessageEncoding)
-        remove_module(Google.Protobuf.FeatureSet.RepeatedFieldEncoding)
-        remove_module(Google.Protobuf.FeatureSet.Utf8Validation)
-        remove_module(Google.Protobuf.FileOptions.OptimizeMode)
+        Enum.each(
+          [
+            FeatureSet,
+            FileOptions,
+            UninterpretedOption,
+            NamePart,
+            EnumType,
+            FieldPresence,
+            JsonFormat,
+            MessageEncoding,
+            RepeatedFieldEncoding,
+            Utf8Validation,
+            OptimizeMode
+          ],
+          &remove_module/1
+        )
 
         # Finally, construct a new definition with the messages and enums that were not used
         # to parse FileOptions.
@@ -243,7 +267,7 @@ defmodule Protox.Parse do
     # proto2: the first entry is always the default value
     # proto3: the entry with value 0 is the default value, and protoc mandates the first entry
     # to have the value 0
-    [{_, first_is_default} | _] = Map.fetch!(enums, ename)
+    [{_tag, first_is_default} | _rest] = Map.fetch!(enums, ename)
 
     %{field | kind: %Scalar{default_value: first_is_default}, type: {:enum, ename}}
   end
@@ -266,7 +290,7 @@ defmodule Protox.Parse do
     %{field | type: {key_type, {:enum, Module.concat([namespace_or_nil | ename])}}}
   end
 
-  defp concat_names(%Field{} = field, _), do: field
+  defp concat_names(%Field{} = field, _namespace_or_nil), do: field
 
   defp make_enums(definition, prefix, descriptors) do
     Enum.reduce(descriptors, definition, fn descriptor, definition ->
@@ -487,15 +511,21 @@ defmodule Protox.Parse do
   defp get_default_value(%FieldDescriptorProto{type: :bytes} = f), do: f.default_value
 
   defp get_default_value(%FieldDescriptorProto{type: :double} = f) do
-    f.default_value |> Float.parse() |> elem(0)
+    f.default_value
+    |> Float.parse()
+    |> elem(0)
   end
 
   defp get_default_value(%FieldDescriptorProto{type: :float} = f) do
-    f.default_value |> Float.parse() |> elem(0)
+    f.default_value
+    |> Float.parse()
+    |> elem(0)
   end
 
   defp get_default_value(f) do
-    f.default_value |> Integer.parse() |> elem(0)
+    f.default_value
+    |> Integer.parse()
+    |> elem(0)
   end
 
   defp camelize(name) when is_list(name) do

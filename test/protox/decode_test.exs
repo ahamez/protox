@@ -1,5 +1,5 @@
 defmodule Protox.DecodeTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   import Bitwise
 
@@ -272,8 +272,10 @@ defmodule Protox.DecodeTest do
       # unknown fields are prepended during parsing then reversed once at the end,
       # so the final list must match the encounter order in the binary.
       "Multiple unknown varint fields preserve encounter order",
-      # tag 10 wire 0 value 1 | tag 20 wire 0 value 2 | tag 30 wire 0 value 3 | tag 40 wire 0 value 4 | tag 50 wire 0 value 5
-      # key(10,0)=80          | key(20,0)=160(2-byte)  | key(30,0)=240(2-byte)  | key(40,0)=320(2-byte)  | key(50,0)=400(2-byte)
+      # tag 10 wire 0 value 1 | tag 20 wire 0 value 2 | tag 30 wire 0 value 3
+      # tag 40 wire 0 value 4 | tag 50 wire 0 value 5
+      # key(10,0)=80 | key(20,0)=160(2-byte) | key(30,0)=240(2-byte)
+      # key(40,0)=320(2-byte) | key(50,0)=400(2-byte)
       <<80, 1, 160, 1, 2, 240, 1, 3, 192, 2, 4, 144, 3, 5>>,
       %NullHypothesisProto3{
         __uf__: [

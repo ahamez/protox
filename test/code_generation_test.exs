@@ -1,6 +1,8 @@
 defmodule Protox.CodeGenerationTest do
   use ExUnit.Case, async: false
 
+  alias Mix.Tasks.Protox.Generate
+
   @moduletag timeout: 600_000
 
   setup_all _context do
@@ -10,10 +12,11 @@ defmodule Protox.CodeGenerationTest do
     # Remove possible leftovers
     File.rm_rf!(code_generation_path)
 
-    {_, 0} = System.cmd("mix", ["new", "code_generation"], cd: tmp_dir)
+    {_mix_new_output, 0} = System.cmd("mix", ["new", "code_generation"], cd: tmp_dir)
     File.write!("#{code_generation_path}/mix.exs", mix_exs())
 
-    {_, 0} = System.cmd("mix", ["do", "deps.get", "+", "deps.compile"], cd: code_generation_path)
+    {_deps_output, 0} =
+      System.cmd("mix", ["do", "deps.get", "+", "deps.compile"], cd: code_generation_path)
 
     on_exit(fn -> File.rm_rf!(code_generation_path) end)
 
@@ -53,7 +56,7 @@ defmodule Protox.CodeGenerationTest do
   } do
     tmp_file = Protox.TmpFs.tmp_file_path!(".ex")
 
-    Mix.Tasks.Protox.Generate.run([
+    Generate.run([
       "--output-path=#{tmp_file}",
       "#{protox_path}/test/samples/google/test_messages_proto3.proto"
     ])
@@ -70,7 +73,7 @@ defmodule Protox.CodeGenerationTest do
     File.rm_rf!("#{path}/lib/output")
     File.mkdir_p!("#{path}/lib/output")
 
-    {_, generation_exit_status} =
+    {_generation_output, generation_exit_status} =
       System.cmd(
         "mix",
         [
@@ -89,7 +92,7 @@ defmodule Protox.CodeGenerationTest do
     File.rm_rf!("#{code_generation_path}/lib/output")
     File.mkdir_p!("#{code_generation_path}/lib/output")
 
-    {_, generation_exit_status} =
+    {_generation_output, generation_exit_status} =
       System.cmd(
         "mix",
         [
@@ -102,7 +105,7 @@ defmodule Protox.CodeGenerationTest do
 
     assert generation_exit_status == 0
 
-    {_, compilation_exit_status} =
+    {_compilation_output, compilation_exit_status} =
       System.cmd(
         "mix",
         [
@@ -114,7 +117,7 @@ defmodule Protox.CodeGenerationTest do
 
     assert compilation_exit_status == 0
 
-    {_, credo_exit_status} =
+    {_credo_output, credo_exit_status} =
       System.cmd(
         "mix",
         [
@@ -125,7 +128,7 @@ defmodule Protox.CodeGenerationTest do
 
     assert credo_exit_status == 0
 
-    {_, mix_format_exit_status} =
+    {_format_output, mix_format_exit_status} =
       System.cmd(
         "mix",
         [
@@ -137,7 +140,7 @@ defmodule Protox.CodeGenerationTest do
 
     assert mix_format_exit_status == 0
 
-    {_, mix_dialyzer_exit_status} =
+    {_dialyzer_output, mix_dialyzer_exit_status} =
       System.cmd(
         "mix",
         [

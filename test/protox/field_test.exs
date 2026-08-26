@@ -1,5 +1,5 @@
 defmodule Protox.FieldTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Protox.{Field, IllegalTagError, InvalidFieldAttributeError, Scalar}
 

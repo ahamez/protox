@@ -5,6 +5,7 @@ defmodule Protox.DefineDecoder do
 
   alias Protox.{Field, OneOf, Scalar}
 
+  @spec define(atom(), [Field.t()], keyword()) :: Macro.t()
   def define(msg_name, fields, opts \\ []) do
     vars = %{
       bytes: Macro.var(:bytes, __MODULE__),
@@ -125,22 +126,22 @@ defmodule Protox.DefineDecoder do
 
   defp make_parse_key_value_tag_0() do
     quote do
-      <<0::5, _::3, _rest::binary>> -> raise %Protox.IllegalTagError{}
+      <<0::5, _wire_type::3, _rest::binary>> -> raise %Protox.IllegalTagError{}
     end
   end
 
   defp make_parse_key_value_invalid_varint() do
     quote do
-      <<_::5, 3::3, _rest::binary>> ->
+      <<_tag::5, 3::3, _rest::binary>> ->
         raise Protox.DecodingError.new(bytes, "invalid wire type 3")
 
-      <<_::5, 4::3, _rest::binary>> ->
+      <<_tag::5, 4::3, _rest::binary>> ->
         raise Protox.DecodingError.new(bytes, "invalid wire type 4")
 
-      <<_::5, 6::3, _rest::binary>> ->
+      <<_tag::5, 6::3, _rest::binary>> ->
         raise Protox.DecodingError.new(bytes, "invalid wire type 6")
 
-      <<_::5, 7::3, _rest::binary>> ->
+      <<_tag::5, 7::3, _rest::binary>> ->
         raise Protox.DecodingError.new(bytes, "invalid wire type 7")
     end
   end
@@ -174,10 +175,9 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_single_case(_vars, %Field{type: {:message, _}}), do: quote(do: [])
   defp make_single_case(_vars, %Field{type: :string}), do: quote(do: [])
   defp make_single_case(_vars, %Field{type: :bytes}), do: quote(do: [])
-  defp make_single_case(_vars, %Field{type: {x, _}}) when x != :enum, do: quote(do: [])
+  defp make_single_case(_vars, %Field{type: {x, _sub_type}}) when x != :enum, do: quote(do: [])
 
   defp make_single_case(vars, %Field{} = field) do
     parse_single = make_parse_single(vars.bytes, field.type)
@@ -196,7 +196,7 @@ defmodule Protox.DefineDecoder do
             <<unquote(first_byte)::5, _wire_type::3, unquote(vars.bytes)::binary>>
           end
 
-        _ ->
+        _key_tail ->
           quote do
             <<unquote(first_byte)::5, _wire_type::3, unquote(tail), unquote(vars.bytes)::binary>>
           end
@@ -209,7 +209,7 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_delimited_case(vars, single_generated, %Field{type: {:message, _}} = field) do
+  defp make_delimited_case(vars, single_generated, %Field{type: {:message, _msg_type}} = field) do
     make_delimited_case_impl(vars, single_generated, field)
   end
 
@@ -263,7 +263,7 @@ defmodule Protox.DefineDecoder do
               <<unquote(first_byte)::5, unquote(@wire_delimited)::3, unquote(vars.bytes)::binary>>
             end
 
-          _ ->
+          _key_tail ->
             quote do
               <<unquote(first_byte)::5, unquote(@wire_delimited)::3, unquote(tail), unquote(vars.bytes)::binary>>
             end
@@ -287,7 +287,7 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_update_field(value, %Field{kind: %OneOf{}, type: {:message, _}} = field, vars, _wrap_value) do
+  defp make_update_field(value, %Field{kind: %OneOf{}, type: {:message, _msg_type}} = field, vars, _wrap_value) do
     case field.label do
       :proto3_optional ->
         quote do
@@ -296,14 +296,14 @@ defmodule Protox.DefineDecoder do
           {unquote(field.name), unquote(value)}
         end
 
-      _ ->
+      _other_label ->
         quote do
           case unquote(vars.msg).unquote(field.kind.parent) do
             {unquote(field.name), previous_value} ->
               {unquote(field.kind.parent),
                {unquote(field.name), Protox.MergeMessage.merge(previous_value, unquote(value))}}
 
-            _ ->
+            _no_previous ->
               {unquote(field.kind.parent), {unquote(field.name), unquote(value)}}
           end
         end
@@ -315,12 +315,12 @@ defmodule Protox.DefineDecoder do
       :proto3_optional ->
         quote(do: {unquote(field.name), unquote(value)})
 
-      _ ->
+      _other_label ->
         quote(do: {unquote(field.kind.parent), {unquote(field.name), unquote(value)}})
     end
   end
 
-  defp make_update_field(value, %Field{kind: %Scalar{}, type: {:message, _}} = field, vars, _wrap_value) do
+  defp make_update_field(value, %Field{kind: %Scalar{}, type: {:message, _msg_type}} = field, vars, _wrap_value) do
     quote do
       {
         unquote(field.name),
@@ -426,7 +426,7 @@ defmodule Protox.DefineDecoder do
     unset_map_value =
       case value_type do
         {:message, msg_type} -> quote(do: struct(unquote(msg_type)))
-        _ -> quote(do: Protox.Default.default(unquote(value_type)))
+        _scalar_type -> quote(do: Protox.Default.default(unquote(value_type)))
       end
 
     parser_fun_name = make_map_decode_fun_name(key_type, value_type)
@@ -434,19 +434,19 @@ defmodule Protox.DefineDecoder do
     quote do
       {map_key, map_value} = unquote(parser_fun_name)({:unset, :unset}, unquote(bytes_var))
 
-      map_key =
+      resolved_map_key =
         case map_key do
           :unset -> Protox.Default.default(unquote(key_type))
-          _ -> map_key
+          _already_set -> map_key
         end
 
-      map_value =
+      resolved_map_value =
         case map_value do
           :unset -> unquote(unset_map_value)
-          _ -> map_value
+          _already_set -> map_value
         end
 
-      {map_key, map_value}
+      {resolved_map_key, resolved_map_value}
     end
   end
 
@@ -537,17 +537,17 @@ defmodule Protox.DefineDecoder do
             {map_entry, unquote(vars.rest)} =
               case Protox.Decode.parse_key(unquote(vars.bytes)) do
                 # key
-                {1, _, unquote(vars.rest)} ->
+                {1, _wire_type, unquote(vars.rest)} ->
                   {res, unquote(vars.rest)} = unquote(key_parser)
                   {{res, entry_value}, unquote(vars.rest)}
 
                 # value
-                {2, _, unquote(vars.rest)} ->
+                {2, _wire_type, unquote(vars.rest)} ->
                   {res, unquote(vars.rest)} = unquote(value_parser)
                   {{entry_key, res}, unquote(vars.rest)}
 
                 {tag, wire_type, unquote(vars.rest)} ->
-                  {_, unquote(vars.rest)} =
+                  {_unknown_value, unquote(vars.rest)} =
                     Protox.Decode.parse_unknown(tag, wire_type, unquote(vars.rest))
 
                   {{entry_key, entry_value}, unquote(vars.rest)}
@@ -559,9 +559,9 @@ defmodule Protox.DefineDecoder do
 
       {fun_name, code}
     end)
-    |> Enum.sort(fn {lhs_fun_name, _}, {rhs_fun_name, _} -> lhs_fun_name < rhs_fun_name end)
-    |> Enum.dedup_by(fn {fun_name, _} -> fun_name end)
-    |> Enum.map(fn {_, code} -> code end)
+    |> Enum.sort(fn {lhs_fun_name, _lhs_code}, {rhs_fun_name, _rhs_code} -> lhs_fun_name < rhs_fun_name end)
+    |> Enum.dedup_by(fn {fun_name, _code} -> fun_name end)
+    |> Enum.map(fn {_fun_name, code} -> code end)
   end
 
   defp make_map_decode_fun_name(key_type, value_type) do
@@ -572,28 +572,28 @@ defmodule Protox.DefineDecoder do
         ty -> "#{Atom.to_string(ty)}"
       end
 
-    value_name =
+    underscored_value_name =
       value_name
       |> Macro.underscore()
       |> String.replace("/", "_")
 
-    String.to_atom("parse_#{Atom.to_string(key_type)}_#{value_name}")
+    String.to_atom("parse_#{Atom.to_string(key_type)}_#{underscored_value_name}")
   end
 
   defp make_parse_map_entry(vars, type) do
     parse_delimited =
       quote do
         {len, new_rest} = Protox.Varint.decode(unquote(vars.rest))
-        {unquote(vars.delimited), new_rest} = Protox.Decode.parse_delimited(new_rest, len)
+        {unquote(vars.delimited), delimited_rest} = Protox.Decode.parse_delimited(new_rest, len)
 
-        {unquote(make_parse_delimited(vars.delimited, type)), new_rest}
+        {unquote(make_parse_delimited(vars.delimited, type)), delimited_rest}
       end
 
     case type do
       :string -> parse_delimited
       :bytes -> parse_delimited
-      {:message, _} -> parse_delimited
-      _ -> make_parse_single(vars.rest, type)
+      {:message, _msg_type} -> parse_delimited
+      _scalar_type -> make_parse_single(vars.rest, type)
     end
   end
 
@@ -605,10 +605,14 @@ defmodule Protox.DefineDecoder do
       case field.kind do
         :map -> :map_entry
         :packed -> :packed
-        _ -> field.type
+        _other_kind -> field.type
       end
 
-    Protox.Encode.make_key_bytes(field.tag, ty) |> elem(0) |> IO.iodata_to_binary()
+    key_bytes_and_size = Protox.Encode.make_key_bytes(field.tag, ty)
+
+    key_bytes_and_size
+    |> elem(0)
+    |> IO.iodata_to_binary()
   end
 
   defp maybe_wrap(value, true = _wrap_value), do: [value]

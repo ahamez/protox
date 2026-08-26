@@ -5,6 +5,11 @@ defmodule Protox.Defs do
   alias Protox.{Field, OneOf}
 
   # Extract oneofs and regroup them by parent field.
+  @spec split_oneofs([Field.t()]) :: %{
+          oneofs: %{atom() => [Field.t()]},
+          proto3_optionals: [Field.t()],
+          others: [Field.t()]
+        }
   def split_oneofs(fields) do
     {all_oneofs, others} =
       Enum.split_with(fields, fn

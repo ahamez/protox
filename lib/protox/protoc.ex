@@ -1,12 +1,14 @@
 defmodule Protox.Protoc do
   @moduledoc false
 
+  @spec run([Path.t()], [Path.t()] | nil) :: {:ok, binary()} | {:error, binary()}
   def run([proto_file], nil) do
-    do_run([proto_file], ["-I", "#{proto_file |> Path.dirname() |> Path.expand()}"])
-  end
+    dirname =
+      proto_file
+      |> Path.dirname()
+      |> Path.expand()
 
-  def run([proto_file], paths) do
-    do_run([proto_file], paths_to_protoc_args(paths))
+    do_run([proto_file], ["-I", dirname])
   end
 
   def run(proto_files, nil) do
@@ -20,7 +22,9 @@ defmodule Protox.Protoc do
   # -- Private
 
   defp paths_to_protoc_args(paths) do
-    paths |> Enum.map(&["-I", &1]) |> Enum.concat()
+    paths
+    |> Enum.map(&["-I", &1])
+    |> Enum.concat()
   end
 
   defp do_run(proto_files, args) do
@@ -35,12 +39,12 @@ defmodule Protox.Protoc do
         raise "protoc executable is missing. Please make sure Protocol Buffers " <>
                 "is installed and available system wide"
     else
-      {_, 0} ->
+      {_output, 0} ->
         file_content = File.read!(outfile_path)
         :ok = File.rm(outfile_path)
         {:ok, file_content}
 
-      {msg, _} ->
+      {msg, _exit_code} ->
         {:error, msg}
     end
   end
@@ -48,13 +52,20 @@ defmodule Protox.Protoc do
   defp common_directory_path(paths_rel) do
     paths = Enum.map(paths_rel, &Path.expand/1)
 
-    min_path = paths |> Enum.min() |> Path.split()
-    max_path = paths |> Enum.max() |> Path.split()
+    min_path =
+      paths
+      |> Enum.min()
+      |> Path.split()
+
+    max_path =
+      paths
+      |> Enum.max()
+      |> Path.split()
 
     min_path
     |> Enum.zip(max_path)
     |> Enum.take_while(fn {a, b} -> a == b end)
-    |> Enum.map(fn {x, _} -> x end)
+    |> Enum.map(fn {x, _y} -> x end)
     |> Path.join()
   end
 end

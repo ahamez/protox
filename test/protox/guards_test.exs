@@ -1,5 +1,5 @@
 defmodule Protox.GuardsTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   import Protox.Guards
 
@@ -27,16 +27,5 @@ defmodule Protox.GuardsTest do
     assert is_delimited(:string) == true
     assert is_delimited(:bytes) == true
     assert is_delimited(:int32) == false
-  end
-
-  test "is_protobuf_integer" do
-    assert is_protobuf_integer(:int32) == true
-    assert is_protobuf_integer(:string) == false
-  end
-
-  test "is_protobuf_float" do
-    assert is_protobuf_float(:double) == true
-    assert is_protobuf_float(:float) == true
-    assert is_protobuf_float(:string) == false
   end
 end

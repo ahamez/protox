@@ -1,5 +1,5 @@
 defmodule ProtoxTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
 
   alias ProtobufTestMessages.Proto2.{TestAllRequiredTypesProto2, TestAllTypesProto2}
   alias ProtobufTestMessages.Proto3.{ForeignEnum, NullHypothesisProto3, TestAllTypesProto3}
@@ -139,7 +139,7 @@ defmodule ProtoxTest do
       TestAllRequiredTypesProto2.schema().fields
       |> Enum.flat_map(fn
         {name, %Protox.Field{label: :required}} -> [name]
-        _ -> []
+        _field -> []
       end)
       |> Enum.sort()
 
@@ -204,7 +204,13 @@ defmodule ProtoxTest do
 
   test "Non Camel_case" do
     msg = Protox.RandomInit.generate_msg(Camel)
-    assert msg == msg |> Camel.encode!() |> elem(0) |> IO.iodata_to_binary() |> Camel.decode!()
+
+    assert msg ==
+             msg
+             |> Camel.encode!()
+             |> elem(0)
+             |> IO.iodata_to_binary()
+             |> Camel.decode!()
   end
 
   test "Non CamelCase enums" do
