@@ -79,8 +79,11 @@ defmodule Protox.Decode do
   @spec parse_unknown(non_neg_integer(), Protox.Types.tag(), binary()) ::
           {{non_neg_integer(), Protox.Types.tag(), binary()}, binary()}
   def parse_unknown(tag, @wire_varint, bytes) do
-    {unknown_bytes, rest} = get_unknown_varint_bytes(<<>>, bytes)
-    {{tag, @wire_varint, unknown_bytes}, rest}
+    size = unknown_varint_size(bytes, 0)
+    <<unknown_bytes::binary-size(^size), rest::binary>> = bytes
+
+    # Copied so the stored unknown bytes don't keep the whole payload alive.
+    {{tag, @wire_varint, :binary.copy(unknown_bytes)}, rest}
   end
 
   def parse_unknown(tag, @wire_64bits, <<unknown_bytes::64, rest::binary>>) do
@@ -90,13 +93,12 @@ defmodule Protox.Decode do
   def parse_unknown(tag, @wire_delimited, bytes) do
     {len, new_bytes} = Varint.decode(bytes)
 
-    try do
-      <<unknown_bytes::binary-size(^len), rest::binary>> = new_bytes
-      {{tag, @wire_delimited, unknown_bytes}, rest}
-    rescue
-      _error ->
-        reraise Protox.DecodingError.new(bytes, "invalid bytes for unknown delimited"),
-                __STACKTRACE__
+    case new_bytes do
+      <<unknown_bytes::binary-size(^len), rest::binary>> ->
+        {{tag, @wire_delimited, unknown_bytes}, rest}
+
+      _ ->
+        raise Protox.DecodingError.new(bytes, "invalid bytes for unknown delimited")
     end
   end
 
@@ -108,15 +110,13 @@ defmodule Protox.Decode do
     raise Protox.DecodingError.new(bytes, "can't parse unknown bytes")
   end
 
-  defp get_unknown_varint_bytes(acc, <<0::1, b::7, rest::binary>>) do
-    {<<acc::binary, 0::1, b::7>>, rest}
+  defp unknown_varint_size(<<0::1, _byte::7, _rest::binary>>, acc), do: acc + 1
+
+  defp unknown_varint_size(<<1::1, _byte::7, rest::binary>>, acc) do
+    unknown_varint_size(rest, acc + 1)
   end
 
-  defp get_unknown_varint_bytes(acc, <<1::1, b::7, rest::binary>>) do
-    get_unknown_varint_bytes(<<acc::binary, 1::1, b::7>>, rest)
-  end
-
-  defp get_unknown_varint_bytes(_acc, bytes) do
+  defp unknown_varint_size(bytes, _acc) do
     raise Protox.DecodingError.new(bytes, "can't parse unknown varint bytes")
   end
 
