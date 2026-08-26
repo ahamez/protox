@@ -18,6 +18,10 @@ defmodule Protox.Decode do
 
   @compile {:inline,
             parse_delimited: 2,
+            truncate_unsigned32: 1,
+            truncate_unsigned64: 1,
+            truncate_signed32: 1,
+            truncate_signed64: 1,
             parse_bool: 1,
             parse_sint32: 1,
             parse_sint64: 1,
@@ -161,50 +165,60 @@ defmodule Protox.Decode do
   @spec parse_sint32(binary()) :: {integer(), binary()}
   def parse_sint32(bytes) do
     {value, rest} = Varint.decode(bytes)
-    <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
-    {Zigzag.decode(res), rest}
+    {Zigzag.decode(truncate_unsigned32(value)), rest}
   end
 
   @spec parse_sint64(binary()) :: {integer(), binary()}
   def parse_sint64(bytes) do
     {value, rest} = Varint.decode(bytes)
-    <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
-    {Zigzag.decode(res), rest}
+    {Zigzag.decode(truncate_unsigned64(value)), rest}
   end
 
   @spec parse_uint32(binary()) :: {non_neg_integer(), binary()}
   def parse_uint32(bytes) do
     {value, rest} = Varint.decode(bytes)
-    <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
-    {res, rest}
+    {truncate_unsigned32(value), rest}
   end
 
   @spec parse_uint64(binary()) :: {non_neg_integer(), binary()}
   def parse_uint64(bytes) do
     {value, rest} = Varint.decode(bytes)
-    <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
-    {res, rest}
+    {truncate_unsigned64(value), rest}
   end
 
   @spec parse_enum(binary(), module()) :: {atom() | integer(), binary()}
   def parse_enum(bytes, mod) do
     {value, rest} = Varint.decode(bytes)
-    <<res::signed-native-32>> = <<value::signed-native-32>>
-    {mod.decode(res), rest}
+    {mod.decode(truncate_signed32(value)), rest}
   end
 
   @spec parse_int32(binary()) :: {integer(), binary()}
   def parse_int32(bytes) do
     {value, rest} = Varint.decode(bytes)
-    <<res::signed-native-32>> = <<value::signed-native-32>>
-    {res, rest}
+    {truncate_signed32(value), rest}
   end
 
   @spec parse_int64(binary()) :: {integer(), binary()}
   def parse_int64(bytes) do
     {value, rest} = Varint.decode(bytes)
-    <<res::signed-native-64>> = <<value::signed-native-64>>
-    {res, rest}
+    {truncate_signed64(value), rest}
+  end
+
+  defp truncate_unsigned32(value), do: value &&& 0xFFFF_FFFF
+  defp truncate_unsigned64(value), do: value &&& 0xFFFF_FFFF_FFFF_FFFF
+
+  defp truncate_signed32(value) do
+    case value &&& 0xFFFF_FFFF do
+      truncated when truncated >= 0x8000_0000 -> truncated - 0x1_0000_0000
+      truncated -> truncated
+    end
+  end
+
+  defp truncate_signed64(value) do
+    case value &&& 0xFFFF_FFFF_FFFF_FFFF do
+      truncated when truncated >= 0x8000_0000_0000_0000 -> truncated - 0x1_0000_0000_0000_0000
+      truncated -> truncated
+    end
   end
 
   @spec validate_string!(binary()) :: binary() | no_return()
