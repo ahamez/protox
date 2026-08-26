@@ -13,11 +13,11 @@ defmodule Protox.String do
   @spec validate(binary()) :: :ok | {:error, :invalid_utf8 | :too_large}
   def validate(bytes) do
     cond do
-      not String.valid?(bytes) ->
-        {:error, :invalid_utf8}
-
       byte_size(bytes) > @max_size ->
         {:error, :too_large}
+
+      not String.valid?(bytes) ->
+        {:error, :invalid_utf8}
 
       true ->
         :ok
