@@ -178,27 +178,19 @@ defmodule Protox.DefineDecoder do
     parse_single = make_parse_single(vars.bytes, field.type)
     update_field = make_update_field(vars.value, field, vars, _wrap_value = true)
 
-    key_bytes = make_key_bytes(field)
-
-    # The last 3 bits of the first byte are the wire type, which we can to ignore here as we know beforehand
-    # how the field is encoded.
-    <<first_byte::5, _wire_type::3, tail::binary>> = key_bytes
-
-    clause =
-      case tail do
-        "" ->
-          quote do
-            <<unquote(first_byte)::5, _wire_type::3, unquote(vars.bytes)::binary>>
-          end
-
-        _key_tail ->
-          quote do
-            <<unquote(first_byte)::5, _wire_type::3, unquote(tail), unquote(vars.bytes)::binary>>
-          end
-      end
+    # Match the full literal key (tag and wire type): the BEAM can then dispatch
+    # on whole bytes, and a known tag with an unexpected wire type falls through
+    # to the unknown-field clause instead of being misparsed. The wire type comes
+    # from the element type, not the field kind: for repeated fields this clause
+    # decodes single (unpacked) occurrences, whose key differs from the packed one.
+    key_bytes =
+      field.tag
+      |> Protox.Encode.make_key_bytes(field.type)
+      |> elem(0)
+      |> IO.iodata_to_binary()
 
     quote do
-      unquote(clause) ->
+      <<unquote(key_bytes), unquote(vars.bytes)::binary>> ->
         {value, rest} = unquote(parse_single)
         {unquote(update_field), rest}
     end
@@ -242,31 +234,14 @@ defmodule Protox.DefineDecoder do
         make_update_field(parse_delimited, field, vars, _wrap_value = !single_generated)
       end
 
-    key_bytes = make_key_bytes(%{field | kind: :packed})
-
-    clause =
-      if single_generated do
-        quote do
-          <<unquote(key_bytes), unquote(vars.bytes)::binary>>
-        end
-      else
-        <<first_byte::5, _wire_type::3, tail::binary>> = key_bytes
-
-        case tail do
-          "" ->
-            quote do
-              <<unquote(first_byte)::5, unquote(@wire_delimited)::3, unquote(vars.bytes)::binary>>
-            end
-
-          _key_tail ->
-            quote do
-              <<unquote(first_byte)::5, unquote(@wire_delimited)::3, unquote(tail), unquote(vars.bytes)::binary>>
-            end
-        end
-      end
+    key_bytes =
+      field.tag
+      |> Protox.Encode.make_key_bytes(:packed)
+      |> elem(0)
+      |> IO.iodata_to_binary()
 
     quote do
-      unquote(clause) ->
+      <<unquote(key_bytes), unquote(vars.bytes)::binary>> ->
         {len, unquote(vars.bytes)} = Protox.Varint.decode(unquote(vars.bytes))
 
         {unquote(vars.delimited), rest} = Protox.Decode.parse_delimited(unquote(vars.bytes), len)
@@ -596,24 +571,6 @@ defmodule Protox.DefineDecoder do
       {:message, _msg_type} -> parse_delimited
       _scalar_type -> make_parse_single(vars.rest, type)
     end
-  end
-
-  # Compute at compile time the varint representation of a field tag and wire type.
-  defp make_key_bytes(%Field{} = field) do
-    # We need to convert the type to something recognized
-    # by Protox.Encode.make_key_bytes/2.
-    ty =
-      case field.kind do
-        :map -> :map_entry
-        :packed -> :packed
-        _other_kind -> field.type
-      end
-
-    key_bytes_and_size = Protox.Encode.make_key_bytes(field.tag, ty)
-
-    key_bytes_and_size
-    |> elem(0)
-    |> IO.iodata_to_binary()
   end
 
   defp maybe_wrap(value, true = _wrap_value), do: [value]
