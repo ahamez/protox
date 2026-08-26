@@ -17,6 +17,7 @@ defmodule Protox.Decode do
   @max_field_number (1 <<< 29) - 1
 
   @compile {:inline,
+            parse_delimited: 2,
             parse_bool: 1,
             parse_sint32: 1,
             parse_sint64: 1,
@@ -338,12 +339,12 @@ defmodule Protox.Decode do
 
   @spec parse_delimited(binary(), non_neg_integer()) :: {binary(), binary()} | no_return()
   def parse_delimited(bytes, len) do
-    <<value::binary-size(^len), rest::binary>> = bytes
+    case bytes do
+      <<value::binary-size(^len), rest::binary>> ->
+        {value, rest}
 
-    {value, rest}
-  rescue
-    _error ->
-      reraise Protox.DecodingError.new(bytes, "invalid bytes for delimited field"),
-              __STACKTRACE__
+      _ ->
+        raise Protox.DecodingError.new(bytes, "invalid bytes for delimited field")
+    end
   end
 end
