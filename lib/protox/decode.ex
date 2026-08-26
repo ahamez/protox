@@ -302,6 +302,13 @@ defmodule Protox.Decode do
   @spec parse_repeated_fixed32([non_neg_integer()], binary()) :: [non_neg_integer()]
   def parse_repeated_fixed32(acc, <<>>), do: Enum.reverse(acc)
 
+  def parse_repeated_fixed32(
+        acc,
+        <<a::unsigned-little-32, b::unsigned-little-32, c::unsigned-little-32, d::unsigned-little-32, rest::binary>>
+      ) do
+    parse_repeated_fixed32([d, c, b, a | acc], rest)
+  end
+
   def parse_repeated_fixed32(acc, bytes) do
     {value, rest} = parse_fixed32(bytes)
     parse_repeated_fixed32([value | acc], rest)
@@ -309,6 +316,13 @@ defmodule Protox.Decode do
 
   @spec parse_repeated_fixed64([non_neg_integer()], binary()) :: [non_neg_integer()]
   def parse_repeated_fixed64(acc, <<>>), do: Enum.reverse(acc)
+
+  def parse_repeated_fixed64(
+        acc,
+        <<a::unsigned-little-64, b::unsigned-little-64, c::unsigned-little-64, d::unsigned-little-64, rest::binary>>
+      ) do
+    parse_repeated_fixed64([d, c, b, a | acc], rest)
+  end
 
   def parse_repeated_fixed64(acc, bytes) do
     {value, rest} = parse_fixed64(bytes)
@@ -318,6 +332,13 @@ defmodule Protox.Decode do
   @spec parse_repeated_sfixed32([integer()], binary()) :: [integer()]
   def parse_repeated_sfixed32(acc, <<>>), do: Enum.reverse(acc)
 
+  def parse_repeated_sfixed32(
+        acc,
+        <<a::signed-little-32, b::signed-little-32, c::signed-little-32, d::signed-little-32, rest::binary>>
+      ) do
+    parse_repeated_sfixed32([d, c, b, a | acc], rest)
+  end
+
   def parse_repeated_sfixed32(acc, bytes) do
     {value, rest} = parse_sfixed32(bytes)
     parse_repeated_sfixed32([value | acc], rest)
@@ -325,6 +346,13 @@ defmodule Protox.Decode do
 
   @spec parse_repeated_sfixed64([integer()], binary()) :: [integer()]
   def parse_repeated_sfixed64(acc, <<>>), do: Enum.reverse(acc)
+
+  def parse_repeated_sfixed64(
+        acc,
+        <<a::signed-little-64, b::signed-little-64, c::signed-little-64, d::signed-little-64, rest::binary>>
+      ) do
+    parse_repeated_sfixed64([d, c, b, a | acc], rest)
+  end
 
   def parse_repeated_sfixed64(acc, bytes) do
     {value, rest} = parse_sfixed64(bytes)
@@ -336,6 +364,15 @@ defmodule Protox.Decode do
         ]
   def parse_repeated_float(acc, <<>>), do: Enum.reverse(acc)
 
+  # A float segment never matches NaN or infinity payloads: those fall through
+  # to the single-element clause below, which handles them.
+  def parse_repeated_float(
+        acc,
+        <<a::float-little-32, b::float-little-32, c::float-little-32, d::float-little-32, rest::binary>>
+      ) do
+    parse_repeated_float([d, c, b, a | acc], rest)
+  end
+
   def parse_repeated_float(acc, bytes) do
     {value, rest} = parse_float(bytes)
     parse_repeated_float([value | acc], rest)
@@ -345,6 +382,15 @@ defmodule Protox.Decode do
           float() | :infinity | :"-infinity" | :nan
         ]
   def parse_repeated_double(acc, <<>>), do: Enum.reverse(acc)
+
+  # A float segment never matches NaN or infinity payloads: those fall through
+  # to the single-element clause below, which handles them.
+  def parse_repeated_double(
+        acc,
+        <<a::float-little-64, b::float-little-64, c::float-little-64, d::float-little-64, rest::binary>>
+      ) do
+    parse_repeated_double([d, c, b, a | acc], rest)
+  end
 
   def parse_repeated_double(acc, bytes) do
     {value, rest} = parse_double(bytes)
