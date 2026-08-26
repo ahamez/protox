@@ -56,11 +56,11 @@ defmodule Protox.Decode do
   def parse_key(bytes) do
     {key, rest} = Varint.decode(bytes)
     key_size = byte_size(bytes) - byte_size(rest)
-    key_bytes = binary_part(bytes, 0, key_size)
     field_number = key >>> 3
 
-    # Reject overlong or otherwise non-canonical key varints that decode to the same integer.
-    if elem(Varint.encode(key), 0) != key_bytes do
+    # Reject overlong key varints: an LEB128 encoding is canonical iff its last
+    # byte (the highest 7-bit group) is non-zero, or the varint is a single byte.
+    if key_size > 1 and key >>> (7 * (key_size - 1)) == 0 do
       raise Protox.DecodingError.new(bytes, "invalid key varint")
     end
 
