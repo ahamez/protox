@@ -3,10 +3,12 @@ defmodule Mix.Tasks.Protox.Conformance do
 
   use Mix.Task
 
+  alias Mix.Tasks.Escript.Build
+
   @impl Mix.Task
   @spec run(any) :: any
   def run(args) do
-    with {options, _, []} <-
+    with {options, _argv, []} <-
            OptionParser.parse(args,
              strict: [
                runner: :string,
@@ -16,7 +18,7 @@ defmodule Mix.Tasks.Protox.Conformance do
              ]
            ),
          {:ok, runner} <- get_runner(options),
-         :ok <- Mix.Tasks.Escript.Build.run([]),
+         :ok <- Build.run([]),
          :ok <- launch_runner(options, runner) do
       {:ok, :conformance_successful}
     else
@@ -51,23 +53,22 @@ defmodule Mix.Tasks.Protox.Conformance do
 
   defp get_runner(options) do
     case Keyword.get(options, :runner) do
-      nil ->
-        runner_path =
-          Path.expand("#{Mix.Project.deps_paths().protobuf}/bin/conformance_test_runner")
+      nil -> resolve_default_runner(options)
+      runner_path -> ensure_runner_exists(runner_path)
+    end
+  end
 
-        force_runner_build = Keyword.get(options, :force_runner_build, false)
+  defp resolve_default_runner(options) do
+    runner_path = Path.expand("#{Mix.Project.deps_paths().protobuf}/bin/conformance_test_runner")
+    force_runner_build = Keyword.get(options, :force_runner_build, false)
 
-        if File.exists?(runner_path) and not force_runner_build do
-          ensure_runner_exists(runner_path)
-        else
-          with :ok <- configure_runner(options),
-               :ok <- build_runner(options) do
-            ensure_runner_exists(runner_path)
-          end
-        end
-
-      runner_path ->
+    if File.exists?(runner_path) and not force_runner_build do
+      ensure_runner_exists(runner_path)
+    else
+      with :ok <- configure_runner(options),
+           :ok <- build_runner(options) do
         ensure_runner_exists(runner_path)
+      end
     end
   end
 
@@ -76,19 +77,22 @@ defmodule Mix.Tasks.Protox.Conformance do
     runtime_output_directory = Path.expand("#{Mix.Project.deps_paths().protobuf}/bin")
 
     configuration =
-      [
-        {"CMAKE_CXX_STANDARD", "17"},
-        {"CMAKE_RUNTIME_OUTPUT_DIRECTORY", runtime_output_directory},
-        {"protobuf_INSTALL", "OFF"},
-        {"protobuf_BUILD_TESTS", "OFF"},
-        {"protobuf_BUILD_CONFORMANCE", "ON"},
-        {"protobuf_BUILD_EXAMPLES", "OFF"},
-        {"protobuf_BUILD_PROTOBUF_BINARIES", "ON"},
-        {"protobuf_BUILD_PROTOC_BINARIES", "OFF"},
-        {"protobuf_BUILD_LIBPROTOC", "OFF"},
-        {"protobuf_BUILD_LIBUPB", "OFF"}
-      ]
-      |> Enum.map_join(" ", fn {key, value} -> "-D#{key}=#{value}" end)
+      Enum.map_join(
+        [
+          {"CMAKE_CXX_STANDARD", "17"},
+          {"CMAKE_RUNTIME_OUTPUT_DIRECTORY", runtime_output_directory},
+          {"protobuf_INSTALL", "OFF"},
+          {"protobuf_BUILD_TESTS", "OFF"},
+          {"protobuf_BUILD_CONFORMANCE", "ON"},
+          {"protobuf_BUILD_EXAMPLES", "OFF"},
+          {"protobuf_BUILD_PROTOBUF_BINARIES", "ON"},
+          {"protobuf_BUILD_PROTOC_BINARIES", "OFF"},
+          {"protobuf_BUILD_LIBPROTOC", "OFF"},
+          {"protobuf_BUILD_LIBUPB", "OFF"}
+        ],
+        " ",
+        fn {key, value} -> "-D#{key}=#{value}" end
+      )
 
     File.cd!(Mix.Project.deps_paths().protobuf, fn ->
       cmd = shell.cmd("cmake . #{configuration}")

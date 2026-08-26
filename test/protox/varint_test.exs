@@ -21,7 +21,10 @@ defmodule Protox.VarintTest do
       {encoded, size} = Protox.Varint.encode(int)
       assert size == byte_size(encoded)
 
-      assert {^int, ""} = encoded |> IO.iodata_to_binary() |> Protox.Varint.decode()
+      assert {^int, ""} =
+               encoded
+               |> IO.iodata_to_binary()
+               |> Protox.Varint.decode()
     end
   end
 

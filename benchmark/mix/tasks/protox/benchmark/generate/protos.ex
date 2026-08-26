@@ -71,12 +71,12 @@ defmodule Mix.Tasks.Protox.Benchmark.Generate.Protos do
   defp random_choices(count) when count >= 0 do
     total_weight =
       @field_freqs
-      |> Stream.map(fn {_, _, freq} -> freq end)
+      |> Stream.map(fn {_type, _label, freq} -> freq end)
       |> Enum.sum()
 
     cumulative_weights =
       @field_freqs
-      |> Stream.map(fn {_, _, freq} -> freq end)
+      |> Stream.map(fn {_type, _label, freq} -> freq end)
       |> Enum.scan(&(&1 + &2))
 
     Enum.map(1..count, fn c ->

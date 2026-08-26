@@ -19,7 +19,7 @@ defmodule Mix.Tasks.Protox.Benchmark.Report do
       )
     else
       err ->
-        IO.puts(:stderr, "Error: #{inspect(err)}")
+        Mix.shell().error("Error: #{inspect(err)}")
         exit({:shutdown, 1})
     end
   end

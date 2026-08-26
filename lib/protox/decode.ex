@@ -71,6 +71,8 @@ defmodule Protox.Decode do
     end
   end
 
+  @spec parse_unknown(non_neg_integer(), Protox.Types.tag(), binary()) ::
+          {{non_neg_integer(), Protox.Types.tag(), binary()}, binary()}
   def parse_unknown(tag, @wire_varint, bytes) do
     {unknown_bytes, rest} = get_unknown_varint_bytes(<<>>, bytes)
     {{tag, @wire_varint, unknown_bytes}, rest}
@@ -87,7 +89,7 @@ defmodule Protox.Decode do
       <<unknown_bytes::binary-size(^len), rest::binary>> = new_bytes
       {{tag, @wire_delimited, unknown_bytes}, rest}
     rescue
-      _ ->
+      _error ->
         reraise Protox.DecodingError.new(bytes, "invalid bytes for unknown delimited"),
                 __STACKTRACE__
     end
@@ -113,77 +115,98 @@ defmodule Protox.Decode do
     raise Protox.DecodingError.new(bytes, "can't parse unknown varint bytes")
   end
 
+  @spec parse_double(binary()) :: {float() | :infinity | :"-infinity" | :nan, binary()}
   def parse_double(<<@positive_infinity_64, rest::binary>>), do: {:infinity, rest}
   def parse_double(<<@negative_infinity_64, rest::binary>>), do: {:"-infinity", rest}
-  def parse_double(<<_::48, 0b1111::4, _::4, _::1, 0b1111111::7, rest::binary>>), do: {:nan, rest}
+
+  def parse_double(<<_fraction_low::48, 0b1111::4, _fraction_high::4, _sign::1, 0b1111111::7, rest::binary>>),
+    do: {:nan, rest}
+
   def parse_double(<<value::float-little-64, rest::binary>>), do: {value, rest}
   def parse_double(bytes), do: raise(Protox.DecodingError.new(bytes, "invalid double"))
 
+  @spec parse_float(binary()) :: {float() | :infinity | :"-infinity" | :nan, binary()}
   def parse_float(<<@positive_infinity_32, rest::binary>>), do: {:infinity, rest}
   def parse_float(<<@negative_infinity_32, rest::binary>>), do: {:"-infinity", rest}
-  def parse_float(<<_::16, 1::1, _::7, _::1, 0b1111111::7, rest::binary>>), do: {:nan, rest}
+
+  def parse_float(<<_fraction_low::16, 1::1, _fraction_high::7, _sign::1, 0b1111111::7, rest::binary>>),
+    do: {:nan, rest}
+
   def parse_float(<<value::float-little-32, rest::binary>>), do: {value, rest}
   def parse_float(bytes), do: raise(Protox.DecodingError.new(bytes, "invalid float"))
 
+  @spec parse_sfixed64(binary()) :: {integer(), binary()}
   def parse_sfixed64(<<value::signed-little-64, rest::binary>>), do: {value, rest}
   def parse_sfixed64(bytes), do: raise(Protox.DecodingError.new(bytes, "invalid sfixed64"))
 
+  @spec parse_fixed64(binary()) :: {non_neg_integer(), binary()}
   def parse_fixed64(<<value::unsigned-little-64, rest::binary>>), do: {value, rest}
   def parse_fixed64(bytes), do: raise(Protox.DecodingError.new(bytes, "invalid fixed64"))
 
+  @spec parse_sfixed32(binary()) :: {integer(), binary()}
   def parse_sfixed32(<<value::signed-little-32, rest::binary>>), do: {value, rest}
   def parse_sfixed32(bytes), do: raise(Protox.DecodingError.new(bytes, "invalid sfixed32"))
 
+  @spec parse_fixed32(binary()) :: {non_neg_integer(), binary()}
   def parse_fixed32(<<value::unsigned-little-32, rest::binary>>), do: {value, rest}
   def parse_fixed32(bytes), do: raise(Protox.DecodingError.new(bytes, "invalid fixed32"))
 
+  @spec parse_bool(binary()) :: {boolean(), binary()}
   def parse_bool(bytes) do
     {value, rest} = Varint.decode(bytes)
     {value != 0, rest}
   end
 
+  @spec parse_sint32(binary()) :: {integer(), binary()}
   def parse_sint32(bytes) do
     {value, rest} = Varint.decode(bytes)
     <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
     {Zigzag.decode(res), rest}
   end
 
+  @spec parse_sint64(binary()) :: {integer(), binary()}
   def parse_sint64(bytes) do
     {value, rest} = Varint.decode(bytes)
     <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
     {Zigzag.decode(res), rest}
   end
 
+  @spec parse_uint32(binary()) :: {non_neg_integer(), binary()}
   def parse_uint32(bytes) do
     {value, rest} = Varint.decode(bytes)
     <<res::unsigned-native-32>> = <<value::unsigned-native-32>>
     {res, rest}
   end
 
+  @spec parse_uint64(binary()) :: {non_neg_integer(), binary()}
   def parse_uint64(bytes) do
     {value, rest} = Varint.decode(bytes)
     <<res::unsigned-native-64>> = <<value::unsigned-native-64>>
     {res, rest}
   end
 
+  @spec parse_enum(binary(), module()) :: {atom() | integer(), binary()}
   def parse_enum(bytes, mod) do
     {value, rest} = Varint.decode(bytes)
     <<res::signed-native-32>> = <<value::signed-native-32>>
     {mod.decode(res), rest}
   end
 
+  @spec parse_int32(binary()) :: {integer(), binary()}
   def parse_int32(bytes) do
     {value, rest} = Varint.decode(bytes)
     <<res::signed-native-32>> = <<value::signed-native-32>>
     {res, rest}
   end
 
+  @spec parse_int64(binary()) :: {integer(), binary()}
   def parse_int64(bytes) do
     {value, rest} = Varint.decode(bytes)
     <<res::signed-native-64>> = <<value::signed-native-64>>
     {res, rest}
   end
 
+  @spec validate_string!(binary()) :: binary() | no_return()
   def validate_string!(bytes) do
     case Protox.String.validate(bytes) do
       :ok ->
@@ -197,6 +220,7 @@ defmodule Protox.Decode do
     end
   end
 
+  @spec parse_repeated_bool([boolean()], binary()) :: [boolean()]
   def parse_repeated_bool(acc, <<>>), do: Enum.reverse(acc)
 
   def parse_repeated_bool(acc, bytes) do
@@ -204,6 +228,7 @@ defmodule Protox.Decode do
     parse_repeated_bool([value != 0 | acc], rest)
   end
 
+  @spec parse_repeated_enum([atom() | integer()], binary(), module()) :: [atom() | integer()]
   def parse_repeated_enum(acc, <<>>, _mod), do: Enum.reverse(acc)
 
   def parse_repeated_enum(acc, bytes, mod) do
@@ -211,6 +236,7 @@ defmodule Protox.Decode do
     parse_repeated_enum([value | acc], rest, mod)
   end
 
+  @spec parse_repeated_int32([integer()], binary()) :: [integer()]
   def parse_repeated_int32(acc, <<>>), do: Enum.reverse(acc)
 
   def parse_repeated_int32(acc, bytes) do
@@ -218,6 +244,7 @@ defmodule Protox.Decode do
     parse_repeated_int32([value | acc], rest)
   end
 
+  @spec parse_repeated_uint32([non_neg_integer()], binary()) :: [non_neg_integer()]
   def parse_repeated_uint32(acc, <<>>), do: Enum.reverse(acc)
 
   def parse_repeated_uint32(acc, bytes) do
@@ -225,6 +252,7 @@ defmodule Protox.Decode do
     parse_repeated_uint32([value | acc], rest)
   end
 
+  @spec parse_repeated_sint32([integer()], binary()) :: [integer()]
   def parse_repeated_sint32(acc, <<>>), do: Enum.reverse(acc)
 
   def parse_repeated_sint32(acc, bytes) do
@@ -232,6 +260,7 @@ defmodule Protox.Decode do
     parse_repeated_sint32([value | acc], rest)
   end
 
+  @spec parse_repeated_int64([integer()], binary()) :: [integer()]
   def parse_repeated_int64(acc, <<>>), do: Enum.reverse(acc)
 
   def parse_repeated_int64(acc, bytes) do
@@ -239,6 +268,7 @@ defmodule Protox.Decode do
     parse_repeated_int64([value | acc], rest)
   end
 
+  @spec parse_repeated_uint64([non_neg_integer()], binary()) :: [non_neg_integer()]
   def parse_repeated_uint64(acc, <<>>), do: Enum.reverse(acc)
 
   def parse_repeated_uint64(acc, bytes) do
@@ -246,6 +276,7 @@ defmodule Protox.Decode do
     parse_repeated_uint64([value | acc], rest)
   end
 
+  @spec parse_repeated_sint64([integer()], binary()) :: [integer()]
   def parse_repeated_sint64(acc, <<>>), do: Enum.reverse(acc)
 
   def parse_repeated_sint64(acc, bytes) do
@@ -253,6 +284,7 @@ defmodule Protox.Decode do
     parse_repeated_sint64([value | acc], rest)
   end
 
+  @spec parse_repeated_fixed32([non_neg_integer()], binary()) :: [non_neg_integer()]
   def parse_repeated_fixed32(acc, <<>>), do: Enum.reverse(acc)
 
   def parse_repeated_fixed32(acc, bytes) do
@@ -260,6 +292,7 @@ defmodule Protox.Decode do
     parse_repeated_fixed32([value | acc], rest)
   end
 
+  @spec parse_repeated_fixed64([non_neg_integer()], binary()) :: [non_neg_integer()]
   def parse_repeated_fixed64(acc, <<>>), do: Enum.reverse(acc)
 
   def parse_repeated_fixed64(acc, bytes) do
@@ -267,6 +300,7 @@ defmodule Protox.Decode do
     parse_repeated_fixed64([value | acc], rest)
   end
 
+  @spec parse_repeated_sfixed32([integer()], binary()) :: [integer()]
   def parse_repeated_sfixed32(acc, <<>>), do: Enum.reverse(acc)
 
   def parse_repeated_sfixed32(acc, bytes) do
@@ -274,6 +308,7 @@ defmodule Protox.Decode do
     parse_repeated_sfixed32([value | acc], rest)
   end
 
+  @spec parse_repeated_sfixed64([integer()], binary()) :: [integer()]
   def parse_repeated_sfixed64(acc, <<>>), do: Enum.reverse(acc)
 
   def parse_repeated_sfixed64(acc, bytes) do
@@ -281,6 +316,9 @@ defmodule Protox.Decode do
     parse_repeated_sfixed64([value | acc], rest)
   end
 
+  @spec parse_repeated_float([float() | :infinity | :"-infinity" | :nan], binary()) :: [
+          float() | :infinity | :"-infinity" | :nan
+        ]
   def parse_repeated_float(acc, <<>>), do: Enum.reverse(acc)
 
   def parse_repeated_float(acc, bytes) do
@@ -288,6 +326,9 @@ defmodule Protox.Decode do
     parse_repeated_float([value | acc], rest)
   end
 
+  @spec parse_repeated_double([float() | :infinity | :"-infinity" | :nan], binary()) :: [
+          float() | :infinity | :"-infinity" | :nan
+        ]
   def parse_repeated_double(acc, <<>>), do: Enum.reverse(acc)
 
   def parse_repeated_double(acc, bytes) do
@@ -295,12 +336,13 @@ defmodule Protox.Decode do
     parse_repeated_double([value | acc], rest)
   end
 
+  @spec parse_delimited(binary(), non_neg_integer()) :: {binary(), binary()} | no_return()
   def parse_delimited(bytes, len) do
     <<value::binary-size(^len), rest::binary>> = bytes
 
     {value, rest}
   rescue
-    _ ->
+    _error ->
       reraise Protox.DecodingError.new(bytes, "invalid bytes for delimited field"),
               __STACKTRACE__
   end

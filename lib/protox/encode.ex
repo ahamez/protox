@@ -23,10 +23,10 @@ defmodule Protox.Encode do
   @doc false
   @spec make_key(Protox.Types.tag(), Protox.Types.type()) :: non_neg_integer()
   def make_key(tag, ty) when is_primitive_varint(ty), do: tag <<< 3 ||| @wire_varint
-  def make_key(tag, {:enum, _}), do: tag <<< 3 ||| @wire_varint
+  def make_key(tag, {:enum, _mod}), do: tag <<< 3 ||| @wire_varint
   def make_key(tag, ty) when is_primitive_fixed64(ty), do: tag <<< 3 ||| @wire_64bits
   def make_key(tag, ty) when is_delimited(ty), do: tag <<< 3 ||| @wire_delimited
-  def make_key(tag, {:message, _}), do: tag <<< 3 ||| @wire_delimited
+  def make_key(tag, {:message, _mod}), do: tag <<< 3 ||| @wire_delimited
   def make_key(tag, :packed), do: tag <<< 3 ||| @wire_delimited
   def make_key(tag, :map_entry), do: tag <<< 3 ||| @wire_delimited
   def make_key(tag, ty) when is_primitive_fixed32(ty), do: tag <<< 3 ||| @wire_32bits
@@ -34,7 +34,9 @@ defmodule Protox.Encode do
   @doc false
   @spec encode_varint_signed(integer()) :: {binary(), non_neg_integer()}
   def encode_varint_signed(value) do
-    value |> Zigzag.encode() |> Varint.encode()
+    value
+    |> Zigzag.encode()
+    |> Varint.encode()
   end
 
   @doc false

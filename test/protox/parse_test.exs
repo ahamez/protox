@@ -1,6 +1,9 @@
 defmodule Protox.ParseTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
 
+  alias ProtobufTestMessages.Proto2.{ForeignEnumProto2, TestAllRequiredTypesProto2}
+  alias ProtobufTestMessages.Proto3.{ForeignEnum, NullHypothesisProto3, TestAllTypesProto3}
+  alias ProtobufTestMessages.Proto3.TestAllTypesProto3.NestedEnum
   alias Protox.{OneOf, Scalar}
 
   setup_all do
@@ -25,17 +28,17 @@ defmodule Protox.ParseTest do
   end
 
   test "Parse FileDescriptorSet, protobuf 3 enums", %{enums_schemas: enums} do
-    constants = enums[ProtobufTestMessages.Proto3.ForeignEnum]
-    assert constants == [{0, :FOREIGN_FOO}, {1, :FOREIGN_BAR}, {2, :FOREIGN_BAZ}]
+    foreign_enum_constants = enums[ForeignEnum]
+    assert foreign_enum_constants == [{0, :FOREIGN_FOO}, {1, :FOREIGN_BAR}, {2, :FOREIGN_BAZ}]
 
-    constants = enums[ProtobufTestMessages.Proto3.TestAllTypesProto3.NestedEnum]
-    assert constants == [{0, :FOO}, {1, :BAR}, {2, :BAZ}, {-1, :NEG}]
+    nested_enum_constants = enums[NestedEnum]
+    assert nested_enum_constants == [{0, :FOO}, {1, :BAR}, {2, :BAZ}, {-1, :NEG}]
   end
 
   test "Parse FileDescriptorSet, protobuf 3 messages", %{messages_schemas: messages} do
-    assert messages[ProtobufTestMessages.Proto3.TestAllTypesProto3].syntax == :proto3
+    assert messages[TestAllTypesProto3].syntax == :proto3
 
-    fs = messages[ProtobufTestMessages.Proto3.TestAllTypesProto3].fields
+    fs = messages[TestAllTypesProto3].fields
 
     assert field(fs, 12) ==
              {:optional, :optional_double, %Scalar{default_value: 0}, :double}
@@ -48,21 +51,20 @@ defmodule Protox.ParseTest do
     assert field(fs, 111) == {:optional, :oneof_uint32, %OneOf{parent: :oneof_field}, :uint32}
 
     assert field(fs, 119) ==
-             {:optional, :oneof_enum, %OneOf{parent: :oneof_field},
-              {:enum, ProtobufTestMessages.Proto3.TestAllTypesProto3.NestedEnum}}
+             {:optional, :oneof_enum, %OneOf{parent: :oneof_field}, {:enum, NestedEnum}}
 
-    assert %{} = messages[ProtobufTestMessages.Proto3.NullHypothesisProto3].fields
+    assert %{} = messages[NullHypothesisProto3].fields
   end
 
   test "Parse FileDescriptorSet, protobuf 2 enums", %{enums_schemas: enums} do
-    constants = enums[ProtobufTestMessages.Proto2.ForeignEnumProto2]
+    constants = enums[ForeignEnumProto2]
     assert constants == [{0, :FOREIGN_FOO}, {1, :FOREIGN_BAR}, {2, :FOREIGN_BAZ}]
   end
 
   test "Parse FileDescriptorSet, protobuf 2 messages", %{messages_schemas: messages} do
-    assert messages[ProtobufTestMessages.Proto2.TestAllRequiredTypesProto2].syntax == :proto2
+    assert messages[TestAllRequiredTypesProto2].syntax == :proto2
 
-    fs = messages[ProtobufTestMessages.Proto2.TestAllRequiredTypesProto2].fields
+    fs = messages[TestAllRequiredTypesProto2].fields
 
     assert field(fs, 1) == {:required, :required_int32, %Scalar{default_value: 0}, :int32}
 

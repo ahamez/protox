@@ -5,13 +5,17 @@ defmodule Protox.DefineMessage do
 
   @base_unknown_fields_name :__uf__
 
+  @spec define(%{Protox.Definition.name() => Protox.MessageSchema.t()}, keyword()) :: [Macro.t()]
   def define(messages_schemas, opts \\ []) do
     for {_msg_name, %Protox.MessageSchema{} = msg_schema} <- messages_schemas do
       msg_schema = cleanup_file_options(msg_schema)
 
       # Revert the order of the fields so we iterate from last field to first.
       # This enables us to construct the output iodata using [ field | acc ]
-      sorted_fields = msg_schema.fields |> Map.values() |> Enum.sort(&(&1.tag >= &2.tag))
+      sorted_fields =
+        msg_schema.fields
+        |> Map.values()
+        |> Enum.sort(&(&1.tag >= &2.tag))
 
       unknown_fields_name = make_unknown_fields_name(@base_unknown_fields_name, sorted_fields)
       opts = Keyword.put(opts, :unknown_fields_name, unknown_fields_name)
@@ -89,7 +93,7 @@ defmodule Protox.DefineMessage do
 
       unquote_splicing(all_default_funs)
 
-      def default(_), do: {:error, :no_such_field}
+      def default(_field_name), do: {:error, :no_such_field}
     end
   end
 
@@ -135,8 +139,16 @@ defmodule Protox.DefineMessage do
       for %Field{} = field <- fields do
         case {field.kind, field.type} do
           {:map, type} ->
-            key_type = type |> elem(0) |> proto_type_to_typespec()
-            value_type = type |> elem(1) |> proto_type_to_typespec()
+            key_type =
+              type
+              |> elem(0)
+              |> proto_type_to_typespec()
+
+            value_type =
+              type
+              |> elem(1)
+              |> proto_type_to_typespec()
+
             quote(do: {unquote(field.name), %{unquote(key_type) => unquote(value_type)}})
 
           {repeated, type} when repeated in [:packed, :unpacked] ->
@@ -147,7 +159,7 @@ defmodule Protox.DefineMessage do
             value_type = proto_type_to_typespec(type)
             quote(do: {unquote(field.name), unquote(value_type) | nil})
 
-          {%Scalar{}, {:message, _} = type} ->
+          {%Scalar{}, {:message, _msg_type} = type} ->
             value_type = proto_type_to_typespec(type)
             quote(do: {unquote(field.name), unquote(value_type) | nil})
 
@@ -188,8 +200,8 @@ defmodule Protox.DefineMessage do
     end
   end
 
-  defp make_oneof_field(:proto3_optional, name, _), do: {name, nil}
-  defp make_oneof_field(_, _, parent), do: {parent, nil}
+  defp make_oneof_field(:proto3_optional, name, _parent), do: {name, nil}
+  defp make_oneof_field(_label, _name, parent), do: {parent, nil}
 
   defp proto_type_to_typespec(:string), do: quote(do: String.t())
   defp proto_type_to_typespec(:bytes), do: quote(do: binary())
@@ -221,8 +233,13 @@ defmodule Protox.DefineMessage do
     # Also, remove the unknown fields field which will always be empty in this case.
 
     update_in(schema, [Access.key!(:file_options)], fn
-      nil -> nil
-      struct -> struct |> Map.from_struct() |> Map.delete(@base_unknown_fields_name)
+      nil ->
+        nil
+
+      struct ->
+        struct
+        |> Map.from_struct()
+        |> Map.delete(@base_unknown_fields_name)
     end)
   end
 end

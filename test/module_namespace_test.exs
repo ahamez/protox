@@ -1,5 +1,7 @@
 defmodule ModuleNamespaceTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
+
+  alias ModuleNamespaceTest.Module.DirectoryMessage1
 
   defmodule Module do
     use Protox,
@@ -8,7 +10,7 @@ defmodule ModuleNamespaceTest do
   end
 
   test "use Protox namespaces generated modules under the caller module" do
-    assert Code.ensure_loaded?(ModuleNamespaceTest.Module.DirectoryMessage1)
-    assert ModuleNamespaceTest.Module.DirectoryMessage1.schema().name == ModuleNamespaceTest.Module.DirectoryMessage1
+    assert Code.ensure_loaded?(DirectoryMessage1)
+    assert DirectoryMessage1.schema().name == DirectoryMessage1
   end
 end

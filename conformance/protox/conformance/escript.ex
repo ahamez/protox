@@ -10,6 +10,9 @@ defmodule Protox.Conformance.Escript do
       "./deps/protobuf/conformance/conformance.proto"
     ]
 
+  alias ProtobufTestMessages.Proto2.TestAllTypesProto2
+  alias ProtobufTestMessages.Proto3.TestAllTypesProto3
+
   def main(_args) do
     run()
   end
@@ -51,7 +54,8 @@ defmodule Protox.Conformance.Escript do
 
   defp handle_request(
          {:ok,
-          %Conformance.ConformanceRequest{requested_output_format: :PROTOBUF, payload: {:protobuf_payload, _}} = request},
+          %Conformance.ConformanceRequest{requested_output_format: :PROTOBUF, payload: {:protobuf_payload, _bytes}} =
+            request},
          log_file
        ) do
     IO.binwrite(log_file, "Will parse protobuf\n")
@@ -66,7 +70,11 @@ defmodule Protox.Conformance.Escript do
         IO.binwrite(log_file, "Message: #{inspect(msg, limit: :infinity)}\n")
 
         try do
-          encoded_payload = msg |> Protox.encode!() |> elem(0) |> IO.iodata_to_binary()
+          encoded_payload =
+            msg
+            |> Protox.encode!()
+            |> elem(0)
+            |> IO.iodata_to_binary()
 
           IO.binwrite(
             log_file,
@@ -91,22 +99,22 @@ defmodule Protox.Conformance.Escript do
   defp handle_request({:ok, request}, log_file) do
     skip_reason =
       case {request.requested_output_format, request.payload} do
-        {:UNSPECIFIED, _} ->
+        {:UNSPECIFIED, _payload} ->
           "unspecified input"
 
-        {_, nil} ->
+        {_format, nil} ->
           "unset payload"
 
-        {_, {:json_payload, _}} ->
+        {_format, {:json_payload, _json}} ->
           "JSON input"
 
-        {:JSON, _} ->
+        {:JSON, _payload} ->
           "JSON output"
 
-        {_, {:text_payload, _}} ->
+        {_format, {:text_payload, _text}} ->
           "text input"
 
-        {:TEXT_FORMAT, _} ->
+        {:TEXT_FORMAT, _payload} ->
           "text output"
       end
 
@@ -150,7 +158,11 @@ defmodule Protox.Conformance.Escript do
   end
 
   defp make_message_bytes(%Conformance.ConformanceResponse{} = msg) do
-    data = msg |> Protox.encode!() |> elem(0) |> IO.iodata_to_binary()
+    data =
+      msg
+      |> Protox.encode!()
+      |> elem(0)
+      |> IO.iodata_to_binary()
 
     <<byte_size(data)::unsigned-little-32, data::binary>>
   end
@@ -158,16 +170,16 @@ defmodule Protox.Conformance.Escript do
   defp get_proto_type(%Conformance.ConformanceRequest{} = request) do
     case request.message_type do
       "protobuf_test_messages.proto3.TestAllTypesProto3" ->
-        ProtobufTestMessages.Proto3.TestAllTypesProto3
+        TestAllTypesProto3
 
       "protobuf_test_messages.proto2.TestAllTypesProto2" ->
-        ProtobufTestMessages.Proto2.TestAllTypesProto2
+        TestAllTypesProto2
 
       "conformance.FailureSet" ->
         Conformance.FailureSet
 
       "" ->
-        ProtobufTestMessages.Proto3.TestAllTypesProto3
+        TestAllTypesProto3
     end
   end
 end

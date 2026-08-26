@@ -1,5 +1,5 @@
 defmodule Protox.MergeMessageTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias ProtobufTestMessages.Proto3.{TestAllTypesProto3, TestAllTypesProto3.NestedMessage}
 

@@ -184,9 +184,11 @@ defmodule Protox do
 
   @generator_version 1
   @doc nil
+  @spec generator_version() :: pos_integer()
   def generator_version(), do: @generator_version
 
   @doc nil
+  @spec check_generator_version(pos_integer()) :: nil | no_return()
   def check_generator_version(@generator_version), do: nil
 
   def check_generator_version(_generated_code_version) do

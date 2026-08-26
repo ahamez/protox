@@ -4,7 +4,7 @@ defmodule Mix.Tasks.Protox.Benchmark.Generate.Payloads do
   use Mix.Task
 
   alias ProtobufTestMessages.Proto3.TestAllTypesProto3
-  alias StreamData, as: SD
+  alias StreamData
 
   require Logger
 
@@ -20,7 +20,7 @@ defmodule Mix.Tasks.Protox.Benchmark.Generate.Payloads do
       File.close(file)
     else
       err ->
-        IO.puts(:stderr, "Error: #{inspect(err)}")
+        Mix.shell().error("Error: #{inspect(err)}")
         exit({:shutdown, 1})
     end
   end
@@ -30,7 +30,7 @@ defmodule Mix.Tasks.Protox.Benchmark.Generate.Payloads do
       {:ok, modules} ->
         modules =
           Enum.filter(modules, fn mod ->
-            match?(["Protox", "Benchmark", _, "Message"], Module.split(mod))
+            match?(["Protox", "Benchmark", _mod_name, "Message"], Module.split(mod))
           end)
 
         modules = [TestAllTypesProto3 | modules]
@@ -62,19 +62,25 @@ defmodule Mix.Tasks.Protox.Benchmark.Generate.Payloads do
     Logger.info("Generating payload for #{mod}")
 
     gen =
-      SD.bind(Protox.RandomInit.generate_fields_values(mod), fn fields ->
-        SD.constant(Protox.RandomInit.generate_struct(mod, fields))
+      StreamData.bind(Protox.RandomInit.generate_fields_values(mod), fn fields ->
+        StreamData.constant(Protox.RandomInit.generate_struct(mod, fields))
       end)
 
     gen
-    |> SD.resize(5)
+    |> StreamData.resize(5)
     |> Stream.map(fn msg ->
-      {msg, msg |> Protox.encode!() |> elem(0) |> IO.iodata_to_binary()}
+      bytes =
+        msg
+        |> Protox.encode!()
+        |> elem(0)
+        |> IO.iodata_to_binary()
+
+      {msg, bytes}
     end)
     |> Stream.reject(fn {_msg, bytes} -> byte_size(bytes) == 0 end)
     |> Stream.reject(fn {_msg, bytes} -> byte_size(bytes) > 16_384 * 16 end)
     |> Stream.map(fn {msg, bytes} -> {msg, byte_size(bytes), bytes} end)
-    |> Stream.each(fn _ -> Logger.info("Payload generated for #{mod}") end)
+    |> Stream.each(fn _msg -> Logger.info("Payload generated for #{mod}") end)
     |> Enum.take(@nb_samples)
   end
 end

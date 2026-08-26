@@ -1,6 +1,7 @@
 defmodule Protox.DefineEnum do
   @moduledoc false
 
+  @spec define(%{Protox.Definition.name() => [Protox.Definition.enum_constant()]}) :: [Macro.t()]
   def define(enums_schemas) do
     for {enum_name, constants} <- enums_schemas do
       default_fun = make_enum_default(constants)
@@ -41,7 +42,7 @@ defmodule Protox.DefineEnum do
     # proto2: the first entry is always the default value
     # proto3: the entry with value 0 is the default value, and protoc mandates the first entry
     # to have the value 0
-    [{_, default_value} | _] = constant_values
+    [{_value, default_value} | _rest] = constant_values
 
     quote do
       @spec default() :: unquote(default_value)
@@ -76,7 +77,7 @@ defmodule Protox.DefineEnum do
 
     quote do
       unquote_splicing(constants)
-      def has_constant?(_), do: false
+      def has_constant?(_value), do: false
     end
   end
 end

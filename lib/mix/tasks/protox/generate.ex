@@ -17,6 +17,8 @@ defmodule Mix.Tasks.Protox.Generate do
   """
   use Mix.Task
 
+  alias Protox.Generate.FileContent
+
   @options [
     output_path: :string,
     include_path: :keep,
@@ -36,14 +38,14 @@ defmodule Mix.Tasks.Protox.Generate do
       Enum.each(files_content, &generate_file/1)
     else
       err ->
-        IO.puts(:stderr, "Failed to generate code: #{inspect(err)}")
+        Mix.shell().error("Failed to generate code: #{inspect(err)}")
         exit({:shutdown, 1})
     end
   end
 
   # -- Private
 
-  defp generate_file(%Protox.Generate.FileContent{name: file_name, content: content}) do
+  defp generate_file(%FileContent{name: file_name, content: content}) do
     File.write!(file_name, content)
   end
 

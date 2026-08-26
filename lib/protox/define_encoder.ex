@@ -4,6 +4,7 @@ defmodule Protox.DefineEncoder do
 
   alias Protox.{Field, OneOf, Scalar}
 
+  @spec define([Field.t()], :proto2 | :proto3, keyword()) :: Macro.t()
   def define(fields, syntax, opts \\ []) do
     vars = %{
       acc: Macro.var(:acc, __MODULE__),
@@ -33,7 +34,9 @@ defmodule Protox.DefineEncoder do
   end
 
   defp make_top_level_encode_fun(oneofs, fields) do
-    quote(do: {_acc = [], _acc_size = 0})
+    initial_acc = quote(do: {_acc = [], _acc_size = 0})
+
+    initial_acc
     |> make_encode_oneof_fun(oneofs)
     |> make_encode_fun_field(fields)
     |> make_encode_fun_body()
@@ -43,7 +46,9 @@ defmodule Protox.DefineEncoder do
     quote do
       @spec encode(t()) :: {:ok, iodata(), non_neg_integer()} | {:error, any()}
       def encode(msg) do
-        msg |> encode!() |> Tuple.insert_at(0, :ok)
+        msg
+        |> encode!()
+        |> Tuple.insert_at(0, :ok)
       rescue
         e in [Protox.EncodingError, Protox.RequiredFieldsError] ->
           {:error, e}
@@ -58,21 +63,19 @@ defmodule Protox.DefineEncoder do
     ast =
       Enum.reduce(fields, ast, fn %Protox.Field{} = field, ast_acc ->
         quote do
-          unquote(ast_acc)
-          |> unquote(make_encode_field_fun_name(field.name))(msg)
+          unquote(make_encode_field_fun_name(field.name))(unquote(ast_acc), msg)
         end
       end)
 
     quote do
-      unquote(ast) |> encode_unknown_fields(msg)
+      encode_unknown_fields(unquote(ast), msg)
     end
   end
 
   defp make_encode_oneof_fun(ast, oneofs) do
     Enum.reduce(oneofs, ast, fn {parent_name, _children}, ast_acc ->
       quote do
-        unquote(ast_acc)
-        |> unquote(make_encode_field_fun_name(parent_name))(msg)
+        unquote(make_encode_field_fun_name(parent_name))(unquote(ast_acc), msg)
       end
     end)
   end
@@ -112,7 +115,7 @@ defmodule Protox.DefineEncoder do
       Enum.reject(fields, fn
         %Field{label: :proto3_optional, kind: %OneOf{}} -> false
         %Field{kind: %OneOf{}} -> true
-        _ -> false
+        _other_field -> false
       end)
 
     for %Field{name: name} = field <- fields do
@@ -136,23 +139,14 @@ defmodule Protox.DefineEncoder do
     {key, key_size} = Protox.Encode.make_key_bytes(field.tag, field.type)
     var = quote do: unquote(vars.msg).unquote(field.name)
     encode_value_ast = get_encode_value_body(field.type, var)
-
-    encode_value_clause =
-      quote do
-        {value_bytes, value_bytes_size} = unquote(encode_value_ast)
-
-        {
-          [unquote(key), value_bytes | unquote(vars.acc)],
-          unquote(vars.acc_size) + unquote(key_size) + value_bytes_size
-        }
-      end
+    encode_value_clause = make_encode_value_clause(encode_value_ast, key, key_size, vars)
 
     case {syntax, required} do
       {:proto2, true = _required} ->
         quote do
           case unquote(vars.msg).unquote(field.name) do
             nil -> raise Protox.RequiredFieldsError.new([unquote(field.name)])
-            _ -> unquote(encode_value_clause)
+            _value -> unquote(encode_value_clause)
           end
         end
 
@@ -160,7 +154,7 @@ defmodule Protox.DefineEncoder do
         quote do
           case unquote(var) do
             nil -> {unquote(vars.acc), unquote(vars.acc_size)}
-            _ -> unquote(encode_value_clause)
+            _value -> unquote(encode_value_clause)
           end
         end
 
@@ -180,6 +174,7 @@ defmodule Protox.DefineEncoder do
     {key, key_size} = Protox.Encode.make_key_bytes(field.tag, field.type)
     var = Macro.var(:child_field_value, __MODULE__)
     encode_value_ast = get_encode_value_body(field.type, var)
+    encode_value_clause = make_encode_value_clause(encode_value_ast, key, key_size, vars)
 
     quote do
       case unquote(vars.msg).unquote(field.name) do
@@ -187,12 +182,7 @@ defmodule Protox.DefineEncoder do
           {unquote(vars.acc), unquote(vars.acc_size)}
 
         unquote(var) ->
-          {value_bytes, value_bytes_size} = unquote(encode_value_ast)
-
-          {
-            [unquote(key), value_bytes | unquote(vars.acc)],
-            unquote(vars.acc_size) + unquote(key_size) + value_bytes_size
-          }
+          unquote(encode_value_clause)
       end
     end
   end
@@ -203,6 +193,12 @@ defmodule Protox.DefineEncoder do
 
     # The dispatch on the correct child is performed by the parent encoding function,
     # this is why we don't check if the child is set.
+    make_encode_value_clause(encode_value_ast, key, key_size, vars)
+  end
+
+  # Shared fragment: decode `encode_value_ast` into `value_bytes`/`value_bytes_size`, then
+  # prepend the field's key and value bytes to the accumulator, updating its size.
+  defp make_encode_value_clause(encode_value_ast, key, key_size, vars) do
     quote do
       {value_bytes, value_bytes_size} = unquote(encode_value_ast)
 
@@ -328,7 +324,11 @@ defmodule Protox.DefineEncoder do
                 }
 
               2 ->
-                {len_bytes, len_size} = bytes |> byte_size() |> Protox.Varint.encode()
+                {len_bytes, len_size} =
+                  bytes
+                  |> byte_size()
+                  |> Protox.Varint.encode()
+
                 {key_bytes, key_size} = Protox.Encode.make_key_bytes(tag, :packed)
 
                 {
@@ -399,7 +399,7 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp get_encode_value_body({:message, _}, value_var) do
+  defp get_encode_value_body({:message, _msg_type}, value_var) do
     quote do
       Protox.Encode.encode_message(unquote(value_var))
     end
@@ -407,7 +407,9 @@ defmodule Protox.DefineEncoder do
 
   defp get_encode_value_body({:enum, enum}, value_var) do
     quote do
-      unquote(value_var) |> unquote(enum).encode() |> Protox.Encode.encode_enum()
+      unquote(value_var)
+      |> unquote(enum).encode()
+      |> Protox.Encode.encode_enum()
     end
   end
 

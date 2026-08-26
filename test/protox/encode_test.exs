@@ -1,10 +1,10 @@
 defmodule Protox.EncodeTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias ProtobufTestMessages.Proto3.{NullHypothesisProto3, TestAllTypesProto3}
 
   test "Default TestAllTypesProto3" do
-    assert %TestAllTypesProto3{} |> Protox.encode!() == {[], 0}
+    assert Protox.encode!(%TestAllTypesProto3{}) == {[], 0}
   end
 
   test "Default TestAllTypesProto3, with non throwing encode/1" do
@@ -101,14 +101,13 @@ defmodule Protox.EncodeTest do
   end
 
   test "Unknown fields (float + varint + bytes)" do
-    assert %TestAllTypesProto3{
+    assert encode(%TestAllTypesProto3{
              __uf__: [
                {12, 5, <<236, 81, 5, 66>>},
                {11, 0, <<154, 5>>},
                {10, 2, <<104, 101, 121, 33>>}
              ]
-           }
-           |> encode() ==
+           }) ==
              {<<101, 236, 81, 5, 66, 88, 154, 5, 82, 4, 104, 101, 121, 33>>, 14}
   end
 
@@ -135,13 +134,15 @@ defmodule Protox.EncodeTest do
   end
 
   test "UTF-8 strings" do
-    [
-      {"", {<<>>, 0}},
-      {"hello, 漢字, 💻, 🏁, working fine", {<<114, 39, "hello, 漢字, 💻, 🏁, working fine">>, 41}}
-    ]
-    |> Enum.each(fn {string, expected_encoded_msg} ->
-      assert encode(%TestAllTypesProto3{optional_string: string}) == expected_encoded_msg
-    end)
+    Enum.each(
+      [
+        {"", {<<>>, 0}},
+        {"hello, 漢字, 💻, 🏁, working fine", {<<114, 39, "hello, 漢字, 💻, 🏁, working fine">>, 41}}
+      ],
+      fn {string, expected_encoded_msg} ->
+        assert encode(%TestAllTypesProto3{optional_string: string}) == expected_encoded_msg
+      end
+    )
   end
 
   test "Largest valid string" do
@@ -155,43 +156,49 @@ defmodule Protox.EncodeTest do
     msg = %TestAllTypesProto3{map_int32_int32: %{1 => 2, 3 => 4}}
 
     {bytes, size} = Protox.encode!(msg)
-    assert size == bytes |> IO.iodata_to_binary() |> byte_size()
+
+    assert size ==
+             bytes
+             |> IO.iodata_to_binary()
+             |> byte_size()
   end
 
   test "Raise when string is not valid UTF-8" do
-    [
-      <<128>>,
-      <<?a, 128>>,
-      <<128, ?a>>,
-      <<?a, 255, ?b>>,
-      <<255, 255, 255, 255>>
-    ]
-    |> Enum.each(fn string ->
-      assert_raise Protox.EncodingError, ~r/Could not encode field :optional_string /, fn ->
-        %TestAllTypesProto3{optional_string: string}
-        |> Protox.encode!()
+    Enum.each(
+      [
+        <<128>>,
+        <<?a, 128>>,
+        <<128, ?a>>,
+        <<?a, 255, ?b>>,
+        <<255, 255, 255, 255>>
+      ],
+      fn string ->
+        assert_raise Protox.EncodingError, ~r/Could not encode field :optional_string /, fn ->
+          Protox.encode!(%TestAllTypesProto3{optional_string: string})
+        end
       end
-    end)
+    )
   end
 
   test "Raise when repeated string is not valid UTF-8" do
-    [
-      [<<128>>, "hello"],
-      ["hello", <<128>>]
-    ]
-    |> Enum.each(fn strings ->
-      assert_raise Protox.EncodingError, ~r/Could not encode field :repeated_string /, fn ->
-        %TestAllTypesProto3{repeated_string: strings} |> Protox.encode!()
+    Enum.each(
+      [
+        [<<128>>, "hello"],
+        ["hello", <<128>>]
+      ],
+      fn strings ->
+        assert_raise Protox.EncodingError, ~r/Could not encode field :repeated_string /, fn ->
+          Protox.encode!(%TestAllTypesProto3{repeated_string: strings})
+        end
       end
-    end)
+    )
   end
 
   test "Raise when string is too large" do
     string_size = Protox.String.max_size() + 1
 
     assert_raise(Protox.EncodingError, ~r/Could not encode field :optional_string /, fn ->
-      %TestAllTypesProto3{optional_string: <<0::integer-size(string_size)-unit(8)>>}
-      |> Protox.encode!()
+      Protox.encode!(%TestAllTypesProto3{optional_string: <<0::integer-size(string_size)-unit(8)>>})
     end)
   end
 

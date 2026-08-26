@@ -1,6 +1,8 @@
 defmodule Protox.Mixfile do
   use Mix.Project
 
+  alias Protox.Conformance.Escript
+
   def project() do
     [
       app: :protox,
@@ -41,7 +43,7 @@ defmodule Protox.Mixfile do
   end
 
   defp deps() do
-    [
+    maybe_download_protobuf([
       {:benchee, "~> 1.0", only: [:test, :dev]},
       {:credo, "~> 1.4", only: [:test, :dev], runtime: false},
       {:dialyxir, "~> 1.0", only: [:test, :dev], runtime: false},
@@ -50,8 +52,7 @@ defmodule Protox.Mixfile do
       {:muex, "~> 0.8.1", only: [:dev, :test], runtime: false},
       {:stream_data, "~> 1.0", only: [:dev, :test], runtime: false},
       {:quokka, "~> 2.0", only: [:dev, :test], runtime: false}
-    ]
-    |> maybe_download_protobuf()
+    ])
   end
 
   defp maybe_download_protobuf(deps) do
@@ -83,7 +84,7 @@ defmodule Protox.Mixfile do
     [
       # do not start any application when running the escript
       app: nil,
-      main_module: Protox.Conformance.Escript,
+      main_module: Escript,
       name: "protox_conformance"
     ]
   end
