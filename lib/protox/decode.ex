@@ -97,7 +97,7 @@ defmodule Protox.Decode do
       <<unknown_bytes::binary-size(^len), rest::binary>> ->
         {{tag, @wire_delimited, unknown_bytes}, rest}
 
-      _ ->
+      _invalid_bytes ->
         raise Protox.DecodingError.new(bytes, "invalid bytes for unknown delimited")
     end
   end
@@ -403,7 +403,7 @@ defmodule Protox.Decode do
       <<value::binary-size(^len), rest::binary>> ->
         {value, rest}
 
-      _ ->
+      _invalid_bytes ->
         raise Protox.DecodingError.new(bytes, "invalid bytes for delimited field")
     end
   end
