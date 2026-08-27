@@ -82,20 +82,30 @@ defmodule Protox.DefineDecoder do
       |> Enum.map(& &1.name)
       |> Enum.uniq()
 
-    updates =
-      Enum.map(repeated_field_names ++ [unknown_fields_name], fn field_name ->
+    # Update only the fields that were actually populated: repeated fields are
+    # most often empty, and skipping them avoids both the reverse call and the
+    # struct update. The last update is the return value.
+    update = fn field_name ->
+      quote do
+        case unquote(msg_var).unquote(field_name) do
+          [] -> unquote(msg_var)
+          values -> %{unquote(msg_var) | unquote(field_name) => :lists.reverse(values)}
+        end
+      end
+    end
+
+    {init_field_names, [last_field_name]} =
+      Enum.split(repeated_field_names ++ [unknown_fields_name], -1)
+
+    rebinds =
+      Enum.map(init_field_names, fn field_name ->
         quote do
-          unquote(msg_var) =
-            case unquote(msg_var).unquote(field_name) do
-              [] -> unquote(msg_var)
-              values -> %{unquote(msg_var) | unquote(field_name) => :lists.reverse(values)}
-            end
+          unquote(msg_var) = unquote(update.(field_name))
         end
       end)
 
     quote do
-      unquote_splicing(updates)
-      unquote(msg_var)
+      (unquote_splicing(rebinds ++ [update.(last_field_name)]))
     end
   end
 
