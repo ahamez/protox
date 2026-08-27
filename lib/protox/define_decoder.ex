@@ -306,7 +306,12 @@ defmodule Protox.DefineDecoder do
     quote do
       %{
         unquote(vars.msg)
-        | unquote(field.name) => Protox.MergeMessage.merge(unquote(vars.msg).unquote(field.name), unquote(value))
+        | unquote(field.name) =>
+            case unquote(vars.msg).unquote(field.name) do
+              # The field is seen for the first time: nothing to merge.
+              nil -> unquote(value)
+              previous_value -> Protox.MergeMessage.merge(previous_value, unquote(value))
+            end
       }
     end
   end
