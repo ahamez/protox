@@ -289,11 +289,13 @@ defmodule Protox.DefineEncoder do
           {unquote(vars.acc), unquote(vars.acc_size)}
 
         values ->
-          {packed_bytes, packed_size} = unquote(encode_packed_ast)
+          value_bytes = unquote(encode_packed_ast)
+          value_size = byte_size(value_bytes)
+          {value_size_bytes, value_size_size} = Protox.Varint.encode(value_size)
 
           {
-            [unquote(key_bytes), packed_bytes | unquote(vars.acc)],
-            unquote(vars.acc_size) + unquote(key_size) + packed_size
+            [unquote(key_bytes), value_size_bytes, value_bytes | unquote(vars.acc)],
+            unquote(vars.acc_size) + unquote(key_size) + value_size + value_size_size
           }
       end
     end
@@ -367,55 +369,12 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_unknown_fields_fun(vars, opts) do
+  defp make_encode_unknown_fields_fun(_vars, opts) do
     unknown_fields_name = Keyword.fetch!(opts, :unknown_fields_name)
 
     quote do
-      defp encode_unknown_fields({unquote(vars.acc), unquote(vars.acc_size)}, msg) do
-        Enum.reduce(
-          msg.unquote(unknown_fields_name),
-          {unquote(vars.acc), unquote(vars.acc_size)},
-          fn {tag, wire_type, bytes}, {unquote(vars.acc), unquote(vars.acc_size)} ->
-            case wire_type do
-              0 ->
-                {key_bytes, key_size} = Protox.Encode.make_key_bytes(tag, :int32)
-
-                {
-                  [unquote(vars.acc), <<key_bytes::binary, bytes::binary>>],
-                  unquote(vars.acc_size) + key_size + byte_size(bytes)
-                }
-
-              1 ->
-                {key_bytes, key_size} = Protox.Encode.make_key_bytes(tag, :double)
-
-                {
-                  [unquote(vars.acc), <<key_bytes::binary, bytes::binary>>],
-                  unquote(vars.acc_size) + key_size + byte_size(bytes)
-                }
-
-              2 ->
-                {len_bytes, len_size} =
-                  bytes
-                  |> byte_size()
-                  |> Protox.Varint.encode()
-
-                {key_bytes, key_size} = Protox.Encode.make_key_bytes(tag, :packed)
-
-                {
-                  [unquote(vars.acc), <<key_bytes::binary, len_bytes::binary, bytes::binary>>],
-                  unquote(vars.acc_size) + key_size + len_size + byte_size(bytes)
-                }
-
-              5 ->
-                {key_bytes, key_size} = Protox.Encode.make_key_bytes(tag, :float)
-
-                {
-                  [unquote(vars.acc), <<key_bytes::binary, bytes::binary>>],
-                  unquote(vars.acc_size) + key_size + byte_size(bytes)
-                }
-            end
-          end
-        )
+      defp encode_unknown_fields(acc, msg) do
+        Protox.Encode.encode_unknown_fields(acc, msg.unquote(unknown_fields_name))
       end
     end
   end
@@ -442,24 +401,15 @@ defmodule Protox.DefineEncoder do
 
   # Packed elements are appended to a single contiguous binary instead of one
   # binary and one iodata cell per element, with the packed length derived
-  # from byte_size/1.
+  # from byte_size/1 by Protox.Encode.prepend_packed/5.
   defp make_encode_packed_body({:enum, mod}) do
-    make_packed_body_tail(quote(do: Protox.Encode.encode_packed_enum(values, <<>>, &unquote(mod).encode/1)))
+    quote(do: Protox.Encode.encode_packed_enum(values, <<>>, &unquote(mod).encode/1))
   end
 
   defp make_encode_packed_body(type) do
     appender = Map.fetch!(@packed_binary_appenders, type)
 
-    make_packed_body_tail(quote(do: Protox.Encode.unquote(appender)(values, <<>>)))
-  end
-
-  defp make_packed_body_tail(appender_call_ast) do
-    quote do
-      value_bytes = unquote(appender_call_ast)
-      value_size = byte_size(value_bytes)
-      {value_size_bytes, value_size_size} = Protox.Varint.encode(value_size)
-      {[value_size_bytes, value_bytes], value_size + value_size_size}
-    end
+    quote(do: Protox.Encode.unquote(appender)(values, <<>>))
   end
 
   defp make_encode_repeated_body(tag, type) do

@@ -59,6 +59,50 @@ defmodule Protox.Encode do
     {[size_varint, value], size + byte_size(value)}
   end
 
+  @doc false
+  # Appends the unknown fields, which are kept in their wire format, after all
+  # the known fields. The accumulator tuple is passed through untouched in the
+  # common empty case so it can be reused. An unexpected wire type raises a
+  # CaseClauseError, as it always did.
+  @spec encode_unknown_fields(
+          {iodata(), non_neg_integer()},
+          [{non_neg_integer(), Protox.Types.tag(), binary()}]
+        ) :: {iodata(), non_neg_integer()}
+  def encode_unknown_fields(acc_tuple, []), do: acc_tuple
+
+  def encode_unknown_fields({acc, acc_size}, unknown_fields) do
+    do_encode_unknown_fields(acc, acc_size, unknown_fields)
+  end
+
+  defp do_encode_unknown_fields(acc, acc_size, []), do: {acc, acc_size}
+
+  defp do_encode_unknown_fields(acc, acc_size, [{tag, wire_type, bytes} | rest]) do
+    {key_bytes, key_size} = Varint.encode(tag <<< 3 ||| wire_type)
+
+    {len_prefix_bytes, len_prefix_size} =
+      case wire_type do
+        0 ->
+          {<<>>, 0}
+
+        1 ->
+          {<<>>, 0}
+
+        2 ->
+          bytes
+          |> byte_size()
+          |> Varint.encode()
+
+        5 ->
+          {<<>>, 0}
+      end
+
+    do_encode_unknown_fields(
+      [acc, key_bytes, len_prefix_bytes, bytes],
+      acc_size + key_size + len_prefix_size + byte_size(bytes),
+      rest
+    )
+  end
+
   # Packed elements are appended to a single contiguous binary: amortized O(1)
   # binary append, one reduction per element, and the packed length comes for
   # free from byte_size/1.
