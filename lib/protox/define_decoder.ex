@@ -187,11 +187,7 @@ defmodule Protox.DefineDecoder do
     # to the unknown-field clause instead of being misparsed. The wire type comes
     # from the element type, not the field kind: for repeated fields this clause
     # decodes single (unpacked) occurrences, whose key differs from the packed one.
-    key_bytes =
-      field.tag
-      |> Protox.Encode.make_key_bytes(field.type)
-      |> elem(0)
-      |> IO.iodata_to_binary()
+    key_bytes = make_literal_key_bytes(field.tag, field.type)
 
     quote do
       <<unquote(key_bytes), unquote(vars.bytes)::binary>> ->
@@ -499,6 +495,13 @@ defmodule Protox.DefineDecoder do
       key_parser = make_parse_map_entry(vars, key_type)
       value_parser = make_parse_map_entry(vars, value_type)
 
+      # The entry key and value always have tags 1 and 2: match their literal
+      # wire keys rather than decoding them with Protox.Decode.parse_key/1.
+      # As in parse_key_value/2, a known tag with an unexpected wire type falls
+      # through to the unknown-field clause.
+      entry_key_bytes = make_literal_key_bytes(1, key_type)
+      entry_value_bytes = make_literal_key_bytes(2, value_type)
+
       code =
         quote do
           defp unquote(fun_name)(map_entry, <<>>) do
@@ -515,18 +518,18 @@ defmodule Protox.DefineDecoder do
           #
           defp unquote(fun_name)({entry_key, entry_value}, unquote(vars.bytes)) do
             {map_entry, unquote(vars.rest)} =
-              case Protox.Decode.parse_key(unquote(vars.bytes)) do
-                # key
-                {1, _wire_type, unquote(vars.rest)} ->
+              case unquote(vars.bytes) do
+                <<unquote(entry_key_bytes), unquote(vars.rest)::binary>> ->
                   {res, unquote(vars.rest)} = unquote(key_parser)
                   {{res, entry_value}, unquote(vars.rest)}
 
-                # value
-                {2, _wire_type, unquote(vars.rest)} ->
+                <<unquote(entry_value_bytes), unquote(vars.rest)::binary>> ->
                   {res, unquote(vars.rest)} = unquote(value_parser)
                   {{entry_key, res}, unquote(vars.rest)}
 
-                {tag, wire_type, unquote(vars.rest)} ->
+                <<_unknown_entry_field::binary>> ->
+                  {tag, wire_type, unquote(vars.rest)} = Protox.Decode.parse_key(unquote(vars.bytes))
+
                   {_unknown_value, unquote(vars.rest)} =
                     Protox.Decode.parse_unknown(tag, wire_type, unquote(vars.rest))
 
@@ -575,6 +578,13 @@ defmodule Protox.DefineDecoder do
       {:message, _msg_type} -> parse_delimited
       _scalar_type -> make_parse_single(vars.rest, type)
     end
+  end
+
+  defp make_literal_key_bytes(tag, type) do
+    tag
+    |> Protox.Encode.make_key_bytes(type)
+    |> elem(0)
+    |> IO.iodata_to_binary()
   end
 
   defp maybe_wrap(value, true = _wrap_value), do: [value]
