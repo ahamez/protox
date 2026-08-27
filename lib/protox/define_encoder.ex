@@ -66,9 +66,10 @@ defmodule Protox.DefineEncoder do
       def encode!(msg) do
         encode_internal!(msg)
       rescue
-        e in [ArgumentError, ArithmeticError] ->
+        e in [ArgumentError, ArithmeticError, KeyError] ->
           # Cold path: re-run each field encoder in isolation to attribute the
-          # error to the faulty field.
+          # error to the faulty field. KeyError covers a message field set to a
+          # struct of the wrong type.
           encode_diagnose!(msg)
           reraise e, __STACKTRACE__
       end
@@ -151,24 +152,13 @@ defmodule Protox.DefineEncoder do
   end
 
   # Cold path, called only after encoding raised an ArgumentError: re-run each
-  # field encoder in isolation so the error can be attributed to its field.
-  # Message children are checked through their own (rescued) encode!/1 so that
-  # the attribution points at the innermost faulty field; scalar oneofs are
-  # deliberately not attributed, as they never were.
+  # field encoder in isolation, in encoding order, so the error is attributed
+  # to the field that failed originally. Message children are checked through
+  # their own (rescued) encode!/1 so that the attribution points at the
+  # innermost faulty field; scalar oneofs are deliberately not attributed, as
+  # they never were: their bare replay reproduces the original raw error.
   defp make_encode_diagnose_fun(oneofs, fields, vars) do
-    oneof_children_diagnoses =
-      for {parent_name, children} <- oneofs,
-          %Field{name: child_name, type: {:message, _sub_msg}} <- children do
-        quote do
-          case unquote(vars.msg).unquote(parent_name) do
-            {unquote(child_name), unquote(vars.child_field_value)} ->
-              Protox.Encode.diagnose_children!(unquote(vars.child_field_value))
-
-            _other ->
-              :ok
-          end
-        end
-      end
+    oneof_children_diagnoses = Enum.map(oneofs, &make_encode_diagnose_oneof(&1, vars))
 
     entries = Enum.map(fields, &make_encode_diagnose_entry(&1, vars))
 
@@ -186,18 +176,48 @@ defmodule Protox.DefineEncoder do
     end
   end
 
+  defp make_encode_diagnose_oneof({parent_name, children}, vars) do
+    message_children_clauses =
+      Enum.flat_map(children, fn
+        %Field{name: child_name, type: {:message, sub_msg}} ->
+          quote do
+            {unquote(child_name), unquote(vars.child_field_value)} ->
+              Protox.Encode.diagnose_children!(unquote(vars.child_field_value), unquote(sub_msg))
+          end
+
+        _scalar_child ->
+          []
+      end)
+
+    fallback_clause = quote do: (_other -> :ok)
+
+    quote do
+      case unquote(vars.msg).unquote(parent_name) do
+        unquote(message_children_clauses ++ fallback_clause)
+      end
+
+      unquote(make_encode_field_fun_name(parent_name))({[], 0}, unquote(vars.msg))
+    end
+  end
+
   defp make_encode_diagnose_entry(%Field{name: name} = field, vars) do
     fun_name = make_encode_field_fun_name(name)
     encode_call = quote(do: unquote(fun_name)({[], 0}, unquote(vars.msg)))
 
     entry_body =
-      if message_children?(field) do
-        quote do
-          Protox.Encode.diagnose_children!(unquote(vars.msg).unquote(name))
-          unquote(encode_call)
-        end
-      else
-        encode_call
+      case message_child_module(field) do
+        nil ->
+          encode_call
+
+        child_module ->
+          quote do
+            Protox.Encode.diagnose_children!(
+              unquote(vars.msg).unquote(name),
+              unquote(child_module)
+            )
+
+            unquote(encode_call)
+          end
       end
 
     quote do
@@ -205,10 +225,11 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  # Whether a field can hold message children (single, repeated or map values).
-  defp message_children?(%Field{type: {:message, _sub_msg}}), do: true
-  defp message_children?(%Field{type: {_key_type, {:message, _sub_msg}}}), do: true
-  defp message_children?(_field), do: false
+  # The module of a field's message children (single, repeated or map values),
+  # or nil if the field cannot hold messages.
+  defp message_child_module(%Field{type: {:message, sub_msg}}), do: sub_msg
+  defp message_child_module(%Field{type: {_key_type, {:message, sub_msg}}}), do: sub_msg
+  defp message_child_module(_field), do: nil
 
   defp make_encode_field_body(%Field{kind: %Scalar{}} = field, required, syntax, vars) do
     {key, key_size} = Protox.Encode.make_key_bytes(field.tag, field.type)
