@@ -38,13 +38,7 @@ defmodule Protox.DecodeOptimizationsTest do
     test "decodes NaN and infinities interleaved with finite packed doubles" do
       values = [1.0, :nan, 2.0, 3.0, 4.0, 5.0, :infinity, :"-infinity", 6.0]
 
-      bytes =
-        for v <- values, into: <<>> do
-          v
-          |> Protox.Encode.encode_double()
-          |> elem(0)
-          |> IO.iodata_to_binary()
-        end
+      bytes = Protox.Encode.encode_packed_double(values, <<>>)
 
       assert Protox.Decode.parse_repeated_double([], bytes) == values
     end
