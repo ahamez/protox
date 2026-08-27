@@ -49,14 +49,59 @@ defmodule Protox.DefineMessage do
           unquote(unknown_fields_funs)
           unquote(default_fun)
 
-          @spec schema() :: Protox.MessageSchema.t()
-          def schema(), do: unquote(Macro.escape(msg_schema))
+          unquote(make_schema_fun(msg_schema))
         end
       end
     end
   end
 
   # -- Private
+
+  # The schema is emitted in a compact tuple form (far smaller in source form
+  # than the escaped structs) and expanded back at compile time of the
+  # generated module.
+  defp make_schema_fun(msg_schema) do
+    compact_fields = make_compact_fields(msg_schema)
+
+    # The compact form must expand to the exact original schema.
+    ^msg_schema =
+      Protox.MessageSchema.expand!(
+        msg_schema.name,
+        msg_schema.syntax,
+        compact_fields,
+        msg_schema.file_options
+      )
+
+    quote do
+      @schema Protox.MessageSchema.expand!(
+                unquote(msg_schema.name),
+                unquote(msg_schema.syntax),
+                unquote(Macro.escape(compact_fields)),
+                unquote(Macro.escape(msg_schema.file_options))
+              )
+
+      @spec schema() :: Protox.MessageSchema.t()
+      def schema(), do: @schema
+    end
+  end
+
+  defp make_compact_fields(msg_schema) do
+    msg_schema.fields
+    |> Enum.sort()
+    |> Enum.map(fn {name, %Field{} = field} ->
+      kind =
+        case field.kind do
+          %Scalar{default_value: default_value} -> {:scalar, default_value}
+          %OneOf{parent: parent} -> {:oneof, parent}
+          kind when kind in [:map, :packed, :unpacked] -> kind
+        end
+
+      case field.extender do
+        nil -> {name, field.tag, field.label, kind, field.type}
+        extender -> {name, field.tag, field.label, kind, field.type, extender}
+      end
+    end)
+  end
 
   defp make_unknown_fields_funs(unknown_fields) do
     quote do
