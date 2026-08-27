@@ -182,7 +182,7 @@ defmodule Protox do
     end)
   end
 
-  @generator_version 1
+  @generator_version 2
   @doc nil
   @spec generator_version() :: pos_integer()
   def generator_version(), do: @generator_version
