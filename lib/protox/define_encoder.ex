@@ -64,7 +64,7 @@ defmodule Protox.DefineEncoder do
       def encode!(msg) do
         encode_internal!(msg)
       rescue
-        e in ArgumentError ->
+        e in [ArgumentError, ArithmeticError] ->
           # Cold path: re-run each field encoder in isolation to attribute the
           # error to the faulty field.
           encode_diagnose!(msg)
