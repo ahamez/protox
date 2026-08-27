@@ -25,4 +25,48 @@ defmodule Protox.MessageSchema do
   @enforced_keys [:name, :syntax, :fields]
   @enforce_keys @enforced_keys
   defstruct @enforced_keys ++ [:file_options]
+
+  @typedoc false
+  @type compact_field() ::
+          {atom(), number(), Protox.Types.label(), compact_kind(), Protox.Types.type()}
+          | {atom(), number(), Protox.Types.label(), compact_kind(), Protox.Types.type(), atom()}
+
+  @typedoc false
+  @type compact_kind() :: {:scalar, any()} | :map | :packed | :unpacked | {:oneof, atom()}
+
+  @doc false
+  # Builds a schema from the compact field representation emitted by the code
+  # generator, which is far smaller in source form than the escaped structs.
+  # Called at compile time of the generated modules (the result is stored in a
+  # module attribute); never on any runtime path.
+  @spec expand!(atom(), atom(), [compact_field()], map() | nil) :: t()
+  def expand!(name, syntax, compact_fields, file_options) do
+    fields =
+      Map.new(compact_fields, fn compact_field ->
+        {field_name, tag, label, compact_kind, type} = five_first_elems(compact_field)
+
+        field = %Protox.Field{
+          tag: tag,
+          label: label,
+          name: field_name,
+          kind: expand_kind(compact_kind),
+          type: type,
+          extender: extender(compact_field)
+        }
+
+        {field_name, field}
+      end)
+
+    %__MODULE__{name: name, syntax: syntax, fields: fields, file_options: file_options}
+  end
+
+  defp five_first_elems({name, tag, label, kind, type}), do: {name, tag, label, kind, type}
+  defp five_first_elems({name, tag, label, kind, type, _extender}), do: {name, tag, label, kind, type}
+
+  defp extender({_name, _tag, _label, _kind, _type, extender}), do: extender
+  defp extender(_five_elems), do: nil
+
+  defp expand_kind({:scalar, default_value}), do: %Protox.Scalar{default_value: default_value}
+  defp expand_kind({:oneof, parent}), do: %Protox.OneOf{parent: parent}
+  defp expand_kind(kind) when kind in [:map, :packed, :unpacked], do: kind
 end
