@@ -16,7 +16,7 @@ defmodule Protox.String do
       byte_size(bytes) > @max_size ->
         {:error, :too_large}
 
-      not String.valid?(bytes) ->
+      not String.valid?(bytes, :fast_ascii) ->
         {:error, :invalid_utf8}
 
       true ->
