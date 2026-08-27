@@ -74,7 +74,6 @@ defmodule Protox.DefineEncoder do
       end
 
       @doc false
-      @spec encode_internal!(t()) :: {iodata(), non_neg_integer()} | no_return()
       def encode_internal!(msg), do: unquote(ast)
     end
   end
@@ -159,7 +158,7 @@ defmodule Protox.DefineEncoder do
   defp make_encode_diagnose_fun(oneofs, fields, vars) do
     oneof_children_diagnoses =
       for {parent_name, children} <- oneofs,
-          %Field{name: child_name, type: {:message, _}} <- children do
+          %Field{name: child_name, type: {:message, _sub_msg}} <- children do
         quote do
           case unquote(vars.msg).unquote(parent_name) do
             {unquote(child_name), unquote(vars.child_field_value)} ->
@@ -171,25 +170,7 @@ defmodule Protox.DefineEncoder do
         end
       end
 
-    entries =
-      for %Field{name: name} = field <- fields do
-        fun_name = make_encode_field_fun_name(name)
-        encode_call = quote(do: unquote(fun_name)({[], 0}, unquote(vars.msg)))
-
-        entry_body =
-          if message_children?(field) do
-            quote do
-              Protox.Encode.diagnose_children!(unquote(vars.msg).unquote(name))
-              unquote(encode_call)
-            end
-          else
-            encode_call
-          end
-
-        quote do
-          {unquote(name), fn -> unquote(entry_body) end}
-        end
-      end
+    entries = Enum.map(fields, &make_encode_diagnose_entry(&1, vars))
 
     if oneof_children_diagnoses == [] and entries == [] do
       quote do
@@ -205,9 +186,28 @@ defmodule Protox.DefineEncoder do
     end
   end
 
+  defp make_encode_diagnose_entry(%Field{name: name} = field, vars) do
+    fun_name = make_encode_field_fun_name(name)
+    encode_call = quote(do: unquote(fun_name)({[], 0}, unquote(vars.msg)))
+
+    entry_body =
+      if message_children?(field) do
+        quote do
+          Protox.Encode.diagnose_children!(unquote(vars.msg).unquote(name))
+          unquote(encode_call)
+        end
+      else
+        encode_call
+      end
+
+    quote do
+      {unquote(name), fn -> unquote(entry_body) end}
+    end
+  end
+
   # Whether a field can hold message children (single, repeated or map values).
-  defp message_children?(%Field{type: {:message, _}}), do: true
-  defp message_children?(%Field{type: {_key_type, {:message, _}}}), do: true
+  defp message_children?(%Field{type: {:message, _sub_msg}}), do: true
+  defp message_children?(%Field{type: {_key_type, {:message, _sub_msg}}}), do: true
   defp message_children?(_field), do: false
 
   defp make_encode_field_body(%Field{kind: %Scalar{}} = field, required, syntax, vars) do
