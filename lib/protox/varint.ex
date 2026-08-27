@@ -34,6 +34,39 @@ defmodule Protox.Varint do
     {<<1::1, v::7, next_bytes::binary>>, size + 1}
   end
 
+  # Appends the LEB128 encoding of `v` to `acc`: lets callers build a packed
+  # binary without one intermediate binary per element. Not used by encode/1:
+  # a standalone varint built by appending to <<>> would be an over-allocated
+  # writable binary, measurably worse than the exact-sized clauses above.
+  @spec append(binary(), non_neg_integer()) :: binary()
+  def append(acc, v) when v < 1 <<< 7, do: <<acc::binary, v>>
+
+  def append(acc, v) when v < 1 <<< 14, do: <<acc::binary, 1::1, v::7, v >>> 7>>
+
+  def append(acc, v) when v < 1 <<< 21, do: <<acc::binary, 1::1, v::7, 1::1, v >>> 7::7, v >>> 14>>
+
+  def append(acc, v) when v < 1 <<< 28, do: <<acc::binary, 1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, v >>> 21>>
+
+  def append(acc, v) when v < 1 <<< 35,
+    do: <<acc::binary, 1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, v >>> 28>>
+
+  def append(acc, v) when v < 1 <<< 42,
+    do: <<acc::binary, 1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7, v >>> 35>>
+
+  def append(acc, v) when v < 1 <<< 49,
+    do:
+      <<acc::binary, 1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7, 1::1,
+        v >>> 35::7, v >>> 42>>
+
+  def append(acc, v) when v < 1 <<< 56,
+    do:
+      <<acc::binary, 1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7, 1::1,
+        v >>> 35::7, 1::1, v >>> 42::7, v >>> 49>>
+
+  def append(acc, v) do
+    append(<<acc::binary, 1::1, v::7>>, v >>> 7)
+  end
+
   @spec decode(binary) :: {non_neg_integer, binary}
   def decode(<<0::1, byte0::7, rest::binary>>), do: {byte0, rest}
 

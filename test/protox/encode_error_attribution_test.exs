@@ -129,17 +129,18 @@ defmodule Protox.EncodeErrorAttributionTest do
         optional_int32: :also_not_an_int
       }
 
-      assert_raise ArgumentError, fn ->
+      assert_raise ArithmeticError, fn ->
         TestAllTypesProto3.encode!(msg)
       end
     end
 
-    test "an invalid oneof child keeps raising a raw ArgumentError" do
+    test "an invalid oneof child keeps raising a raw error" do
       # Oneof children have never been wrapped into EncodingError; pin this
       # behavior so the encoder restructuring doesn't silently change it.
+      # The raw error type depends on the child's type.
       varint_msg = %TestAllTypesProto3{oneof_field: {:oneof_uint32, :not_an_int}}
 
-      assert_raise ArgumentError, fn ->
+      assert_raise ArithmeticError, fn ->
         TestAllTypesProto3.encode!(varint_msg)
       end
 
