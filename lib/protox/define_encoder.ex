@@ -66,10 +66,13 @@ defmodule Protox.DefineEncoder do
       def encode!(msg) do
         encode_internal!(msg)
       rescue
-        e in [ArgumentError, ArithmeticError, KeyError] ->
+        e in [Protox.EncodingError, Protox.RequiredFieldsError] ->
+          reraise e, __STACKTRACE__
+
+        e ->
           # Cold path: re-run each field encoder in isolation to attribute the
-          # error to the faulty field. KeyError covers a message field set to a
-          # struct of the wrong type.
+          # error to the faulty field. Reraises the original error when the
+          # diagnosis doesn't find an attributable field.
           encode_diagnose!(msg)
           reraise e, __STACKTRACE__
       end
@@ -168,10 +171,14 @@ defmodule Protox.DefineEncoder do
       end
     else
       quote do
-        defp encode_diagnose!(unquote(vars.msg)) do
+        defp encode_diagnose!(%{__struct__: __MODULE__} = unquote(vars.msg)) do
           unquote_splicing(oneof_children_diagnoses)
           Protox.Encode.find_invalid_field!(unquote(entries))
         end
+
+        # Not a valid input for this message: no field can be blamed, let the
+        # caller reraise the original error.
+        defp encode_diagnose!(_malformed_input), do: :ok
       end
     end
   end
@@ -189,14 +196,38 @@ defmodule Protox.DefineEncoder do
           []
       end)
 
-    fallback_clause = quote do: (_other -> :ok)
+    children_diagnosis =
+      if message_children_clauses == [] do
+        []
+      else
+        fallback_clause =
+          quote do
+            _other -> :ok
+          end
 
-    quote do
-      case unquote(vars.msg).unquote(parent_name) do
-        unquote(message_children_clauses ++ fallback_clause)
+        quote_result =
+          quote do
+            case unquote(vars.msg).unquote(parent_name) do
+              unquote(message_children_clauses ++ fallback_clause)
+            end
+          end
+
+        List.wrap(quote_result)
       end
 
-      unquote(make_encode_field_fun_name(parent_name))({[], 0}, unquote(vars.msg))
+    replay =
+      quote do
+        try do
+          unquote(make_encode_field_fun_name(parent_name))({[], 0}, unquote(vars.msg))
+        rescue
+          _e in [MatchError, KeyError] ->
+            reraise Protox.EncodingError.new(unquote(parent_name), "invalid field value"),
+                    __STACKTRACE__
+        end
+      end
+
+    quote do
+      (unquote_splicing(children_diagnosis ++ [replay]))
     end
   end
 
@@ -496,10 +527,15 @@ defmodule Protox.DefineEncoder do
   end
 
   # The child module is known at generation time: dispatch on it statically and
-  # use its rescue-free encoding path.
+  # use its rescue-free encoding path. The match on __struct__ rejects any
+  # other value with a MatchError, which the diagnosis attributes: without it,
+  # a wrong-typed struct or a plain map with matching field names would be
+  # silently encoded under this message's tags. A %unquote(msg_type){} pattern
+  # is not usable here, as the child module may not be compiled yet.
   defp get_encode_value_body({:message, msg_type}, value_var) do
     quote do
-      {child_bytes, child_size} = unquote(msg_type).encode_internal!(unquote(value_var))
+      %{__struct__: unquote(msg_type)} = child = unquote(value_var)
+      {child_bytes, child_size} = unquote(msg_type).encode_internal!(child)
       {child_size_bytes, child_size_bytes_size} = Protox.Varint.encode(child_size)
       {[child_size_bytes, child_bytes], child_size + child_size_bytes_size}
     end
