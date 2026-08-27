@@ -153,26 +153,37 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  # Cold path, called only after encoding raised an ArgumentError: re-run each
-  # field encoder in isolation, in encoding order, so the error is attributed
-  # to the field that failed originally. Message children are checked through
-  # their own (rescued) encode!/1 so that the attribution points at the
-  # innermost faulty field; scalar oneofs are deliberately not attributed, as
-  # they never were: their bare replay reproduces the original raw error.
+  # Cold path, called only after an encoding error: hands the field encoders
+  # and the message-children modules to Protox.Encode.find_invalid_field!/2,
+  # in encoding order (oneofs first), so the error is attributed to the field
+  # that failed originally.
   defp make_encode_diagnose_fun(oneofs, fields, vars) do
-    oneof_children_diagnoses = Enum.map(oneofs, &make_encode_diagnose_oneof(&1, vars))
+    oneof_entries =
+      Enum.map(oneofs, fn {parent_name, children} ->
+        message_children = for %Field{name: name, type: {:message, mod}} <- children, do: {name, mod}
 
-    entries = Enum.map(fields, &make_encode_diagnose_entry(&1, vars))
+        quote do
+          {:oneof, unquote(parent_name), unquote(make_local_capture(parent_name)), unquote(message_children)}
+        end
+      end)
 
-    if oneof_children_diagnoses == [] and entries == [] do
+    field_entries =
+      Enum.map(fields, fn %Field{name: name} = field ->
+        quote do
+          {unquote(name), unquote(make_local_capture(name)), unquote(message_child_module(field))}
+        end
+      end)
+
+    entries = oneof_entries ++ field_entries
+
+    if entries == [] do
       quote do
         defp encode_diagnose!(_msg), do: :ok
       end
     else
       quote do
         defp encode_diagnose!(%{__struct__: __MODULE__} = unquote(vars.msg)) do
-          unquote_splicing(oneof_children_diagnoses)
-          Protox.Encode.find_invalid_field!(unquote(entries))
+          Protox.Encode.find_invalid_field!(unquote(vars.msg), unquote(entries))
         end
 
         # Not a valid input for this message: no field can be blamed, let the
@@ -182,77 +193,10 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp make_encode_diagnose_oneof({parent_name, children}, vars) do
-    message_children_clauses =
-      Enum.flat_map(children, fn
-        %Field{name: child_name, type: {:message, sub_msg}} ->
-          quote do
-            {unquote(child_name), unquote(vars.child_field_value)} ->
-              Protox.Encode.diagnose_children!(unquote(vars.child_field_value), unquote(sub_msg))
-          end
-
-        _scalar_child ->
-          []
-      end)
-
-    children_diagnosis =
-      if message_children_clauses == [] do
-        []
-      else
-        fallback_clause =
-          quote do
-            _other -> :ok
-          end
-
-        quote_result =
-          quote do
-            case unquote(vars.msg).unquote(parent_name) do
-              unquote(message_children_clauses ++ fallback_clause)
-            end
-          end
-
-        List.wrap(quote_result)
-      end
-
-    replay =
-      quote do
-        try do
-          unquote(make_encode_field_fun_name(parent_name))({[], 0}, unquote(vars.msg))
-        rescue
-          _e in [MatchError, KeyError] ->
-            reraise Protox.EncodingError.new(unquote(parent_name), "invalid field value"),
-                    __STACKTRACE__
-        end
-      end
-
-    quote do
-      (unquote_splicing(children_diagnosis ++ [replay]))
-    end
-  end
-
-  defp make_encode_diagnose_entry(%Field{name: name} = field, vars) do
+  # AST of `&encode_<name>/2`.
+  defp make_local_capture(name) do
     fun_name = make_encode_field_fun_name(name)
-    encode_call = quote(do: unquote(fun_name)({[], 0}, unquote(vars.msg)))
-
-    entry_body =
-      case message_child_module(field) do
-        nil ->
-          encode_call
-
-        child_module ->
-          quote do
-            Protox.Encode.diagnose_children!(
-              unquote(vars.msg).unquote(name),
-              unquote(child_module)
-            )
-
-            unquote(encode_call)
-          end
-      end
-
-    quote do
-      {unquote(name), fn -> unquote(entry_body) end}
-    end
+    {:&, [], [{:/, [], [{fun_name, [], __MODULE__}, 2]}]}
   end
 
   # The module of a field's message children (single, repeated or map values),
