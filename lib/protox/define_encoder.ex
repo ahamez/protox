@@ -343,10 +343,8 @@ defmodule Protox.DefineEncoder do
       if map_size(map) == 0 do
         {unquote(vars.acc), unquote(vars.acc_size)}
       else
-        Enum.reduce(
-          map,
-          {unquote(vars.acc), unquote(vars.acc_size)},
-          fn {unquote(k_var), unquote(v_var)}, {unquote(vars.acc), unquote(vars.acc_size)} ->
+        :maps.fold(
+          fn unquote(k_var), unquote(v_var), {unquote(vars.acc), unquote(vars.acc_size)} ->
             {k_value_bytes, k_value_len} = unquote(encode_map_key_ast)
             {v_value_bytes, v_value_len} = unquote(encode_map_value_ast)
 
@@ -366,7 +364,9 @@ defmodule Protox.DefineEncoder do
               unquote(vars.acc_size) + unquote(field_key_size + keys_len) + k_value_len +
                 v_value_len + len_varint_size
             }
-          end
+          end,
+          {unquote(vars.acc), unquote(vars.acc_size)},
+          map
         )
       end
     end
