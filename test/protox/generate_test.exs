@@ -165,7 +165,7 @@ defmodule Protox.GenerateTest do
     assert content =~
              ~r/repeated_string:\s*\[\s*Protox\.Decode\.validate_string!\(delimited\)\s*\|\s*msg\.repeated_string\s*\]/s
 
-    assert content =~ "repeated_string: Enum.reverse(msg.repeated_string)"
-    assert content =~ "repeated_bool: Enum.reverse(msg.repeated_bool)"
+    assert content =~ "repeated_string: :lists.reverse(values)"
+    assert content =~ "repeated_bool: :lists.reverse(values)"
   end
 end
