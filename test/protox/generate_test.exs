@@ -167,5 +167,9 @@ defmodule Protox.GenerateTest do
 
     assert content =~ "repeated_string: :lists.reverse(values)"
     assert content =~ "repeated_bool: :lists.reverse(values)"
+
+    # Trivial defs are folded to the keyword form.
+    assert content =~ "def default(:optional_int32), do: {:ok, 0}\n"
+    refute content =~ ~r/def default\(:optional_int32\) do\n/
   end
 end

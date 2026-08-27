@@ -74,8 +74,38 @@ defmodule Protox.Generate do
       "# credo:disable-for-this-file\n",
       code
       |> Macro.to_string()
+      |> fold_trivial_defs()
       |> Code.format_string!(),
       "\n"
     ]
   end
+
+  @max_line_length 98
+
+  # Macro.to_string/1 always renders do/end blocks. Fold the trivial ones
+  # (a def with a single-line body) into the keyword form, which the
+  # formatter preserves: `def default(), do: {:ok, nil}`.
+  defp fold_trivial_defs(code) do
+    code
+    |> String.split("\n")
+    |> fold_trivial_defs([])
+    |> Enum.reverse()
+    |> Enum.join("\n")
+  end
+
+  defp fold_trivial_defs([head, body, tail | rest], acc) do
+    with [_all, indent, definition] <- Regex.run(~r/^(\s*)(defp? .*[^,]) do$/, head),
+         true <- tail == indent <> "end",
+         body = String.trim(body),
+         # Skip bodies that themselves use a block or clause syntax.
+         false <- String.contains?(body, [" do", "do:", "->", "#"]),
+         folded = "#{indent}#{definition}, do: #{body}",
+         true <- String.length(folded) <= @max_line_length do
+      fold_trivial_defs(rest, [folded | acc])
+    else
+      _cannot_fold -> fold_trivial_defs([body, tail | rest], [head | acc])
+    end
+  end
+
+  defp fold_trivial_defs(remaining_lines, acc), do: Enum.reverse(remaining_lines, acc)
 end
