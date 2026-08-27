@@ -146,6 +146,46 @@ defmodule Protox.Encode do
   end
 
   @doc false
+  # Cold path: runs each field encoder in isolation and raises an EncodingError
+  # naming the first field whose encoder fails with an ArgumentError.
+  @spec find_invalid_field!([{atom(), (-> any())}]) :: :ok | no_return()
+  def find_invalid_field!(entries) do
+    Enum.each(entries, fn {name, encode_fun} ->
+      try do
+        encode_fun.()
+      rescue
+        ArgumentError ->
+          reraise Protox.EncodingError.new(name, "invalid field value"), __STACKTRACE__
+      end
+    end)
+  end
+
+  @doc false
+  # Cold path: recursively encodes message children through their own (rescued)
+  # encode!/1 so an EncodingError is attributed to the innermost faulty field.
+  @spec diagnose_children!(any()) :: any()
+  def diagnose_children!(%mod{} = child) do
+    if Code.ensure_loaded?(mod) and function_exported?(mod, :encode!, 1) do
+      mod.encode!(child)
+    else
+      # Not a protox message: let the field encoder replay report the error.
+      :ok
+    end
+  end
+
+  def diagnose_children!(children) when is_list(children) do
+    Enum.each(children, &diagnose_children!/1)
+  end
+
+  def diagnose_children!(children) when is_map(children) do
+    Enum.each(children, fn {_key, value} -> diagnose_children!(value) end)
+  end
+
+  def diagnose_children!(_other), do: :ok
+
+  @doc false
+  # Only kept for backward compatibility with previously generated files: newly
+  # generated encoders inline this with a static dispatch on the child module.
   @spec encode_message(struct()) :: {iodata(), non_neg_integer()}
   def encode_message(value) do
     {value_bytes, value_size} = value.__struct__.encode!(value)
