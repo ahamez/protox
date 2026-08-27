@@ -83,15 +83,19 @@ defmodule Protox.DefineDecoder do
       |> Enum.uniq()
 
     updates =
-      Enum.map(repeated_field_names, fn field_name ->
-        {field_name, quote(do: Enum.reverse(unquote(msg_var).unquote(field_name)))}
-      end) ++
-        [
-          {unknown_fields_name, quote(do: Enum.reverse(unquote(msg_var).unquote(unknown_fields_name)))}
-        ]
+      Enum.map(repeated_field_names ++ [unknown_fields_name], fn field_name ->
+        quote do
+          unquote(msg_var) =
+            case unquote(msg_var).unquote(field_name) do
+              [] -> unquote(msg_var)
+              values -> %{unquote(msg_var) | unquote(field_name) => :lists.reverse(values)}
+            end
+        end
+      end)
 
     quote do
-      %{unquote(msg_var) | unquote_splicing(updates)}
+      unquote_splicing(updates)
+      unquote(msg_var)
     end
   end
 
