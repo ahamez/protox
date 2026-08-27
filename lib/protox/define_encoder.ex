@@ -18,17 +18,23 @@ defmodule Protox.DefineEncoder do
     %{oneofs: oneofs, proto3_optionals: proto3_optionals, others: fields_without_oneofs} =
       Protox.Defs.split_oneofs(fields)
 
-    top_level_encode_fun =
-      make_top_level_encode_fun(oneofs, proto3_optionals ++ fields_without_oneofs)
+    # The diagnose function must replay fields in the same order encode_internal!/1
+    # runs them, so that the first field to fail in the replay is the one that
+    # failed originally.
+    fields_in_encode_order = proto3_optionals ++ fields_without_oneofs
+
+    top_level_encode_fun = make_top_level_encode_fun(oneofs, fields_in_encode_order)
 
     encode_oneof_funs = make_encode_oneof_funs(oneofs, syntax, vars)
     encode_field_funs = make_encode_field_funs(fields, required_fields, syntax, vars)
+    encode_diagnose_fun = make_encode_diagnose_fun(oneofs, fields_in_encode_order, vars)
     encode_unknown_fields_fun = make_encode_unknown_fields_fun(vars, opts)
 
     quote do
       unquote(top_level_encode_fun)
       unquote_splicing(encode_oneof_funs)
       unquote_splicing(encode_field_funs)
+      unquote(encode_diagnose_fun)
       unquote(encode_unknown_fields_fun)
     end
   end
@@ -55,7 +61,19 @@ defmodule Protox.DefineEncoder do
       end
 
       @spec encode!(t()) :: {iodata(), non_neg_integer()} | no_return()
-      def encode!(msg), do: unquote(ast)
+      def encode!(msg) do
+        encode_internal!(msg)
+      rescue
+        e in ArgumentError ->
+          # Cold path: re-run each field encoder in isolation to attribute the
+          # error to the faulty field.
+          encode_diagnose!(msg)
+          reraise e, __STACKTRACE__
+      end
+
+      @doc false
+      @spec encode_internal!(t()) :: {iodata(), non_neg_integer()} | no_return()
+      def encode_internal!(msg), do: unquote(ast)
     end
   end
 
@@ -126,14 +144,69 @@ defmodule Protox.DefineEncoder do
       quote do
         defp unquote(fun_name)({unquote(vars.acc), unquote(vars.acc_size)}, unquote(vars.msg)) do
           unquote(fun_ast)
-        rescue
-          ArgumentError ->
-            reraise Protox.EncodingError.new(unquote(name), "invalid field value"),
-                    __STACKTRACE__
         end
       end
     end
   end
+
+  # Cold path, called only after encoding raised an ArgumentError: re-run each
+  # field encoder in isolation so the error can be attributed to its field.
+  # Message children are checked through their own (rescued) encode!/1 so that
+  # the attribution points at the innermost faulty field; scalar oneofs are
+  # deliberately not attributed, as they never were.
+  defp make_encode_diagnose_fun(oneofs, fields, vars) do
+    oneof_children_diagnoses =
+      for {parent_name, children} <- oneofs,
+          %Field{name: child_name, type: {:message, _}} <- children do
+        quote do
+          case unquote(vars.msg).unquote(parent_name) do
+            {unquote(child_name), unquote(vars.child_field_value)} ->
+              Protox.Encode.diagnose_children!(unquote(vars.child_field_value))
+
+            _other ->
+              :ok
+          end
+        end
+      end
+
+    entries =
+      for %Field{name: name} = field <- fields do
+        fun_name = make_encode_field_fun_name(name)
+        encode_call = quote(do: unquote(fun_name)({[], 0}, unquote(vars.msg)))
+
+        entry_body =
+          if message_children?(field) do
+            quote do
+              Protox.Encode.diagnose_children!(unquote(vars.msg).unquote(name))
+              unquote(encode_call)
+            end
+          else
+            encode_call
+          end
+
+        quote do
+          {unquote(name), fn -> unquote(entry_body) end}
+        end
+      end
+
+    if oneof_children_diagnoses == [] and entries == [] do
+      quote do
+        defp encode_diagnose!(_msg), do: :ok
+      end
+    else
+      quote do
+        defp encode_diagnose!(unquote(vars.msg)) do
+          unquote_splicing(oneof_children_diagnoses)
+          Protox.Encode.find_invalid_field!(unquote(entries))
+        end
+      end
+    end
+  end
+
+  # Whether a field can hold message children (single, repeated or map values).
+  defp message_children?(%Field{type: {:message, _}}), do: true
+  defp message_children?(%Field{type: {_key_type, {:message, _}}}), do: true
+  defp message_children?(_field), do: false
 
   defp make_encode_field_body(%Field{kind: %Scalar{}} = field, required, syntax, vars) do
     {key, key_size} = Protox.Encode.make_key_bytes(field.tag, field.type)
@@ -399,9 +472,13 @@ defmodule Protox.DefineEncoder do
     end
   end
 
-  defp get_encode_value_body({:message, _msg_type}, value_var) do
+  # The child module is known at generation time: dispatch on it statically and
+  # use its rescue-free encoding path.
+  defp get_encode_value_body({:message, msg_type}, value_var) do
     quote do
-      Protox.Encode.encode_message(unquote(value_var))
+      {child_bytes, child_size} = unquote(msg_type).encode_internal!(unquote(value_var))
+      {child_size_bytes, child_size_bytes_size} = Protox.Varint.encode(child_size)
+      {[child_size_bytes, child_bytes], child_size + child_size_bytes_size}
     end
   end
 
