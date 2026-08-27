@@ -153,6 +153,82 @@ defmodule Protox.Encode do
     {[size_varint, value], size + byte_size(value)}
   end
 
+  # Packed fixed-width elements are appended to a single contiguous binary:
+  # amortized O(1) binary append, one reduction per element, and the packed
+  # length comes for free from byte_size/1.
+
+  @doc false
+  @spec encode_packed_fixed32([integer()], binary()) :: binary()
+  def encode_packed_fixed32([], acc), do: acc
+
+  def encode_packed_fixed32([value | rest], acc) do
+    encode_packed_fixed32(rest, <<acc::binary, value::little-32>>)
+  end
+
+  @doc false
+  @spec encode_packed_fixed64([integer()], binary()) :: binary()
+  def encode_packed_fixed64([], acc), do: acc
+
+  def encode_packed_fixed64([value | rest], acc) do
+    encode_packed_fixed64(rest, <<acc::binary, value::little-64>>)
+  end
+
+  @doc false
+  @spec encode_packed_sfixed32([integer()], binary()) :: binary()
+  def encode_packed_sfixed32([], acc), do: acc
+
+  def encode_packed_sfixed32([value | rest], acc) do
+    encode_packed_sfixed32(rest, <<acc::binary, value::signed-little-32>>)
+  end
+
+  @doc false
+  @spec encode_packed_sfixed64([integer()], binary()) :: binary()
+  def encode_packed_sfixed64([], acc), do: acc
+
+  def encode_packed_sfixed64([value | rest], acc) do
+    encode_packed_sfixed64(rest, <<acc::binary, value::signed-little-64>>)
+  end
+
+  @doc false
+  @spec encode_packed_float([float() | atom()], binary()) :: binary()
+  def encode_packed_float([], acc), do: acc
+
+  def encode_packed_float([:infinity | rest], acc) do
+    encode_packed_float(rest, <<acc::binary, @positive_infinity_32::binary>>)
+  end
+
+  def encode_packed_float([:"-infinity" | rest], acc) do
+    encode_packed_float(rest, <<acc::binary, @negative_infinity_32::binary>>)
+  end
+
+  def encode_packed_float([:nan | rest], acc) do
+    encode_packed_float(rest, <<acc::binary, @nan_32::binary>>)
+  end
+
+  def encode_packed_float([value | rest], acc) do
+    encode_packed_float(rest, <<acc::binary, value::float-little-32>>)
+  end
+
+  @doc false
+  @spec encode_packed_double([float() | atom()], binary()) :: binary()
+  def encode_packed_double([], acc), do: acc
+
+  def encode_packed_double([:infinity | rest], acc) do
+    encode_packed_double(rest, <<acc::binary, @positive_infinity_64::binary>>)
+  end
+
+  def encode_packed_double([:"-infinity" | rest], acc) do
+    encode_packed_double(rest, <<acc::binary, @negative_infinity_64::binary>>)
+  end
+
+  def encode_packed_double([:nan | rest], acc) do
+    encode_packed_double(rest, <<acc::binary, @nan_64::binary>>)
+  end
+
+  def encode_packed_double([value | rest], acc) do
+    encode_packed_double(rest, <<acc::binary, value::float-little-64>>)
+  end
+
   @doc false
   # Cold path: runs each field encoder in isolation and raises an EncodingError
   # naming the first field whose encoder fails. Already-attributed errors pass
