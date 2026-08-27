@@ -49,11 +49,11 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_decode_bang_fun(msg_name, _vars) do
+  defp make_decode_bang_fun(_msg_name, _vars) do
     quote do
       @spec decode!(binary()) :: t() | no_return()
       def decode!(bytes) do
-        parse_key_value(bytes, struct(unquote(msg_name)))
+        parse_key_value(bytes, __struct__())
       end
     end
   end
