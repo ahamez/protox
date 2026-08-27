@@ -44,12 +44,13 @@ defmodule Protox.DefineMessage do
           unquote(struct_fields_types)
           defstruct unquote(struct_fields)
 
+          # Defined before the functions that read @schema.
+          unquote(make_schema_fun(msg_schema))
+
           unquote(encoder)
           unquote(decoder)
           unquote(unknown_fields_funs)
           unquote(default_fun)
-
-          unquote(make_schema_fun(msg_schema))
         end
       end
     end
@@ -116,29 +117,13 @@ defmodule Protox.DefineMessage do
     end
   end
 
-  # Generate the functions that provide a direct access to the default value of a field.
-  defp make_default_funs(fields) do
-    all_default_funs =
-      Enum.map(fields, fn
-        %Field{name: name, kind: %Scalar{default_value: default}} ->
-          quote do
-            def default(unquote(name)), do: {:ok, unquote(default)}
-          end
-
-        %Field{name: name} ->
-          quote do
-            def default(unquote(name)), do: {:error, :no_default_value}
-          end
-      end)
-
+  # Generate the function that provides a direct access to the default value of a field.
+  defp make_default_funs(_fields) do
     quote do
       @spec default(atom()) ::
               {:ok, boolean() | integer() | String.t() | float()}
               | {:error, :no_such_field | :no_default_value}
-
-      unquote_splicing(all_default_funs)
-
-      def default(_field_name), do: {:error, :no_such_field}
+      def default(field_name), do: Protox.MessageSchema.default(@schema, field_name)
     end
   end
 
