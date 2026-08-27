@@ -2,6 +2,8 @@ defmodule Protox.DefineEncoder do
   @moduledoc false
   # Internal. Generates the encoder of a message.
 
+  use Protox.Float
+
   alias Protox.{Field, OneOf, Scalar}
 
   @spec define([Field.t()], :proto2 | :proto3, keyword()) :: Macro.t()
@@ -527,27 +529,41 @@ defmodule Protox.DefineEncoder do
   end
 
   defp get_encode_value_body(:fixed32, value_var) do
-    quote(do: Protox.Encode.encode_fixed32(unquote(value_var)))
+    quote(do: {<<unquote(value_var)::little-32>>, 4})
   end
 
   defp get_encode_value_body(:fixed64, value_var) do
-    quote(do: Protox.Encode.encode_fixed64(unquote(value_var)))
+    quote(do: {<<unquote(value_var)::little-64>>, 8})
   end
 
   defp get_encode_value_body(:sfixed32, value_var) do
-    quote(do: Protox.Encode.encode_sfixed32(unquote(value_var)))
+    quote(do: {<<unquote(value_var)::signed-little-32>>, 4})
   end
 
   defp get_encode_value_body(:sfixed64, value_var) do
-    quote(do: Protox.Encode.encode_sfixed64(unquote(value_var)))
+    quote(do: {<<unquote(value_var)::signed-little-64>>, 8})
   end
 
   defp get_encode_value_body(:float, value_var) do
-    quote(do: Protox.Encode.encode_float(unquote(value_var)))
+    quote do
+      case unquote(value_var) do
+        :infinity -> {unquote(@positive_infinity_32), 4}
+        :"-infinity" -> {unquote(@negative_infinity_32), 4}
+        :nan -> {unquote(@nan_32), 4}
+        value -> {<<value::float-little-32>>, 4}
+      end
+    end
   end
 
   defp get_encode_value_body(:double, value_var) do
-    quote(do: Protox.Encode.encode_double(unquote(value_var)))
+    quote do
+      case unquote(value_var) do
+        :infinity -> {unquote(@positive_infinity_64), 8}
+        :"-infinity" -> {unquote(@negative_infinity_64), 8}
+        :nan -> {unquote(@nan_64), 8}
+        value -> {<<value::float-little-64>>, 8}
+      end
+    end
   end
 
   defp make_encode_field_fun_name(field) when is_atom(field) do
