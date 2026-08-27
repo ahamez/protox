@@ -99,7 +99,7 @@ defmodule Protox.DefineEncoder do
 
   # Emits `lhs |> call` so the generated chain reads as a pipeline. Built as a
   # raw AST node: a literal single-step |> in a quote would be collapsed back
-  # to a nested call by the formatter.
+  # to a nested call by the Quokka style pass of mix format.
   defp pipe(lhs, call_ast), do: {:|>, [], [lhs, call_ast]}
 
   defp make_encode_oneof_funs(oneofs, syntax, vars) do
@@ -479,8 +479,9 @@ defmodule Protox.DefineEncoder do
   @packed_binary_appenders %{
     fixed32: :encode_packed_fixed32,
     fixed64: :encode_packed_fixed64,
-    sfixed32: :encode_packed_sfixed32,
-    sfixed64: :encode_packed_sfixed64,
+    # The signed modifier is a no-op in binary construction.
+    sfixed32: :encode_packed_fixed32,
+    sfixed64: :encode_packed_fixed64,
     float: :encode_packed_float,
     double: :encode_packed_double,
     int32: :encode_packed_int32,
@@ -489,8 +490,9 @@ defmodule Protox.DefineEncoder do
     # are truncated the same way.
     uint32: :encode_packed_int32,
     uint64: :encode_packed_int64,
-    sint32: :encode_packed_sint32,
-    sint64: :encode_packed_sint64,
+    # Zigzag encoding is width-agnostic.
+    sint32: :encode_packed_sint,
+    sint64: :encode_packed_sint,
     bool: :encode_packed_bool
   }
 
