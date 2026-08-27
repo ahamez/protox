@@ -63,6 +63,17 @@ defmodule Protox.Varint do
       <<acc::binary, 1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7, 1::1,
         v >>> 35::7, 1::1, v >>> 42::7, v >>> 49>>
 
+  def append(acc, v) when v < 1 <<< 63,
+    do:
+      <<acc::binary, 1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7, 1::1,
+        v >>> 35::7, 1::1, v >>> 42::7, 1::1, v >>> 49::7, v >>> 56>>
+
+  # Ten bytes: any 64-bit-truncated negative scalar lands here.
+  def append(acc, v) when v < 1 <<< 64,
+    do:
+      <<acc::binary, 1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7, 1::1,
+        v >>> 35::7, 1::1, v >>> 42::7, 1::1, v >>> 49::7, 1::1, v >>> 56::7, v >>> 63>>
+
   def append(acc, v) do
     append(<<acc::binary, 1::1, v::7>>, v >>> 7)
   end

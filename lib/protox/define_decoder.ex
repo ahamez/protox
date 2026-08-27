@@ -84,7 +84,9 @@ defmodule Protox.DefineDecoder do
 
     # Update only the fields that were actually populated: repeated fields are
     # most often empty, and skipping them avoids both the reverse call and the
-    # struct update. The last update is the return value.
+    # struct update. The last update is the block's value, not a rebind: a
+    # final rebind would trigger an unused-variable warning in the generated
+    # code.
     update = fn field_name ->
       quote do
         case unquote(msg_var).unquote(field_name) do
