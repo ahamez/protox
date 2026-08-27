@@ -153,6 +153,64 @@ defmodule Protox.Encode do
     {[size_varint, value], size + byte_size(value)}
   end
 
+  # Packed elements are appended to a single contiguous binary: amortized O(1)
+  # binary append, one reduction per element, and the packed length comes for
+  # free from byte_size/1.
+
+  @doc false
+  @spec encode_packed_int32([integer()], binary()) :: binary()
+  def encode_packed_int32([], acc), do: acc
+
+  def encode_packed_int32([value | rest], acc) do
+    encode_packed_int32(rest, append_int32(acc, value))
+  end
+
+  @doc false
+  @spec encode_packed_int64([integer()], binary()) :: binary()
+  def encode_packed_int64([], acc), do: acc
+
+  def encode_packed_int64([value | rest], acc) when is_integer(value) do
+    encode_packed_int64(rest, Varint.append(acc, value &&& 0xFFFF_FFFF_FFFF_FFFF))
+  end
+
+  @doc false
+  @spec encode_packed_sint32([integer()], binary()) :: binary()
+  def encode_packed_sint32([], acc), do: acc
+
+  def encode_packed_sint32([value | rest], acc) do
+    encode_packed_sint32(rest, Varint.append(acc, Zigzag.encode(value)))
+  end
+
+  @doc false
+  @spec encode_packed_sint64([integer()], binary()) :: binary()
+  def encode_packed_sint64([], acc), do: acc
+
+  def encode_packed_sint64([value | rest], acc) do
+    encode_packed_sint64(rest, Varint.append(acc, Zigzag.encode(value)))
+  end
+
+  @doc false
+  @spec encode_packed_bool([boolean()], binary()) :: binary()
+  def encode_packed_bool([], acc), do: acc
+  def encode_packed_bool([true | rest], acc), do: encode_packed_bool(rest, <<acc::binary, 1>>)
+  def encode_packed_bool([false | rest], acc), do: encode_packed_bool(rest, <<acc::binary, 0>>)
+
+  @doc false
+  @spec encode_packed_enum([atom() | integer()], binary(), (atom() | integer() -> integer())) :: binary()
+  def encode_packed_enum([], acc, _encode_enum_fun), do: acc
+
+  def encode_packed_enum([value | rest], acc, encode_enum_fun) do
+    encode_packed_enum(rest, append_int32(acc, encode_enum_fun.(value)), encode_enum_fun)
+  end
+
+  defp append_int32(acc, value) when is_integer(value) and value >= 0 do
+    Varint.append(acc, value &&& 0xFFFF_FFFF)
+  end
+
+  defp append_int32(acc, value) when is_integer(value) do
+    Varint.append(acc, value &&& 0xFFFF_FFFF_FFFF_FFFF)
+  end
+
   # Packed fixed-width elements are appended to a single contiguous binary:
   # amortized O(1) binary append, one reduction per element, and the packed
   # length comes for free from byte_size/1.

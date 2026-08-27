@@ -482,44 +482,36 @@ defmodule Protox.DefineEncoder do
     sfixed32: :encode_packed_sfixed32,
     sfixed64: :encode_packed_sfixed64,
     float: :encode_packed_float,
-    double: :encode_packed_double
+    double: :encode_packed_double,
+    int32: :encode_packed_int32,
+    int64: :encode_packed_int64,
+    # uint32/64 encode like their signed counterparts: out-of-range values
+    # are truncated the same way.
+    uint32: :encode_packed_int32,
+    uint64: :encode_packed_int64,
+    sint32: :encode_packed_sint32,
+    sint64: :encode_packed_sint64,
+    bool: :encode_packed_bool
   }
 
-  # Fixed-width elements are appended to a single contiguous binary instead of
-  # one binary and one iodata cell per element, with the packed length derived
+  # Packed elements are appended to a single contiguous binary instead of one
+  # binary and one iodata cell per element, with the packed length derived
   # from byte_size/1.
-  defp make_encode_packed_body(type) when is_map_key(@packed_binary_appenders, type) do
-    appender = Map.fetch!(@packed_binary_appenders, type)
-
-    quote do
-      value_bytes = Protox.Encode.unquote(appender)(values, <<>>)
-      value_size = byte_size(value_bytes)
-      {value_size_bytes, value_size_size} = Protox.Varint.encode(value_size)
-      {[value_size_bytes, value_bytes], value_size + value_size_size}
-    end
+  defp make_encode_packed_body({:enum, mod}) do
+    make_packed_body_tail(quote(do: Protox.Encode.encode_packed_enum(values, <<>>, &unquote(mod).encode/1)))
   end
 
   defp make_encode_packed_body(type) do
-    value_var = Macro.var(:value, __MODULE__)
-    encode_value_ast = get_encode_value_body(type, value_var)
+    appender = Map.fetch!(@packed_binary_appenders, type)
 
+    make_packed_body_tail(quote(do: Protox.Encode.unquote(appender)(values, <<>>)))
+  end
+
+  defp make_packed_body_tail(appender_call_ast) do
     quote do
-      {value_bytes, value_size} =
-        Enum.reduce(
-          values,
-          {_local_acc = [], _local_acc_size = 0},
-          fn unquote(value_var), {local_acc, local_acc_size} ->
-            {value_bytes, value_bytes_size} = unquote(encode_value_ast)
-
-            {
-              [local_acc, value_bytes],
-              local_acc_size + value_bytes_size
-            }
-          end
-        )
-
+      value_bytes = unquote(appender_call_ast)
+      value_size = byte_size(value_bytes)
       {value_size_bytes, value_size_size} = Protox.Varint.encode(value_size)
-
       {[value_size_bytes, value_bytes], value_size + value_size_size}
     end
   end
@@ -561,11 +553,7 @@ defmodule Protox.DefineEncoder do
   end
 
   defp get_encode_value_body({:enum, enum}, value_var) do
-    quote do
-      unquote(value_var)
-      |> unquote(enum).encode()
-      |> Protox.Encode.encode_enum()
-    end
+    make_inline_int32_body(quote(do: unquote(enum).encode(unquote(value_var))))
   end
 
   defp get_encode_value_body(:bool, value_var) do
@@ -580,28 +568,23 @@ defmodule Protox.DefineEncoder do
     quote(do: Protox.Encode.encode_string(unquote(value_var)))
   end
 
-  defp get_encode_value_body(:int32, value_var) do
-    quote(do: Protox.Encode.encode_int32(unquote(value_var)))
+  # Varint scalars are inlined in the generated code: the truncation is a
+  # couple of integer instructions, and going through the Protox.Encode
+  # helpers would cost two remote calls per field.
+
+  defp get_encode_value_body(:int32, value_var), do: make_inline_int32_body(value_var)
+  defp get_encode_value_body(:uint32, value_var), do: make_inline_int32_body(value_var)
+
+  defp get_encode_value_body(type, value_var) when type in [:int64, :uint64] do
+    quote do
+      Protox.Varint.encode(:erlang.band(unquote(value_var), 0xFFFF_FFFF_FFFF_FFFF))
+    end
   end
 
-  defp get_encode_value_body(:int64, value_var) do
-    quote(do: Protox.Encode.encode_int64(unquote(value_var)))
-  end
-
-  defp get_encode_value_body(:uint32, value_var) do
-    quote(do: Protox.Encode.encode_uint32(unquote(value_var)))
-  end
-
-  defp get_encode_value_body(:uint64, value_var) do
-    quote(do: Protox.Encode.encode_uint64(unquote(value_var)))
-  end
-
-  defp get_encode_value_body(:sint32, value_var) do
-    quote(do: Protox.Encode.encode_sint32(unquote(value_var)))
-  end
-
-  defp get_encode_value_body(:sint64, value_var) do
-    quote(do: Protox.Encode.encode_sint64(unquote(value_var)))
+  defp get_encode_value_body(type, value_var) when type in [:sint32, :sint64] do
+    quote do
+      Protox.Varint.encode(Protox.Zigzag.encode(unquote(value_var)))
+    end
   end
 
   defp get_encode_value_body(:fixed32, value_var) do
@@ -638,6 +621,22 @@ defmodule Protox.DefineEncoder do
         :"-infinity" -> {unquote(@negative_infinity_64), 8}
         :nan -> {unquote(@nan_64), 8}
         value -> {<<value::float-little-64>>, 8}
+      end
+    end
+  end
+
+  # A negative int32 scalar is encoded as its 64-bit two's complement (ten
+  # bytes on the wire). Note a non-integer value passes the >= 0 comparison
+  # (term order) and raises from the truncation, which the diagnosis
+  # attributes.
+  defp make_inline_int32_body(value_ast) do
+    quote do
+      value = unquote(value_ast)
+
+      if value >= 0 do
+        Protox.Varint.encode(:erlang.band(value, 0xFFFF_FFFF))
+      else
+        Protox.Varint.encode(:erlang.band(value, 0xFFFF_FFFF_FFFF_FFFF))
       end
     end
   end
