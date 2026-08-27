@@ -45,6 +45,7 @@ defmodule Protox.Mixfile do
   defp deps() do
     maybe_download_protobuf([
       {:benchee, "~> 1.0", only: [:test, :dev]},
+      {:benchee_html, "~> 1.0", only: [:test, :dev]},
       {:credo, "~> 1.4", only: [:test, :dev], runtime: false},
       {:dialyxir, "~> 1.0", only: [:test, :dev], runtime: false},
       {:excoveralls, "~> 0.13", only: [:test], runtime: false},
