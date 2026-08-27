@@ -436,7 +436,7 @@ defmodule Protox.DefineEncoder do
             {value_bytes, value_bytes_size} = unquote(encode_value_ast)
 
             {
-              [value_bytes | local_acc],
+              [local_acc, value_bytes],
               local_acc_size + value_bytes_size
             }
           end
@@ -444,7 +444,7 @@ defmodule Protox.DefineEncoder do
 
       {value_size_bytes, value_size_size} = Protox.Varint.encode(value_size)
 
-      {[value_size_bytes, Enum.reverse(value_bytes)], value_size + value_size_size}
+      {[value_size_bytes, value_bytes], value_size + value_size_size}
     end
   end
 
@@ -462,13 +462,13 @@ defmodule Protox.DefineEncoder do
             {value_bytes, value_bytes_size} = unquote(encode_value_ast)
 
             {
-              [value_bytes, unquote(key_bytes) | local_acc],
+              [local_acc, unquote(key_bytes), value_bytes],
               local_acc_size + unquote(key_bytes_sz) + value_bytes_size
             }
           end
         )
 
-      {Enum.reverse(value_bytes), value_size}
+      {value_bytes, value_size}
     end
   end
 
