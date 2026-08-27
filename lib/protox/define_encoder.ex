@@ -476,6 +476,29 @@ defmodule Protox.DefineEncoder do
     end
   end
 
+  @packed_binary_appenders %{
+    fixed32: :encode_packed_fixed32,
+    fixed64: :encode_packed_fixed64,
+    sfixed32: :encode_packed_sfixed32,
+    sfixed64: :encode_packed_sfixed64,
+    float: :encode_packed_float,
+    double: :encode_packed_double
+  }
+
+  # Fixed-width elements are appended to a single contiguous binary instead of
+  # one binary and one iodata cell per element, with the packed length derived
+  # from byte_size/1.
+  defp make_encode_packed_body(type) when is_map_key(@packed_binary_appenders, type) do
+    appender = Map.fetch!(@packed_binary_appenders, type)
+
+    quote do
+      value_bytes = Protox.Encode.unquote(appender)(values, <<>>)
+      value_size = byte_size(value_bytes)
+      {value_size_bytes, value_size_size} = Protox.Varint.encode(value_size)
+      {[value_size_bytes, value_bytes], value_size + value_size_size}
+    end
+  end
+
   defp make_encode_packed_body(type) do
     value_var = Macro.var(:value, __MODULE__)
     encode_value_ast = get_encode_value_body(type, value_var)
