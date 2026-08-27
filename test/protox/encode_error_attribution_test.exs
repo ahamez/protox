@@ -1,7 +1,7 @@
 defmodule Protox.EncodeErrorAttributionTest do
   use ExUnit.Case, async: true
 
-  alias ProtobufTestMessages.Proto3.TestAllTypesProto3
+  alias ProtobufTestMessages.Proto3.{ForeignMessage, TestAllTypesProto3}
 
   describe "error attribution" do
     test "an invalid scalar field raises EncodingError naming the field" do
@@ -59,6 +59,49 @@ defmodule Protox.EncodeErrorAttributionTest do
       msg = %TestAllTypesProto3{optional_string: %URI{}}
 
       assert_raise Protox.EncodingError, ~r/Could not encode field :optional_string /, fn ->
+        TestAllTypesProto3.encode!(msg)
+      end
+    end
+
+    test "a struct of the wrong type in a message field is attributed to that field" do
+      msg = %TestAllTypesProto3{
+        optional_nested_message: %ForeignMessage{}
+      }
+
+      assert_raise Protox.EncodingError, ~r/Could not encode field :optional_nested_message /, fn ->
+        TestAllTypesProto3.encode!(msg)
+      end
+    end
+
+    test "a wrong-type struct with its own invalid fields is still attributed to the parent field" do
+      msg = %TestAllTypesProto3{
+        optional_nested_message: %ForeignMessage{c: :not_an_int}
+      }
+
+      assert_raise Protox.EncodingError, ~r/Could not encode field :optional_nested_message /, fn ->
+        TestAllTypesProto3.encode!(msg)
+      end
+    end
+
+    test "a struct of the wrong type in a message oneof raises a raw error" do
+      # Like scalar oneofs, message oneofs are not attributed when the value
+      # itself is of an unexpected shape.
+      msg = %TestAllTypesProto3{oneof_field: {:oneof_nested_message, %ForeignMessage{}}}
+
+      assert_raise KeyError, fn ->
+        TestAllTypesProto3.encode!(msg)
+      end
+    end
+
+    test "an invalid scalar oneof takes precedence over a later invalid field" do
+      # Oneofs are encoded first: when several fields are invalid, the
+      # diagnosis must report the error of the field that failed first.
+      msg = %TestAllTypesProto3{
+        oneof_field: {:oneof_uint32, :not_an_int},
+        optional_int32: :also_not_an_int
+      }
+
+      assert_raise ArgumentError, fn ->
         TestAllTypesProto3.encode!(msg)
       end
     end
