@@ -83,13 +83,41 @@ defmodule Protox.EncodeErrorAttributionTest do
       end
     end
 
-    test "a struct of the wrong type in a message oneof raises a raw error" do
-      # Like scalar oneofs, message oneofs are not attributed when the value
-      # itself is of an unexpected shape.
+    test "a struct of the wrong type in a message oneof is attributed to the oneof" do
       msg = %TestAllTypesProto3{oneof_field: {:oneof_nested_message, %ForeignMessage{}}}
 
-      assert_raise KeyError, fn ->
+      assert_raise Protox.EncodingError, ~r/Could not encode field :oneof_field /, fn ->
         TestAllTypesProto3.encode!(msg)
+      end
+
+      assert {:error, %Protox.EncodingError{field: :oneof_field}} =
+               TestAllTypesProto3.encode(msg)
+    end
+
+    test "an invalid bool field raises EncodingError naming the field" do
+      msg = %TestAllTypesProto3{optional_bool: 1}
+
+      assert_raise Protox.EncodingError, ~r/Could not encode field :optional_bool /, fn ->
+        TestAllTypesProto3.encode!(msg)
+      end
+    end
+
+    test "a plain map in a message field is attributed to that field" do
+      msg = %TestAllTypesProto3{optional_nested_message: %{a: 42}}
+
+      assert_raise Protox.EncodingError, ~r/Could not encode field :optional_nested_message /, fn ->
+        TestAllTypesProto3.encode!(msg)
+      end
+    end
+
+    test "a malformed top-level input reraises the original error" do
+      # No field can be blamed when the input is not the expected struct.
+      assert_raise KeyError, fn ->
+        TestAllTypesProto3.encode!(%{})
+      end
+
+      assert_raise KeyError, fn ->
+        ForeignMessage.encode!(%{})
       end
     end
 
