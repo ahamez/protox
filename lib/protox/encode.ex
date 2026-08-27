@@ -173,21 +173,49 @@ defmodule Protox.Encode do
   end
 
   @doc false
-  # Cold path: runs each field encoder in isolation and raises an EncodingError
-  # naming the first field whose encoder fails. Already-attributed errors pass
-  # through untouched.
-  @spec find_invalid_field!([{atom(), (-> any())}]) :: :ok | no_return()
-  def find_invalid_field!(entries) do
-    Enum.each(entries, fn {name, encode_fun} ->
-      try do
-        encode_fun.()
-      rescue
-        e in [Protox.EncodingError, Protox.RequiredFieldsError] ->
-          reraise e, __STACKTRACE__
+  # Cold path: runs each field encoder in isolation, in encoding order, and
+  # raises an EncodingError naming the first field whose encoder fails.
+  # Already-attributed errors pass through untouched; message children are
+  # diagnosed through their own encode!/1 first so the attribution points at
+  # the innermost faulty field. Oneofs only attribute the wrong-shape errors
+  # of their message children (MatchError/KeyError): an invalid scalar child
+  # keeps raising its raw error, as it always did.
+  @typedoc false
+  @type diagnose_entry() ::
+          {atom(), (any(), struct() -> any()), module() | nil}
+          | {:oneof, atom(), (any(), struct() -> any()), [{atom(), module()}]}
+  @spec find_invalid_field!(struct(), [diagnose_entry()]) :: :ok | no_return()
+  def find_invalid_field!(msg, entries) do
+    Enum.each(entries, fn
+      {:oneof, parent_name, encode_fun, message_children} ->
+        with {child_name, child_value} <- Map.fetch!(msg, parent_name),
+             {_child_name, child_module} <- List.keyfind(message_children, child_name, 0) do
+          diagnose_children!(child_value, child_module)
+        end
 
-        _e ->
-          reraise Protox.EncodingError.new(name, "invalid field value"), __STACKTRACE__
-      end
+        try do
+          encode_fun.({[], 0}, msg)
+        rescue
+          _e in [MatchError, KeyError] ->
+            reraise Protox.EncodingError.new(parent_name, "invalid field value"), __STACKTRACE__
+        end
+
+      {name, encode_fun, child_module} ->
+        try do
+          # Inside the rescue: a nested raw error (e.g. from a scalar oneof of
+          # a child message) is attributed to this field, as it always was.
+          if child_module != nil do
+            diagnose_children!(Map.fetch!(msg, name), child_module)
+          end
+
+          encode_fun.({[], 0}, msg)
+        rescue
+          e in [Protox.EncodingError, Protox.RequiredFieldsError] ->
+            reraise e, __STACKTRACE__
+
+          _e ->
+            reraise Protox.EncodingError.new(name, "invalid field value"), __STACKTRACE__
+        end
     end)
   end
 
