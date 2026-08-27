@@ -42,7 +42,7 @@ defmodule Protox.DefineEncoder do
   end
 
   defp make_top_level_encode_fun(oneofs, fields) do
-    initial_acc = quote(do: {_acc = [], _acc_size = 0})
+    initial_acc = quote(do: {[], 0})
 
     initial_acc
     |> make_encode_oneof_fun(oneofs)
@@ -85,23 +85,22 @@ defmodule Protox.DefineEncoder do
   defp make_encode_fun_field(ast, fields) do
     ast =
       Enum.reduce(fields, ast, fn %Protox.Field{} = field, ast_acc ->
-        quote do
-          unquote(make_encode_field_fun_name(field.name))(unquote(ast_acc), msg)
-        end
+        pipe(ast_acc, quote(do: unquote(make_encode_field_fun_name(field.name))(msg)))
       end)
 
-    quote do
-      encode_unknown_fields(unquote(ast), msg)
-    end
+    pipe(ast, quote(do: encode_unknown_fields(msg)))
   end
 
   defp make_encode_oneof_fun(ast, oneofs) do
     Enum.reduce(oneofs, ast, fn {parent_name, _children}, ast_acc ->
-      quote do
-        unquote(make_encode_field_fun_name(parent_name))(unquote(ast_acc), msg)
-      end
+      pipe(ast_acc, quote(do: unquote(make_encode_field_fun_name(parent_name))(msg)))
     end)
   end
+
+  # Emits `lhs |> call` so the generated chain reads as a pipeline. Built as a
+  # raw AST node: a literal single-step |> in a quote would be collapsed back
+  # to a nested call by the formatter.
+  defp pipe(lhs, call_ast), do: {:|>, [], [lhs, call_ast]}
 
   defp make_encode_oneof_funs(oneofs, syntax, vars) do
     for {parent_name, children} <- oneofs do
@@ -508,21 +507,18 @@ defmodule Protox.DefineEncoder do
     encode_value_ast = get_encode_value_body(type, value_var)
 
     quote do
-      {value_bytes, value_size} =
-        Enum.reduce(
-          values,
-          {_local_acc = [], _local_acc_size = 0},
-          fn unquote(value_var), {local_acc, local_acc_size} ->
-            {value_bytes, value_bytes_size} = unquote(encode_value_ast)
+      Enum.reduce(
+        values,
+        {_local_acc = [], _local_acc_size = 0},
+        fn unquote(value_var), {local_acc, local_acc_size} ->
+          {value_bytes, value_bytes_size} = unquote(encode_value_ast)
 
-            {
-              [local_acc, unquote(key_bytes), value_bytes],
-              local_acc_size + unquote(key_bytes_sz) + value_bytes_size
-            }
-          end
-        )
-
-      {value_bytes, value_size}
+          {
+            [local_acc, unquote(key_bytes), value_bytes],
+            local_acc_size + unquote(key_bytes_sz) + value_bytes_size
+          }
+        end
+      )
     end
   end
 
