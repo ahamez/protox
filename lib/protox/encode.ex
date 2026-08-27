@@ -161,34 +161,30 @@ defmodule Protox.Encode do
       try do
         encode_fun.()
       rescue
-        _e in [ArgumentError, ArithmeticError] ->
+        _e in [ArgumentError, ArithmeticError, KeyError] ->
           reraise Protox.EncodingError.new(name, "invalid field value"), __STACKTRACE__
       end
     end)
   end
 
   @doc false
-  # Cold path: recursively encodes message children through their own (rescued)
-  # encode!/1 so an EncodingError is attributed to the innermost faulty field.
-  @spec diagnose_children!(any()) :: any()
-  def diagnose_children!(%mod{} = child) do
-    if Code.ensure_loaded?(mod) and function_exported?(mod, :encode!, 1) do
-      mod.encode!(child)
-    else
-      # Not a protox message: let the field encoder replay report the error.
-      :ok
-    end
+  # Cold path: recursively encodes message children of the expected module
+  # through their own (rescued) encode!/1 so an EncodingError is attributed to
+  # the innermost faulty field. Values of any other shape (including structs of
+  # the wrong type) are left to the field encoder replay, which reports the
+  # error under the parent field's name.
+  @spec diagnose_children!(any(), module()) :: any()
+  def diagnose_children!(%mod{} = child, mod), do: mod.encode!(child)
+
+  def diagnose_children!(children, mod) when is_list(children) do
+    Enum.each(children, &diagnose_children!(&1, mod))
   end
 
-  def diagnose_children!(children) when is_list(children) do
-    Enum.each(children, &diagnose_children!/1)
+  def diagnose_children!(children, mod) when is_map(children) and not is_struct(children) do
+    Enum.each(children, fn {_key, value} -> diagnose_children!(value, mod) end)
   end
 
-  def diagnose_children!(children) when is_map(children) do
-    Enum.each(children, fn {_key, value} -> diagnose_children!(value) end)
-  end
-
-  def diagnose_children!(_other), do: :ok
+  def diagnose_children!(_other, _mod), do: :ok
 
   @doc false
   # Only kept for backward compatibility with previously generated files: newly
