@@ -234,11 +234,7 @@ defmodule Protox.DefineDecoder do
         make_update_field(parse_delimited, field, vars, _wrap_value = !single_generated)
       end
 
-    key_bytes =
-      field.tag
-      |> Protox.Encode.make_key_bytes(:packed)
-      |> elem(0)
-      |> IO.iodata_to_binary()
+    key_bytes = make_literal_key_bytes(field.tag, :packed)
 
     quote do
       <<unquote(key_bytes), unquote(vars.bytes)::binary>> ->
