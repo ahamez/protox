@@ -169,7 +169,10 @@ defmodule Protox.GenerateTest do
     assert content =~ "repeated_bool: :lists.reverse(values)"
 
     # Trivial defs are folded to the keyword form.
-    assert content =~ "def default(:optional_int32), do: {:ok, 0}\n"
-    refute content =~ ~r/def default\(:optional_int32\) do\n/
+    assert content =~ "def encode(:FOO), do: 0\n"
+    refute content =~ ~r/def encode\(:FOO\) do\n/
+
+    # default/1 is a single schema lookup.
+    assert content =~ "def default(field_name), do: Protox.MessageSchema.default(@schema, field_name)"
   end
 end

@@ -69,4 +69,22 @@ defmodule Protox.MessageSchema do
   defp expand_kind({:scalar, default_value}), do: %Protox.Scalar{default_value: default_value}
   defp expand_kind({:oneof, parent}), do: %Protox.OneOf{parent: parent}
   defp expand_kind(kind) when kind in [:map, :packed, :unpacked], do: kind
+
+  @doc false
+  # Backs the generated default/1 functions.
+  @spec default(t(), atom()) ::
+          {:ok, boolean() | integer() | String.t() | float() | nil}
+          | {:error, :no_such_field | :no_default_value}
+  def default(%__MODULE__{fields: fields}, field_name) do
+    case fields do
+      %{^field_name => %Protox.Field{kind: %Protox.Scalar{default_value: default_value}}} ->
+        {:ok, default_value}
+
+      %{^field_name => _field} ->
+        {:error, :no_default_value}
+
+      _no_such_field ->
+        {:error, :no_such_field}
+    end
+  end
 end
