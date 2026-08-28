@@ -1,11 +1,8 @@
 defmodule Protox.Varint.DecodeClauses do
   @moduledoc false
   # Internal. Compile-time builder for unrolled LEB128-decoding clauses, shared
-  # by Protox.Varint.decode/1 and the packed varint loops of Protox.Decode so
-  # both unroll the exact same decoding. It lives outside those modules because
-  # a module cannot call its own functions from its own body.
+  # by Protox.Varint.decode/1 and the packed varint loops of Protox.Decode.
 
-  # Imported so the quoted <<< and ||| below carry the Bitwise import with them.
   import Bitwise
 
   @byte_var_names ~w(b0 b1 b2 b3 b4 b5 b6 b7 b8 b9)a
