@@ -182,7 +182,9 @@ defmodule Protox do
     end)
   end
 
-  @generator_version 2
+  # 3: parse_repeated_* return the accumulator in reverse wire order instead of
+  #    reversing it themselves; generated code relies on this contract.
+  @generator_version 3
   @doc nil
   @spec generator_version() :: pos_integer()
   def generator_version(), do: @generator_version
