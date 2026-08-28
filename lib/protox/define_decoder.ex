@@ -130,10 +130,6 @@ defmodule Protox.DefineDecoder do
     # at compile time, we can generate the appropriate clauses.
     # This has the benefit of a small speedup (~1%-10%) and a decrease in memory usage (~10%) from
     # the Varint.decode version.
-    #
-    # Each clause ends with the parse_key_value/2 tail call rather than returning
-    # a {msg, rest} tuple to a shared recursion point: the tuple would cost an
-    # allocation per decoded field.
     quote do
       case bytes, do: unquote(all_clauses)
     end
@@ -204,11 +200,47 @@ defmodule Protox.DefineDecoder do
     # decodes single (unpacked) occurrences, whose key differs from the packed one.
     key_bytes = make_literal_key_bytes(field.tag, field.type)
 
-    quote do
-      <<unquote(key_bytes), unquote(vars.bytes)::binary>> ->
-        {value, rest} = unquote(parse_single)
-        unquote(vars.msg) = unquote(update_field)
-        parse_key_value(rest, unquote(vars.msg))
+    fast_case = make_single_fast_case(vars, field, key_bytes, update_field)
+
+    general_case =
+      quote do
+        <<unquote(key_bytes), unquote(vars.bytes)::binary>> ->
+          {value, rest} = unquote(parse_single)
+          unquote(vars.msg) = unquote(update_field)
+          parse_key_value(rest, unquote(vars.msg))
+      end
+
+    fast_case ++ general_case
+  end
+
+  # For varint-encoded scalars, a clause matching the very common one-byte value
+  # in the key pattern itself skips the Protox.Decode.parse_* call and the
+  # {value, rest} tuple it returns. Larger values fall through to the general
+  # clause right after.
+  #
+  # Unlike the general path, no truncate_* step is applied: the one-byte pattern
+  # bounds varint_value to 0..127, where every truncation is an identity. That
+  # invariant is what makes these transforms sound — extending the fast case
+  # beyond one-byte varints would require restoring the truncations.
+  defp make_single_fast_case(vars, %Field{type: type}, key_bytes, update_field) do
+    value =
+      case type do
+        :bool -> quote(do: varint_value != 0)
+        {:enum, mod} -> quote(do: unquote(mod).decode(varint_value))
+        type when type in [:sint32, :sint64] -> quote(do: Protox.Zigzag.decode(varint_value))
+        type when type in [:int32, :int64, :uint32, :uint64] -> quote(do: varint_value)
+        _not_a_varint_type -> nil
+      end
+
+    if value == nil do
+      []
+    else
+      quote do
+        <<unquote(key_bytes), 0::1, varint_value::7, rest::binary>> ->
+          unquote(vars.value) = unquote(value)
+          unquote(vars.msg) = unquote(update_field)
+          parse_key_value(rest, unquote(vars.msg))
+      end
     end
   end
 
@@ -262,6 +294,9 @@ defmodule Protox.DefineDecoder do
 
     key_bytes = make_literal_key_bytes(field.tag, :packed)
 
+    # No one-byte-length fast clause here: its dynamic binary-size(len) segment
+    # would defeat the shared match tree of the surrounding case, which measurably
+    # blows up decoding of messages with many fields.
     quote do
       <<unquote(key_bytes), unquote(vars.bytes)::binary>> ->
         {len, unquote(vars.bytes)} = Protox.Varint.decode(unquote(vars.bytes))
