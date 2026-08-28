@@ -130,11 +130,12 @@ defmodule Protox.DefineDecoder do
     # at compile time, we can generate the appropriate clauses.
     # This has the benefit of a small speedup (~1%-10%) and a decrease in memory usage (~10%) from
     # the Varint.decode version.
+    #
+    # Each clause ends with the parse_key_value/2 tail call rather than returning
+    # a {msg, rest} tuple to a shared recursion point: the tuple would cost an
+    # allocation per decoded field.
     quote do
-      {msg_updated, rest} =
-        case bytes, do: unquote(all_clauses)
-
-      parse_key_value(rest, msg_updated)
+      case bytes, do: unquote(all_clauses)
     end
   end
 
@@ -177,12 +178,14 @@ defmodule Protox.DefineDecoder do
         {tag, wire_type, rest} = Protox.Decode.parse_key(unquote(vars.bytes))
         {unquote(vars.value), rest} = Protox.Decode.parse_unknown(tag, wire_type, rest)
 
-        {%{
-           unquote(vars.msg)
-           | unquote(unknown_fields_name) => [
-               unquote(vars.value) | unquote(vars.msg).unquote(unknown_fields_name)
-             ]
-         }, rest}
+        unquote(vars.msg) = %{
+          unquote(vars.msg)
+          | unquote(unknown_fields_name) => [
+              unquote(vars.value) | unquote(vars.msg).unquote(unknown_fields_name)
+            ]
+        }
+
+        parse_key_value(rest, unquote(vars.msg))
     end
   end
 
@@ -204,7 +207,8 @@ defmodule Protox.DefineDecoder do
     quote do
       <<unquote(key_bytes), unquote(vars.bytes)::binary>> ->
         {value, rest} = unquote(parse_single)
-        {unquote(update_field), rest}
+        unquote(vars.msg) = unquote(update_field)
+        parse_key_value(rest, unquote(vars.msg))
     end
   end
 
@@ -253,7 +257,8 @@ defmodule Protox.DefineDecoder do
         {len, unquote(vars.bytes)} = Protox.Varint.decode(unquote(vars.bytes))
 
         {unquote(vars.delimited), rest} = Protox.Decode.parse_delimited(unquote(vars.bytes), len)
-        {unquote(update_field), rest}
+        unquote(vars.msg) = unquote(update_field)
+        parse_key_value(rest, unquote(vars.msg))
     end
   end
 
@@ -530,26 +535,23 @@ defmodule Protox.DefineDecoder do
           # repeated MapFieldEntry map_field = N;
           #
           defp unquote(fun_name)({entry_key, entry_value}, unquote(vars.bytes)) do
-            {map_entry, unquote(vars.rest)} =
-              case unquote(vars.bytes) do
-                <<unquote(entry_key_bytes), unquote(vars.rest)::binary>> ->
-                  {res, unquote(vars.rest)} = unquote(key_parser)
-                  {{res, entry_value}, unquote(vars.rest)}
+            case unquote(vars.bytes) do
+              <<unquote(entry_key_bytes), unquote(vars.rest)::binary>> ->
+                {res, unquote(vars.rest)} = unquote(key_parser)
+                unquote(fun_name)({res, entry_value}, unquote(vars.rest))
 
-                <<unquote(entry_value_bytes), unquote(vars.rest)::binary>> ->
-                  {res, unquote(vars.rest)} = unquote(value_parser)
-                  {{entry_key, res}, unquote(vars.rest)}
+              <<unquote(entry_value_bytes), unquote(vars.rest)::binary>> ->
+                {res, unquote(vars.rest)} = unquote(value_parser)
+                unquote(fun_name)({entry_key, res}, unquote(vars.rest))
 
-                <<_unknown_entry_field::binary>> ->
-                  {tag, wire_type, unquote(vars.rest)} = Protox.Decode.parse_key(unquote(vars.bytes))
+              <<_unknown_entry_field::binary>> ->
+                {tag, wire_type, unquote(vars.rest)} = Protox.Decode.parse_key(unquote(vars.bytes))
 
-                  {_unknown_value, unquote(vars.rest)} =
-                    Protox.Decode.parse_unknown(tag, wire_type, unquote(vars.rest))
+                {_unknown_value, unquote(vars.rest)} =
+                  Protox.Decode.parse_unknown(tag, wire_type, unquote(vars.rest))
 
-                  {{entry_key, entry_value}, unquote(vars.rest)}
-              end
-
-            unquote(fun_name)(map_entry, unquote(vars.rest))
+                unquote(fun_name)({entry_key, entry_value}, unquote(vars.rest))
+            end
           end
         end
 
