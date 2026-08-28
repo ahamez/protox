@@ -4,8 +4,6 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
   use Mix.Task
 
   alias Benchee.Formatters.Console
-  alias Benchmarks.Proto2.GoogleMessage1
-  alias Opentelemetry.Proto.Trace.V1.TracesData
 
   @options [
     task: :string,
@@ -52,8 +50,8 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
   # order), so sorting by corpus size makes the report read smallest to largest.
   defp build_inputs(payloads, task) do
     payloads
-    |> Enum.sort_by(fn {_module, samples} -> total_size(samples) end)
-    |> Enum.map(fn {module, samples} -> {input_name(module), {module, inputs_for(samples, task)}} end)
+    |> Enum.sort_by(fn {_name, {_module, samples}} -> total_size(samples) end)
+    |> Enum.map(fn {name, {module, samples}} -> {name, {module, inputs_for(samples, task)}} end)
   end
 
   defp inputs_for(samples, :encode), do: Enum.map(samples, fn {msg, _size, _bytes} -> msg end)
@@ -65,38 +63,6 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
     |> Enum.sum()
   end
 
-  # Benchee matches scenarios across saved suites by input name, so these have to be
-  # unique. The two Google datasets share a message name and differ only by their
-  # proto2/proto3 package, which the last-segment fallback below cannot tell apart.
-  @input_names %{
-    GoogleMessage1 => "google_message1_proto2",
-    Benchmarks.Proto3.GoogleMessage1 => "google_message1_proto3",
-    TracesData => "otel_traces_data",
-    Prometheus.WriteRequest => "prometheus_write_request"
-  }
-
-  defp input_name(module) do
-    case Map.fetch(@input_names, module) do
-      {:ok, name} -> name
-      :error -> derive_input_name(module)
-    end
-  end
-
-  defp derive_input_name(module) do
-    case Module.split(module) do
-      ["Protox", "Benchmark", "Synthetic" <> count, "Message"] ->
-        "synthetic_#{count}"
-
-      ["Protox", "Benchmark", name, "Message"] ->
-        Macro.underscore(name)
-
-      parts ->
-        parts
-        |> List.last()
-        |> Macro.underscore()
-    end
-  end
-
   # An optimization that silently drops fields would post excellent numbers, so the
   # corpus is re-encoded once, outside the measured region, and checked against the
   # sizes recorded when it was generated.
@@ -106,21 +72,21 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
   # and `mix protox.conformance`. Upgrade path if that becomes insufficient: compare
   # `module.decode!(bytes)` against `msg` here as well, at the cost of a slower start.
   defp verify_payloads(payloads) do
-    Enum.each(payloads, fn {module, samples} ->
-      Enum.each(samples, fn {msg, size, _bytes} -> verify_sample(module, msg, size) end)
+    Enum.each(payloads, fn {name, {module, samples}} ->
+      Enum.each(samples, fn {msg, size, _bytes} -> verify_sample(name, module, msg, size) end)
     end)
   end
 
-  defp verify_sample(module, msg, size) do
+  defp verify_sample(name, module, msg, size) do
     {iodata, reported_size} = module.encode!(msg)
     encoded_size = IO.iodata_length(iodata)
 
     cond do
       encoded_size != size ->
-        Mix.raise("#{inspect(module)}: encoded #{encoded_size} bytes, corpus expects #{size}")
+        Mix.raise("#{name}: encoded #{encoded_size} bytes, corpus expects #{size}")
 
       reported_size != size ->
-        Mix.raise("#{inspect(module)}: encode! reported #{reported_size} bytes, corpus expects #{size}")
+        Mix.raise("#{name}: encode! reported #{reported_size} bytes, corpus expects #{size}")
 
       true ->
         :ok
