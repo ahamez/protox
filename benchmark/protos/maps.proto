@@ -1,0 +1,31 @@
+syntax = "proto3";
+package protox.benchmark.maps;
+
+// Map-heavy message. The synthetic_N protos are generated from the field-type
+// frequencies used by Google's benchmarks, and that distribution contains no map
+// fields at all, so without this message only TestAllTypesProto3 exercises the map
+// encode/decode paths.
+enum Enum {
+  ZERO = 0;
+  ONE = 1;
+}
+
+message Message {
+  map<string, string> string_to_string = 1;
+  map<string, Sub> string_to_message = 2;
+  map<int32, int64> int32_to_int64 = 3;
+  map<int64, double> int64_to_double = 4;
+  map<uint32, bool> uint32_to_bool = 5;
+  map<string, Enum> string_to_enum = 6;
+  map<string, bytes> string_to_bytes = 7;
+  map<sint64, fixed32> sint64_to_fixed32 = 8;
+
+  string name = 9;
+  repeated Sub subs = 10;
+}
+
+message Sub {
+  map<string, string> attributes = 1;
+  int64 value = 2;
+  string label = 3;
+}
