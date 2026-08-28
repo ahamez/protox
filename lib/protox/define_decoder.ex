@@ -222,25 +222,31 @@ defmodule Protox.DefineDecoder do
   # bounds varint_value to 0..127, where every truncation is an identity. That
   # invariant is what makes these transforms sound — extending the fast case
   # beyond one-byte varints would require restoring the truncations.
-  defp make_single_fast_case(vars, %Field{type: type}, key_bytes, update_field) do
-    value =
-      case type do
-        :bool -> quote(do: varint_value != 0)
-        {:enum, mod} -> quote(do: unquote(mod).decode(varint_value))
-        type when type in [:sint32, :sint64] -> quote(do: Protox.Zigzag.decode(varint_value))
-        type when type in [:int32, :int64, :uint32, :uint64] -> quote(do: varint_value)
-        _not_a_varint_type -> nil
-      end
+  defp make_single_fast_case(vars, %Field{type: :bool}, key_bytes, update_field) do
+    make_single_fast_case_clause(vars, key_bytes, update_field, quote(do: varint_value != 0))
+  end
 
-    if value == nil do
-      []
-    else
-      quote do
-        <<unquote(key_bytes), 0::1, varint_value::7, rest::binary>> ->
-          unquote(vars.value) = unquote(value)
-          unquote(vars.msg) = unquote(update_field)
-          parse_key_value(rest, unquote(vars.msg))
-      end
+  defp make_single_fast_case(vars, %Field{type: {:enum, mod}}, key_bytes, update_field) do
+    make_single_fast_case_clause(vars, key_bytes, update_field, quote(do: unquote(mod).decode(varint_value)))
+  end
+
+  defp make_single_fast_case(vars, %Field{type: type}, key_bytes, update_field) when type in [:sint32, :sint64] do
+    make_single_fast_case_clause(vars, key_bytes, update_field, quote(do: Protox.Zigzag.decode(varint_value)))
+  end
+
+  defp make_single_fast_case(vars, %Field{type: type}, key_bytes, update_field)
+       when type in [:int32, :int64, :uint32, :uint64] do
+    make_single_fast_case_clause(vars, key_bytes, update_field, quote(do: varint_value))
+  end
+
+  defp make_single_fast_case(_vars, _field, _key_bytes, _update_field), do: []
+
+  defp make_single_fast_case_clause(vars, key_bytes, update_field, value) do
+    quote do
+      <<unquote(key_bytes), 0::1, varint_value::7, rest::binary>> ->
+        unquote(vars.value) = unquote(value)
+        unquote(vars.msg) = unquote(update_field)
+        parse_key_value(rest, unquote(vars.msg))
     end
   end
 
