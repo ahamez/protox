@@ -82,10 +82,12 @@ defmodule Protox.Generate do
 
   @max_line_length 98
 
+  @doc false
   # Macro.to_string/1 always renders do/end blocks. Fold the trivial ones
   # (a def with a single-line body) into the keyword form, which the
   # formatter preserves: `def default(), do: {:ok, nil}`.
-  defp fold_trivial_defs(code) do
+  @spec fold_trivial_defs(String.t()) :: String.t()
+  def fold_trivial_defs(code) do
     code
     |> String.split("\n")
     |> fold_trivial_defs([])
