@@ -33,6 +33,15 @@ defmodule Mix.Tasks.Protox.Benchmark.Corpus.Stats do
     |> Enum.each(fn {name, {mod, samples}} ->
       Mix.shell().info(format_row(name, Enum.reduce(samples, %{}, fn {msg, _s, _b}, acc -> scan(mod, msg, acc) end)))
     end)
+
+    Mix.shell().info("")
+
+    Mix.shell().info(
+      "note: presence is read from the decoded struct, which cannot represent a proto3 field " <>
+        "explicitly written at its default. google_message1_proto3 therefore understates " <>
+        "`populated`: its 228 captured bytes re-encode to 221. Everything else is generated " <>
+        "from structs, so the struct is the authoritative view for those rows."
+    )
   end
 
   defp format_row(name, acc) do
@@ -147,11 +156,20 @@ defmodule Mix.Tasks.Protox.Benchmark.Corpus.Stats do
   end
 
   defp value(acc, type, number) when type in [:int32, :int64] and is_integer(number) do
-    bump(acc, {:varint, if(number < 0, do: 10, else: varint_bytes(number))})
+    bump(acc, {:varint, signed_varint_bytes(number)})
   end
 
   defp value(acc, type, number) when type in [:uint32, :uint64] and is_integer(number) do
     bump(acc, {:varint, varint_bytes(number)})
+  end
+
+  # bool and enum are varints as well. Leaving them out understated the one-byte share and
+  # inflated the ten-byte one, because a bool is always a single byte and so is almost every
+  # enum constant. (fixed*/sfixed* are *not* varints and stay excluded.)
+  defp value(acc, :bool, _flag), do: bump(acc, {:varint, 1})
+
+  defp value(acc, {:enum, mod}, constant) do
+    bump(acc, {:varint, signed_varint_bytes(enum_number(mod, constant))})
   end
 
   defp value(acc, type, number) when type in [:float, :double] do
@@ -164,8 +182,18 @@ defmodule Mix.Tasks.Protox.Benchmark.Corpus.Stats do
 
   defp value(acc, _type, _value), do: acc
 
+  # An unknown enum value is kept as the raw integer; a known one is an atom.
+  defp enum_number(_mod, number) when is_integer(number), do: number
+
+  defp enum_number(mod, constant) do
+    Enum.find_value(mod.constants(), 0, fn {number, name} -> if name == constant, do: number end)
+  end
+
   defp zigzag(number) when number < 0, do: -2 * number - 1
   defp zigzag(number), do: 2 * number
+
+  defp signed_varint_bytes(number) when number < 0, do: 10
+  defp signed_varint_bytes(number), do: varint_bytes(number)
 
   defp varint_bytes(number), do: max(1, ceil(:math.log2(number + 1) / 7))
 
