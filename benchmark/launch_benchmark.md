@@ -9,13 +9,13 @@ All the following commands are executed from the root of the project.
 - you have to specify the benchmark tag, which will be used to identify the benchmark run
 - benchmark results are stored in `./benchmark/output/benchee/<TASK>-<HHMMSS>-<BENCHMARK_TAG>.benchee`
 
-```
+```shell
 mix protox.benchmark.run [--task <TASK>] [--warmup 2] [--time 5] [--memory-time 2] [--reduction-time 2] <BENCHMARK_TAG>
 ```
 
 Example:
 
-```
+```shell
 # Short run (defaults)
 mix protox.benchmark.run --task decode my_tag
 
@@ -32,13 +32,13 @@ correctness checks.
 
 ## Aggregate the results
 
-```
+```shell
 mix protox.benchmark.report <BENCHMARK_RESULT_PATHS>
 ```
 
 Example:
 
-```
+```shell
 mix protox.benchmark.report ./benchmark/output/benchee/encode-*
 ```
 
@@ -62,7 +62,7 @@ datasets — see `protos/vendor/README.md`.
 
 Regenerate it with:
 
-```
+```shell
 mix protox.benchmark.generate.payloads
 ```
 
@@ -98,7 +98,7 @@ isolation rather than everywhere at once:
 
 Check the distributions with:
 
-```
+```shell
 mix protox.benchmark.corpus.stats
 ```
 

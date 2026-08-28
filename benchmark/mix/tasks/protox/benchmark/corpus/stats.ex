@@ -195,7 +195,12 @@ defmodule Mix.Tasks.Protox.Benchmark.Corpus.Stats do
   defp signed_varint_bytes(number) when number < 0, do: 10
   defp signed_varint_bytes(number), do: varint_bytes(number)
 
-  defp varint_bytes(number), do: max(1, ceil(:math.log2(number + 1) / 7))
+  # Integer arithmetic, not ceil(log2(n)/7): the float form is off by one at exact powers of
+  # two, reporting 8 bytes for 2^56 where the varint actually needs 9.
+  defp varint_bytes(number), do: varint_bytes(number, 1)
+
+  defp varint_bytes(number, bytes) when number < 128, do: bytes
+  defp varint_bytes(number, bytes), do: varint_bytes(div(number, 128), bytes + 1)
 
   defp bump(acc, key), do: Map.update(acc, key, 1, &(&1 + 1))
 end

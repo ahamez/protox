@@ -8,6 +8,9 @@ defmodule Protox.CompileBenchmarkProtos do
   # The vendored schemas each need their own include path because their imports are written
   # relative to their own project root. See benchmark/protos/vendor/README.md for where they
   # come from and what was modified.
+  # Protox registers each entry of `files:` as an @external_resource, but not the schemas
+  # those files import, so editing one of them would leave the generated modules stale until
+  # a clean rebuild. Declare the imported ones here.
   use Protox,
     files: [
       "./benchmark/protos/synthetic_5.proto",
@@ -31,4 +34,8 @@ defmodule Protox.CompileBenchmarkProtos do
       "./benchmark/protos/vendor/otel",
       "./benchmark/protos/vendor/prometheus"
     ]
+
+  @external_resource "./benchmark/protos/vendor/otel/opentelemetry/proto/common/v1/common.proto"
+  @external_resource "./benchmark/protos/vendor/otel/opentelemetry/proto/resource/v1/resource.proto"
+  @external_resource "./benchmark/protos/vendor/prometheus/types.proto"
 end
