@@ -10,8 +10,16 @@ defmodule Protox.RandomInit.Values do
   # with production-like distributions instead, because those edge cases are exactly the
   # code paths real traffic does not take.
 
+  @typedoc """
+  A StreamData generator.
+
+  Spelled `t/1` rather than `t/0`: StreamData declares `@opaque t(a)`, so `StreamData.t()`
+  is an unknown type and dialyzer rejects it.
+  """
+  @type generator() :: StreamData.t(term())
+
   @doc "Generator for a scalar protobuf type, e.g. `:int32`, `:string`, `{:enum, Mod}`."
-  @callback scalar(type :: term()) :: StreamData.t()
+  @callback scalar(type :: term()) :: generator()
 
   @doc """
   Wraps an element generator into a repeated field generator.
@@ -19,15 +27,15 @@ defmodule Protox.RandomInit.Values do
   `depth` is the recursion budget left. At zero a nested message can only come out empty,
   so a profile may prefer an empty list over a list of blank messages.
   """
-  @callback collection(element :: StreamData.t(), depth :: non_neg_integer()) :: StreamData.t()
+  @callback collection(element :: generator(), depth :: non_neg_integer()) :: generator()
 
   @doc """
   Decides whether an optional sub-message is present.
 
   `depth` is the recursion budget left; see `c:collection/2`.
   """
-  @callback presence(message :: StreamData.t(), depth :: non_neg_integer()) :: StreamData.t()
+  @callback presence(message :: generator(), depth :: non_neg_integer()) :: generator()
 
   @doc "Builds a map field generator from its key type and its key/value generators."
-  @callback map(key_type :: term(), key :: StreamData.t(), value :: StreamData.t()) :: StreamData.t()
+  @callback map(key_type :: term(), key :: generator(), value :: generator()) :: generator()
 end
