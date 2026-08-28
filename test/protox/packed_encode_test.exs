@@ -79,13 +79,15 @@ defmodule Protox.PackedEncodeTest do
     test "float/double: special values interleaved with finite ones" do
       values = [1.5, :infinity, :"-infinity", :nan, -2.5]
 
+      # parse_repeated_* return the elements in reverse wire order (the generated
+      # finish-decode step performs the single restoring reverse).
       packed_double = Encode.encode_packed_double(values, <<>>)
       assert byte_size(packed_double) == 5 * 8
-      assert Protox.Decode.parse_repeated_double([], packed_double) == values
+      assert Protox.Decode.parse_repeated_double([], packed_double) == Enum.reverse(values)
 
       packed_float = Encode.encode_packed_float(values, <<>>)
       assert byte_size(packed_float) == 5 * 4
-      assert Protox.Decode.parse_repeated_float([], packed_float) == values
+      assert Protox.Decode.parse_repeated_float([], packed_float) == Enum.reverse(values)
     end
 
     test "bool and enum" do

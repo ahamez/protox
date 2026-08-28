@@ -60,6 +60,11 @@ defmodule Protox.DecodeTest do
       %TestAllTypesProto3{repeated_uint32: [0, 1, 2, 3, 10_000]}
     },
     {
+      "Repeated uint32, two multi-element packed runs, should be concatenated in wire order",
+      <<138, 2, 3, 1, 2, 3>> <> <<138, 2, 3, 4, 5, 6>>,
+      %TestAllTypesProto3{repeated_uint32: [1, 2, 3, 4, 5, 6]}
+    },
+    {
       "Repeated sint32",
       <<154, 2, 7, 0, 1, 4, 5, 160, 156, 1>>,
       %TestAllTypesProto3{repeated_sint32: [0, -1, 2, -3, 10_000]}

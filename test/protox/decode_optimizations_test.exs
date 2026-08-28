@@ -25,13 +25,16 @@ defmodule Protox.DecodeOptimizationsTest do
     end
   end
 
+  # parse_repeated_* prepend onto their accumulator: they return the elements in
+  # reverse wire order, and the generated finish-decode step performs the single
+  # reverse that restores wire order.
   describe "packed fixed-width fast path" do
     test "decodes element counts around the four-element unroll boundary" do
       for count <- 1..9 do
         values = Enum.to_list(1..count)
         bytes = for v <- values, into: <<>>, do: <<v::unsigned-little-32>>
 
-        assert Protox.Decode.parse_repeated_fixed32([], bytes) == values
+        assert Protox.Decode.parse_repeated_fixed32([], bytes) == Enum.reverse(values)
       end
     end
 
@@ -40,7 +43,7 @@ defmodule Protox.DecodeOptimizationsTest do
 
       bytes = Protox.Encode.encode_packed_double(values, <<>>)
 
-      assert Protox.Decode.parse_repeated_double([], bytes) == values
+      assert Protox.Decode.parse_repeated_double([], bytes) == Enum.reverse(values)
     end
 
     test "raises on a truncated packed fixed32 payload" do

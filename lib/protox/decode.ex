@@ -13,6 +13,8 @@ defmodule Protox.Decode do
     Zigzag
   }
 
+  alias Protox.Varint.DecodeClauses
+
   # Protobuf keys reserve the low 3 bits for the wire type, leaving 29 bits for the field number.
   @max_field_number (1 <<< 29) - 1
 
@@ -235,8 +237,30 @@ defmodule Protox.Decode do
     end
   end
 
+  # The parse_repeated_* functions prepend the decoded elements onto `acc`, so the
+  # result is in reverse wire order. Callers seed `acc` with the field's current
+  # (also reversed) list and rely on the single reverse in the generated
+  # finish-decode step to restore wire order — reversing here as well would cost
+  # two extra list copies per packed run.
+  #
+  # The varint loops below get one clause per encoded length (1 to 10 bytes).
+  # Matching the varint in the loop's own clause instead of calling the
+  # cross-module Varint.decode/1 avoids a {value, rest} tuple and a sub-binary
+  # per element. Covering all 10 lengths matters: a valid varint falling through
+  # to the closing clause would convert the match context back to a sub-binary
+  # on every element. Only over-long (non-canonical, > 10 bytes) and invalid
+  # trailing bytes take the closing clause, which still uses Varint.decode/1.
+  varint_rest = Macro.var(:rest, __MODULE__)
+  varint_fast_clauses = DecodeClauses.build(1..10, varint_rest)
+
   @spec parse_repeated_bool([boolean()], binary()) :: [boolean()]
-  def parse_repeated_bool(acc, <<>>), do: Enum.reverse(acc)
+  def parse_repeated_bool(acc, <<>>), do: acc
+
+  for {pattern, value} <- varint_fast_clauses do
+    def parse_repeated_bool(acc, unquote(pattern)) do
+      parse_repeated_bool([unquote(value) != 0 | acc], unquote(varint_rest))
+    end
+  end
 
   def parse_repeated_bool(acc, bytes) do
     {value, rest} = Protox.Varint.decode(bytes)
@@ -244,7 +268,13 @@ defmodule Protox.Decode do
   end
 
   @spec parse_repeated_enum([atom() | integer()], binary(), module()) :: [atom() | integer()]
-  def parse_repeated_enum(acc, <<>>, _mod), do: Enum.reverse(acc)
+  def parse_repeated_enum(acc, <<>>, _mod), do: acc
+
+  for {pattern, value} <- varint_fast_clauses do
+    def parse_repeated_enum(acc, unquote(pattern), mod) do
+      parse_repeated_enum([mod.decode(truncate_signed32(unquote(value))) | acc], unquote(varint_rest), mod)
+    end
+  end
 
   def parse_repeated_enum(acc, bytes, mod) do
     {value, rest} = parse_enum(bytes, mod)
@@ -252,7 +282,13 @@ defmodule Protox.Decode do
   end
 
   @spec parse_repeated_int32([integer()], binary()) :: [integer()]
-  def parse_repeated_int32(acc, <<>>), do: Enum.reverse(acc)
+  def parse_repeated_int32(acc, <<>>), do: acc
+
+  for {pattern, value} <- varint_fast_clauses do
+    def parse_repeated_int32(acc, unquote(pattern)) do
+      parse_repeated_int32([truncate_signed32(unquote(value)) | acc], unquote(varint_rest))
+    end
+  end
 
   def parse_repeated_int32(acc, bytes) do
     {value, rest} = parse_int32(bytes)
@@ -260,7 +296,13 @@ defmodule Protox.Decode do
   end
 
   @spec parse_repeated_uint32([non_neg_integer()], binary()) :: [non_neg_integer()]
-  def parse_repeated_uint32(acc, <<>>), do: Enum.reverse(acc)
+  def parse_repeated_uint32(acc, <<>>), do: acc
+
+  for {pattern, value} <- varint_fast_clauses do
+    def parse_repeated_uint32(acc, unquote(pattern)) do
+      parse_repeated_uint32([truncate_unsigned32(unquote(value)) | acc], unquote(varint_rest))
+    end
+  end
 
   def parse_repeated_uint32(acc, bytes) do
     {value, rest} = parse_uint32(bytes)
@@ -268,7 +310,13 @@ defmodule Protox.Decode do
   end
 
   @spec parse_repeated_sint32([integer()], binary()) :: [integer()]
-  def parse_repeated_sint32(acc, <<>>), do: Enum.reverse(acc)
+  def parse_repeated_sint32(acc, <<>>), do: acc
+
+  for {pattern, value} <- varint_fast_clauses do
+    def parse_repeated_sint32(acc, unquote(pattern)) do
+      parse_repeated_sint32([Zigzag.decode(truncate_unsigned32(unquote(value))) | acc], unquote(varint_rest))
+    end
+  end
 
   def parse_repeated_sint32(acc, bytes) do
     {value, rest} = parse_sint32(bytes)
@@ -276,7 +324,13 @@ defmodule Protox.Decode do
   end
 
   @spec parse_repeated_int64([integer()], binary()) :: [integer()]
-  def parse_repeated_int64(acc, <<>>), do: Enum.reverse(acc)
+  def parse_repeated_int64(acc, <<>>), do: acc
+
+  for {pattern, value} <- varint_fast_clauses do
+    def parse_repeated_int64(acc, unquote(pattern)) do
+      parse_repeated_int64([truncate_signed64(unquote(value)) | acc], unquote(varint_rest))
+    end
+  end
 
   def parse_repeated_int64(acc, bytes) do
     {value, rest} = parse_int64(bytes)
@@ -284,7 +338,13 @@ defmodule Protox.Decode do
   end
 
   @spec parse_repeated_uint64([non_neg_integer()], binary()) :: [non_neg_integer()]
-  def parse_repeated_uint64(acc, <<>>), do: Enum.reverse(acc)
+  def parse_repeated_uint64(acc, <<>>), do: acc
+
+  for {pattern, value} <- varint_fast_clauses do
+    def parse_repeated_uint64(acc, unquote(pattern)) do
+      parse_repeated_uint64([truncate_unsigned64(unquote(value)) | acc], unquote(varint_rest))
+    end
+  end
 
   def parse_repeated_uint64(acc, bytes) do
     {value, rest} = parse_uint64(bytes)
@@ -292,7 +352,13 @@ defmodule Protox.Decode do
   end
 
   @spec parse_repeated_sint64([integer()], binary()) :: [integer()]
-  def parse_repeated_sint64(acc, <<>>), do: Enum.reverse(acc)
+  def parse_repeated_sint64(acc, <<>>), do: acc
+
+  for {pattern, value} <- varint_fast_clauses do
+    def parse_repeated_sint64(acc, unquote(pattern)) do
+      parse_repeated_sint64([Zigzag.decode(truncate_unsigned64(unquote(value))) | acc], unquote(varint_rest))
+    end
+  end
 
   def parse_repeated_sint64(acc, bytes) do
     {value, rest} = parse_sint64(bytes)
@@ -300,7 +366,7 @@ defmodule Protox.Decode do
   end
 
   @spec parse_repeated_fixed32([non_neg_integer()], binary()) :: [non_neg_integer()]
-  def parse_repeated_fixed32(acc, <<>>), do: Enum.reverse(acc)
+  def parse_repeated_fixed32(acc, <<>>), do: acc
 
   def parse_repeated_fixed32(
         acc,
@@ -315,7 +381,7 @@ defmodule Protox.Decode do
   end
 
   @spec parse_repeated_fixed64([non_neg_integer()], binary()) :: [non_neg_integer()]
-  def parse_repeated_fixed64(acc, <<>>), do: Enum.reverse(acc)
+  def parse_repeated_fixed64(acc, <<>>), do: acc
 
   def parse_repeated_fixed64(
         acc,
@@ -330,7 +396,7 @@ defmodule Protox.Decode do
   end
 
   @spec parse_repeated_sfixed32([integer()], binary()) :: [integer()]
-  def parse_repeated_sfixed32(acc, <<>>), do: Enum.reverse(acc)
+  def parse_repeated_sfixed32(acc, <<>>), do: acc
 
   def parse_repeated_sfixed32(
         acc,
@@ -345,7 +411,7 @@ defmodule Protox.Decode do
   end
 
   @spec parse_repeated_sfixed64([integer()], binary()) :: [integer()]
-  def parse_repeated_sfixed64(acc, <<>>), do: Enum.reverse(acc)
+  def parse_repeated_sfixed64(acc, <<>>), do: acc
 
   def parse_repeated_sfixed64(
         acc,
@@ -362,7 +428,7 @@ defmodule Protox.Decode do
   @spec parse_repeated_float([float() | :infinity | :"-infinity" | :nan], binary()) :: [
           float() | :infinity | :"-infinity" | :nan
         ]
-  def parse_repeated_float(acc, <<>>), do: Enum.reverse(acc)
+  def parse_repeated_float(acc, <<>>), do: acc
 
   # A float segment never matches NaN or infinity payloads: those fall through
   # to the single-element clause below, which handles them.
@@ -381,7 +447,7 @@ defmodule Protox.Decode do
   @spec parse_repeated_double([float() | :infinity | :"-infinity" | :nan], binary()) :: [
           float() | :infinity | :"-infinity" | :nan
         ]
-  def parse_repeated_double(acc, <<>>), do: Enum.reverse(acc)
+  def parse_repeated_double(acc, <<>>), do: acc
 
   # A float segment never matches NaN or infinity payloads: those fall through
   # to the single-element clause below, which handles them.

@@ -4,6 +4,8 @@ defmodule Protox.Varint do
 
   import Bitwise
 
+  alias Protox.Varint.DecodeClauses
+
   @spec encode(integer) :: {binary(), non_neg_integer()}
   def encode(v) when v < 1 <<< 7, do: {<<v>>, 1}
 
@@ -78,41 +80,14 @@ defmodule Protox.Varint do
     append(<<acc::binary, 1::1, v::7>>, v >>> 7)
   end
 
+  # One unrolled clause per encoded length; the clauses are shared with the
+  # packed varint loops of Protox.Decode through Protox.Varint.DecodeClauses.
+  varint_rest = Macro.var(:rest, __MODULE__)
+
   @spec decode(binary) :: {non_neg_integer, binary}
-  def decode(<<0::1, byte0::7, rest::binary>>), do: {byte0, rest}
-
-  def decode(<<1::1, byte1::7, 0::1, byte0::7, rest::binary>>), do: {byte1 ||| byte0 <<< 7, rest}
-
-  def decode(<<1::1, byte2::7, 1::1, byte1::7, 0::1, byte0::7, rest::binary>>),
-    do: {byte2 ||| byte1 <<< 7 ||| byte0 <<< 14, rest}
-
-  def decode(<<1::1, byte3::7, 1::1, byte2::7, 1::1, byte1::7, 0::1, byte0::7, rest::binary>>),
-    do: {byte3 ||| byte2 <<< 7 ||| byte1 <<< 14 ||| byte0 <<< 21, rest}
-
-  def decode(<<1::1, byte4::7, 1::1, byte3::7, 1::1, byte2::7, 1::1, byte1::7, 0::1, byte0::7, rest::binary>>),
-    do: {byte4 ||| byte3 <<< 7 ||| byte2 <<< 14 ||| byte1 <<< 21 ||| byte0 <<< 28, rest}
-
-  def decode(
-        <<1::1, byte5::7, 1::1, byte4::7, 1::1, byte3::7, 1::1, byte2::7, 1::1, byte1::7, 0::1, byte0::7, rest::binary>>
-      ) do
-    {byte5 ||| byte4 <<< 7 ||| byte3 <<< 14 ||| byte2 <<< 21 ||| byte1 <<< 28 ||| byte0 <<< 35, rest}
+  for {pattern, value} <- DecodeClauses.build(1..8, varint_rest) do
+    def decode(unquote(pattern)), do: {unquote(value), unquote(varint_rest)}
   end
-
-  def decode(
-        <<1::1, byte6::7, 1::1, byte5::7, 1::1, byte4::7, 1::1, byte3::7, 1::1, byte2::7, 1::1, byte1::7, 0::1,
-          byte0::7, rest::binary>>
-      ),
-      do:
-        {byte6 ||| byte5 <<< 7 ||| byte4 <<< 14 ||| byte3 <<< 21 ||| byte2 <<< 28 ||| byte1 <<< 35 ||| byte0 <<< 42,
-         rest}
-
-  def decode(
-        <<1::1, byte7::7, 1::1, byte6::7, 1::1, byte5::7, 1::1, byte4::7, 1::1, byte3::7, 1::1, byte2::7, 1::1,
-          byte1::7, 0::1, byte0::7, rest::binary>>
-      ),
-      do:
-        {byte7 ||| byte6 <<< 7 ||| byte5 <<< 14 ||| byte4 <<< 21 ||| byte3 <<< 28 ||| byte2 <<< 35 ||| byte1 <<< 42 |||
-           byte0 <<< 49, rest}
 
   def decode(b), do: do_decode(0, 0, b)
 
