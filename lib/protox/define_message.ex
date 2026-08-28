@@ -121,7 +121,7 @@ defmodule Protox.DefineMessage do
   defp make_default_funs(_fields) do
     quote do
       @spec default(atom()) ::
-              {:ok, boolean() | integer() | String.t() | float()}
+              {:ok, Protox.Scalar.scalar_default_value_type()}
               | {:error, :no_such_field | :no_default_value}
       def default(field_name), do: Protox.MessageSchema.default(@schema, field_name)
     end

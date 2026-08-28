@@ -73,7 +73,7 @@ defmodule Protox.MessageSchema do
   @doc false
   # Backs the generated default/1 functions.
   @spec default(t(), atom()) ::
-          {:ok, boolean() | integer() | String.t() | float() | nil}
+          {:ok, Protox.Scalar.scalar_default_value_type()}
           | {:error, :no_such_field | :no_default_value}
   def default(%__MODULE__{fields: fields}, field_name) do
     case fields do
