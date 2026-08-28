@@ -14,7 +14,7 @@ defmodule Mix.Tasks.Protox.Benchmark.Report do
         load: files,
         formatters: [
           {Console, extended_statistics: true},
-          {HTML, file: "benchmark/output/html/report.html"}
+          {HTML, file: "benchmark/output/html/report.html", auto_open: false}
         ]
       )
     else

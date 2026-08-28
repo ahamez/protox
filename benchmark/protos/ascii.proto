@@ -1,0 +1,24 @@
+syntax = "proto3";
+package protox.benchmark.ascii;
+
+// String-heavy message whose payloads are filled with pure-ASCII text. Every other
+// input in the corpus is populated with random unicode, which is the worst case for
+// the vectorized :fast_ascii UTF-8 validation path; this message measures that path
+// on the input it is actually optimized for.
+message Message {
+  string field_1 = 1;
+  string field_2 = 2;
+  string field_3 = 3;
+  string field_4 = 4;
+  string field_5 = 5;
+  repeated string field_6 = 6;
+  repeated string field_7 = 7;
+  Sub field_8 = 8;
+  repeated Sub field_9 = 9;
+}
+
+message Sub {
+  string field_1 = 1;
+  string field_2 = 2;
+  repeated string field_3 = 3;
+}
