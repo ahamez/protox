@@ -82,16 +82,16 @@ defmodule Protox.DefineDecoder do
       |> Enum.map(& &1.name)
       |> Enum.uniq()
 
-    # Update only the fields that were actually populated: repeated fields are
-    # most often empty, and skipping them avoids both the reverse call and the
-    # struct update. The last update is the block's value, not a rebind: a
-    # final rebind would trigger an unused-variable warning in the generated
-    # code.
+    # Update only the fields that need it: repeated fields are most often empty
+    # or hold a single element (which is order-invariant), and skipping them
+    # avoids both the reverse call and the struct update. The last update is the
+    # block's value, not a rebind: a final rebind would trigger an
+    # unused-variable warning in the generated code.
     update = fn field_name ->
       quote do
         case unquote(msg_var).unquote(field_name) do
-          [] -> unquote(msg_var)
-          values -> %{unquote(msg_var) | unquote(field_name) => :lists.reverse(values)}
+          [_first, _second | _tail] = values -> %{unquote(msg_var) | unquote(field_name) => :lists.reverse(values)}
+          _empty_or_single -> unquote(msg_var)
         end
       end
     end
