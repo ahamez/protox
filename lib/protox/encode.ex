@@ -39,13 +39,15 @@ defmodule Protox.Encode do
   def encode_bool(true), do: <<1>>
 
   @doc false
-  @spec encode_string(String.t()) :: {iodata(), non_neg_integer()}
-  def encode_string(value) do
+  # Validates the string and returns just its length prefix. The caller splices the prefix and
+  # the value straight into its own accumulator, which is why the two are not returned together:
+  # a {iodata, size} tuple wrapping a [prefix, value] list cost 7 words on every string field,
+  # and the accumulator has to cons them anyway.
+  @spec encode_string_prefix(String.t()) :: binary()
+  def encode_string_prefix(value) do
     case Protox.String.validate(value) do
       :ok ->
-        value_size = byte_size(value)
-        size_varint = Varint.encode(value_size)
-        {[size_varint, value], byte_size(size_varint) + value_size}
+        Varint.encode(byte_size(value))
 
       {:error, :invalid_utf8} ->
         raise ArgumentError, message: "String is not valid UTF-8"
@@ -53,15 +55,6 @@ defmodule Protox.Encode do
       {:error, :too_large} ->
         raise ArgumentError, message: "String is too large"
     end
-  end
-
-  @doc false
-  @spec encode_bytes(binary()) :: {iodata(), non_neg_integer()}
-  def encode_bytes(value) do
-    value_size = byte_size(value)
-    size_varint = Varint.encode(value_size)
-
-    {[size_varint, value], byte_size(size_varint) + value_size}
   end
 
   @doc false
