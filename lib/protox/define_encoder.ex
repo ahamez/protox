@@ -31,11 +31,13 @@ defmodule Protox.DefineEncoder do
     encode_field_funs = make_encode_field_funs(fields, required_fields, syntax, vars)
     encode_diagnose_fun = make_encode_diagnose_fun(oneofs, fields_in_encode_order, vars)
     encode_unknown_fields_fun = make_encode_unknown_fields_fun(vars, opts)
+    encode_repeated_funs = make_encode_repeated_funs(fields)
 
     quote do
       unquote(top_level_encode_fun)
       unquote_splicing(encode_oneof_funs)
       unquote_splicing(encode_field_funs)
+      unquote_splicing(encode_repeated_funs)
       unquote(encode_diagnose_fun)
       unquote(encode_unknown_fields_fun)
     end
@@ -286,15 +288,13 @@ defmodule Protox.DefineEncoder do
   end
 
   defp make_encode_field_body(%Field{kind: :unpacked} = field, _required, _syntax, vars) do
-    encode_repeated_ast = make_encode_repeated_body(field.tag, field.type)
-
     quote do
       case unquote(field_value(vars.msg, field.name)) do
         [] ->
           {unquote(vars.acc), unquote(vars.acc_size)}
 
         values ->
-          {value_bytes, value_size} = unquote(encode_repeated_ast)
+          {value_bytes, value_size} = unquote(make_encode_repeated_fun_name(field.tag))(values, [], 0)
           {[value_bytes | unquote(vars.acc)], unquote(vars.acc_size) + value_size}
       end
     end
@@ -444,33 +444,46 @@ defmodule Protox.DefineEncoder do
     quote(do: Protox.Encode.unquote(appender)(values, <<>>))
   end
 
-  defp make_encode_repeated_body(tag, type) do
-    {key_bytes, key_bytes_sz} = Protox.Encode.make_key_bytes(tag, type)
-    value_var = Macro.var(:value, __MODULE__)
+  # One recursive loop per unpacked repeated field, rather than Enum.reduce over a closure. The
+  # accumulator and the running size are separate arguments, so the pair costs nothing per
+  # element; Enum.reduce can only carry one term, so it had to rebuild a {acc, size} tuple on
+  # every element. The list is still grown by appending, which is what keeps the elements in
+  # wire order -- prepending would reverse them.
+  defp make_encode_repeated_funs(fields) do
+    for %Field{kind: :unpacked} = field <- fields do
+      {key_bytes, key_bytes_size} = Protox.Encode.make_key_bytes(field.tag, field.type)
+      value_var = Macro.var(:value, __MODULE__)
+      fun_name = make_encode_repeated_fun_name(field.tag)
 
-    encode_value_binding =
-      make_encode_value_binding(
-        type,
-        value_var,
-        Macro.var(:value_bytes, __MODULE__),
-        Macro.var(:value_bytes_size, __MODULE__)
-      )
+      encode_value_binding =
+        make_encode_value_binding(
+          field.type,
+          value_var,
+          Macro.var(:value_bytes, __MODULE__),
+          Macro.var(:value_bytes_size, __MODULE__)
+        )
 
-    quote do
-      Enum.reduce(
-        values,
-        {_local_acc = [], _local_acc_size = 0},
-        fn unquote(value_var), {local_acc, local_acc_size} ->
+      quote do
+        defp unquote(fun_name)([], acc, size), do: {acc, size}
+
+        defp unquote(fun_name)([unquote(value_var) | rest], acc, size) do
           unquote(encode_value_binding)
 
-          {
-            [local_acc, unquote(key_bytes), value_bytes],
-            local_acc_size + unquote(key_bytes_sz) + value_bytes_size
-          }
+          unquote(fun_name)(
+            rest,
+            [acc, unquote(key_bytes), value_bytes],
+            size + unquote(key_bytes_size) + value_bytes_size
+          )
         end
-      )
+      end
     end
   end
+
+  # Named after the tag, not the field name: field names can run to hundreds of bytes, and
+  # "encode_repeated_" is 10 bytes longer than the "encode_" prefix the field helpers use, which
+  # would push schemas that generate fine today past the BEAM's 255-byte atom limit. A tag is at
+  # most 9 digits and is unique within its message, which is all this private helper needs.
+  defp make_encode_repeated_fun_name(tag), do: String.to_atom("encode_repeated_#{tag}")
 
   # Returns `{prelude, bytes_items, size_ast}` for a value of `type`:
   #
