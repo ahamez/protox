@@ -10,6 +10,7 @@ defmodule Protox.CompileBenchmarkProtos do
       "./benchmark/protos/synthetic_100.proto",
       "./benchmark/protos/synthetic_200.proto",
       "./benchmark/protos/edge.proto",
+      "./benchmark/protos/maps.proto",
       "./benchmark/protos/vendor/google/benchmarks.proto",
       "./benchmark/protos/vendor/google/benchmark_message1_proto2.proto",
       "./benchmark/protos/vendor/google/benchmark_message1_proto3.proto",
