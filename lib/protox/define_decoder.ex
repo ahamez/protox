@@ -89,7 +89,7 @@ defmodule Protox.DefineDecoder do
     # unused-variable warning in the generated code.
     update = fn field_name ->
       quote do
-        case unquote(msg_var).unquote(field_name) do
+        case unquote(field_value(msg_var, field_name)) do
           [_first, _second | _tail] = values -> %{unquote(msg_var) | unquote(field_name) => :lists.reverse(values)}
           _empty_or_single -> unquote(msg_var)
         end
@@ -177,7 +177,7 @@ defmodule Protox.DefineDecoder do
         unquote(vars.msg) = %{
           unquote(vars.msg)
           | unquote(unknown_fields_name) => [
-              unquote(vars.value) | unquote(vars.msg).unquote(unknown_fields_name)
+              unquote(vars.value) | unquote(field_value(vars.msg, unknown_fields_name))
             ]
         }
 
@@ -289,7 +289,7 @@ defmodule Protox.DefineDecoder do
         # (reversed) list so the run is prepended onto it directly.
         acc =
           if single_generated do
-            quote(do: unquote(vars.msg).unquote(field.name))
+            field_value(vars.msg, field.name)
           else
             quote(do: [])
           end
@@ -319,7 +319,7 @@ defmodule Protox.DefineDecoder do
 
       %{
         unquote(vars.msg)
-        | unquote(field.name) => Map.put(unquote(vars.msg).unquote(field.name), entry_key, entry_value)
+        | unquote(field.name) => Map.put(unquote(field_value(vars.msg, field.name)), entry_key, entry_value)
       }
     end
   end
@@ -335,7 +335,7 @@ defmodule Protox.DefineDecoder do
 
       _other_label ->
         quote do
-          case unquote(vars.msg).unquote(field.kind.parent) do
+          case unquote(field_value(vars.msg, field.kind.parent)) do
             {unquote(field.name), previous_value} ->
               %{
                 unquote(vars.msg)
@@ -365,7 +365,7 @@ defmodule Protox.DefineDecoder do
       %{
         unquote(vars.msg)
         | unquote(field.name) =>
-            case unquote(vars.msg).unquote(field.name) do
+            case unquote(field_value(vars.msg, field.name)) do
               # The field is seen for the first time: nothing to merge.
               nil -> unquote(value)
               previous_value -> Protox.MergeMessage.merge(previous_value, unquote(value))
@@ -384,7 +384,7 @@ defmodule Protox.DefineDecoder do
     # accumulator, so it's stored as is.
     update_value =
       if wrap_value do
-        quote(do: [unquote(value) | unquote(vars.msg).unquote(field.name)])
+        quote(do: [unquote(value) | unquote(field_value(vars.msg, field.name))])
       else
         value
       end
@@ -639,6 +639,12 @@ defmodule Protox.DefineDecoder do
       {:message, _msg_type} -> parse_delimited
       _scalar_type -> make_parse_single(vars.rest, type)
     end
+  end
+
+  # See the note on Protox.DefineEncoder.field_value/2: `msg.field` carries a dead fallback arm
+  # that stops the access from being a single get_map_element.
+  defp field_value(msg_var, field_name) do
+    quote(do: :erlang.map_get(unquote(field_name), unquote(msg_var)))
   end
 
   defp make_literal_key_bytes(tag, type) do

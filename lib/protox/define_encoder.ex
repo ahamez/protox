@@ -124,7 +124,7 @@ defmodule Protox.DefineEncoder do
                {unquote(vars.acc), unquote(vars.acc_size)},
                msg
              ) do
-          case msg.unquote(parent_name) do
+          case :erlang.map_get(unquote(parent_name), msg) do
             unquote(nil_clause ++ children_clauses_ast)
           end
         end
@@ -207,13 +207,13 @@ defmodule Protox.DefineEncoder do
 
   defp make_encode_field_body(%Field{kind: %Scalar{}} = field, required, syntax, vars) do
     {key, key_size} = Protox.Encode.make_key_bytes(field.tag, field.type)
-    var = quote do: unquote(vars.msg).unquote(field.name)
+    var = field_value(vars.msg, field.name)
     encode_value_clause = make_encode_value_clause(field.type, var, key, key_size, vars)
 
     case {syntax, required} do
       {:proto2, true = _required} ->
         quote do
-          case unquote(vars.msg).unquote(field.name) do
+          case unquote(var) do
             nil -> raise Protox.RequiredFieldsError.new([unquote(field.name)])
             _value -> unquote(encode_value_clause)
           end
@@ -245,7 +245,7 @@ defmodule Protox.DefineEncoder do
     encode_value_clause = make_encode_value_clause(field.type, var, key, key_size, vars)
 
     quote do
-      case unquote(vars.msg).unquote(field.name) do
+      case unquote(field_value(vars.msg, field.name)) do
         nil ->
           {unquote(vars.acc), unquote(vars.acc_size)}
 
@@ -263,39 +263,12 @@ defmodule Protox.DefineEncoder do
     make_encode_value_clause(field.type, vars.child_field_value, key, key_size, vars)
   end
 
-  # Shared fragment: bind the field's encoded bytes, then prepend them and the field's key to
-  # the accumulator, updating its size.
-  defp make_encode_value_clause(type, value_var, key, key_size, vars) do
-    bytes_var = Macro.var(:value_bytes, __MODULE__)
-    {prelude, bytes_ast, size_ast} = get_encode_value_parts(type, value_var, bytes_var)
-
-    quote do
-      unquote_splicing(prelude)
-      unquote(bytes_var) = unquote(bytes_ast)
-
-      {
-        [unquote(key), unquote(bytes_var) | unquote(vars.acc)],
-        unquote(vars.acc_size) + unquote(key_size) + unquote(size_ast)
-      }
-    end
-  end
-
-  defp make_encode_value_binding(type, value_var, bytes_var, size_var) do
-    {prelude, bytes_ast, size_ast} = get_encode_value_parts(type, value_var, bytes_var)
-
-    quote do
-      unquote_splicing(prelude)
-      unquote(bytes_var) = unquote(bytes_ast)
-      unquote(size_var) = unquote(size_ast)
-    end
-  end
-
   defp make_encode_field_body(%Field{kind: :packed} = field, _required, _syntax, vars) do
     {key_bytes, key_size} = Protox.Encode.make_key_bytes(field.tag, :packed)
     encode_packed_ast = make_encode_packed_body(field.type)
 
     quote do
-      case unquote(vars.msg).unquote(field.name) do
+      case unquote(field_value(vars.msg, field.name)) do
         [] ->
           {unquote(vars.acc), unquote(vars.acc_size)}
 
@@ -316,7 +289,7 @@ defmodule Protox.DefineEncoder do
     encode_repeated_ast = make_encode_repeated_body(field.tag, field.type)
 
     quote do
-      case unquote(vars.msg).unquote(field.name) do
+      case unquote(field_value(vars.msg, field.name)) do
         [] ->
           {unquote(vars.acc), unquote(vars.acc_size)}
 
@@ -359,7 +332,7 @@ defmodule Protox.DefineEncoder do
     keys_len = k_key_size + v_key_size
 
     quote do
-      map = Map.fetch!(unquote(vars.msg), unquote(field.name))
+      map = unquote(field_value(vars.msg, field.name))
 
       if map_size(map) == 0 do
         {unquote(vars.acc), unquote(vars.acc_size)}
@@ -393,12 +366,39 @@ defmodule Protox.DefineEncoder do
     end
   end
 
+  # Shared fragment: bind the field's encoded bytes, then prepend them and the field's key to
+  # the accumulator, updating its size.
+  defp make_encode_value_clause(type, value_var, key, key_size, vars) do
+    bytes_var = Macro.var(:value_bytes, __MODULE__)
+    {prelude, bytes_ast, size_ast} = get_encode_value_parts(type, value_var, bytes_var)
+
+    quote do
+      unquote_splicing(prelude)
+      unquote(bytes_var) = unquote(bytes_ast)
+
+      {
+        [unquote(key), unquote(bytes_var) | unquote(vars.acc)],
+        unquote(vars.acc_size) + unquote(key_size) + unquote(size_ast)
+      }
+    end
+  end
+
+  defp make_encode_value_binding(type, value_var, bytes_var, size_var) do
+    {prelude, bytes_ast, size_ast} = get_encode_value_parts(type, value_var, bytes_var)
+
+    quote do
+      unquote_splicing(prelude)
+      unquote(bytes_var) = unquote(bytes_ast)
+      unquote(size_var) = unquote(size_ast)
+    end
+  end
+
   defp make_encode_unknown_fields_fun(_vars, opts) do
     unknown_fields_name = Keyword.fetch!(opts, :unknown_fields_name)
 
     quote do
       defp encode_unknown_fields(acc, msg) do
-        Protox.Encode.encode_unknown_fields(acc, msg.unquote(unknown_fields_name))
+        Protox.Encode.encode_unknown_fields(acc, :erlang.map_get(unquote(unknown_fields_name), msg))
       end
     end
   end
@@ -581,6 +581,15 @@ defmodule Protox.DefineEncoder do
       end
 
     {[prelude], bytes, quote(do: byte_size(unquote(bytes_var)))}
+  end
+
+  # `msg.field` compiles to a map match *plus* a fallback arm that calls
+  # elixir_erl_pass:no_parens_remote/2 in case `msg` turns out to be a module, so the access is
+  # never a single get_map_element and the compiler cannot pin the type of `msg`. The field is
+  # always present -- it is a struct key -- so :erlang.map_get/2 is the same lookup without the
+  # dead branch.
+  defp field_value(msg_var, field_name) do
+    quote(do: :erlang.map_get(unquote(field_name), unquote(msg_var)))
   end
 
   defp make_encode_field_fun_name(field) when is_atom(field) do
