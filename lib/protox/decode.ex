@@ -75,6 +75,9 @@ defmodule Protox.Decode do
       @wire_64bits -> {field_number, @wire_64bits, rest}
       @wire_delimited -> {field_number, @wire_delimited, rest}
       @wire_varint -> {field_number, @wire_varint, rest}
+      # Only reached from the map entry decoders: the generated parse_key_value/2
+      # rejects the unsupported wire types before ever calling parse_key/1.
+      invalid_wire_type -> raise Protox.DecodingError.new(bytes, "invalid wire type #{invalid_wire_type}")
     end
   end
 

@@ -522,6 +522,20 @@ defmodule Protox.DecodeTest do
       >>,
       TestAllTypesProto3,
       Protox.DecodingError
+    },
+    {
+      "invalid wire type of a map entry sub-field",
+      <<
+        # map_int32_int32 (field 56, delimited): key varint of 56 <<< 3 ||| 2
+        194,
+        3,
+        # Entry length
+        1,
+        # Entry sub-field 1  |  Invalid wire type
+        1 <<< 3 ||| 6
+      >>,
+      TestAllTypesProto3,
+      Protox.DecodingError
     }
   ]
 
