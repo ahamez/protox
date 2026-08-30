@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ⚠️ The generator version is now 2: files generated with a previous protox version must be regenerated (compilation fails with an explicit message otherwise)
 - Encoding a message field holding a value that is not a struct of the declared type now raises `Protox.EncodingError` instead of silently encoding it
 - Invalid field values are now attributed to their field (`Protox.EncodingError`) for more error classes (e.g. invalid `bool` values, structs of the wrong type); invalid scalar oneof values keep raising their raw error, whose type may differ (e.g. `ArithmeticError` instead of `ArgumentError` for varint children)
+- ⚠️ When decoding, a known field number carrying an unexpected wire type is now kept as an unknown field instead of being parsed with the field's expected parser; this also applies to the key and value sub-fields of a map entry. This matches the reference implementation, which treats a wire type mismatch as an unknown field
+
+### Fixed
+
+- Decoding a map entry whose key or value sub-field uses an unsupported wire type (3, 4, 6 or 7) now returns a `Protox.DecodingError` instead of letting a `CaseClauseError` escape `decode/1`
 
 ## 2.0.10
 

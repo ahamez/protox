@@ -394,14 +394,6 @@ defmodule Protox.DefineDecoder do
     end
   end
 
-  defp make_update_field(value, %Field{} = field, vars, wrap_value) do
-    value = maybe_wrap(value, wrap_value)
-
-    quote do
-      %{unquote(vars.msg) | unquote(field.name) => unquote(vars.msg).unquote(field.name) ++ unquote(value)}
-    end
-  end
-
   defp make_parse_delimited(bytes_var, _acc, :bytes) do
     quote(do: unquote(bytes_var))
   end
@@ -655,7 +647,4 @@ defmodule Protox.DefineDecoder do
     |> elem(0)
     |> IO.iodata_to_binary()
   end
-
-  defp maybe_wrap(value, true = _wrap_value), do: [value]
-  defp maybe_wrap(value, false = _wrap_value), do: value
 end
