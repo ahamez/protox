@@ -7,17 +7,6 @@ defmodule Protox.Benchmark.RealisticValues do
   #
   # The default profile (`Protox.RandomInit.EdgeCase`) is a property-testing generator: it
   # over-produces NaN, Infinity, full-range integers and non-ASCII strings on purpose.
-  # Measured against the one captured corpus available (google_message1), that left 75% of
-  # encoded floats on the NaN/Infinity branch, 45% of varints at their full 10-byte width
-  # (every negative int32/int64 costs 10 bytes) and 94% of strings non-ASCII — none of
-  # which resembles real traffic.
-  #
-  # The targets below are part measurement, part judgement: the captured reference is two
-  # 228-byte messages with no floats and no populated repeated fields, so it pins down
-  # density and varint width well and says nothing about the rest.
-  #
-  # Special values are kept at plausible rates rather than removed, so those encoder
-  # branches stay exercised; the `edge_*` inputs saturate them for a sensitive signal.
 
   alias Protox.RandomInit.Values
 
@@ -40,9 +29,6 @@ defmodule Protox.Benchmark.RealisticValues do
 
   def scalar(:bool), do: StreamData.boolean()
 
-  # Signed types. A negative int32/int64 always encodes as a full 10-byte varint, so its
-  # rate matters a lot; the captured reference has none at all. sint* zigzags, making
-  # negatives cheap, but it is rare enough in practice to share the same shape.
   def scalar(type) when type in [:int32, :sint32, :sfixed32] do
     signed_integer(2_147_483_647)
   end
@@ -72,13 +58,6 @@ defmodule Protox.Benchmark.RealisticValues do
     ])
   end
 
-  # Cardinality is skewed: most repeated fields hold nothing or a handful of elements, with
-  # a long tail. The buckets scale with StreamData's size parameter, which is what
-  # payloads.ex uses to place each input in its size band.
-  #
-  # At the recursion cutoff a nested message can only come out blank, and a swarm of
-  # present-but-empty sub-messages is not what real payloads look like — it just makes the
-  # encoder walk fields that are all at their default. Absent is the realistic answer.
   @impl Values
   def collection(_element, 0), do: StreamData.constant([])
 
@@ -93,8 +72,6 @@ defmodule Protox.Benchmark.RealisticValues do
     end)
   end
 
-  # Sub-messages are usually present in real data (100% in the captured reference); the
-  # generator's depth limit is what stops recursion, so this only decides presence.
   @impl Values
   def presence(_message, 0), do: StreamData.constant(nil)
 

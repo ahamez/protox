@@ -4,10 +4,9 @@ package protox.benchmark.edge;
 // Micro-inputs that saturate one encoder path each. The rest of the corpus carries
 // production-like values, which leaves NaN/Infinity encoding, non-ASCII UTF-8 validation
 // and full-width negative varints too rare to show a regression; these keep each of those
-// paths measured in isolation. They are deliberately small: they exist for sensitivity,
-// not for load.
+// paths measured in isolation.
 message Message {
-  repeated double doubles = 1;  // filled with NaN/Infinity
-  repeated string strings = 2;  // filled with multi-byte UTF-8
-  repeated int64 ints = 3;      // filled with negatives, which always encode as 10 bytes
+  repeated double doubles = 1; // filled with NaN/Infinity
+  repeated string strings = 2; // filled with multi-byte UTF-8
+  repeated int64 ints = 3; // filled with negatives, which always encode as 10 bytes
 }

@@ -36,8 +36,6 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
     end)
   end
 
-  # The module is taken from the input rather than from `msg.__struct__` so that the
-  # measured region contains the codec call and nothing else.
   defp job(:encode) do
     %{encode: fn {module, msgs} -> Enum.each(msgs, &module.encode!/1) end}
   end
@@ -69,8 +67,7 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
   #
   # Known limitation: this only catches size-changing corruption, and only on the
   # encoding side. Value-level correctness and the decoder are covered by `mix test`
-  # and `mix protox.conformance`. Upgrade path if that becomes insufficient: compare
-  # `module.decode!(bytes)` against `msg` here as well, at the cost of a slower start.
+  # and `mix protox.conformance`.
   defp verify_payloads(payloads) do
     Enum.each(payloads, fn {name, {module, samples}} ->
       Enum.each(samples, fn {msg, size, _bytes} -> verify_sample(name, module, msg, size) end)

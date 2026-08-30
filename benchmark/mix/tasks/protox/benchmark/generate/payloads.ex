@@ -8,7 +8,7 @@ defmodule Mix.Tasks.Protox.Benchmark.Generate.Payloads do
   alias Opentelemetry.Proto.Trace.V1.TracesData
   alias Prometheus.WriteRequest
   alias ProtobufTestMessages.Proto3.TestAllTypesProto3
-  alias Protox.Benchmark.{Ascii, Edge, Maps, RealisticValues}
+  alias Protox.Benchmark.{Edge, RealisticValues}
   alias Protox.Benchmark.{Synthetic10, Synthetic100, Synthetic20, Synthetic200, Synthetic5, Synthetic50}
   alias Protox.RandomInit.EdgeCase
   alias StreamData
@@ -60,7 +60,6 @@ defmodule Mix.Tasks.Protox.Benchmark.Generate.Payloads do
     %{name: "synthetic_50", module: Synthetic50.Message, profile: RealisticValues, size: @default_size},
     %{name: "synthetic_100", module: Synthetic100.Message, profile: RealisticValues, size: @default_size},
     %{name: "synthetic_200", module: Synthetic200.Message, profile: RealisticValues, size: @default_size},
-    %{name: "maps", module: Maps.Message, profile: RealisticValues, size: @default_size},
     %{name: "test_all_types_proto3", module: TestAllTypesProto3, profile: RealisticValues, size: @default_size},
     %{
       name: "otel_traces_data",
@@ -93,7 +92,7 @@ defmodule Mix.Tasks.Protox.Benchmark.Generate.Payloads do
     # The whole corpus is built before the output is opened: loading a vendored dataset
     # can raise, and opening the file first would truncate the existing corpus before that
     # happened, leaving an empty artifact behind after a failed regeneration.
-    payloads = Enum.reduce([generate_payloads(), build_ascii(), build_edge(), load_datasets()], &Map.merge/2)
+    payloads = Enum.reduce([generate_payloads(), build_edge(), load_datasets()], &Map.merge/2)
 
     # Compressed because the decoded structs dominate the term: a Synthetic200 message
     # carries all 200 keys at every nesting level even when they hold defaults, so the
@@ -180,45 +179,8 @@ defmodule Mix.Tasks.Protox.Benchmark.Generate.Payloads do
 
   # -- Hand-built inputs
   #
-  # These carry exact contents rather than a distribution, which is the point: the schema
-  # cannot express "every string here is ASCII" or "every double here is NaN".
-
-  @ascii_alphabet ~c"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,;:!?-_/"
-
-  defp build_ascii() do
-    samples = Enum.map(1..@nb_samples, fn n -> measure(Ascii.Message, ascii_message(n)) end)
-
-    %{"ascii" => {Ascii.Message, samples}}
-  end
-
-  defp ascii_message(n) do
-    struct!(Ascii.Message,
-      field_1: ascii_text(16 * n),
-      field_2: ascii_text(32 * n),
-      field_3: ascii_text(64 * n),
-      field_4: ascii_text(8 * n),
-      field_5: ascii_text(128 * n),
-      field_6: Enum.map(1..n, fn i -> ascii_text(24 * i) end),
-      field_7: Enum.map(1..n, fn i -> ascii_text(48 * i) end),
-      field_8: ascii_sub(n),
-      field_9: Enum.map(1..n, &ascii_sub/1)
-    )
-  end
-
-  defp ascii_sub(n) do
-    struct!(Ascii.Sub,
-      field_1: ascii_text(12 * n),
-      field_2: ascii_text(20 * n),
-      field_3: Enum.map(1..n, fn i -> ascii_text(16 * i) end)
-    )
-  end
-
-  defp ascii_text(length) do
-    @ascii_alphabet
-    |> Stream.cycle()
-    |> Enum.take(length)
-    |> List.to_string()
-  end
+  # These carry exact contents rather than a distribution: the schema cannot express
+  # "every double here is NaN" or "every string here is non-ASCII".
 
   @special_floats [:nan, :infinity, :"-infinity"]
   # Multi-byte UTF-8 so every string takes the slow path of the validator.
