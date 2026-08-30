@@ -300,14 +300,13 @@ defmodule Protox.DefineDecoder do
 
     key_bytes = make_literal_key_bytes(field.tag, :packed)
 
-    # No one-byte-length fast clause here: its dynamic binary-size(len) segment
-    # would defeat the shared match tree of the surrounding case, which measurably
-    # blows up decoding of messages with many fields.
+    # The length prefix is read by Protox.Decode.parse_delimited/1 rather than matched here: a
+    # dynamic binary-size(len) segment in this pattern would defeat the shared match tree of the
+    # surrounding case, which measurably blows up decoding of messages with many fields. Inside
+    # parse_delimited/1 the same match is free, because the binary arrives as a fresh argument.
     quote do
       <<unquote(key_bytes), unquote(vars.bytes)::binary>> ->
-        {len, unquote(vars.bytes)} = Protox.Varint.decode(unquote(vars.bytes))
-
-        {unquote(vars.delimited), rest} = Protox.Decode.parse_delimited(unquote(vars.bytes), len)
+        {unquote(vars.delimited), rest} = Protox.Decode.parse_delimited(unquote(vars.bytes))
         unquote(vars.msg) = unquote(update_field)
         parse_key_value(rest, unquote(vars.msg))
     end
@@ -627,8 +626,7 @@ defmodule Protox.DefineDecoder do
   defp make_parse_map_entry(vars, type) do
     parse_delimited =
       quote do
-        {len, new_rest} = Protox.Varint.decode(unquote(vars.rest))
-        {unquote(vars.delimited), delimited_rest} = Protox.Decode.parse_delimited(new_rest, len)
+        {unquote(vars.delimited), delimited_rest} = Protox.Decode.parse_delimited(unquote(vars.rest))
 
         {unquote(make_parse_delimited(vars.delimited, quote(do: []), type)), delimited_rest}
       end
