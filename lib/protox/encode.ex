@@ -17,7 +17,9 @@ defmodule Protox.Encode do
   @doc false
   @spec make_key_bytes(Protox.Types.tag(), Protox.Types.type()) :: {binary(), non_neg_integer()}
   def make_key_bytes(tag, ty) do
-    Varint.encode(make_key(tag, ty))
+    key_bytes = Varint.encode(make_key(tag, ty))
+
+    {key_bytes, byte_size(key_bytes)}
   end
 
   @doc false
@@ -32,17 +34,18 @@ defmodule Protox.Encode do
   def make_key(tag, ty) when is_primitive_fixed32(ty), do: tag <<< 3 ||| @wire_32bits
 
   @doc false
-  @spec encode_bool(boolean()) :: {binary(), non_neg_integer()}
-  def encode_bool(false), do: {<<0>>, 1}
-  def encode_bool(true), do: {<<1>>, 1}
+  @spec encode_bool(boolean()) :: binary()
+  def encode_bool(false), do: <<0>>
+  def encode_bool(true), do: <<1>>
 
   @doc false
   @spec encode_string(String.t()) :: {iodata(), non_neg_integer()}
   def encode_string(value) do
     case Protox.String.validate(value) do
       :ok ->
-        {size_varint, size} = Varint.encode(byte_size(value))
-        {[size_varint, value], size + byte_size(value)}
+        value_size = byte_size(value)
+        size_varint = Varint.encode(value_size)
+        {[size_varint, value], byte_size(size_varint) + value_size}
 
       {:error, :invalid_utf8} ->
         raise ArgumentError, message: "String is not valid UTF-8"
@@ -55,8 +58,10 @@ defmodule Protox.Encode do
   @doc false
   @spec encode_bytes(binary()) :: {iodata(), non_neg_integer()}
   def encode_bytes(value) do
-    {size_varint, size} = Varint.encode(byte_size(value))
-    {[size_varint, value], size + byte_size(value)}
+    value_size = byte_size(value)
+    size_varint = Varint.encode(value_size)
+
+    {[size_varint, value], byte_size(size_varint) + value_size}
   end
 
   @doc false
@@ -77,15 +82,15 @@ defmodule Protox.Encode do
   defp do_encode_unknown_fields(acc, acc_size, []), do: {acc, acc_size}
 
   defp do_encode_unknown_fields(acc, acc_size, [{tag, wire_type, bytes} | rest]) do
-    {key_bytes, key_size} = Varint.encode(tag <<< 3 ||| wire_type)
+    key_bytes = Varint.encode(tag <<< 3 ||| wire_type)
 
-    {len_prefix_bytes, len_prefix_size} =
+    len_prefix_bytes =
       case wire_type do
         0 ->
-          {<<>>, 0}
+          <<>>
 
         1 ->
-          {<<>>, 0}
+          <<>>
 
         2 ->
           bytes
@@ -93,12 +98,12 @@ defmodule Protox.Encode do
           |> Varint.encode()
 
         5 ->
-          {<<>>, 0}
+          <<>>
       end
 
     do_encode_unknown_fields(
       [acc, key_bytes, len_prefix_bytes, bytes],
-      acc_size + key_size + len_prefix_size + byte_size(bytes),
+      acc_size + byte_size(key_bytes) + byte_size(len_prefix_bytes) + byte_size(bytes),
       rest
     )
   end

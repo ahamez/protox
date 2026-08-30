@@ -80,7 +80,6 @@ defmodule Protox.DecodeOptimizationsTest do
     {value, <<>>} =
       varint_value
       |> Protox.Varint.encode()
-      |> elem(0)
       |> parse_fun.()
 
     value
