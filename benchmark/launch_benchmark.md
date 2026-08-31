@@ -51,7 +51,7 @@ mix protox.benchmark.run --task encode --profile-after tprof --profile-type memo
 | ----------------- | -------------------------------------- | -------- |
 | `--profile-after` | `tprof`, `cprof`, `eprof`, `fprof`     | —        |
 | `--profile-type`  | `memory`, `calls`, `time` (tprof only) | `memory` |
-| `--profile-scope` | `module`, `codec`, `all`               | `module` |
+| `--profile-scope` | `module`, `codec`, `all` (tprof only)   | `module` |
 
 ### Which profiler
 

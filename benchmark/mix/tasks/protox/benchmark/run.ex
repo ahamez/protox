@@ -223,7 +223,7 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
   defp build_profile(name, opts) do
     with {:ok, profiler} <- get_profiler(name),
          {:ok, type} <- get_profile_type(profiler, opts),
-         {:ok, scope} <- get_profile_scope(opts) do
+         {:ok, scope} <- get_profile_scope(profiler, opts) do
       {:ok, %{profiler: profiler, type: type, scope: scope}}
     end
   end
@@ -246,7 +246,16 @@ defmodule Mix.Tasks.Protox.Benchmark.Run do
     end
   end
 
-  defp get_profile_scope(opts), do: get_enum_opt(opts, :profile_scope, @profile_scopes, :module)
+  # Only tprof takes a scope: profiler_opts/2 has nothing to do with one for the others, so
+  # accepting it there would silently run an unscoped profile.
+  defp get_profile_scope(:tprof, opts), do: get_enum_opt(opts, :profile_scope, @profile_scopes, :module)
+
+  defp get_profile_scope(profiler, opts) do
+    case Keyword.fetch(opts, :profile_scope) do
+      :error -> {:ok, nil}
+      {:ok, _scope} -> {:error, "--profile-scope only applies to tprof, not #{inspect(profiler)}"}
+    end
+  end
 
   defp get_enum_opt(opts, key, allowed, default) do
     case Keyword.fetch(opts, key) do

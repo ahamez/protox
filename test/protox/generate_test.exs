@@ -162,8 +162,15 @@ defmodule Protox.GenerateTest do
     refute content =~ ~r/repeated_string.*\+\+/
     refute content =~ ~r/repeated_nested_message.*\+\+/
 
-    assert content =~
-             ~r/repeated_string:\s*\[\s*Protox\.Decode\.validate_string!\(delimited\)\s*\|\s*:erlang\.map_get\(:repeated_string,\s*msg\)\s*\]/s
+    prepend_and_reverse =
+      ~r/
+        repeated_string:\s*\[\s*
+          Protox\.Decode\.validate_string!\(delimited\)\s*\|\s*
+          :erlang\.map_get\(:repeated_string,\s*msg\)\s*
+        \]
+      /x
+
+    assert content =~ prepend_and_reverse
 
     # Struct fields are read with :erlang.map_get/2, not `msg.field`, which would carry a dead
     # module-dispatch fallback arm. The public unknown_fields/1 accessor is the one exception:
