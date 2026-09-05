@@ -19,7 +19,7 @@ defmodule Protox.Decode do
   @max_field_number (1 <<< 29) - 1
 
   @compile {:inline,
-            parse_delimited: 2,
+            parse_delimited: 1,
             truncate_unsigned32: 1,
             truncate_unsigned64: 1,
             truncate_signed32: 1,
@@ -466,9 +466,18 @@ defmodule Protox.Decode do
     parse_repeated_double([value | acc], rest)
   end
 
-  @spec parse_delimited(binary(), non_neg_integer()) :: {binary(), binary()} | no_return()
-  def parse_delimited(bytes, len) do
-    case bytes do
+  # Reads a length-delimited field's length prefix *and* its payload in one call. The two used to
+  # be separate -- Varint.decode/1 followed by a split -- which cost a tuple and a sub-binary for
+  # the intermediate `rest` on every delimited field, together the largest source of decoding
+  # garbage. The first clause matches the one-byte length and the payload in a single pattern,
+  # which covers every field shorter than 128 bytes.
+  @spec parse_delimited(binary()) :: {binary(), binary()} | no_return()
+  def parse_delimited(<<0::1, len::7, value::binary-size(len), rest::binary>>), do: {value, rest}
+
+  def parse_delimited(bytes) do
+    {len, after_len} = Varint.decode(bytes)
+
+    case after_len do
       <<value::binary-size(^len), rest::binary>> ->
         {value, rest}
 

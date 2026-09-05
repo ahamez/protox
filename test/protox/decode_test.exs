@@ -12,7 +12,6 @@ defmodule Protox.DecodeTest do
   varint_of_max_string_size =
     Protox.String.max_size()
     |> Protox.Varint.encode()
-    |> elem(0)
     |> IO.iodata_to_binary()
 
   @success_tests [
@@ -353,7 +352,6 @@ defmodule Protox.DecodeTest do
   varint_of_min_invalid_string_size =
     min_invalid_string_size
     |> Protox.Varint.encode()
-    |> elem(0)
     |> IO.iodata_to_binary()
 
   @failure_tests [

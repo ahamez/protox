@@ -158,12 +158,30 @@ defmodule Protox.GenerateTest do
 
     content = IO.iodata_to_binary(content)
 
-    refute content =~ "msg.repeated_bool ++"
-    refute content =~ "msg.repeated_string ++"
-    refute content =~ "msg.repeated_nested_message ++"
+    refute content =~ ~r/repeated_bool.*\+\+/
+    refute content =~ ~r/repeated_string.*\+\+/
+    refute content =~ ~r/repeated_nested_message.*\+\+/
 
-    assert content =~
-             ~r/repeated_string:\s*\[\s*Protox\.Decode\.validate_string!\(delimited\)\s*\|\s*msg\.repeated_string\s*\]/s
+    prepend_and_reverse =
+      ~r/
+        repeated_string:\s*\[\s*
+          Protox\.Decode\.validate_string!\(delimited\)\s*\|\s*
+          :erlang\.map_get\(:repeated_string,\s*msg\)\s*
+        \]
+      /x
+
+    assert content =~ prepend_and_reverse
+
+    # Struct fields are read with :erlang.map_get/2, not `msg.field`, which would carry a dead
+    # module-dispatch fallback arm. The public unknown_fields/1 accessor is the one exception:
+    # it is not on a codec path, so it keeps the more idiomatic access.
+    dot_accesses =
+      ~r/\bmsg\.[a-z_]+/
+      |> Regex.scan(content)
+      |> List.flatten()
+      |> Enum.uniq()
+
+    assert dot_accesses == ["msg.__uf__"]
 
     assert content =~ "repeated_string: :lists.reverse(values)"
     assert content =~ "repeated_bool: :lists.reverse(values)"

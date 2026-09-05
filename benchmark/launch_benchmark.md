@@ -30,6 +30,47 @@ fields would otherwise post excellent numbers. It only catches size-changing bre
 on the encoding side — `mix test` and `mix protox.conformance` remain the real
 correctness checks.
 
+You can restrict any run to a subset of the corpus:
+
+```shell
+mix protox.benchmark.run --task decode --input maps,test_all_types_proto3 my_tag
+```
+
+## Profile the code
+
+`--profile-after` switches the task into a profiling mode: Benchee runs each scenario exactly
+once under a profiler, after everything else. All four durations are forced to zero and nothing
+is saved, so a profile run never lands in `./benchmark/output/benchee` and never competes with a
+measurement run. The tag is optional in this mode.
+
+```shell
+mix protox.benchmark.run --task encode --profile-after tprof --profile-type memory --input synthetic_200
+```
+
+| Flag              | Values                                 | Default  |
+| ----------------- | -------------------------------------- | -------- |
+| `--profile-after` | `tprof`, `cprof`, `eprof`, `fprof`     | —        |
+| `--profile-type`  | `memory`, `calls`, `time` (tprof only) | `memory` |
+| `--profile-scope` | `module`, `codec`, `all` (tprof only)   | `module` |
+
+### Which profiler
+
+Use **`tprof`**, in two modes. `--profile-type memory` reports exact words allocated per function
+— the metric half of this project's decision rule, and no other profiler reports it at all.
+`--profile-type calls` reports exact call counts, which is the best available attribution for the
+other half: tprof has no reduction mode, so call counts are the proxy. Both are deterministic, so
+a single run per question is enough.
+
+### Two things to know when reading the output
+
+- **The rows are sorted ascending**, and neither Benchee nor Mix can change that — the hot
+  functions are at the _bottom_ of each section. Read with `tail`, not `head`.
+- **Encode profiles have per-field attribution; decode profiles do not.** The encoder generates one
+  `encode_<field>/2` per field, while the decoder generates a single self-recursive
+  `parse_key_value/2` holding one `case` over every field. A decode profile shows that one function
+  and little else. Use `--profile-scope codec` for a type-level decode breakdown, and the `edge_*`
+  inputs — each saturates one path — to isolate a specific one.
+
 ## Aggregate the results
 
 ```shell

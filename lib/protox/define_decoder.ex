@@ -89,7 +89,7 @@ defmodule Protox.DefineDecoder do
     # unused-variable warning in the generated code.
     update = fn field_name ->
       quote do
-        case unquote(msg_var).unquote(field_name) do
+        case unquote(field_value(msg_var, field_name)) do
           [_first, _second | _tail] = values -> %{unquote(msg_var) | unquote(field_name) => :lists.reverse(values)}
           _empty_or_single -> unquote(msg_var)
         end
@@ -177,7 +177,7 @@ defmodule Protox.DefineDecoder do
         unquote(vars.msg) = %{
           unquote(vars.msg)
           | unquote(unknown_fields_name) => [
-              unquote(vars.value) | unquote(vars.msg).unquote(unknown_fields_name)
+              unquote(vars.value) | unquote(field_value(vars.msg, unknown_fields_name))
             ]
         }
 
@@ -289,7 +289,7 @@ defmodule Protox.DefineDecoder do
         # (reversed) list so the run is prepended onto it directly.
         acc =
           if single_generated do
-            quote(do: unquote(vars.msg).unquote(field.name))
+            field_value(vars.msg, field.name)
           else
             quote(do: [])
           end
@@ -300,14 +300,13 @@ defmodule Protox.DefineDecoder do
 
     key_bytes = make_literal_key_bytes(field.tag, :packed)
 
-    # No one-byte-length fast clause here: its dynamic binary-size(len) segment
-    # would defeat the shared match tree of the surrounding case, which measurably
-    # blows up decoding of messages with many fields.
+    # The length prefix is read by Protox.Decode.parse_delimited/1 rather than matched here: a
+    # dynamic binary-size(len) segment in this pattern would defeat the shared match tree of the
+    # surrounding case, which measurably blows up decoding of messages with many fields. Inside
+    # parse_delimited/1 the same match is free, because the binary arrives as a fresh argument.
     quote do
       <<unquote(key_bytes), unquote(vars.bytes)::binary>> ->
-        {len, unquote(vars.bytes)} = Protox.Varint.decode(unquote(vars.bytes))
-
-        {unquote(vars.delimited), rest} = Protox.Decode.parse_delimited(unquote(vars.bytes), len)
+        {unquote(vars.delimited), rest} = Protox.Decode.parse_delimited(unquote(vars.bytes))
         unquote(vars.msg) = unquote(update_field)
         parse_key_value(rest, unquote(vars.msg))
     end
@@ -319,7 +318,7 @@ defmodule Protox.DefineDecoder do
 
       %{
         unquote(vars.msg)
-        | unquote(field.name) => Map.put(unquote(vars.msg).unquote(field.name), entry_key, entry_value)
+        | unquote(field.name) => Map.put(unquote(field_value(vars.msg, field.name)), entry_key, entry_value)
       }
     end
   end
@@ -335,7 +334,7 @@ defmodule Protox.DefineDecoder do
 
       _other_label ->
         quote do
-          case unquote(vars.msg).unquote(field.kind.parent) do
+          case unquote(field_value(vars.msg, field.kind.parent)) do
             {unquote(field.name), previous_value} ->
               %{
                 unquote(vars.msg)
@@ -365,7 +364,7 @@ defmodule Protox.DefineDecoder do
       %{
         unquote(vars.msg)
         | unquote(field.name) =>
-            case unquote(vars.msg).unquote(field.name) do
+            case unquote(field_value(vars.msg, field.name)) do
               # The field is seen for the first time: nothing to merge.
               nil -> unquote(value)
               previous_value -> Protox.MergeMessage.merge(previous_value, unquote(value))
@@ -384,7 +383,7 @@ defmodule Protox.DefineDecoder do
     # accumulator, so it's stored as is.
     update_value =
       if wrap_value do
-        quote(do: [unquote(value) | unquote(vars.msg).unquote(field.name)])
+        quote(do: [unquote(value) | unquote(field_value(vars.msg, field.name))])
       else
         value
       end
@@ -627,8 +626,7 @@ defmodule Protox.DefineDecoder do
   defp make_parse_map_entry(vars, type) do
     parse_delimited =
       quote do
-        {len, new_rest} = Protox.Varint.decode(unquote(vars.rest))
-        {unquote(vars.delimited), delimited_rest} = Protox.Decode.parse_delimited(new_rest, len)
+        {unquote(vars.delimited), delimited_rest} = Protox.Decode.parse_delimited(unquote(vars.rest))
 
         {unquote(make_parse_delimited(vars.delimited, quote(do: []), type)), delimited_rest}
       end
@@ -639,6 +637,12 @@ defmodule Protox.DefineDecoder do
       {:message, _msg_type} -> parse_delimited
       _scalar_type -> make_parse_single(vars.rest, type)
     end
+  end
+
+  # See the note on Protox.DefineEncoder.field_value/2: `msg.field` carries a dead fallback arm
+  # that stops the access from being a single get_map_element.
+  defp field_value(msg_var, field_name) do
+    quote(do: :erlang.map_get(unquote(field_name), unquote(msg_var)))
   end
 
   defp make_literal_key_bytes(tag, type) do

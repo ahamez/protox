@@ -31,11 +31,13 @@ defmodule Protox.DefineEncoder do
     encode_field_funs = make_encode_field_funs(fields, required_fields, syntax, vars)
     encode_diagnose_fun = make_encode_diagnose_fun(oneofs, fields_in_encode_order, vars)
     encode_unknown_fields_fun = make_encode_unknown_fields_fun(vars, opts)
+    encode_repeated_funs = make_encode_repeated_funs(fields)
 
     quote do
       unquote(top_level_encode_fun)
       unquote_splicing(encode_oneof_funs)
       unquote_splicing(encode_field_funs)
+      unquote_splicing(encode_repeated_funs)
       unquote(encode_diagnose_fun)
       unquote(encode_unknown_fields_fun)
     end
@@ -124,7 +126,7 @@ defmodule Protox.DefineEncoder do
                {unquote(vars.acc), unquote(vars.acc_size)},
                msg
              ) do
-          case msg.unquote(parent_name) do
+          case :erlang.map_get(unquote(parent_name), msg) do
             unquote(nil_clause ++ children_clauses_ast)
           end
         end
@@ -207,14 +209,13 @@ defmodule Protox.DefineEncoder do
 
   defp make_encode_field_body(%Field{kind: %Scalar{}} = field, required, syntax, vars) do
     {key, key_size} = Protox.Encode.make_key_bytes(field.tag, field.type)
-    var = quote do: unquote(vars.msg).unquote(field.name)
-    encode_value_ast = get_encode_value_body(field.type, var)
-    encode_value_clause = make_encode_value_clause(encode_value_ast, key, key_size, vars)
+    var = field_value(vars.msg, field.name)
+    encode_value_clause = make_encode_value_clause(field.type, var, key, key_size, vars)
 
     case {syntax, required} do
       {:proto2, true = _required} ->
         quote do
-          case unquote(vars.msg).unquote(field.name) do
+          case unquote(var) do
             nil -> raise Protox.RequiredFieldsError.new([unquote(field.name)])
             _value -> unquote(encode_value_clause)
           end
@@ -243,11 +244,10 @@ defmodule Protox.DefineEncoder do
   defp make_encode_field_body(%Field{label: :proto3_optional, kind: %OneOf{}} = field, _required, _syntax, vars) do
     {key, key_size} = Protox.Encode.make_key_bytes(field.tag, field.type)
     var = Macro.var(:child_field_value, __MODULE__)
-    encode_value_ast = get_encode_value_body(field.type, var)
-    encode_value_clause = make_encode_value_clause(encode_value_ast, key, key_size, vars)
+    encode_value_clause = make_encode_value_clause(field.type, var, key, key_size, vars)
 
     quote do
-      case unquote(vars.msg).unquote(field.name) do
+      case unquote(field_value(vars.msg, field.name)) do
         nil ->
           {unquote(vars.acc), unquote(vars.acc_size)}
 
@@ -259,24 +259,10 @@ defmodule Protox.DefineEncoder do
 
   defp make_encode_field_body(%Field{kind: %OneOf{}} = field, _required, _syntax, vars) do
     {key, key_size} = Protox.Encode.make_key_bytes(field.tag, field.type)
-    encode_value_ast = get_encode_value_body(field.type, vars.child_field_value)
 
     # The dispatch on the correct child is performed by the parent encoding function,
     # this is why we don't check if the child is set.
-    make_encode_value_clause(encode_value_ast, key, key_size, vars)
-  end
-
-  # Shared fragment: decode `encode_value_ast` into `value_bytes`/`value_bytes_size`, then
-  # prepend the field's key and value bytes to the accumulator, updating its size.
-  defp make_encode_value_clause(encode_value_ast, key, key_size, vars) do
-    quote do
-      {value_bytes, value_bytes_size} = unquote(encode_value_ast)
-
-      {
-        [unquote(key), value_bytes | unquote(vars.acc)],
-        unquote(vars.acc_size) + unquote(key_size) + value_bytes_size
-      }
-    end
+    make_encode_value_clause(field.type, vars.child_field_value, key, key_size, vars)
   end
 
   defp make_encode_field_body(%Field{kind: :packed} = field, _required, _syntax, vars) do
@@ -284,33 +270,31 @@ defmodule Protox.DefineEncoder do
     encode_packed_ast = make_encode_packed_body(field.type)
 
     quote do
-      case unquote(vars.msg).unquote(field.name) do
+      case unquote(field_value(vars.msg, field.name)) do
         [] ->
           {unquote(vars.acc), unquote(vars.acc_size)}
 
         values ->
           value_bytes = unquote(encode_packed_ast)
           value_size = byte_size(value_bytes)
-          {value_size_bytes, value_size_size} = Protox.Varint.encode(value_size)
+          value_size_bytes = Protox.Varint.encode(value_size)
 
           {
             [unquote(key_bytes), value_size_bytes, value_bytes | unquote(vars.acc)],
-            unquote(vars.acc_size) + unquote(key_size) + value_size + value_size_size
+            unquote(vars.acc_size) + unquote(key_size) + value_size + byte_size(value_size_bytes)
           }
       end
     end
   end
 
   defp make_encode_field_body(%Field{kind: :unpacked} = field, _required, _syntax, vars) do
-    encode_repeated_ast = make_encode_repeated_body(field.tag, field.type)
-
     quote do
-      case unquote(vars.msg).unquote(field.name) do
+      case unquote(field_value(vars.msg, field.name)) do
         [] ->
           {unquote(vars.acc), unquote(vars.acc_size)}
 
         values ->
-          {value_bytes, value_size} = unquote(encode_repeated_ast)
+          {value_bytes, value_size} = unquote(make_encode_repeated_fun_name(field.tag))(values, [], 0)
           {[value_bytes | unquote(vars.acc)], unquote(vars.acc_size) + value_size}
       end
     end
@@ -327,26 +311,39 @@ defmodule Protox.DefineEncoder do
     k_var = Macro.var(:k, __MODULE__)
     v_var = Macro.var(:v, __MODULE__)
 
-    encode_map_key_ast = get_encode_value_body(map_key_type, k_var)
-    encode_map_value_ast = get_encode_value_body(map_value_type, v_var)
+    encode_map_key_binding =
+      make_encode_value_binding(
+        map_key_type,
+        k_var,
+        Macro.var(:k_value_bytes, __MODULE__),
+        Macro.var(:k_value_len, __MODULE__)
+      )
+
+    encode_map_value_binding =
+      make_encode_value_binding(
+        map_value_type,
+        v_var,
+        Macro.var(:v_value_bytes, __MODULE__),
+        Macro.var(:v_value_len, __MODULE__)
+      )
 
     {k_key_bytes, k_key_size} = Protox.Encode.make_key_bytes(1, map_key_type)
     {v_key_bytes, v_key_size} = Protox.Encode.make_key_bytes(2, map_value_type)
     keys_len = k_key_size + v_key_size
 
     quote do
-      map = Map.fetch!(unquote(vars.msg), unquote(field.name))
+      map = unquote(field_value(vars.msg, field.name))
 
       if map_size(map) == 0 do
         {unquote(vars.acc), unquote(vars.acc_size)}
       else
         :maps.fold(
           fn unquote(k_var), unquote(v_var), {unquote(vars.acc), unquote(vars.acc_size)} ->
-            {k_value_bytes, k_value_len} = unquote(encode_map_key_ast)
-            {v_value_bytes, v_value_len} = unquote(encode_map_value_ast)
+            unquote(encode_map_key_binding)
+            unquote(encode_map_value_binding)
 
             len = unquote(keys_len) + k_value_len + v_value_len
-            {len_varint, len_varint_size} = Protox.Varint.encode(len)
+            len_varint = Protox.Varint.encode(len)
 
             unquote(vars.acc) = [
               <<unquote(field_key), len_varint::binary, unquote(k_key_bytes)>>,
@@ -359,7 +356,7 @@ defmodule Protox.DefineEncoder do
             {
               unquote(vars.acc),
               unquote(vars.acc_size) + unquote(field_key_size + keys_len) + k_value_len +
-                v_value_len + len_varint_size
+                v_value_len + byte_size(len_varint)
             }
           end,
           {unquote(vars.acc), unquote(vars.acc_size)},
@@ -369,12 +366,47 @@ defmodule Protox.DefineEncoder do
     end
   end
 
+  # Shared fragment: prepend the field's key and encoded bytes to the accumulator, updating its
+  # size. The bytes come back as a *list* of items to splice, because a length-delimited field
+  # contributes two -- its prefix and its payload -- and consing them straight onto the
+  # accumulator is free, where wrapping them in their own list was not.
+  defp make_encode_value_clause(type, value_var, key, key_size, vars) do
+    {prelude, bytes_items, size_ast} = get_encode_value_parts(type, value_var)
+
+    quote do
+      unquote_splicing(prelude)
+
+      {
+        [unquote(key), unquote_splicing(bytes_items) | unquote(vars.acc)],
+        unquote(vars.acc_size) + unquote(key_size) + unquote(size_ast)
+      }
+    end
+  end
+
+  # The map entry and repeated encoders need the bytes as a single term, so a multi-item field
+  # is re-wrapped into a list for them. Only the scalar field path gets the flat splice.
+  defp make_encode_value_binding(type, value_var, bytes_var, size_var) do
+    {prelude, bytes_items, size_ast} = get_encode_value_parts(type, value_var)
+
+    bytes_ast =
+      case bytes_items do
+        [single] -> single
+        several -> quote(do: [unquote_splicing(several)])
+      end
+
+    quote do
+      unquote_splicing(prelude)
+      unquote(bytes_var) = unquote(bytes_ast)
+      unquote(size_var) = unquote(size_ast)
+    end
+  end
+
   defp make_encode_unknown_fields_fun(_vars, opts) do
     unknown_fields_name = Keyword.fetch!(opts, :unknown_fields_name)
 
     quote do
       defp encode_unknown_fields(acc, msg) do
-        Protox.Encode.encode_unknown_fields(acc, msg.unquote(unknown_fields_name))
+        Protox.Encode.encode_unknown_fields(acc, :erlang.map_get(unquote(unknown_fields_name), msg))
       end
     end
   end
@@ -412,26 +444,56 @@ defmodule Protox.DefineEncoder do
     quote(do: Protox.Encode.unquote(appender)(values, <<>>))
   end
 
-  defp make_encode_repeated_body(tag, type) do
-    {key_bytes, key_bytes_sz} = Protox.Encode.make_key_bytes(tag, type)
-    value_var = Macro.var(:value, __MODULE__)
-    encode_value_ast = get_encode_value_body(type, value_var)
+  # One recursive loop per unpacked repeated field, rather than Enum.reduce over a closure. The
+  # accumulator and the running size are separate arguments, so the pair costs nothing per
+  # element; Enum.reduce can only carry one term, so it had to rebuild a {acc, size} tuple on
+  # every element. The list is still grown by appending, which is what keeps the elements in
+  # wire order -- prepending would reverse them.
+  defp make_encode_repeated_funs(fields) do
+    for %Field{kind: :unpacked} = field <- fields do
+      {key_bytes, key_bytes_size} = Protox.Encode.make_key_bytes(field.tag, field.type)
+      value_var = Macro.var(:value, __MODULE__)
+      fun_name = make_encode_repeated_fun_name(field.tag)
 
-    quote do
-      Enum.reduce(
-        values,
-        {_local_acc = [], _local_acc_size = 0},
-        fn unquote(value_var), {local_acc, local_acc_size} ->
-          {value_bytes, value_bytes_size} = unquote(encode_value_ast)
+      encode_value_binding =
+        make_encode_value_binding(
+          field.type,
+          value_var,
+          Macro.var(:value_bytes, __MODULE__),
+          Macro.var(:value_bytes_size, __MODULE__)
+        )
 
-          {
-            [local_acc, unquote(key_bytes), value_bytes],
-            local_acc_size + unquote(key_bytes_sz) + value_bytes_size
-          }
+      quote do
+        defp unquote(fun_name)([], acc, size), do: {acc, size}
+
+        defp unquote(fun_name)([unquote(value_var) | rest], acc, size) do
+          unquote(encode_value_binding)
+
+          unquote(fun_name)(
+            rest,
+            [acc, unquote(key_bytes), value_bytes],
+            size + unquote(key_bytes_size) + value_bytes_size
+          )
         end
-      )
+      end
     end
   end
+
+  # Named after the tag, not the field name: field names can run to hundreds of bytes, and
+  # "encode_repeated_" is 10 bytes longer than the "encode_" prefix the field helpers use, which
+  # would push schemas that generate fine today past the BEAM's 255-byte atom limit. A tag is at
+  # most 9 digits and is unique within its message, which is all this private helper needs.
+  defp make_encode_repeated_fun_name(tag), do: String.to_atom("encode_repeated_#{tag}")
+
+  # Returns `{prelude, bytes_items, size_ast}` for a value of `type`:
+  #
+  #   * `prelude` binds whatever the other two need,
+  #   * `bytes_items` is the list of terms to splice onto the accumulator,
+  #   * `size_ast` evaluates to their total byte count.
+  #
+  # Keeping the size a separate expression rather than a returned tuple element is what stops
+  # the size from costing an allocation: a fixed-width type knows it at generation time, a
+  # varint gets it from byte_size/1 for free, and the rest bind it in their prelude.
 
   # The child module is known at generation time: dispatch on it statically and
   # use its rescue-free encoding path. The match on __struct__ rejects any
@@ -439,102 +501,144 @@ defmodule Protox.DefineEncoder do
   # a wrong-typed struct or a plain map with matching field names would be
   # silently encoded under this message's tags. A %unquote(msg_type){} pattern
   # is not usable here, as the child module may not be compiled yet.
-  defp get_encode_value_body({:message, msg_type}, value_var) do
-    quote do
-      %{__struct__: unquote(msg_type)} = child = unquote(value_var)
-      {child_bytes, child_size} = unquote(msg_type).encode_internal!(child)
-      {child_size_bytes, child_size_bytes_size} = Protox.Varint.encode(child_size)
-      {[child_size_bytes, child_bytes], child_size + child_size_bytes_size}
-    end
+  defp get_encode_value_parts({:message, msg_type}, value_var) do
+    prelude =
+      quote do
+        %{__struct__: unquote(msg_type)} = child = unquote(value_var)
+        {child_bytes, child_size} = unquote(msg_type).encode_internal!(child)
+        child_size_bytes = Protox.Varint.encode(child_size)
+      end
+
+    {[prelude], [quote(do: child_size_bytes), quote(do: child_bytes)],
+     quote(do: byte_size(child_size_bytes) + child_size)}
   end
 
-  defp get_encode_value_body({:enum, enum}, value_var) do
-    make_inline_int32_body(quote(do: unquote(enum).encode(unquote(value_var))))
+  defp get_encode_value_parts({:enum, enum}, value_var) do
+    make_inline_int32_parts(quote(do: unquote(enum).encode(unquote(value_var))))
   end
 
-  defp get_encode_value_body(:bool, value_var) do
-    quote(do: Protox.Encode.encode_bool(unquote(value_var)))
+  defp get_encode_value_parts(:bool, value_var) do
+    {[], [quote(do: Protox.Encode.encode_bool(unquote(value_var)))], 1}
   end
 
-  defp get_encode_value_body(:bytes, value_var) do
-    quote(do: Protox.Encode.encode_bytes(unquote(value_var)))
+  # A length-delimited field splices its prefix and its payload separately: wrapping them in a
+  # list of their own, as returning `{iodata, size}` from a helper forced, cost 7 words a field.
+  defp get_encode_value_parts(:string, value_var) do
+    prelude =
+      quote do
+        delimited = unquote(value_var)
+        delimited_prefix = Protox.Encode.encode_string_prefix(delimited)
+      end
+
+    {[prelude], [quote(do: delimited_prefix), quote(do: delimited)],
+     quote(do: byte_size(delimited_prefix) + byte_size(delimited))}
   end
 
-  defp get_encode_value_body(:string, value_var) do
-    quote(do: Protox.Encode.encode_string(unquote(value_var)))
+  defp get_encode_value_parts(:bytes, value_var) do
+    prelude =
+      quote do
+        delimited = unquote(value_var)
+        delimited_prefix = Protox.Varint.encode(byte_size(delimited))
+      end
+
+    {[prelude], [quote(do: delimited_prefix), quote(do: delimited)],
+     quote(do: byte_size(delimited_prefix) + byte_size(delimited))}
   end
 
   # Varint scalars are inlined in the generated code: the truncation is a
   # couple of integer instructions, and going through the Protox.Encode
   # helpers would cost two remote calls per field.
 
-  defp get_encode_value_body(:int32, value_var), do: make_inline_int32_body(value_var)
-  defp get_encode_value_body(:uint32, value_var), do: make_inline_int32_body(value_var)
-
-  defp get_encode_value_body(type, value_var) when type in [:int64, :uint64] do
-    quote do
-      Protox.Varint.encode(:erlang.band(unquote(value_var), 0xFFFF_FFFF_FFFF_FFFF))
-    end
+  defp get_encode_value_parts(type, value_var) when type in [:int32, :uint32] do
+    make_inline_int32_parts(value_var)
   end
 
-  defp get_encode_value_body(type, value_var) when type in [:sint32, :sint64] do
-    quote do
-      Protox.Varint.encode(Protox.Zigzag.encode(unquote(value_var)))
-    end
-  end
-
-  defp get_encode_value_body(:fixed32, value_var) do
-    quote(do: {<<unquote(value_var)::little-32>>, 4})
-  end
-
-  defp get_encode_value_body(:fixed64, value_var) do
-    quote(do: {<<unquote(value_var)::little-64>>, 8})
-  end
-
-  defp get_encode_value_body(:sfixed32, value_var) do
-    quote(do: {<<unquote(value_var)::signed-little-32>>, 4})
-  end
-
-  defp get_encode_value_body(:sfixed64, value_var) do
-    quote(do: {<<unquote(value_var)::signed-little-64>>, 8})
-  end
-
-  defp get_encode_value_body(:float, value_var) do
-    quote do
-      case unquote(value_var) do
-        :infinity -> {unquote(@positive_infinity_32), 4}
-        :"-infinity" -> {unquote(@negative_infinity_32), 4}
-        :nan -> {unquote(@nan_32), 4}
-        value -> {<<value::float-little-32>>, 4}
+  defp get_encode_value_parts(type, value_var) when type in [:int64, :uint64] do
+    prelude =
+      quote do
+        value_bytes = Protox.Varint.encode(:erlang.band(unquote(value_var), 0xFFFF_FFFF_FFFF_FFFF))
       end
-    end
+
+    {[prelude], [quote(do: value_bytes)], quote(do: byte_size(value_bytes))}
   end
 
-  defp get_encode_value_body(:double, value_var) do
-    quote do
-      case unquote(value_var) do
-        :infinity -> {unquote(@positive_infinity_64), 8}
-        :"-infinity" -> {unquote(@negative_infinity_64), 8}
-        :nan -> {unquote(@nan_64), 8}
-        value -> {<<value::float-little-64>>, 8}
+  defp get_encode_value_parts(type, value_var) when type in [:sint32, :sint64] do
+    prelude = quote(do: value_bytes = Protox.Varint.encode(Protox.Zigzag.encode(unquote(value_var))))
+
+    {[prelude], [quote(do: value_bytes)], quote(do: byte_size(value_bytes))}
+  end
+
+  defp get_encode_value_parts(:fixed32, value_var) do
+    {[], [quote(do: <<unquote(value_var)::little-32>>)], 4}
+  end
+
+  defp get_encode_value_parts(:fixed64, value_var) do
+    {[], [quote(do: <<unquote(value_var)::little-64>>)], 8}
+  end
+
+  defp get_encode_value_parts(:sfixed32, value_var) do
+    {[], [quote(do: <<unquote(value_var)::signed-little-32>>)], 4}
+  end
+
+  defp get_encode_value_parts(:sfixed64, value_var) do
+    {[], [quote(do: <<unquote(value_var)::signed-little-64>>)], 8}
+  end
+
+  defp get_encode_value_parts(:float, value_var) do
+    bytes =
+      quote do
+        case unquote(value_var) do
+          :infinity -> unquote(@positive_infinity_32)
+          :"-infinity" -> unquote(@negative_infinity_32)
+          :nan -> unquote(@nan_32)
+          value -> <<value::float-little-32>>
+        end
       end
-    end
+
+    {[], [bytes], 4}
+  end
+
+  defp get_encode_value_parts(:double, value_var) do
+    bytes =
+      quote do
+        case unquote(value_var) do
+          :infinity -> unquote(@positive_infinity_64)
+          :"-infinity" -> unquote(@negative_infinity_64)
+          :nan -> unquote(@nan_64)
+          value -> <<value::float-little-64>>
+        end
+      end
+
+    {[], [bytes], 8}
   end
 
   # A negative int32 scalar is encoded as its 64-bit two's complement (ten
   # bytes on the wire). Note a non-integer value passes the >= 0 comparison
   # (term order) and raises from the truncation, which the diagnosis
   # attributes.
-  defp make_inline_int32_body(value_ast) do
-    quote do
-      value = unquote(value_ast)
+  defp make_inline_int32_parts(value_ast) do
+    prelude =
+      quote do
+        value = unquote(value_ast)
 
-      if value >= 0 do
-        Protox.Varint.encode(:erlang.band(value, 0xFFFF_FFFF))
-      else
-        Protox.Varint.encode(:erlang.band(value, 0xFFFF_FFFF_FFFF_FFFF))
+        value_bytes =
+          if value >= 0 do
+            Protox.Varint.encode(:erlang.band(value, 0xFFFF_FFFF))
+          else
+            Protox.Varint.encode(:erlang.band(value, 0xFFFF_FFFF_FFFF_FFFF))
+          end
       end
-    end
+
+    {[prelude], [quote(do: value_bytes)], quote(do: byte_size(value_bytes))}
+  end
+
+  # `msg.field` compiles to a map match *plus* a fallback arm that calls
+  # elixir_erl_pass:no_parens_remote/2 in case `msg` turns out to be a module, so the access is
+  # never a single get_map_element and the compiler cannot pin the type of `msg`. The field is
+  # always present -- it is a struct key -- so :erlang.map_get/2 is the same lookup without the
+  # dead branch.
+  defp field_value(msg_var, field_name) do
+    quote(do: :erlang.map_get(unquote(field_name), unquote(msg_var)))
   end
 
   defp make_encode_field_fun_name(field) when is_atom(field) do

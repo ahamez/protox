@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Performance: encoding uses less memory (≈ -15% to -25%) and fewer reductions, decoding uses far fewer reductions (≈ -20% to -55%)
+- Performance: encoding uses less memory (≈ -30% to -45%) and fewer reductions, decoding uses far fewer reductions (≈ -25% to -60%) and less memory (≈ -10%)
 - ⚠️ The generator version is now 2: files generated with a previous protox version must be regenerated (compilation fails with an explicit message otherwise)
 - Encoding a message field holding a value that is not a struct of the declared type now raises `Protox.EncodingError` instead of silently encoding it
 - Invalid field values are now attributed to their field (`Protox.EncodingError`) for more error classes (e.g. invalid `bool` values, structs of the wrong type); invalid scalar oneof values keep raising their raw error, whose type may differ (e.g. `ArithmeticError` instead of `ArgumentError` for varint children)

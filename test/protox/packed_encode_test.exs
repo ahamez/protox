@@ -11,11 +11,7 @@ defmodule Protox.PackedEncodeTest do
                        Enum.flat_map(1..9, fn n -> [(1 <<< (7 * n)) - 1, 1 <<< (7 * n)] end) ++
                        [(1 <<< 64) - 1]
 
-  defp varint_bytes(v),
-    do:
-      v
-      |> Varint.encode()
-      |> elem(0)
+  defp varint_bytes(v), do: Varint.encode(v)
 
   defp int32_wire(v) when v >= 0, do: varint_bytes(v &&& 0xFFFF_FFFF)
   defp int32_wire(v), do: varint_bytes(v &&& 0xFFFF_FFFF_FFFF_FFFF)

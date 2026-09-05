@@ -6,35 +6,31 @@ defmodule Protox.Varint do
 
   alias Protox.Varint.DecodeClauses
 
-  @spec encode(integer) :: {binary(), non_neg_integer()}
-  def encode(v) when v < 1 <<< 7, do: {<<v>>, 1}
+  @spec encode(integer) :: binary()
+  def encode(v) when v < 1 <<< 7, do: <<v>>
 
-  def encode(v) when v < 1 <<< 14, do: {<<1::1, v::7, v >>> 7>>, 2}
+  def encode(v) when v < 1 <<< 14, do: <<1::1, v::7, v >>> 7>>
 
-  def encode(v) when v < 1 <<< 21, do: {<<1::1, v::7, 1::1, v >>> 7::7, v >>> 14>>, 3}
+  def encode(v) when v < 1 <<< 21, do: <<1::1, v::7, 1::1, v >>> 7::7, v >>> 14>>
 
-  def encode(v) when v < 1 <<< 28, do: {<<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, v >>> 21>>, 4}
+  def encode(v) when v < 1 <<< 28, do: <<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, v >>> 21>>
 
-  def encode(v) when v < 1 <<< 35,
-    do: {<<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, v >>> 28>>, 5}
+  def encode(v) when v < 1 <<< 35, do: <<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, v >>> 28>>
 
   def encode(v) when v < 1 <<< 42,
-    do: {<<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7, v >>> 35>>, 6}
+    do: <<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7, v >>> 35>>
 
   def encode(v) when v < 1 <<< 49,
     do:
-      {<<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7, 1::1, v >>> 35::7,
-         v >>> 42>>, 7}
+      <<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7, 1::1, v >>> 35::7,
+        v >>> 42>>
 
   def encode(v) when v < 1 <<< 56,
     do:
-      {<<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7, 1::1, v >>> 35::7, 1::1,
-         v >>> 42::7, v >>> 49>>, 8}
+      <<1::1, v::7, 1::1, v >>> 7::7, 1::1, v >>> 14::7, 1::1, v >>> 21::7, 1::1, v >>> 28::7, 1::1, v >>> 35::7, 1::1,
+        v >>> 42::7, v >>> 49>>
 
-  def encode(v) do
-    {next_bytes, size} = encode(v >>> 7)
-    {<<1::1, v::7, next_bytes::binary>>, size + 1}
-  end
+  def encode(v), do: <<1::1, v::7, encode(v >>> 7)::binary>>
 
   # Appends the LEB128 encoding of `v` to `acc`: lets callers build a packed
   # binary without one intermediate binary per element. Not used by encode/1:
