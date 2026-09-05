@@ -37,6 +37,28 @@ defmodule Protox.EncodeErrorAttributionTest do
       end
     end
 
+    test "an invalid map key takes precedence over an invalid nested value" do
+      nested = %TestAllTypesProto3.NestedMessage{a: :not_an_int}
+      msg = %TestAllTypesProto3{map_string_nested_message: %{123 => nested}}
+
+      assert {:error, %Protox.EncodingError{field: :map_string_nested_message}} =
+               TestAllTypesProto3.encode(msg)
+    end
+
+    test "a valid map key preserves nested value error attribution" do
+      nested = %TestAllTypesProto3.NestedMessage{a: :not_an_int}
+      msg = %TestAllTypesProto3{map_string_nested_message: %{"key" => nested}}
+
+      assert {:error, %Protox.EncodingError{field: :a}} = TestAllTypesProto3.encode(msg)
+    end
+
+    test "a wrong-type map value is attributed to the map field" do
+      msg = %TestAllTypesProto3{map_string_nested_message: %{"key" => %ForeignMessage{c: :not_an_int}}}
+
+      assert {:error, %Protox.EncodingError{field: :map_string_nested_message}} =
+               TestAllTypesProto3.encode(msg)
+    end
+
     test "an invalid field in a message-typed oneof child is attributed to the nested field" do
       nested = %TestAllTypesProto3.NestedMessage{a: :not_an_int}
       msg = %TestAllTypesProto3{oneof_field: {:oneof_nested_message, nested}}
