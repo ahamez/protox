@@ -29,7 +29,7 @@ defmodule Protox.DefineEncoder do
 
     encode_oneof_funs = make_encode_oneof_funs(oneofs, syntax, vars)
     encode_field_funs = make_encode_field_funs(fields, required_fields, syntax, vars)
-    encode_diagnose_fun = make_encode_diagnose_fun(oneofs, fields_in_encode_order, vars)
+    encode_diagnose_fun = make_encode_diagnose_fun(oneofs, fields_in_encode_order, syntax, vars)
     encode_unknown_fields_fun = make_encode_unknown_fields_fun(vars, opts)
     encode_repeated_funs = make_encode_repeated_funs(fields)
 
@@ -159,7 +159,7 @@ defmodule Protox.DefineEncoder do
   # and the message-children modules to Protox.Encode.find_invalid_field!/2,
   # in encoding order (oneofs first), so the error is attributed to the field
   # that failed originally.
-  defp make_encode_diagnose_fun(oneofs, fields, vars) do
+  defp make_encode_diagnose_fun(oneofs, fields, syntax, vars) do
     oneof_entries =
       Enum.map(oneofs, fn {parent_name, children} ->
         message_children = for %Field{name: name, type: {:message, mod}} <- children, do: {name, mod}
@@ -170,11 +170,7 @@ defmodule Protox.DefineEncoder do
       end)
 
     field_entries =
-      Enum.map(fields, fn %Field{name: name} = field ->
-        quote do
-          {unquote(name), unquote(make_local_capture(name)), unquote(message_child_module(field))}
-        end
-      end)
+      Enum.map(fields, &make_diagnose_field_entry(&1, syntax, vars))
 
     entries = oneof_entries ++ field_entries
 
@@ -195,16 +191,41 @@ defmodule Protox.DefineEncoder do
     end
   end
 
+  defp make_diagnose_field_entry(%Field{kind: :map, type: {_key_type, {:message, _mod}}} = field, syntax, vars) do
+    # Replay the same map encoder, but attribute child errors at the point each
+    # value is encoded. A separate traversal of children would skip key errors
+    # and could report a later failure before the one that actually stopped encoding.
+    body =
+      field
+      |> make_encode_field_body(false, syntax, vars)
+      |> Macro.prewalk(fn
+        {{:., meta, [mod, :encode_internal!]}, call_meta, args} ->
+          {{:., meta, [mod, :encode!]}, call_meta, args}
+
+        ast ->
+          ast
+      end)
+
+    quote do
+      {unquote(field.name), fn {unquote(vars.acc), unquote(vars.acc_size)}, unquote(vars.msg) -> unquote(body) end, nil}
+    end
+  end
+
+  defp make_diagnose_field_entry(%Field{name: name} = field, _syntax, _vars) do
+    quote do
+      {unquote(name), unquote(make_local_capture(name)), unquote(message_child_module(field))}
+    end
+  end
+
   # AST of `&encode_<name>/2`.
   defp make_local_capture(name) do
     fun_name = make_encode_field_fun_name(name)
     {:&, [], [{:/, [], [{fun_name, [], __MODULE__}, 2]}]}
   end
 
-  # The module of a field's message children (single, repeated or map values),
+  # The module of a field's message children (single or repeated),
   # or nil if the field cannot hold messages.
   defp message_child_module(%Field{type: {:message, sub_msg}}), do: sub_msg
-  defp message_child_module(%Field{type: {_key_type, {:message, sub_msg}}}), do: sub_msg
   defp message_child_module(_field), do: nil
 
   defp make_encode_field_body(%Field{kind: %Scalar{}} = field, required, syntax, vars) do
