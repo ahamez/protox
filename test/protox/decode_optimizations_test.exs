@@ -29,12 +29,41 @@ defmodule Protox.DecodeOptimizationsTest do
   # reverse wire order, and the generated finish-decode step performs the single
   # reverse that restores wire order.
   describe "packed fixed-width fast path" do
-    test "decodes element counts around the four-element unroll boundary" do
-      for count <- 1..9 do
-        values = Enum.to_list(1..count)
-        bytes = for v <- values, into: <<>>, do: <<v::unsigned-little-32>>
+    for {type, bits, values} <- [
+          {:fixed32, 32, [0, 1, 0xFFFF_FFFF]},
+          {:fixed64, 64, [0, 1, 0xFFFF_FFFF_FFFF_FFFF]},
+          {:sfixed32, 32, [-0x8000_0000, -1, 0, 0x7FFF_FFFF]},
+          {:sfixed64, 64, [-0x8000_0000_0000_0000, -1, 0, 0x7FFF_FFFF_FFFF_FFFF]}
+        ] do
+      test "#{type} preserves order and the accumulator around unroll boundaries" do
+        parser = unquote(String.to_atom("parse_repeated_#{type}"))
 
-        assert Protox.Decode.parse_repeated_fixed32([], bytes) == Enum.reverse(values)
+        for count <- 0..9 do
+          values =
+            unquote(values)
+            |> Stream.cycle()
+            |> Enum.take(count)
+
+          bytes = for value <- values, into: <<>>, do: <<value::little-size(unquote(bits))>>
+
+          assert apply(Protox.Decode, parser, [[42], bytes]) == Enum.reverse(values, [42])
+        end
+      end
+
+      test "#{type} preserves truncated-tail errors after valid elements" do
+        parser = unquote(String.to_atom("parse_repeated_#{type}"))
+
+        for count <- 0..9, tail_size <- 1..(unquote(div(bits, 8)) - 1) do
+          prefix = :binary.copy(<<0::size(unquote(bits))>>, count)
+          tail = :binary.copy(<<255>>, tail_size)
+
+          error =
+            assert_raise Protox.DecodingError, fn ->
+              apply(Protox.Decode, parser, [[42], prefix <> tail])
+            end
+
+          assert error == Protox.DecodingError.new(tail, "invalid #{unquote(type)}")
+        end
       end
     end
 
