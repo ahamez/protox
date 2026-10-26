@@ -378,6 +378,10 @@ defmodule Protox.Decode do
     parse_repeated_fixed32([d, c, b, a | acc], rest)
   end
 
+  def parse_repeated_fixed32(acc, <<value::unsigned-little-32, rest::binary>>) do
+    parse_repeated_fixed32([value | acc], rest)
+  end
+
   def parse_repeated_fixed32(acc, bytes) do
     {value, rest} = parse_fixed32(bytes)
     parse_repeated_fixed32([value | acc], rest)
@@ -391,6 +395,10 @@ defmodule Protox.Decode do
         <<a::unsigned-little-64, b::unsigned-little-64, c::unsigned-little-64, d::unsigned-little-64, rest::binary>>
       ) do
     parse_repeated_fixed64([d, c, b, a | acc], rest)
+  end
+
+  def parse_repeated_fixed64(acc, <<value::unsigned-little-64, rest::binary>>) do
+    parse_repeated_fixed64([value | acc], rest)
   end
 
   def parse_repeated_fixed64(acc, bytes) do
@@ -408,6 +416,10 @@ defmodule Protox.Decode do
     parse_repeated_sfixed32([d, c, b, a | acc], rest)
   end
 
+  def parse_repeated_sfixed32(acc, <<value::signed-little-32, rest::binary>>) do
+    parse_repeated_sfixed32([value | acc], rest)
+  end
+
   def parse_repeated_sfixed32(acc, bytes) do
     {value, rest} = parse_sfixed32(bytes)
     parse_repeated_sfixed32([value | acc], rest)
@@ -421,6 +433,10 @@ defmodule Protox.Decode do
         <<a::signed-little-64, b::signed-little-64, c::signed-little-64, d::signed-little-64, rest::binary>>
       ) do
     parse_repeated_sfixed64([d, c, b, a | acc], rest)
+  end
+
+  def parse_repeated_sfixed64(acc, <<value::signed-little-64, rest::binary>>) do
+    parse_repeated_sfixed64([value | acc], rest)
   end
 
   def parse_repeated_sfixed64(acc, bytes) do
